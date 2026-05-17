@@ -27,11 +27,10 @@
 │   └── pom.xml
 ├── servicio-logistica
 │   └── pom.xml
-├── servicio-notificaciones
-│   └── pom.xml
-└── tree.txt
+└── servicio-notificaciones
+    └── pom.xml
 
-7 directories, 9 files
+7 directories, 8 files
 ```
 <!-- TREE_END -->
 
