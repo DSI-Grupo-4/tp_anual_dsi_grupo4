@@ -19,8 +19,6 @@
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
 ├── pom.xml
-├── servicio-auth
-│   └── pom.xml
 ├── servicio-donaciones
 │   └── pom.xml
 ├── servicio-incentivos
@@ -30,7 +28,7 @@
 └── servicio-notificaciones
     └── pom.xml
 
-7 directories, 8 files
+6 directories, 7 files
 ```
 <!-- TREE_END -->
 
