@@ -8,7 +8,7 @@
 - Durruty, Tomás
 - Farret, Felipe
 - Fuentes, Agustina
-- Gonzáles, Paula Nicole
+- González, Paula Nicole
 - Quenallata Cruz, Brandon Carlos
 
 ## Tree
