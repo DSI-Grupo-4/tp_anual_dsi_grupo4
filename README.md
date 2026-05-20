@@ -18,6 +18,10 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
+├── diagramas
+│   ├── DCU.png
+│   ├── DDC.png
+│   └── Diagrama Secuencia.jpeg
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -55,7 +59,7 @@
 └── servicio-notificaciones
     └── pom.xml
 
-13 directories, 27 files
+14 directories, 30 files
 ```
 <!-- TREE_END -->
 
