@@ -1,4 +1,4 @@
 # n8n - ignorar persistencia completa excepto workflows
 data/
 credentials.env
-*.env
+
