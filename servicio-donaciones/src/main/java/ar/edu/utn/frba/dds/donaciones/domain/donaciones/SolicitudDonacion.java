@@ -1,17 +1,22 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class SolicitudDonacion {
-    private String descripcionGeneral;
+    private String descripcion;
     private LocalDateTime fechaRegistro;
     private List<ItemDonado> items;
 
-    public SolicitudDonacion(String descripcionGeneral) {
+    public SolicitudDonacion(String descripcion) {
 
-        this.descripcionGeneral = descripcionGeneral;
+        this.descripcion = descripcion;
         this.fechaRegistro = LocalDateTime.now();
 
         this.items = new ArrayList<>();

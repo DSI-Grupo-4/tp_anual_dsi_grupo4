@@ -20,4 +20,8 @@ public class PersonaJuridica extends Persona {
         this.rubro = rubro;
         this.representante = representante;
     }
+
+    public String nombreRepresentante() {
+        return representante.nombreCompleto();
+    }
 }

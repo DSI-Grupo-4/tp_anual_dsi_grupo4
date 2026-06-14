@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.spi.ToolProvider.findFirst;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,4 +29,5 @@ public abstract class Persona {
                 .filter(MedioContacto::esPreferido)
                 .findFirst();
     } //devuelve el medio de contacto preferido en caso de haber
+
 }

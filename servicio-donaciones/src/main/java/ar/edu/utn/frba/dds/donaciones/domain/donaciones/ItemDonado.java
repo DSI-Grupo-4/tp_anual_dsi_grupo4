@@ -26,4 +26,20 @@ public class ItemDonado{
         this.unidadMedida = unidadMedida;
         this.foto = foto;
     }
+
+    public void descontar(Integer cantidadADescontar) {
+        if(cantidadADescontar > cantidad) {
+            throw new RuntimeException("Stock insuficiente");
+        }
+
+        cantidad -= cantidadADescontar;
+    }
+
+    public Boolean sinStock() {
+        return cantidad == 0;
+    }
+
+    public Boolean tieneStock(Integer cantidadSolicitada) {
+        return cantidad >= cantidadSolicitada;
+    }
 }

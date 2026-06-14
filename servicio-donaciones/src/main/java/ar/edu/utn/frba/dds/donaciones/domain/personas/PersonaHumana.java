@@ -5,14 +5,14 @@ public class PersonaHumana extends Persona {
     private String apellido;
     private Integer edad;
     private String documento;
-    private String genero;
+    private Genero genero;
 
     public PersonaHumana(
             String nombre,
             String apellido,
             Integer edad,
             String documento,
-            String genero) {
+            Genero genero) {
         super(); //hereda todos los atributos de la abstracta
 
         this.nombre = nombre;
@@ -20,5 +20,9 @@ public class PersonaHumana extends Persona {
         this.edad = edad;
         this.documento = documento;
         this.genero = genero;
+    }
+
+    public String nombreCompleto() {
+        return nombre + " " + apellido;
     }
 }
