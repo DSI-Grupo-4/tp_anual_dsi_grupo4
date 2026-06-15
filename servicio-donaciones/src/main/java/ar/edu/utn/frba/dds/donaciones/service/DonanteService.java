@@ -35,10 +35,11 @@ public class DonanteService {
             dto.setRazonSocial(juridica.getRazonSocial());
         }
 
+        dto.setId(donante.getId());
         return dto;
     }
 
-    public Donante crearDonanteHumano(PersonaHumanaDTO dto) {
+    public DonanteDTO crearDonanteHumano(PersonaHumanaDTO dto) {
        PersonaHumana persona =
         new PersonaHumana(
                 dto.getNombre(),
@@ -49,7 +50,7 @@ public class DonanteService {
         );
         Donante donante = new Donante(siguienteId++, persona);
         donantes.add(donante);
-        return donante;
+        return convertirADTO(donante);
     }
 
     public List<DonanteDTO> obtenerTodos() {
@@ -58,7 +59,7 @@ public class DonanteService {
                 .toList();
     }
 
-    public Donante crearDonanteJuridico(
+    public DonanteDTO crearDonanteJuridico(
             PersonaJuridicaDTO dto) {
         PersonaJuridica persona =
                 new PersonaJuridica(
@@ -71,14 +72,15 @@ public class DonanteService {
         Donante donante = new Donante(siguienteId++, persona);
 
         donantes.add(donante);
-        return donante;
+        return convertirADTO(donante);
     }
 
-    public Donante buscarPorId(Long id) {
-        return donantes.stream()
+    public DonanteDTO buscarPorId(Long id) {
+        Donante donante = donantes.stream()
                 .filter(d -> d.getId().equals(id))
                 .findFirst()
                 .orElseThrow();
+        return convertirADTO(donante);
     }
 
     public void eliminar(Long id) {

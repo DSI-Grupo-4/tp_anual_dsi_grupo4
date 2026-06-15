@@ -17,7 +17,7 @@ public class EntidadBeneficiariaService {
 
     private Long siguienteId = 1L;
 
-    public EntidadBeneficiaria crear(EntidadBeneficiariaDTO dto) {
+    public EntidadBeneficiariaDTO crear(EntidadBeneficiariaDTO dto) {
         PersonaJuridicaDTO personaJuridicaDTO = dto.getPersonaJuridica();
 
         PersonaJuridica personaJuridica =
@@ -36,14 +36,24 @@ public class EntidadBeneficiariaService {
                 );
         entidades.add(entidad);
 
-        return entidad;
+        return convertirADTO(entidad);
     }
 
-    public List<EntidadBeneficiaria> obtenerTodas() {
-        return entidades;
+    public List<EntidadBeneficiariaDTO> obtenerTodas() {
+        return entidades.stream().map(this::convertirADTO).toList();
     }
 
-    public EntidadBeneficiaria obtenerPorId(Long id) {
+    public EntidadBeneficiariaDTO obtenerPorId(Long id) {
+
+        EntidadBeneficiaria entidad = entidades.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
+
+        return convertirADTO(entidad);
+    }
+
+    public EntidadBeneficiaria buscarEntidad(Long id) {
 
         return entidades.stream()
                 .filter(e -> e.getId().equals(id))
@@ -56,5 +66,33 @@ public class EntidadBeneficiariaService {
         entidades.removeIf(
                 e -> e.getId().equals(id)
         );
+    }
+
+    public EntidadBeneficiariaDTO convertirADTO(
+            EntidadBeneficiaria entidad) {
+
+        EntidadBeneficiariaDTO dto =
+                new EntidadBeneficiariaDTO();
+
+        PersonaJuridicaDTO personaDTO =
+                new PersonaJuridicaDTO();
+
+        personaDTO.setRazonSocial(
+                entidad.getEntidad().getRazonSocial()
+        );
+
+        personaDTO.setTipo(
+                entidad.getEntidad().getTipo()
+        );
+
+        personaDTO.setRubro(
+                entidad.getEntidad().getRubro()
+        );
+
+        dto.setPersonaJuridica(personaDTO);
+        dto.setDescripcion(entidad.getDescripcion());
+        dto.setId(entidad.getId());
+
+        return dto;
     }
 }

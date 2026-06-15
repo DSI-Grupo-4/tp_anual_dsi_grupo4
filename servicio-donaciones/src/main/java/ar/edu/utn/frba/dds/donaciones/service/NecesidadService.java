@@ -106,7 +106,7 @@ public class NecesidadService {
     private void asignarEntidadBeneficiaria(Necesidad necesidad, Long entidadBeneficiariaId) {
         if (entidadBeneficiariaId != null) {
             EntidadBeneficiaria entidad =
-                    entidadBeneficiariaService.obtenerPorId(entidadBeneficiariaId);
+                    entidadBeneficiariaService.buscarEntidad(entidadBeneficiariaId);
 
             entidad.agregarNecesidad(necesidad);
         }

@@ -18,17 +18,17 @@ public class EntidadBeneficiariaController {
     }
 
     @PostMapping
-    public EntidadBeneficiaria crear(@RequestBody EntidadBeneficiariaDTO dto) {
+    public EntidadBeneficiariaDTO crear(@RequestBody EntidadBeneficiariaDTO dto) {
         return entidadService.crear(dto);
     }
 
     @GetMapping
-    public List<EntidadBeneficiaria> obtenerTodas() {
+    public List<EntidadBeneficiariaDTO> obtenerTodas() {
         return entidadService.obtenerTodas();
     }
 
     @GetMapping("/{id}")
-    public EntidadBeneficiaria obtenerPorId(
+    public EntidadBeneficiariaDTO obtenerPorId(
             @PathVariable Long id) {
 
         return entidadService.obtenerPorId(id);

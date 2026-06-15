@@ -22,13 +22,13 @@ public class DonanteController {
     }
 
     @PostMapping("/humanas")
-    public Donante crearDonanteHumano(
+    public DonanteDTO crearDonanteHumano(
             @RequestBody PersonaHumanaDTO dto) {
         return donanteService.crearDonanteHumano(dto);
     }
 
     @PostMapping("/juridicas")
-    public Donante crearDonanteJuridico(
+    public DonanteDTO crearDonanteJuridico(
             @RequestBody PersonaJuridicaDTO dto) {
         return donanteService.crearDonanteJuridico(dto);
     }
@@ -39,7 +39,7 @@ public class DonanteController {
     }
 
     @GetMapping("/{id}")
-    public Donante obtenerPorId(
+    public DonanteDTO obtenerPorId(
             @PathVariable Long id) {
                 return donanteService.buscarPorId(id);
     }
