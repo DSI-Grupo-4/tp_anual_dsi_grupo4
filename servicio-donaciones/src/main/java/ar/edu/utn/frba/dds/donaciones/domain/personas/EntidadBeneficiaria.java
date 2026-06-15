@@ -11,12 +11,14 @@ import java.util.List;
 @Getter
 @Setter
 public class EntidadBeneficiaria {
+    private Long id;
     private PersonaJuridica entidad;
     private String descripcion;
     private List<Necesidad> necesidades;
     private List<Donacion> donacionesRecibidas;
 
-    public EntidadBeneficiaria(PersonaJuridica entidad, String descripcion) {
+    public EntidadBeneficiaria(Long id, PersonaJuridica entidad, String descripcion) {
+        this.id = id;
         this.entidad = entidad;
         this.descripcion = descripcion;
         this.necesidades = new ArrayList<>();
