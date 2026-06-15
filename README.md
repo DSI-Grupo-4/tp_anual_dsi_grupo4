@@ -57,7 +57,7 @@
 │   ├── README.md
 │   ├── docker-compose.yml
 │   └── workflows
-│       └── servicio_incentivos.json
+│       └── servicio-incentivos.json
 ├── servicio-logistica
 │   └── pom.xml
 └── servicio-notificaciones
