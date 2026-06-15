@@ -13,17 +13,20 @@ public abstract class Necesidad {
     private Integer cantidadRequerida;
     private Integer cantidadRecibida;
     private EntidadBeneficiaria entidadBeneficiaria;
+    private Long id;
 
     public Necesidad(
-            String descripcion,
-            Subcategoria subcategoria,
-            Integer cantidadRequerida) {
+        Long id,
+        String descripcion,
+        Subcategoria subcategoria,
+        Integer cantidadRequerida) {
 
-        this.descripcion = descripcion;
-        this.subcategoria = subcategoria;
-        this.cantidadRequerida = cantidadRequerida;
-        this.cantidadRecibida = 0;
-    }
+    this.id = id;
+    this.descripcion = descripcion;
+    this.subcategoria = subcategoria;
+    this.cantidadRequerida = cantidadRequerida;
+    this.cantidadRecibida = 0;
+}
 
     public boolean satisfecha() {
         return cantidadRecibida >= cantidadRequerida;

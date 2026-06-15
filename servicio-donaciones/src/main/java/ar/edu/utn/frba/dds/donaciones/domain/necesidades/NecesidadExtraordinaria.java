@@ -6,17 +6,17 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class NecesidadRecurrente extends Necesidad {
-    private Periodicidad periodicidad;
+public class NecesidadExtraordinaria extends Necesidad {
+    private TipoExtraordinario tipoExtraordinario;
 
-    public NecesidadRecurrente(
+    public NecesidadExtraordinaria(
             Long id,
             String descripcion,
             Subcategoria subcategoria,
             Integer cantidadRequerida,
-            Periodicidad periodicidad) {
+            TipoExtraordinario tipoExtraordinario) {
 
         super(id, descripcion, subcategoria, cantidadRequerida);
-        this.periodicidad = periodicidad;
+        this.tipoExtraordinario = tipoExtraordinario;
     }
 }
