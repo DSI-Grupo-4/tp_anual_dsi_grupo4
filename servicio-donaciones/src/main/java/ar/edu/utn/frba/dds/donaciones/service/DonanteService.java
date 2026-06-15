@@ -15,6 +15,8 @@ import java.util.List;
 public class DonanteService {
     private List<Donante> donantes = new ArrayList<>();
 
+    private Long siguienteId = 1L; //por ahora asignamos ids, despues con la persistencia esto cambia
+
     public DonanteDTO convertirADTO(Donante donante) {
 
         DonanteDTO dto = new DonanteDTO();
@@ -45,7 +47,7 @@ public class DonanteService {
                 dto.getDocumento(),
                 dto.getGenero()
         );
-        Donante donante = new Donante(persona);
+        Donante donante = new Donante(siguienteId++, persona);
         donantes.add(donante);
         return donante;
     }
@@ -66,9 +68,23 @@ public class DonanteService {
                         null
                 );
 
-        Donante donante = new Donante(persona);
+        Donante donante = new Donante(siguienteId++, persona);
 
         donantes.add(donante);
         return donante;
+    }
+
+    public Donante buscarPorId(Long id) {
+        return donantes.stream()
+                .filter(d -> d.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    public void eliminar(Long id) {
+
+        donantes.removeIf(
+                d -> d.getId().equals(id)
+        );
     }
 }

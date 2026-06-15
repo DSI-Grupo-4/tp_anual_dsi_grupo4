@@ -37,4 +37,16 @@ public class DonanteController {
     public List<DonanteDTO> obtenerTodos() {
         return donanteService.obtenerTodos();
     }
+
+    @GetMapping("/{id}")
+    public Donante obtenerPorId(
+            @PathVariable Long id) {
+                return donanteService.buscarPorId(id);
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(
+            @PathVariable Long id) {
+        donanteService.eliminar(id);
+    }
 }

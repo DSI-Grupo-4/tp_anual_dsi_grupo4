@@ -11,11 +11,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Donante {
+    private Long id;
     private Persona persona;
     private List<Donacion> donaciones;
     private LocalDate ultimaActividad;
 
-    public Donante(Persona persona) {
+    public Donante(Long id, Persona persona) {
+        this.id = id;
         this.persona = persona;
         this.ultimaActividad = getUltimaActividad();
         this.donaciones = new ArrayList<>();
