@@ -1,13 +1,16 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
-import org.springframework.cglib.core.Local;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class Donacion {
     private Integer cantidadAsignada;
     private Necesidad necesidadAsignada;
@@ -23,6 +26,14 @@ public class Donacion {
         this.necesidadAsignada = necesidadAsignada;
         this.entidadBeneficiaria = entidadBeneficiaria;
         this.fechaCreacion = LocalDateTime.now();
+        this.estadoActual = EstadoDonacion.ASIGNADA;
+        this.historialEstados = new ArrayList<>();
+        this.historialEstados.add(
+                new TimeStamp(
+                        EstadoDonacion.ASIGNADA,
+                        "Donacion asignada"
+                )
+        );
     }
 
     public void asignarA(Necesidad necesidad) {
