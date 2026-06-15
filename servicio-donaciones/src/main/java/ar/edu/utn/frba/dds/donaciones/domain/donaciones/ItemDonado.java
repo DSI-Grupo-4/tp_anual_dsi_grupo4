@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ItemDonado{
+    private Long id;
     private String descripcion;
     private Subcategoria subcategoria;
     private Integer cantidad;
@@ -14,12 +15,14 @@ public class ItemDonado{
     private String foto;
 
     public ItemDonado(
+            Long id,
             String descripcion,
             Subcategoria subcategoria,
             Integer cantidad,
             UnidadMedida unidadMedida,
             String foto) {
 
+        this.id = id;
         this.descripcion = descripcion;
         this.subcategoria = subcategoria;
         this.cantidad = cantidad;

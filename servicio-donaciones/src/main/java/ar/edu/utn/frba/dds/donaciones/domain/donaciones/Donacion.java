@@ -12,6 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class Donacion {
+    private Long id;
     private Integer cantidadAsignada;
     private Necesidad necesidadAsignada;
     private ItemDonado itemDonado;
@@ -20,18 +21,19 @@ public class Donacion {
     private List<TimeStamp> historialEstados;
     private EntidadBeneficiaria entidadBeneficiaria;
 
-    public Donacion(ItemDonado itemDonado, Integer cantidadAsignada, Necesidad necesidadAsignada, EntidadBeneficiaria entidadBeneficiaria) {
+    public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada, Necesidad necesidadAsignada, EntidadBeneficiaria entidadBeneficiaria) {
+        this.id = id;
         this.itemDonado = itemDonado;
         this.cantidadAsignada = cantidadAsignada;
         this.necesidadAsignada = necesidadAsignada;
         this.entidadBeneficiaria = entidadBeneficiaria;
         this.fechaCreacion = LocalDateTime.now();
-        this.estadoActual = EstadoDonacion.ASIGNADA;
+        this.estadoActual = EstadoDonacion.EN_DEPOSITO;
         this.historialEstados = new ArrayList<>();
         this.historialEstados.add(
                 new TimeStamp(
-                        EstadoDonacion.ASIGNADA,
-                        "Donacion asignada"
+                        EstadoDonacion.EN_DEPOSITO,
+                        "Donacion recibida en depósito"
                 )
         );
     }
@@ -57,4 +59,38 @@ public class Donacion {
         cambiarEstado(EstadoDonacion.ENTREGADA, "Entrega confirmada");
     }
 
+    public void asignar() {
+        cambiarEstado(
+                EstadoDonacion.ASIGNADA,
+                "Asignación realizada"
+        );
+    }
+
+    public void listaParaEntregar() {
+        cambiarEstado(
+                EstadoDonacion.LISTA_PARA_ENTREGAR,
+                "Ruta planificada"
+        );
+    }
+
+    public void iniciarTraslado() {
+        cambiarEstado(
+                EstadoDonacion.EN_TRASLADO,
+                "Camión inició recorrido"
+        );
+    }
+
+    public void marcarFallida(String motivo) {
+        cambiarEstado(
+                EstadoDonacion.ENTREGA_FALLIDA,
+                motivo
+        );
+    }
+
+    public void vencer(String motivo) {
+        cambiarEstado(
+                EstadoDonacion.VENCIDA,
+                motivo
+        );
+    }
 }

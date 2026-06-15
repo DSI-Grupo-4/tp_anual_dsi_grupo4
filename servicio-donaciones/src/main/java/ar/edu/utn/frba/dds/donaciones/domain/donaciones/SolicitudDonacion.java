@@ -28,6 +28,6 @@ public class SolicitudDonacion {
 
     public List<Donacion> segmentar(){
         List<Donacion> Donacion = List.of();
-        return Donacion;
+        return Donacion; //TODO proximas entregas
     }
 }

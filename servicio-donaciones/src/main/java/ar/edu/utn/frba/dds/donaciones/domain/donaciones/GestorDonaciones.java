@@ -5,10 +5,14 @@ import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
+@Setter
 public class GestorDonaciones {
 
     private Deposito deposito;
@@ -46,6 +50,7 @@ public class GestorDonaciones {
     }
 
     public Donacion asignarDonacion(
+            Long id,
             ItemDonado item,
             Necesidad necesidad,
             Integer cantidad) {
@@ -56,6 +61,7 @@ public class GestorDonaciones {
 
         Donacion donacion =
                 new Donacion(
+                        id,
                         item,
                         cantidad,
                         necesidad,
