@@ -1,5 +1,10 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class PersonaHumana extends Persona {
     private String nombre;
     private String apellido;
