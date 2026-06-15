@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,19 +14,31 @@ public class EntidadBeneficiaria {
     private PersonaJuridica entidad;
     private String descripcion;
     private List<Necesidad> necesidades;
-    private Integer ayudasRecibidas;
+    private List<Donacion> donacionesRecibidas;
 
     public EntidadBeneficiaria(PersonaJuridica entidad, String descripcion) {
         this.entidad = entidad;
         this.descripcion = descripcion;
         this.necesidades = new ArrayList<>();
+        this.donacionesRecibidas = new ArrayList<>();
     }
 
     public void agregarNecesidad(Necesidad necesidad) {
+        necesidad.setEntidadBeneficiaria(this);
         this.necesidades.add(necesidad);
     }
 
-    public void registrarAyuda() {
-        ayudasRecibidas++;
+    public void registrarAyuda(Donacion donacion) {
+        donacionesRecibidas.add(donacion);
+    }
+
+    public Integer cantidadAyudasRecibidas() {
+        return donacionesRecibidas.size();
+    }
+
+    public List<Necesidad> necesidadesPendientes() {
+        return necesidades.stream()
+                .filter(n -> !n.satisfecha())
+                .toList();
     }
 }
