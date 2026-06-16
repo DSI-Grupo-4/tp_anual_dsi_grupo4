@@ -47,7 +47,7 @@ public class Donacion {
         return necesidadAsignada != null;
     }
 
-    private void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion) {
+    public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion) {
         this.estadoActual = nuevoEstado;
 
         historialEstados.add(

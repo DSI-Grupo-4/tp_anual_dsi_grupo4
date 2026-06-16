@@ -1,6 +1,8 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
+import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,5 +44,20 @@ public class DonacionController {
             @PathVariable Long id) {
 
         donacionService.eliminar(id);
+    }
+
+    @PatchMapping("/{id}/estado")
+    public DonacionDTO cambiarEstado(
+            @PathVariable Long id,
+            @RequestBody CambioEstadoDTO dto) {
+
+        return donacionService.cambiarEstado(id, dto);
+    }
+
+    @GetMapping("/{id}/historial")
+    public List<TimeStampDTO> historial(
+            @PathVariable Long id) {
+
+        return donacionService.obtenerHistorial(id);
     }
 }

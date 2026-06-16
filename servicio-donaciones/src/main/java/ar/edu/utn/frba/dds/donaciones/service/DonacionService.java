@@ -2,9 +2,12 @@ package ar.edu.utn.frba.dds.donaciones.service;
 
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.TimeStamp;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -119,6 +122,56 @@ public class DonacionService {
                             .getId()
             );
         }
+
+        return dto;
+    }
+
+    public DonacionDTO cambiarEstado(
+            Long id,
+            CambioEstadoDTO dto) {
+        Donacion donacion = buscarDominioPorId(id);
+
+        donacion.cambiarEstado(
+                dto.getEstado(),
+                dto.getJustificacion()
+        );
+        return convertirADTO(donacion);
+    }
+
+    private Donacion buscarDominioPorId(Long id) {
+        return donaciones.stream()
+                .filter(n -> n.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    public List<TimeStampDTO> obtenerHistorial(Long id) {
+
+        Donacion donacion =
+                buscarDominioPorId(id);
+
+        return donacion.getHistorialEstados()
+                .stream()
+                .map(this::convertirTimeStampADTO)
+                .toList();
+    }
+
+    private TimeStampDTO convertirTimeStampADTO(
+            TimeStamp timeStamp) {
+
+        TimeStampDTO dto = new TimeStampDTO();
+
+        dto.setEstado(
+                timeStamp.getEstado()
+        );
+
+        dto.setFecha(
+                timeStamp.getFecha()
+        );
+
+        dto.setJustificacion(
+                timeStamp.getJustificacion()
+        );
 
         return dto;
     }
