@@ -96,7 +96,7 @@ public class NecesidadService {
         necesidades.removeIf(n -> n.getId().equals(id));
     }
 
-    private Necesidad buscarDominioPorId(Long id) {
+    public Necesidad buscarDominioPorId(Long id) {
         return necesidades.stream()
                 .filter(n -> n.getId().equals(id))
                 .findFirst()
