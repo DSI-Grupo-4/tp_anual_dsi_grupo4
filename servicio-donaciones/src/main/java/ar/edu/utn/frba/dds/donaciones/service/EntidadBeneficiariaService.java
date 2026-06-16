@@ -95,4 +95,33 @@ public class EntidadBeneficiariaService {
 
         return dto;
     }
+
+    public EntidadBeneficiariaDTO actualizar(
+            Long id,
+            EntidadBeneficiariaDTO dto) {
+
+        EntidadBeneficiaria entidad =
+                buscarEntidad(id);
+
+        entidad.setDescripcion(
+                dto.getDescripcion()
+        );
+
+        PersonaJuridica persona =
+                entidad.getEntidad();
+
+        persona.setRazonSocial(
+                dto.getPersonaJuridica().getRazonSocial()
+        );
+
+        persona.setTipo(
+                dto.getPersonaJuridica().getTipo()
+        );
+
+        persona.setRubro(
+                dto.getPersonaJuridica().getRubro()
+        );
+
+        return convertirADTO(entidad);
+    }
 }

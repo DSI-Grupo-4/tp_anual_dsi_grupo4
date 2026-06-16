@@ -89,4 +89,68 @@ public class DonanteService {
                 d -> d.getId().equals(id)
         );
     }
+
+    private Donante buscarPorIdDominio(Long id) {
+
+        return donantes.stream()
+                .filter(d -> d.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
+    }
+
+    public DonanteDTO actualizarHumano(
+            Long id,
+            PersonaHumanaDTO dto) {
+
+        Donante donante = buscarPorIdDominio(id);
+
+        PersonaHumana persona =
+                (PersonaHumana) donante.getPersona();
+
+        persona.setNombre(
+                dto.getNombre()
+        );
+
+        persona.setApellido(
+                dto.getApellido()
+        );
+
+        persona.setEdad(
+                dto.getEdad()
+        );
+
+        persona.setDocumento(
+                dto.getDocumento()
+        );
+
+        persona.setGenero(
+                dto.getGenero()
+        );
+
+        return convertirADTO(donante);
+    }
+
+    public DonanteDTO actualizarJuridico(
+            Long id,
+            PersonaJuridicaDTO dto) {
+
+        Donante donante = buscarPorIdDominio(id);
+
+        PersonaJuridica persona =
+                (PersonaJuridica) donante.getPersona();
+
+        persona.setRazonSocial(
+                dto.getRazonSocial()
+        );
+
+        persona.setTipo(
+                dto.getTipo()
+        );
+
+        persona.setRubro(
+                dto.getRubro()
+        );
+
+        return convertirADTO(donante);
+    }
 }

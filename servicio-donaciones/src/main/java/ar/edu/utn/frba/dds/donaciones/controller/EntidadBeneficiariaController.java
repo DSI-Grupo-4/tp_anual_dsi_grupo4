@@ -40,4 +40,12 @@ public class EntidadBeneficiariaController {
 
         entidadService.eliminar(id);
     }
+
+    @PutMapping("/{id}")
+    public EntidadBeneficiariaDTO actualizar(
+            @PathVariable Long id,
+            @RequestBody EntidadBeneficiariaDTO dto) {
+
+        return entidadService.actualizar(id, dto);
+    }
 }

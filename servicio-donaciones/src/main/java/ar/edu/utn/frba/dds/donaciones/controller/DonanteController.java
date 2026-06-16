@@ -49,4 +49,20 @@ public class DonanteController {
             @PathVariable Long id) {
         donanteService.eliminar(id);
     }
+
+    @PutMapping("/humanas/{id}")
+    public DonanteDTO actualizarHumano(
+            @PathVariable Long id,
+            @RequestBody PersonaHumanaDTO dto) {
+
+        return donanteService.actualizarHumano(id, dto);
+    }
+
+    @PutMapping("/juridicas/{id}")
+    public DonanteDTO actualizarJuridico(
+            @PathVariable Long id,
+            @RequestBody PersonaJuridicaDTO dto) {
+
+        return donanteService.actualizarJuridico(id, dto);
+    }
 }
