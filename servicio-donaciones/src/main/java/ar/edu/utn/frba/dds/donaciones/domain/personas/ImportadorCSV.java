@@ -5,10 +5,10 @@ import java.util.*;
 
 public class ImportadorCSV {
 
-    private List<Donante> donantesRegistrados;
+    private List<Donante> registradosporCSV;
 
-    FileReader archCSV=null;
-    CSVReader csvReader=null;
+    private FileReader archCSV=null;
+    private CSVReader csvReader=null;
 
     public void importar(String rutaArchivo){
         try{
@@ -17,7 +17,7 @@ public class ImportadorCSV {
         String[] fila=null;
         while ((fila=csvReader.readNext())!=null){
             String[] datosDonanteT=fila;
-            donantesRegistrados.add(registrarDonante(datosDonanteT));
+            registradosporCSV.add(registrarDonante(datosDonanteT));
         }
         }
         finally{
@@ -26,7 +26,7 @@ public class ImportadorCSV {
     }
 
     public Donante registrarDonante(String[] datoscsv){
-        for(Donante donante: donantesRegistrados){
+        for(Donante donante: super.getdonantesRegistrados()){
             if (donante.personaAsociada.Medios.contains(datoscsv[4])){ //lo asocia con la fila donde se ubica mail, en este caso la quinta
                 if (datoscsv[0] =="HUMANA")
                     {
@@ -48,11 +48,11 @@ public class ImportadorCSV {
                     }   
                 }
                 else
-                nuevodonante=generarDonante(datoscsv);
+                nuevodonante=generarnuevoDonante(datoscsv);
             }    
         }
 
-    public Donante generarDonante(String[] datos){
+    public Donante generarnuevoDonante(String[] datos){
         Donante nuevodonante= new Donante();
         if (datos[0] =="HUMANA")
                 {
@@ -69,4 +69,17 @@ public class ImportadorCSV {
                 }
         return nuevoDonante;
         }
+    
+    public static void read(String ruta) {
+        String archivoCSV=ruta;
+
+        try (CSVReader csvReader = new CSVReader(new FileReader(archivoCSV))) {
+            String[] fila;
+            while ((fila = csvReader.readNext()) != null) {
+                System.out.println("Columna 1: " + fila[0] + " | Columna 2: " + fila[1]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
