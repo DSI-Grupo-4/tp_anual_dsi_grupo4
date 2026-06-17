@@ -3,9 +3,7 @@ import com.opencsv.*;
 import java.io.*;
 import java.util.*;
 
-public class ImportadorCSV {
-
-    private List<Donante> registradosporCSV;
+public class ImportadorCSV extends Importador{
 
     private FileReader archCSV=null;
     private CSVReader csvReader=null;
@@ -17,7 +15,7 @@ public class ImportadorCSV {
         String[] fila=null;
         while ((fila=csvReader.readNext())!=null){
             String[] datosDonanteT=fila;
-            registradosporCSV.add(registrarDonante(datosDonanteT));
+            listaimportador.add(registrarDonante(datosDonanteT));
         }
         }
         finally{

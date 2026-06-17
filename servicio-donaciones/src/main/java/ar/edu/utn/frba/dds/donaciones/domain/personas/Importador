@@ -1,0 +1,13 @@
+package ar.edu.utn.frba.dds.donaciones.domain.personas;
+import com.opencsv.*;
+import java.io.*;
+import java.util.*;
+
+public abstract class Importador {
+    private nombre;
+    private List<Donante> listaimportador;
+    
+    public void read(ruta){
+        self.read(ruta);
+    }
+}
