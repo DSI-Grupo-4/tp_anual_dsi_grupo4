@@ -1,9 +1,12 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 import com.opencsv.*;
 import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
+
 public class ImportadorCSV {
+
+    private List<Donante> donantesRegistrados;
+
     FileReader archCSV=null;
     CSVReader csvReader=null;
 
@@ -13,9 +16,8 @@ public class ImportadorCSV {
         csvReader = new CSVReader(archCSV);
         String[] fila=null;
         while ((fila=csvReader.readNext())!=null){
-                System.out.println(fila[0]
-              + " | " + fila[1]
-              + " |  " + fila[2]);
+            String[] datosDonanteT=fila;
+            donantesRegistrados.add(registrarDonante(datosDonanteT));
         }
         }
         finally{
@@ -23,7 +25,48 @@ public class ImportadorCSV {
         }
     }
 
-    public registrarDonante(String email){
+    public Donante registrarDonante(String[] datoscsv){
+        for(Donante donante: donantesRegistrados){
+            if (donante.personaAsociada.Medios.contains(datoscsv[4])){ //lo asocia con la fila donde se ubica mail, en este caso la quinta
+                if (datoscsv[0] =="HUMANA")
+                    {
+                        donante.personaAsociada.DNI=datoscsv[2];
+                        donante.personaAsociada.Nombre=datoscsv[3];
+                        donante.personaAsociada.removeMedio(EMAIL,donante.medios.value);
+                        donante.personaAsociada.addMedio(EMAIL,datoscsv[4]);
+                        donante.personaAsociada.addMedio(TELEFONO,datoscsv[5]);
+                        break;
+                    }
+                if (datoscsv[0]=="JURIDICA")
+                    {
+                        donante.personaAsociada.representante.DNI=datoscsv[2]; //solo permitimos un representante válido en caso de donadores
+                        donante.personaAsociada.RazonSocial=datoscsv[2];
+                        donante.personaAsociada.removeMedio(EMAIL,donante.medios.value);
+                        donante.personaAsociada.addMedio(EMAIL,datoscsv[4]);
+                        donante.personaAsociada.addMedio(TELEFONO,datoscsv[5]);
+                        break;
+                    }   
+                }
+                else
+                nuevodonante=generarDonante(datoscsv);
+            }    
+        }
 
-    }
+    public Donante generarDonante(String[] datos){
+        Donante nuevodonante= new Donante();
+        if (datos[0] =="HUMANA")
+                {
+                    nuevodonante.personaAsociada.DNI=datoscsv[2];
+                    nuevodonante.personaAsociada.Nombre=datoscsv[3];
+                    nuevodonante.personaAsociada.addMedio(EMAIL,datoscsv[4]);
+                    nuevodonante.personaAsociada.addMedio(TELEFONO,datoscsv[5]);
+                }
+        if (datos[0]=="JURIDICA"){
+                    nuevodonante.personaAsociada.representante.DNI=datoscsv[2]; //solo permitimos un representante válido en caso de donadores
+                    nuevodonante.personaAsociada.RazonSocial=datoscsv[2];
+                    nuevodonante.personaAsociada.addMedio(EMAIL,datoscsv[4]);
+                    nuevodonante.personaAsociada.addMedio(TELEFONO,datoscsv[5]);   
+                }
+        return nuevoDonante;
+        }
 }
