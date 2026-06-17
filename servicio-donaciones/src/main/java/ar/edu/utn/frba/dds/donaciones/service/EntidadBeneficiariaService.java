@@ -124,4 +124,8 @@ public class EntidadBeneficiariaService {
 
         return convertirADTO(entidad);
     }
+
+        public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
+           return entidades;
+        }
 }

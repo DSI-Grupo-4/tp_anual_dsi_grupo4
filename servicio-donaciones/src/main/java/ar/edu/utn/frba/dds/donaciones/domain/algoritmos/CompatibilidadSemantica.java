@@ -19,18 +19,22 @@ public class CompatibilidadSemantica implements AlgoritmoAsignacion {
                 .toList();
     }
 
-    private Integer puntaje(
-            EntidadBeneficiaria entidad,
-            ItemDonado item) {
-        return (int) entidad.getNecesidades()
+        private Integer puntaje(
+                EntidadBeneficiaria entidad,
+                ItemDonado item) {
+
+         return (int) entidad.getNecesidades()
                 .stream()
                 .filter(n -> !n.satisfecha())
                 .filter(n ->
-                        n.getSubcategoria()
-                                .equals(item.getSubcategoria())
+                        n.getSubcategoria() != null &&
+                        item.getSubcategoria() != null &&
+                        n.getSubcategoria().getNombre().equalsIgnoreCase(
+                                item.getSubcategoria().getNombre()
+                        )
                 )
                 .count();
-    }
+        }
     //si una entidad tiene una necesidad pendiente de la misma subcategoria, suma puntos
 
 }
