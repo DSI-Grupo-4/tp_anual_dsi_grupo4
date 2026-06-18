@@ -391,16 +391,27 @@
     },
     {
       "parameters": {
-        "additionalFields": {}
+        "sendTo": "tomydurruty@gmail.com",
+        "subject": "=REPORTE MENSUAL DONANTES",
+        "emailType": "text",
+        "message": "={{ $json.report }}",
+        "options": {}
       },
-      "type": "n8n-nodes-base.linkedIn",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
       "position": [
-        1408,
-        16
+        1488,
+        0
       ],
-      "id": "3ca70dd2-a48e-4121-b63f-894cf5017dc1",
-      "name": "Create a post"
+      "id": "f848d1c8-c522-4aac-945e-04c0d99e3772",
+      "name": "Send a message",
+      "webhookId": "803ac464-5a72-4329-9840-97a6dbd1f4f8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "2usCYNKEpB5YlmPJ",
+          "name": "Gmail account"
+        }
+      }
     }
   ],
   "pinData": {
@@ -745,7 +756,7 @@
       "main": [
         [
           {
-            "node": "Create a post",
+            "node": "Send a message",
             "type": "main",
             "index": 0
           }
@@ -759,7 +770,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "e40767a1-8393-4448-bfce-5f614aac0a7b",
+  "versionId": "0c27cdc7-80ff-45a3-a891-3c0877cc3455",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "8a309ead3a26c1c2b292bc9d2324a1be1f98c394a20299cfe74f55adee6492bb"
