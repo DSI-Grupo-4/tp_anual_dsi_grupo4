@@ -1,0 +1,770 @@
+{
+  "name": "Workflow Ranking",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -384,
+        -48
+      ],
+      "id": "97376ff3-b7c2-4a34-9a61-ca6b285afb43",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -176,
+        -48
+      ],
+      "id": "325d1954-c199-47fb-aba6-3b2a96158965",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items.map(i => i.json);\n\n// 1. Agrupar por donante\nconst grouped = {};\n\nfor (const d of data) {\n  if (!grouped[d.donanteId]) {\n    grouped[d.donanteId] = {\n      donanteId: d.donanteId,\n      nombre: d.nombre,\n      misiones: 0,\n      impacto: 0\n    };\n  }\n\n  grouped[d.donanteId].misiones += 1;\n  grouped[d.donanteId].impacto += d.impacto;\n}\n\n// 2. Convertir a array\nlet result = Object.values(grouped);\n\n// 3. Ordenar ranking\nresult.sort((a, b) => b.impacto - a.impacto);\n\n// 4. Agregar rank\nresult = result.map((r, index) => ({\n  ...r,\n  rank: index + 1\n}));\n\n// 5. agregar mes + sheetName\nconst mes = new Date().toISOString().slice(0,7);\nconst sheetName = `ranking_${mes}`;\n\nreturn result.map(r => ({\n  json: {\n    ...r,\n    mes,\n    sheetName\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        32,
+        -48
+      ],
+      "id": "5665b6cc-54cf-4674-bb9e-89d7c561608a",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b1f2ea49-99a5-4fcf-8ead-8f9564dc6882",
+              "leftValue": "={{ $json.rank }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "87692a7f-6cc8-44ef-bd54-76492bcf7abc",
+              "leftValue": "={{ $json.rank }}",
+              "rightValue": 2,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "43f2e50f-e85e-4978-88e1-f617d2e8e805",
+              "leftValue": "={{ $json.rank }}",
+              "rightValue": 3,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        16
+      ],
+      "id": "568f35d4-69e9-468f-9ebe-8186e4822917",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg",
+          "mode": "list",
+          "cachedResultName": "ranking-donantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "={{ $json.sheetId }}",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "spreadsheetId",
+              "displayName": "spreadsheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sheetId",
+              "displayName": "sheetId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "index",
+              "displayName": "index",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sheetType",
+              "displayName": "sheetType",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "gridProperties",
+              "displayName": "gridProperties",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "donanteId",
+              "displayName": "donanteId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "misiones",
+              "displayName": "misiones",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "impacto",
+              "displayName": "impacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "rank",
+              "displayName": "rank",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "mes",
+              "displayName": "mes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sheetName",
+              "displayName": "sheetName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        784,
+        16
+      ],
+      "id": "f8bbcc06-5408-498b-ae56-6b3a54a1aebf",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ohTUXQfxhswyHQDw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "documentId": {
+          "__rl": true,
+          "value": "1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg",
+          "mode": "list",
+          "cachedResultName": "ranking-donantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg/edit?usp=drivesdk"
+        },
+        "title": "={{ $json.sheetName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        192,
+        -144
+      ],
+      "id": "68f21af4-e794-4e61-8742-249c3b90dc33",
+      "name": "Create sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ohTUXQfxhswyHQDw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a331f92f-0841-4589-bf5b-30cd8a51df3f",
+              "name": "donanteId",
+              "value": "={{ $json.donanteId }}",
+              "type": "number"
+            },
+            {
+              "id": "65aa7ccb-5980-434f-81f0-71af1cd63748",
+              "name": "nombre",
+              "value": "={{ $json.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "6b10babd-5206-49b0-b8cc-3fe3515546ca",
+              "name": "misiones",
+              "value": "={{ $json.misiones }}",
+              "type": "number"
+            },
+            {
+              "id": "d0adc31d-5ac2-4a86-a1e4-517382c68f0c",
+              "name": "impacto",
+              "value": "={{ $json.impacto }}",
+              "type": "number"
+            },
+            {
+              "id": "048c48bf-2eb3-458b-84b2-b40995a177d0",
+              "name": "rank",
+              "value": "={{ $json.rank }}",
+              "type": "number"
+            },
+            {
+              "id": "4078fe19-f5c7-404e-96da-6216db0d979d",
+              "name": "mes",
+              "value": "={{ $json.mes }}",
+              "type": "string"
+            },
+            {
+              "id": "8dbb48d8-5615-4d82-b6fd-2423177808fb",
+              "name": "sheetName",
+              "value": "={{ $json.sheetName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        192,
+        80
+      ],
+      "id": "b24a35ac-6bfe-4f6d-85bd-93bc57feb750",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "e1bbfa1c-0c8d-445e-8029-643bed3e9575",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "const top3 = items;\n\nconst report = `\n🏆 REPORTE MENSUAL DE DONANTES\n\n🥇 1. ${top3[0].json.nombre} - ${top3[0].json.impacto} pts\n🥈 2. ${top3[1].json.nombre} - ${top3[1].json.impacto} pts\n🥉 3. ${top3[2].json.nombre} - ${top3[2].json.impacto} pts\n\n📊 Total donantes evaluados: ${top3.length}\n📅 Mes: ${new Date().toISOString().slice(0,7)}\n\nGracias a todos los participantes 💙\n`;\n\nreturn [\n  {\n    json: {\n      report\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        16
+      ],
+      "id": "0391dc5b-12b3-4387-aa39-fd674b6784b8",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        16
+      ],
+      "id": "3ca70dd2-a48e-4121-b63f-894cf5017dc1",
+      "name": "Create a post"
+    }
+  ],
+  "pinData": {
+    "HTTP Request": [
+      {
+        "json": {
+          "donanteId": 1,
+          "nombre": "Tomas",
+          "donaciones": 12,
+          "impacto": 340
+        }
+      },
+      {
+        "json": {
+          "donanteId": 2,
+          "nombre": "Ana",
+          "donaciones": 8,
+          "impacto": 210
+        }
+      },
+      {
+        "json": {
+          "donanteId": 3,
+          "nombre": "Lucia",
+          "donaciones": 15,
+          "impacto": 420
+        }
+      },
+      {
+        "json": {
+          "donanteId": 4,
+          "nombre": "Mateo",
+          "donaciones": 5,
+          "impacto": 130
+        }
+      },
+      {
+        "json": {
+          "donanteId": 5,
+          "nombre": "Sofia",
+          "donaciones": 20,
+          "impacto": 560
+        }
+      },
+      {
+        "json": {
+          "donanteId": 6,
+          "nombre": "Javier",
+          "donaciones": 7,
+          "impacto": 190
+        }
+      },
+      {
+        "json": {
+          "donanteId": 7,
+          "nombre": "Valentina",
+          "donaciones": 11,
+          "impacto": 300
+        }
+      },
+      {
+        "json": {
+          "donanteId": 8,
+          "nombre": "Diego",
+          "donaciones": 3,
+          "impacto": 90
+        }
+      },
+      {
+        "json": {
+          "donanteId": 9,
+          "nombre": "Camila",
+          "donaciones": 14,
+          "impacto": 390
+        }
+      },
+      {
+        "json": {
+          "donanteId": 10,
+          "nombre": "Nicolas",
+          "donaciones": 9,
+          "impacto": 250
+        }
+      },
+      {
+        "json": {
+          "donanteId": 11,
+          "nombre": "Martina",
+          "donaciones": 18,
+          "impacto": 510
+        }
+      },
+      {
+        "json": {
+          "donanteId": 12,
+          "nombre": "Lucas",
+          "donaciones": 6,
+          "impacto": 160
+        }
+      },
+      {
+        "json": {
+          "donanteId": 13,
+          "nombre": "Julieta",
+          "donaciones": 10,
+          "impacto": 280
+        }
+      },
+      {
+        "json": {
+          "donanteId": 14,
+          "nombre": "Fernando",
+          "donaciones": 4,
+          "impacto": 110
+        }
+      },
+      {
+        "json": {
+          "donanteId": 15,
+          "nombre": "Agustina",
+          "donaciones": 16,
+          "impacto": 450
+        }
+      },
+      {
+        "json": {
+          "donanteId": 16,
+          "nombre": "Emiliano",
+          "donaciones": 13,
+          "impacto": 360
+        }
+      },
+      {
+        "json": {
+          "donanteId": 17,
+          "nombre": "Paula",
+          "donaciones": 2,
+          "impacto": 60
+        }
+      },
+      {
+        "json": {
+          "donanteId": 18,
+          "nombre": "Sebastian",
+          "donaciones": 17,
+          "impacto": 480
+        }
+      },
+      {
+        "json": {
+          "donanteId": 19,
+          "nombre": "Florencia",
+          "donaciones": 9,
+          "impacto": 240
+        }
+      },
+      {
+        "json": {
+          "donanteId": 20,
+          "nombre": "Manuel",
+          "donaciones": 21,
+          "impacto": 600
+        }
+      },
+      {
+        "json": {
+          "donanteId": 21,
+          "nombre": "Abril",
+          "donaciones": 7,
+          "impacto": 185
+        }
+      },
+      {
+        "json": {
+          "donanteId": 22,
+          "nombre": "Rodrigo",
+          "donaciones": 12,
+          "impacto": 330
+        }
+      },
+      {
+        "json": {
+          "donanteId": 23,
+          "nombre": "Josefina",
+          "donaciones": 5,
+          "impacto": 140
+        }
+      },
+      {
+        "json": {
+          "donanteId": 24,
+          "nombre": "Cristian",
+          "donaciones": 8,
+          "impacto": 220
+        }
+      },
+      {
+        "json": {
+          "donanteId": 25,
+          "nombre": "Micaela",
+          "donaciones": 19,
+          "impacto": 530
+        }
+      },
+      {
+        "json": {
+          "donanteId": 26,
+          "nombre": "Gabriel",
+          "donaciones": 6,
+          "impacto": 170
+        }
+      },
+      {
+        "json": {
+          "donanteId": 27,
+          "nombre": "Antonella",
+          "donaciones": 10,
+          "impacto": 275
+        }
+      },
+      {
+        "json": {
+          "donanteId": 28,
+          "nombre": "Leonardo",
+          "donaciones": 3,
+          "impacto": 85
+        }
+      },
+      {
+        "json": {
+          "donanteId": 29,
+          "nombre": "Bianca",
+          "donaciones": 14,
+          "impacto": 400
+        }
+      },
+      {
+        "json": {
+          "donanteId": 30,
+          "nombre": "Pablo",
+          "donaciones": 11,
+          "impacto": 310
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create sheet",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create sheet": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Create a post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "e40767a1-8393-4448-bfce-5f614aac0a7b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8a309ead3a26c1c2b292bc9d2324a1be1f98c394a20299cfe74f55adee6492bb"
+  },
+  "nodeGroups": [],
+  "id": "9DCNjFOUSb01HJ0i",
+  "tags": []
+}
