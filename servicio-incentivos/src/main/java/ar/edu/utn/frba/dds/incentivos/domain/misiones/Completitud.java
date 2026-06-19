@@ -1,32 +1,28 @@
 package ar.edu.utn.frba.dds.incentivos.domain.misiones;
 
-import ar.edu.utn.frba.dds.incentivos.domain.personas.Donante;
+import ar.edu.utn.frba.dds.incentivos.domain.insignias.Insignia;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
-@SuperBuilder
+@Setter
 public class Completitud extends Mision {
-    private Integer cantidadCategorias;
+    private int cantidadCategorias;
 
-    @Override
-    public boolean completoMision(Donante donante) {
-        long categoriasDistintas = donante.getDonaciones().stream()
-                .map(d -> d.getCategoria())
-                .distinct()
-                .count();
-
-        return categoriasDistintas >= this.cantidadCategorias;
+    public Completitud(String nombre, int idMision, Insignia insigniaAsociada, LocalDate fechaAsignacion, int cantidadCategorias) {
+        super(nombre, idMision, insigniaAsociada, fechaAsignacion);
+        this.cantidadCategorias = cantidadCategorias;
     }
 
-    @Override
-    public float progresoMision(Donante donante) {
-        long categoriasDistintas = donante.getDonaciones().stream()
-                .map(d -> d.getCategoria())
-                .distinct()
-                .count();
+    public Completitud() {}
 
-        return (float) categoriasDistintas / this.cantidadCategorias;
+    @Override
+    public void ejecutar() {
+        if (contexto == null) return;
+        int total = contexto.getTotalDonaciones();
+        this.setCantidadCompletada(total);
+        this.setEstaCompleta(total >= cantidadCategorias);
     }
 }

@@ -8,21 +8,21 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-public class DonacionesExitosas extends Mision {
-    private int cantidadDonaciones;
+public class SueldoDonaciones extends Mision {
+    private int cantidadFinancias;
 
-    public DonacionesExitosas(String nombre, int idMision, Insignia insigniaAsociada, LocalDate fechaAsignacion, int cantidadDonaciones) {
+    public SueldoDonaciones(String nombre, int idMision, Insignia insigniaAsociada, LocalDate fechaAsignacion, int cantidadFinancias) {
         super(nombre, idMision, insigniaAsociada, fechaAsignacion);
-        this.cantidadDonaciones = cantidadDonaciones;
+        this.cantidadFinancias = cantidadFinancias;
     }
 
-    public DonacionesExitosas() {}
+    public SueldoDonaciones() {}
 
     @Override
     public void ejecutar() {
         if (contexto == null) return;
         int total = contexto.getTotalDonaciones();
         this.setCantidadCompletada(total);
-        this.setEstaCompleta(total >= cantidadDonaciones);
+        this.setEstaCompleta(total >= cantidadFinancias);
     }
 }

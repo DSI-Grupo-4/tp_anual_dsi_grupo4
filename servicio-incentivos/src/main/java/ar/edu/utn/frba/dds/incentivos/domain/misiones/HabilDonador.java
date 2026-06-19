@@ -1,26 +1,28 @@
 package ar.edu.utn.frba.dds.incentivos.domain.misiones;
 
-import ar.edu.utn.frba.dds.incentivos.domain.personas.Donante;
+import ar.edu.utn.frba.dds.incentivos.domain.insignias.Insignia;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Setter;
+
+import java.time.LocalDate;
 
 @Getter
-@SuperBuilder
+@Setter
 public class HabilDonador extends Mision {
-    private Integer cantidadBienes;
+    private int cantidadBienes;
 
-    @Override
-    public boolean completoMision(Donante donante) {
-        return donante.getDonaciones().stream()
-                .anyMatch(d -> d.getCantidadBienes() > this.cantidadBienes);
+    public HabilDonador(String nombre, int idMision, Insignia insigniaAsociada, LocalDate fechaAsignacion, int cantidadBienes) {
+        super(nombre, idMision, insigniaAsociada, fechaAsignacion);
+        this.cantidadBienes = cantidadBienes;
     }
 
+    public HabilDonador() {}
+
     @Override
-    public float progresoMision(Donante donante) {
-        if (this.completoMision(donante)) {
-            return 1f;
-        }
-        return 0f;
+    public void ejecutar() {
+        if (contexto == null) return;
+        int total = contexto.getTotalDonaciones();
+        this.setCantidadCompletada(total);
+        this.setEstaCompleta(total >= cantidadBienes);
     }
 }
