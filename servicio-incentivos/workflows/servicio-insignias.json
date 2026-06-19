@@ -1,17 +1,19 @@
 {
   "name": "servicio-insignias",
-  "active": true,
   "nodes": [
     {
       "parameters": {
         "content": "## Caso 1: Automatización de Insignias\n\n**Flujo:** Backend → Webhook → Validación → Generación de texto → Generación de imagen → Publicación\n\n**DTO esperado:**\n```json\n{\n  \"user\": \"Juan\",\n  \"badge\": \"Donante Frecuente\",\n  \"description\": \"Completó 10 donaciones\"\n}\n```",
-        "height": 260,
+        "height": 388,
         "width": 380,
         "color": "#F9F06B"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-100, -280],
+      "position": [
+        -224,
+        -528
+      ],
       "id": "sticky-intro",
       "name": "Descripción del flujo"
     },
@@ -24,20 +26,26 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [-100, -60],
+      "position": [
+        -96,
+        -64
+      ],
       "id": "sticky-etapa1",
       "name": "Nota Etapa 1"
     },
     {
       "parameters": {
         "content": "**Etapa 2:** Validación del formato\n\nVerifica que el payload contenga los campos requeridos con el tipo correcto.",
-        "height": 120,
+        "height": 168,
         "width": 260,
         "color": "#d9ead3"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [300, -60],
+      "position": [
+        304,
+        -128
+      ],
       "id": "sticky-etapa2",
       "name": "Nota Etapa 2"
     },
@@ -50,33 +58,42 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [700, -160],
+      "position": [
+        704,
+        -160
+      ],
       "id": "sticky-etapa3",
       "name": "Nota Etapa 3"
     },
     {
       "parameters": {
         "content": "**Etapa 4:** Generación de imagen\n\nUsa la API de Pollinations.ai (gratuita, sin API key) para generar una imagen representativa de la insignia.",
-        "height": 140,
+        "height": 172,
         "width": 260,
         "color": "#d9ead3"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [1100, -160],
+      "position": [
+        1104,
+        -160
+      ],
       "id": "sticky-etapa4",
       "name": "Nota Etapa 4"
     },
     {
       "parameters": {
         "content": "**Etapa 5:** Publicación\n\nPublica el mensaje en la red social configurada. Actualmente registra el resultado en un log interno.\n\n⚠️ Para publicar en redes reales, reemplazar este nodo por el conector correspondiente (Twitter/X, LinkedIn, etc.) y configurar las credenciales.",
-        "height": 180,
+        "height": 276,
         "width": 300,
         "color": "#fce5cd"
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
-      "position": [1500, -180],
+      "position": [
+        1488,
+        -256
+      ],
       "id": "sticky-etapa5",
       "name": "Nota Etapa 5"
     },
@@ -89,7 +106,10 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
-      "position": [0, 100],
+      "position": [
+        0,
+        112
+      ],
       "id": "webhook-insignia",
       "name": "Insignia Otorgada",
       "webhookId": "b7cc5de1-3a42-4f8b-9e21-57c8f90a1234"
@@ -100,7 +120,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [220, 100],
+      "position": [
+        224,
+        112
+      ],
       "id": "validacion-formato",
       "name": "Validación de formato"
     },
@@ -131,7 +154,10 @@
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
-      "position": [440, 100],
+      "position": [
+        448,
+        112
+      ],
       "id": "if-valido",
       "name": "¿Formato válido?"
     },
@@ -157,7 +183,10 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [660, 240],
+      "position": [
+        672,
+        240
+      ],
       "id": "respuesta-invalida",
       "name": "Payload Inválido (400)"
     },
@@ -167,13 +196,15 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [660, 60],
+      "position": [
+        672,
+        64
+      ],
       "id": "generar-mensaje",
       "name": "Generar mensaje y prompt de imagen"
     },
     {
       "parameters": {
-        "method": "GET",
         "url": "={{ $json.imageUrl }}",
         "options": {
           "response": {
@@ -186,7 +217,10 @@
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [880, 60],
+      "position": [
+        880,
+        64
+      ],
       "id": "generar-imagen",
       "name": "Generar imagen (Pollinations.ai)"
     },
@@ -196,7 +230,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1100, 60],
+      "position": [
+        1104,
+        64
+      ],
       "id": "publicar-red-social",
       "name": "Publicar en red social"
     },
@@ -210,11 +247,33 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.5,
-      "position": [1320, 60],
+      "position": [
+        1312,
+        256
+      ],
       "id": "respuesta-ok",
       "name": "Insignia Procesada (200)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1516879794157912256/V-JBNLt4XHsvgwtHMKCcWXSl3bjP_C36xowRT0SBkoIpvzDH6FmO5HRZDZftvSUuUoR-",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"🏅 Nueva insignia obtenida\",\n      \"description\": \"¡Felicitaciones @bautista!\\n\\nObtuviste la insignia \\\"Hábil Donador\\\"\\n\\nSuperó los 100 bienes donados\\n\\nCategoría actual: Colaborador\\n\\n#DonaTrack\",\n      \"image\": {\n        \"url\": \"https://image.pollinations.ai/prompt/Award%20badge%20icon%20for%20%22Donante%20Frecuente%22%2C%20charity%20donation%20platform%2C%20golden%20medal%20with%20heart%20symbol%2C%20modern%20flat%20design%2C%20vibrant%20colors%2C%20celebration%20theme?width=512&height=512&nologo=true\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1312,
+        64
+      ],
+      "id": "e86b417c-7b18-4511-a5d6-8ed78b36ad7c",
+      "name": "HTTP Request"
     }
   ],
+  "pinData": {},
   "connections": {
     "Insignia Otorgada": {
       "main": [
@@ -282,21 +341,31 @@
       "main": [
         [
           {
-            "node": "Insignia Procesada (200)",
+            "node": "HTTP Request",
             "type": "main",
             "index": 0
           }
         ]
       ]
+    },
+    "Insignia Procesada (200)": {
+      "main": [
+        []
+      ]
     }
   },
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "staticData": null,
-  "meta": null,
-  "pinData": {},
+  "versionId": "67ede653-98ba-44f3-9d99-92c2a657b282",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5a39c8dc30650d455fdcd18eede7e508ecde91342846c0419418c14429cec5b8"
+  },
+  "nodeGroups": [],
+  "id": "QwC5ys4pAmpwUd99",
   "tags": []
 }
