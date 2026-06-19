@@ -63,9 +63,11 @@
 ├── servicio-logistica
 │   └── pom.xml
 └── servicio-notificaciones
-    └── pom.xml
+    ├── pom.xml
+    └── src
+        └── main
 
-15 directories, 35 files
+17 directories, 35 files
 ```
 <!-- TREE_END -->
 
