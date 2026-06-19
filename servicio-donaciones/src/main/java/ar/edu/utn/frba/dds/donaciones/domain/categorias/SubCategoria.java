@@ -8,10 +8,16 @@ import java.util.List;
 
 @Getter
 @Setter
-public abstract class SubCategoria {
-    protected String nombreSubcategoria;
-    protected List<DefinicionAtributo> atributosAsociados = new ArrayList<>();
-    protected int cantidad;
+public class Subcategoria {
+    private String nombre;
+    private List<DefinicionAtributo> atributosAsociados = new ArrayList<>();
+
+    public Subcategoria() {
+    }
+
+    public Subcategoria(String nombre) {
+        this.nombre = nombre;
+    }
 
     public void agregarAtributo(DefinicionAtributo atributo) {
         atributosAsociados.add(atributo);
