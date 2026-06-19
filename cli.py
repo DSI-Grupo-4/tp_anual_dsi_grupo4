@@ -326,92 +326,173 @@ def detener_servicios() -> None:
 def registrar_persona_humana() -> None:
     nombre = prompt("Nombre", "Ana")
     apellido = prompt("Apellido", "Perez")
-    email = prompt("Email", "ana.perez@mail.com")
-    STATE.donante_nombre = f"{nombre} {apellido}"
-    not_implemented("DONANTES", f"Datos capturados para sesion: {STATE.donante_nombre} <{email}>. No se pudo obtener ID real.")
+    print("Genero: Masculino / Femenino / X")
+    genero = prompt("Genero", "Femenino")
+    payload = {"nombre": nombre, "apellido": apellido, "genero": genero}
+    response = request_json("POST", DONACIONES_BASE_URL, "/api/donantes/humanos", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("id"):
+        STATE.donante_id = str(data["id"])
+        STATE.donante_nombre = f"{nombre} {apellido}"
+        print(f"\nDonante creado con ID={STATE.donante_id} (guardado en sesion).")
 
 
 def registrar_persona_juridica() -> None:
     razon = prompt("Razon social", "Empresa Solidaria SRL")
-    email = prompt("Email", "contacto@empresa.local")
-    STATE.donante_nombre = razon
-    not_implemented("DONANTES", f"Datos capturados para sesion: {razon} <{email}>. No se pudo obtener ID real.")
+    print("Tipo: GUBERNAMENTAL / ONG / EMPRESA")
+    tipo = prompt("Tipo", "ONG")
+    rubro = prompt("Rubro", "Alimentacion")
+    payload = {"razonSocial": razon, "tipo": tipo, "rubro": rubro}
+    response = request_json("POST", DONACIONES_BASE_URL, "/api/donantes/juridicos", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("id"):
+        STATE.donante_id = str(data["id"])
+        STATE.donante_nombre = razon
+        print(f"\nDonante creado con ID={STATE.donante_id} (guardado en sesion).")
 
 
 def listar_donantes() -> None:
-    not_implemented("DONANTES", "No hay controllers REST en servicio-donaciones para listar donantes.")
+    request_json("GET", DONACIONES_BASE_URL, "/api/donantes")
 
 
 def ver_donante() -> None:
-    default_id(STATE.donante_id, "ID donante")
-    not_implemented("DONANTES", "No hay endpoint REST de detalle de donante.")
+    donante_id = default_id(STATE.donante_id, "ID donante")
+    if donante_id:
+        request_json("GET", DONACIONES_BASE_URL, f"/api/donantes/{donante_id}")
 
 
 def registrar_entidad() -> None:
-    nombre = prompt("Nombre", "Comedor Escobar")
-    direccion = prompt("Direccion", "Av. Siempre Viva 123")
-    email = prompt("Email", "comedor@mail.com")
-    STATE.entidad_nombre = nombre
-    not_implemented("ENTIDADES", f"Datos capturados: {nombre}, {direccion}, {email}. No se pudo obtener ID real.")
+    razon_social = prompt("Razon social", "Fundacion Solidaria")
+    print("Tipo: GUBERNAMENTAL / ONG / EMPRESA")
+    tipo = prompt("Tipo", "ONG")
+    rubro = prompt("Rubro", "Asistencia social")
+    descripcion = prompt("Descripcion", "Entidad que asiste a personas en situacion de calle")
+    payload = {
+        "descripcion": descripcion,
+        "personaJuridica": {"razonSocial": razon_social, "tipo": tipo, "rubro": rubro},
+    }
+    response = request_json("POST", DONACIONES_BASE_URL, "/api/entidades", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("id"):
+        STATE.entidad_id = str(data["id"])
+        STATE.entidad_nombre = razon_social
+        print(f"\nEntidad creada con ID={STATE.entidad_id} (guardado en sesion).")
 
 
 def listar_entidades() -> None:
-    not_implemented("ENTIDADES", "No hay controllers REST en servicio-donaciones para entidades beneficiarias.")
+    request_json("GET", DONACIONES_BASE_URL, "/api/entidades")
 
 
 def registrar_necesidad_extraordinaria() -> None:
-    default_id(STATE.entidad_id, "ID entidad")
-    prompt("Descripcion", "Alimentos no perecederos")
-    not_implemented("ENTIDADES", "No hay endpoint REST para registrar necesidades extraordinarias.")
+    entidad_id = default_id(STATE.entidad_id, "ID entidad")
+    if not entidad_id:
+        return
+    descripcion = prompt("Descripcion", "Colchones y frazadas")
+    subcategoria = prompt("Subcategoria", "ROPA_Y_ABRIGO")
+    cantidad = prompt("Cantidad requerida", "50")
+    print("Tipo: INUNDACION / SISMO")
+    tipo = prompt("Tipo extraordinario", "INUNDACION")
+    payload = {
+        "descripcion": descripcion,
+        "subcategoria": subcategoria,
+        "cantidadRequerida": int(cantidad),
+        "tipoExtraordinario": tipo,
+    }
+    request_json("POST", DONACIONES_BASE_URL, f"/api/entidades/{entidad_id}/necesidades/extraordinarias", payload)
 
 
 def registrar_necesidad_recurrente() -> None:
-    default_id(STATE.entidad_id, "ID entidad")
-    prompt("Descripcion", "Viandas semanales")
-    not_implemented("ENTIDADES", "No hay endpoint REST para registrar necesidades recurrentes.")
+    entidad_id = default_id(STATE.entidad_id, "ID entidad")
+    if not entidad_id:
+        return
+    descripcion = prompt("Descripcion", "Viandas de almuerzo")
+    subcategoria = prompt("Subcategoria", "ALIMENTOS")
+    cantidad = prompt("Cantidad requerida", "100")
+    print("Periodicidad: DIARIA / SEMANAL / QUINCENAL / MENSUAL")
+    periodicidad = prompt("Periodicidad", "SEMANAL")
+    payload = {
+        "descripcion": descripcion,
+        "subcategoria": subcategoria,
+        "cantidadRequerida": int(cantidad),
+        "periodicidad": periodicidad,
+    }
+    request_json("POST", DONACIONES_BASE_URL, f"/api/entidades/{entidad_id}/necesidades/recurrentes", payload)
 
 
 def listar_necesidades_entidad() -> None:
-    default_id(STATE.entidad_id, "ID entidad")
-    not_implemented("ENTIDADES", "No hay endpoint REST para listar necesidades por entidad.")
+    entidad_id = default_id(STATE.entidad_id, "ID entidad")
+    if entidad_id:
+        request_json("GET", DONACIONES_BASE_URL, f"/api/entidades/{entidad_id}/necesidades")
 
 
 def registrar_donacion() -> None:
-    default_id(STATE.donante_id, "ID donante")
-    prompt("Descripcion", "Caja de alimentos")
-    not_implemented("DONACIONES", "No hay endpoint REST para registrar donaciones en servicio-donaciones.")
+    descripcion = prompt("Descripcion del item", "Caja de alimentos no perecederos")
+    cantidad = prompt("Cantidad", "10")
+    payload = {
+        "descripcionItem": descripcion,
+        "cantidadAsignada": int(cantidad),
+    }
+    response = request_json("POST", DONACIONES_BASE_URL, "/api/donaciones", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("id"):
+        STATE.donacion_id = str(data["id"])
+        STATE.donacion_estado = str(data.get("estadoActual", "-"))
+        print(f"\nDonacion creada con ID={STATE.donacion_id} estado={STATE.donacion_estado} (guardado en sesion).")
 
 
 def listar_donaciones() -> None:
-    not_implemented("DONACIONES", "No hay endpoint REST para listar donaciones.")
+    request_json("GET", DONACIONES_BASE_URL, "/api/donaciones")
 
 
 def historial_donacion() -> None:
-    default_id(STATE.donacion_id, "ID donacion")
-    not_implemented("DONACIONES", "No hay endpoint REST para historial de estados.")
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    if donacion_id:
+        request_json("GET", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}/historial")
 
 
 def cambiar_estado_donacion() -> None:
-    default_id(STATE.donacion_id, "ID donacion")
-    print("Estados validos no disponibles: no existe endpoint/modelo REST de estados en el servicio actual.")
-    not_implemented("DONACIONES")
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    if not donacion_id:
+        return
+    print("Estados: PENDIENTE_CONFIRMACION / EN_DEPOSITO / ASIGNACION_REALIZADA /")
+    print("         LISTA_PARA_ENTREGAR / EN_TRASLADO / ENTREGADA / ENTREGA_FALLIDA")
+    nuevo_estado = prompt("Nuevo estado", "EN_DEPOSITO")
+    justificacion = prompt("Justificacion (opcional)", "")
+    payload = {"nuevoEstado": nuevo_estado, "justificacion": justificacion or None}
+    response = request_json("PATCH", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}/estado", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("estadoActual"):
+        STATE.donacion_estado = str(data["estadoActual"])
 
 
 def marcar_entrega_fallida() -> None:
-    default_id(STATE.donacion_id, "ID donacion")
-    prompt("Justificacion", "No se pudo contactar al destinatario")
-    not_implemented("DONACIONES", "No hay endpoint REST para marcar ENTREGA_FALLIDA.")
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    if not donacion_id:
+        return
+    justificacion = prompt("Justificacion", "No se pudo contactar al destinatario")
+    payload = {"nuevoEstado": "ENTREGA_FALLIDA", "justificacion": justificacion}
+    response = request_json("PATCH", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}/estado", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("estadoActual"):
+        STATE.donacion_estado = str(data["estadoActual"])
 
 
 def ejecutar_matchmaking() -> None:
-    default_id(STATE.donacion_id, "ID donacion")
-    not_implemented("DONACIONES", "No hay endpoint REST de matchmaking/ranking de entidades candidatas.")
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    if donacion_id:
+        request_json("GET", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}/candidatas")
 
 
 def confirmar_asignacion() -> None:
-    default_id(STATE.donacion_id, "ID donacion")
-    default_id(STATE.entidad_id, "ID entidad")
-    not_implemented("DONACIONES", "No hay endpoint REST para confirmar asignacion.")
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    entidad_id = default_id(STATE.entidad_id, "ID entidad")
+    if not donacion_id or not entidad_id:
+        return
+    payload = {"entidadId": int(entidad_id)}
+    response = request_json("POST", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}/asignar", payload)
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("estadoActual"):
+        STATE.donacion_estado = str(data["estadoActual"])
 
 
 # ---------------------------------------------------------------------------
@@ -508,7 +589,7 @@ def step(title: str, action: Callable[[], None]) -> None:
 
 
 def flujo_completo_donacion() -> None:
-    print("\nFlujo completo guiado. Algunos pasos dependen de endpoints aun no implementados en servicio-donaciones.")
+    print("\nFlujo completo guiado. Los IDs obtenidos en cada paso se guardan en sesion automaticamente.")
     step("1. Crear donante", registrar_persona_humana)
     step("2. Crear entidad beneficiaria", registrar_entidad)
     step("3. Registrar necesidad extraordinaria", registrar_necesidad_extraordinaria)
