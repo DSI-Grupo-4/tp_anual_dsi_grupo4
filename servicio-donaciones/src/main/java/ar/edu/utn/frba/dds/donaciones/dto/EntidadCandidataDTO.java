@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RankingEntidadDTO {
+public class EntidadCandidataDTO {
     private Long entidadBeneficiariaId;
     private String razonSocial;
     private String descripcion;

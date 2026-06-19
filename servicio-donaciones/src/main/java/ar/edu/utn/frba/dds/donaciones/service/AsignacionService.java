@@ -6,8 +6,8 @@ import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
-import ar.edu.utn.frba.dds.donaciones.dto.RankingEntidadDTO;
-import ar.edu.utn.frba.dds.donaciones.dto.SolicitudRankingDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.EntidadCandidataDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.SolicitudAsignacionDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class AsignacionService {
         this.entidadBeneficiariaService = entidadBeneficiariaService;
     }
 
-    public List<RankingEntidadDTO> generarRanking(SolicitudRankingDTO dto) {
+    public List<EntidadCandidataDTO> obtenerCandidatas(SolicitudAsignacionDTO dto) {
         ItemDonado item = new ItemDonado(
                 null,
                 dto.getDescripcionItem(),
@@ -49,11 +49,11 @@ public class AsignacionService {
         return new CompatibilidadSemantica();
     }
 
-    private RankingEntidadDTO convertirADTO(
+    private EntidadCandidataDTO convertirADTO(
             EntidadBeneficiaria entidad,
             ItemDonado item) {
 
-        RankingEntidadDTO dto = new RankingEntidadDTO();
+        EntidadCandidataDTO dto = new EntidadCandidataDTO();
 
         dto.setEntidadBeneficiariaId(entidad.getId());
         dto.setDescripcion(entidad.getDescripcion());
