@@ -76,7 +76,6 @@ public class DonacionController {
     public List<EntidadBeneficiariaDTO> candidatas(@PathVariable Long id) {
         Donacion donacion = donacionService.obtenerDominioPorId(id);
         List<EntidadBeneficiaria> candidatas = matchmakingService.ejecutarMatchmaking(donacion);
-        donacion.setCandidatas(candidatas);
         return candidatas.stream()
                 .map(entidadBeneficiariaService::convertirADTO)
                 .toList();

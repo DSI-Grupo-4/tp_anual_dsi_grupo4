@@ -1,131 +1,81 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class EntidadBeneficiariaService {
-    private List<EntidadBeneficiaria> entidades =
-            new ArrayList<>();
 
-    private Long siguienteId = 1L;
+    private final Map<Long, EntidadBeneficiaria> entidades = new ConcurrentHashMap<>();
+    private final AtomicLong contador = new AtomicLong(1);
 
     public EntidadBeneficiariaDTO crear(EntidadBeneficiariaDTO dto) {
-        PersonaJuridicaDTO personaJuridicaDTO = dto.getPersonaJuridica();
-
-        PersonaJuridica personaJuridica =
-                new PersonaJuridica(
-                        personaJuridicaDTO.getRazonSocial(),
-                        personaJuridicaDTO.getTipo(),
-                        personaJuridicaDTO.getRubro(),
-                        null
-                );
-
-        EntidadBeneficiaria entidad =
-                new EntidadBeneficiaria(
-                        siguienteId++,
-                        personaJuridica,
-                        dto.getDescripcion()
-                );
-        entidades.add(entidad);
-
-        return convertirADTO(entidad);
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria();
+        entidad.setNombre(dto.getPersonaJuridica() != null ? dto.getPersonaJuridica().getRazonSocial() : dto.getDescripcion());
+        long id = contador.getAndIncrement();
+        entidades.put(id, entidad);
+        return convertirADTO(id, entidad, dto.getDescripcion(), dto.getPersonaJuridica());
     }
 
     public List<EntidadBeneficiariaDTO> obtenerTodas() {
-        return entidades.stream().map(this::convertirADTO).toList();
+        List<EntidadBeneficiariaDTO> result = new ArrayList<>();
+        entidades.forEach((id, e) -> result.add(convertirADTO(id, e, null, null)));
+        return result;
     }
 
     public EntidadBeneficiariaDTO obtenerPorId(Long id) {
-
-        EntidadBeneficiaria entidad = entidades.stream()
-                .filter(e -> e.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
-
-        return convertirADTO(entidad);
+        return convertirADTO(id, buscarEntidad(id), null, null);
     }
 
     public EntidadBeneficiaria buscarEntidad(Long id) {
-
-        return entidades.stream()
-                .filter(e -> e.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
+        EntidadBeneficiaria entidad = entidades.get(id);
+        if (entidad == null) {
+            throw new RuntimeException("EntidadBeneficiaria no encontrada: " + id);
+        }
+        return entidad;
     }
 
     public void eliminar(Long id) {
-
-        entidades.removeIf(
-                e -> e.getId().equals(id)
-        );
+        entidades.remove(id);
     }
 
-    public EntidadBeneficiariaDTO convertirADTO(
-            EntidadBeneficiaria entidad) {
+    public EntidadBeneficiariaDTO convertirADTO(EntidadBeneficiaria entidad) {
+        long id = entidades.entrySet().stream()
+                .filter(e -> e.getValue() == entidad)
+                .map(Map.Entry::getKey)
+                .findFirst().orElse(-1L);
+        return convertirADTO(id, entidad, null, null);
+    }
 
-        EntidadBeneficiariaDTO dto =
-                new EntidadBeneficiariaDTO();
+    public EntidadBeneficiariaDTO actualizar(Long id, EntidadBeneficiariaDTO dto) {
+        EntidadBeneficiaria entidad = buscarEntidad(id);
+        if (dto.getPersonaJuridica() != null) {
+            entidad.setNombre(dto.getPersonaJuridica().getRazonSocial());
+        }
+        return convertirADTO(id, entidad, dto.getDescripcion(), dto.getPersonaJuridica());
+    }
 
-        PersonaJuridicaDTO personaDTO =
-                new PersonaJuridicaDTO();
+    public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
+        return new ArrayList<>(entidades.values());
+    }
 
-        personaDTO.setRazonSocial(
-                entidad.getEntidad().getRazonSocial()
-        );
-
-        personaDTO.setTipo(
-                entidad.getEntidad().getTipo()
-        );
-
-        personaDTO.setRubro(
-                entidad.getEntidad().getRubro()
-        );
-
-        dto.setPersonaJuridica(personaDTO);
-        dto.setDescripcion(entidad.getDescripcion());
-        dto.setId(entidad.getId());
-
+    private EntidadBeneficiariaDTO convertirADTO(Long id, EntidadBeneficiaria entidad, String descripcion, PersonaJuridicaDTO personaJuridicaDTO) {
+        EntidadBeneficiariaDTO dto = new EntidadBeneficiariaDTO();
+        dto.setId(id);
+        dto.setDescripcion(descripcion != null ? descripcion : entidad.getNombre());
+        PersonaJuridicaDTO pjDTO = personaJuridicaDTO != null ? personaJuridicaDTO : new PersonaJuridicaDTO();
+        if (personaJuridicaDTO == null) {
+            pjDTO.setRazonSocial(entidad.getNombre());
+        }
+        dto.setPersonaJuridica(pjDTO);
         return dto;
     }
-
-    public EntidadBeneficiariaDTO actualizar(
-            Long id,
-            EntidadBeneficiariaDTO dto) {
-
-        EntidadBeneficiaria entidad =
-                buscarEntidad(id);
-
-        entidad.setDescripcion(
-                dto.getDescripcion()
-        );
-
-        PersonaJuridica persona =
-                entidad.getEntidad();
-
-        persona.setRazonSocial(
-                dto.getPersonaJuridica().getRazonSocial()
-        );
-
-        persona.setTipo(
-                dto.getPersonaJuridica().getTipo()
-        );
-
-        persona.setRubro(
-                dto.getPersonaJuridica().getRubro()
-        );
-
-        return convertirADTO(entidad);
-    }
-
-        public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
-           return entidades;
-        }
 }

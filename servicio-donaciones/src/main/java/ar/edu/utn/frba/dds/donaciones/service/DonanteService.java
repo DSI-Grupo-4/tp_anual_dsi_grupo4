@@ -3,6 +3,8 @@ package ar.edu.utn.frba.dds.donaciones.service;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoDoc;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrg;
 import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
@@ -10,147 +12,112 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class DonanteService {
-    private List<Donante> donantes = new ArrayList<>();
 
-    private Long siguienteId = 1L; //por ahora asignamos ids, despues con la persistencia esto cambia
+    private final Map<Long, Donante> donantes = new ConcurrentHashMap<>();
+    private final AtomicLong contador = new AtomicLong(1);
 
     public DonanteDTO convertirADTO(Donante donante) {
-
+        long id = donantes.entrySet().stream()
+                .filter(e -> e.getValue() == donante)
+                .map(Map.Entry::getKey)
+                .findFirst().orElse(-1L);
         DonanteDTO dto = new DonanteDTO();
-
-        if(donante.getPersona() instanceof PersonaHumana humana) {
-
+        dto.setId(id);
+        if (donante.getPersonaAsociada() instanceof PersonaHumana) {
+            PersonaHumana humana = (PersonaHumana) donante.getPersonaAsociada();
             dto.setTipo("HUMANA");
             dto.setNombre(humana.getNombre());
             dto.setApellido(humana.getApellido());
-            dto.setDocumento(humana.getDocumento());
-        }
-
-        if(donante.getPersona() instanceof PersonaJuridica juridica) {
-
+        } else if (donante.getPersonaAsociada() instanceof PersonaJuridica) {
+            PersonaJuridica juridica = (PersonaJuridica) donante.getPersonaAsociada();
             dto.setTipo("JURIDICA");
             dto.setRazonSocial(juridica.getRazonSocial());
         }
-
-        dto.setId(donante.getId());
         return dto;
     }
 
     public DonanteDTO crearDonanteHumano(PersonaHumanaDTO dto) {
-       PersonaHumana persona =
-        new PersonaHumana(
+        PersonaHumana persona = new PersonaHumana(
                 dto.getNombre(),
                 dto.getApellido(),
-                dto.getEdad(),
-                dto.getDocumento(),
+                TipoDoc.DNI,
+                0,
                 dto.getGenero()
         );
-        Donante donante = new Donante(siguienteId++, persona);
-        donantes.add(donante);
+        Donante donante = new Donante(persona);
+        long id = contador.getAndIncrement();
+        donantes.put(id, donante);
         return convertirADTO(donante);
     }
 
     public List<DonanteDTO> obtenerTodos() {
-        return donantes.stream()
-                .map(this::convertirADTO)
-                .toList();
+        List<DonanteDTO> result = new ArrayList<>();
+        donantes.forEach((id, d) -> {
+            DonanteDTO dto = convertirADTO(d);
+            dto.setId(id);
+            result.add(dto);
+        });
+        return result;
     }
 
-    public DonanteDTO crearDonanteJuridico(
-            PersonaJuridicaDTO dto) {
-        PersonaJuridica persona =
-                new PersonaJuridica(
-                        dto.getRazonSocial(),
-                        dto.getTipo(),
-                        dto.getRubro(),
-                        null
-                );
-
-        Donante donante = new Donante(siguienteId++, persona);
-
-        donantes.add(donante);
+    public DonanteDTO crearDonanteJuridico(PersonaJuridicaDTO dto) {
+        PersonaJuridica persona = new PersonaJuridica(
+                dto.getRazonSocial(),
+                TipoOrg.EMPRESA,
+                dto.getRubro()
+        );
+        Donante donante = new Donante(persona);
+        long id = contador.getAndIncrement();
+        donantes.put(id, donante);
         return convertirADTO(donante);
     }
 
     public DonanteDTO buscarPorId(Long id) {
-        Donante donante = donantes.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
-        return convertirADTO(donante);
+        Donante donante = donantes.get(id);
+        if (donante == null) throw new RuntimeException("Donante no encontrado: " + id);
+        DonanteDTO dto = convertirADTO(donante);
+        dto.setId(id);
+        return dto;
     }
 
     public void eliminar(Long id) {
-
-        donantes.removeIf(
-                d -> d.getId().equals(id)
-        );
+        donantes.remove(id);
     }
 
-    private Donante buscarPorIdDominio(Long id) {
-
-        return donantes.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
+    public DonanteDTO actualizarHumano(Long id, PersonaHumanaDTO dto) {
+        Donante donante = donantes.get(id);
+        if (donante == null) throw new RuntimeException("Donante no encontrado: " + id);
+        if (donante.getPersonaAsociada() instanceof PersonaHumana) {
+            PersonaHumana humana = (PersonaHumana) donante.getPersonaAsociada();
+            humana.setNombre(dto.getNombre());
+            humana.setApellido(dto.getApellido());
+            humana.setGenero(dto.getGenero());
+        }
+        DonanteDTO result = convertirADTO(donante);
+        result.setId(id);
+        return result;
     }
 
-    public DonanteDTO actualizarHumano(
-            Long id,
-            PersonaHumanaDTO dto) {
-
-        Donante donante = buscarPorIdDominio(id);
-
-        PersonaHumana persona =
-                (PersonaHumana) donante.getPersona();
-
-        persona.setNombre(
-                dto.getNombre()
-        );
-
-        persona.setApellido(
-                dto.getApellido()
-        );
-
-        persona.setEdad(
-                dto.getEdad()
-        );
-
-        persona.setDocumento(
-                dto.getDocumento()
-        );
-
-        persona.setGenero(
-                dto.getGenero()
-        );
-
-        return convertirADTO(donante);
+    public DonanteDTO actualizarJuridico(Long id, PersonaJuridicaDTO dto) {
+        Donante donante = donantes.get(id);
+        if (donante == null) throw new RuntimeException("Donante no encontrado: " + id);
+        if (donante.getPersonaAsociada() instanceof PersonaJuridica) {
+            PersonaJuridica juridica = (PersonaJuridica) donante.getPersonaAsociada();
+            juridica.setRazonSocial(dto.getRazonSocial());
+            juridica.setRubro(dto.getRubro());
+        }
+        DonanteDTO result = convertirADTO(donante);
+        result.setId(id);
+        return result;
     }
 
-    public DonanteDTO actualizarJuridico(
-            Long id,
-            PersonaJuridicaDTO dto) {
-
-        Donante donante = buscarPorIdDominio(id);
-
-        PersonaJuridica persona =
-                (PersonaJuridica) donante.getPersona();
-
-        persona.setRazonSocial(
-                dto.getRazonSocial()
-        );
-
-        persona.setTipo(
-                dto.getTipo()
-        );
-
-        persona.setRubro(
-                dto.getRubro()
-        );
-
-        return convertirADTO(donante);
+    public List<Donante> obtenerTodosDominio() {
+        return new ArrayList<>(donantes.values());
     }
 }

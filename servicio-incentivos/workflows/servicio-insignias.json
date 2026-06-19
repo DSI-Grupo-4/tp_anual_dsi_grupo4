@@ -1,0 +1,371 @@
+{
+  "name": "servicio-insignias",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Caso 1: Automatización de Insignias\n\n**Flujo:** Backend → Webhook → Validación → Generación de texto → Generación de imagen → Publicación\n\n**DTO esperado:**\n```json\n{\n  \"user\": \"Juan\",\n  \"badge\": \"Donante Frecuente\",\n  \"description\": \"Completó 10 donaciones\"\n}\n```",
+        "height": 388,
+        "width": 380,
+        "color": "#F9F06B"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -224,
+        -528
+      ],
+      "id": "sticky-intro",
+      "name": "Descripción del flujo"
+    },
+    {
+      "parameters": {
+        "content": "**Etapa 1:** Recepción del evento\n\nEl backend llama a este webhook cuando un donante obtiene una insignia.",
+        "height": 120,
+        "width": 260,
+        "color": "#d9ead3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -96,
+        -64
+      ],
+      "id": "sticky-etapa1",
+      "name": "Nota Etapa 1"
+    },
+    {
+      "parameters": {
+        "content": "**Etapa 2:** Validación del formato\n\nVerifica que el payload contenga los campos requeridos con el tipo correcto.",
+        "height": 168,
+        "width": 260,
+        "color": "#d9ead3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        304,
+        -128
+      ],
+      "id": "sticky-etapa2",
+      "name": "Nota Etapa 2"
+    },
+    {
+      "parameters": {
+        "content": "**Etapa 3:** Generación del mensaje\n\nConstruye el texto publicable con el logro del donante.",
+        "height": 120,
+        "width": 260,
+        "color": "#d9ead3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -160
+      ],
+      "id": "sticky-etapa3",
+      "name": "Nota Etapa 3"
+    },
+    {
+      "parameters": {
+        "content": "**Etapa 4:** Generación de imagen\n\nUsa la API de Pollinations.ai (gratuita, sin API key) para generar una imagen representativa de la insignia.",
+        "height": 172,
+        "width": 260,
+        "color": "#d9ead3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -160
+      ],
+      "id": "sticky-etapa4",
+      "name": "Nota Etapa 4"
+    },
+    {
+      "parameters": {
+        "content": "**Etapa 5:** Publicación\n\nPublica el mensaje en la red social configurada. Actualmente registra el resultado en un log interno.\n\n⚠️ Para publicar en redes reales, reemplazar este nodo por el conector correspondiente (Twitter/X, LinkedIn, etc.) y configurar las credenciales.",
+        "height": 276,
+        "width": 300,
+        "color": "#fce5cd"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        -256
+      ],
+      "id": "sticky-etapa5",
+      "name": "Nota Etapa 5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "events/insignia-otorgada",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        112
+      ],
+      "id": "webhook-insignia",
+      "name": "Insignia Otorgada",
+      "webhookId": "b7cc5de1-3a42-4f8b-9e21-57c8f90a1234"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  let data = item.json;\n\n  // Desenvolver body si n8n lo envuelve (común en webhooks)\n  if (data.body !== undefined) {\n    data = data.body;\n  }\n\n  const errors = [];\n  const requiredFields = [\"user\", \"badge\", \"description\"];\n\n  // Verificar campos requeridos\n  for (const field of requiredFields) {\n    if (data[field] === undefined || data[field] === null) {\n      errors.push(`Falta el campo '${field}'`);\n    }\n  }\n\n  if (errors.length === 0) {\n    // Validar tipos\n    if (typeof data[\"user\"] !== \"string\" || data[\"user\"].trim().length === 0) {\n      errors.push(`'user' debe ser un string no vacío`);\n    }\n    if (typeof data[\"badge\"] !== \"string\" || data[\"badge\"].trim().length === 0) {\n      errors.push(`'badge' debe ser un string no vacío`);\n    }\n    if (typeof data[\"description\"] !== \"string\" || data[\"description\"].trim().length === 0) {\n      errors.push(`'description' debe ser un string no vacío`);\n    }\n\n    // Verificar campos extra no permitidos\n    const allowedFields = [\"user\", \"badge\", \"description\"];\n    const extraFields = Object.keys(data).filter(k => !allowedFields.includes(k));\n    if (extraFields.length > 0) {\n      errors.push(`Campos no permitidos: ${extraFields.join(\", \")}`);\n    }\n  }\n\n  if (errors.length > 0) {\n    output.push({ json: { valid: false, error: errors.join(\"; \"), data } });\n  } else {\n    output.push({ json: { valid: true, data } });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        112
+      ],
+      "id": "validacion-formato",
+      "name": "Validación de formato"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        112
+      ],
+      "id": "if-valido",
+      "name": "¿Formato válido?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Bad Request: formato de payload inválido",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain"
+              },
+              {
+                "name": "X-Error-Type",
+                "value": "Invalid Format"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        672,
+        240
+      ],
+      "id": "respuesta-invalida",
+      "name": "Payload Inválido (400)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst { user, badge, description } = item.json.data;\n\n// Construir texto publicable para la red social\nconst postText = `🏅 ¡Felicitaciones, ${user}! \\n\\nAcabás de obtener la insignia \"${badge}\" en DonaTrack. \\n\\n📌 ${description} \\n\\n¡Gracias por tu compromiso con quienes más lo necesitan! 💙 \\n\\n#DonaTrack #Donaciones #Solidaridad`;\n\n// Construir prompt para generación de imagen\nconst imagePrompt = `Award badge icon for \"${badge}\", charity donation platform, golden medal with heart symbol, modern flat design, vibrant colors, celebration theme`;\n\n// URL de imagen usando Pollinations.ai (gratuito, sin API key)\nconst imageWidth = 512;\nconst imageHeight = 512;\nconst encodedPrompt = encodeURIComponent(imagePrompt);\nconst imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${imageWidth}&height=${imageHeight}&nologo=true`;\n\nreturn [{\n  json: {\n    user,\n    badge,\n    description,\n    postText,\n    imagePrompt,\n    imageUrl,\n    generatedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        64
+      ],
+      "id": "generar-mensaje",
+      "name": "Generar mensaje y prompt de imagen"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.imageUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        64
+      ],
+      "id": "generar-imagen",
+      "name": "Generar imagen (Pollinations.ai)"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Nodo de publicación en red social\n// Este nodo simula la publicación y registra el resultado.\n// Para conectar a una red social real:\n//   - Twitter/X: usar nodo 'X (Twitter)' con credenciales OAuth2\n//   - LinkedIn: usar nodo 'LinkedIn' con credenciales OAuth2\n//   - Instagram: usar HTTP Request a la Graph API de Meta\n\nconst item = $input.first();\n\n// Recuperar datos del paso anterior (nodo de generación de mensaje)\nconst mensajeNode = $('Generar mensaje y prompt de imagen').first();\n\nconst { user, badge, postText, imageUrl, generatedAt } = mensajeNode.json;\n\n// Log de la publicación simulada\nconst publicationLog = {\n  status: \"published\",\n  platform: \"DonaTrack_Feed\",\n  user,\n  badge,\n  postText,\n  imageUrl,\n  publishedAt: new Date().toISOString(),\n  originalEventAt: generatedAt,\n  note: \"Para publicar en redes reales, reemplazar este nodo por el conector correspondiente.\"\n};\n\nconsole.log(\"[Publicación de insignia]\", JSON.stringify(publicationLog, null, 2));\n\nreturn [{ json: publicationLog }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        64
+      ],
+      "id": "publicar-red-social",
+      "name": "Publicar en red social"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Insignia procesada y publicada\", badge: $('Generar mensaje y prompt de imagen').first().json.badge, user: $('Generar mensaje y prompt de imagen').first().json.user }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        1312,
+        256
+      ],
+      "id": "respuesta-ok",
+      "name": "Insignia Procesada (200)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1516879794157912256/V-JBNLt4XHsvgwtHMKCcWXSl3bjP_C36xowRT0SBkoIpvzDH6FmO5HRZDZftvSUuUoR-",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"embeds\": [\n    {\n      \"title\": \"🏅 Nueva insignia obtenida\",\n      \"description\": \"¡Felicitaciones @bautista!\\n\\nObtuviste la insignia \\\"Hábil Donador\\\"\\n\\nSuperó los 100 bienes donados\\n\\nCategoría actual: Colaborador\\n\\n#DonaTrack\",\n      \"image\": {\n        \"url\": \"https://image.pollinations.ai/prompt/Award%20badge%20icon%20for%20%22Donante%20Frecuente%22%2C%20charity%20donation%20platform%2C%20golden%20medal%20with%20heart%20symbol%2C%20modern%20flat%20design%2C%20vibrant%20colors%2C%20celebration%20theme?width=512&height=512&nologo=true\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1312,
+        64
+      ],
+      "id": "e86b417c-7b18-4511-a5d6-8ed78b36ad7c",
+      "name": "HTTP Request"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Insignia Otorgada": {
+      "main": [
+        [
+          {
+            "node": "Validación de formato",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validación de formato": {
+      "main": [
+        [
+          {
+            "node": "¿Formato válido?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Formato válido?": {
+      "main": [
+        [
+          {
+            "node": "Generar mensaje y prompt de imagen",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Payload Inválido (400)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar mensaje y prompt de imagen": {
+      "main": [
+        [
+          {
+            "node": "Generar imagen (Pollinations.ai)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar imagen (Pollinations.ai)": {
+      "main": [
+        [
+          {
+            "node": "Publicar en red social",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publicar en red social": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insignia Procesada (200)": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "67ede653-98ba-44f3-9d99-92c2a657b282",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5a39c8dc30650d455fdcd18eede7e508ecde91342846c0419418c14429cec5b8"
+  },
+  "nodeGroups": [],
+  "id": "QwC5ys4pAmpwUd99",
+  "tags": []
+}

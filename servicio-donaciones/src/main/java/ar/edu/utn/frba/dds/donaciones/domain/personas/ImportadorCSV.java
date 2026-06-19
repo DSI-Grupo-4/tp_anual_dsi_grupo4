@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -27,9 +28,9 @@ public class ImportadorCSV extends Importador {
             reader.readNext();
             List<String[]> filas = reader.readAll();
             for (String[] fila : filas) {
-                Donante donante = generarDonante(List.of(fila));
+                Donante donante = generarDonante(Collections.singletonList(fila));
                 if (donante != null) {
-                    registrarDonante(List.of(fila));
+                    registrarDonante(Collections.singletonList(fila));
                 }
             }
         } catch (Exception e) {

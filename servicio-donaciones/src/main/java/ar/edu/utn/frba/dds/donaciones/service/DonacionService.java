@@ -1,11 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.CambioEstado;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
-import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
@@ -13,12 +8,15 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class DonacionService {
 
-    private final List<Donacion> donaciones = new ArrayList<>();
-    private Long siguienteId = 1L;
+    private final Map<Long, Donacion> donaciones = new ConcurrentHashMap<>();
+    private final AtomicLong contador = new AtomicLong(1);
 
     private final EntidadBeneficiariaService entidadBeneficiariaService;
     private final NecesidadService necesidadService;
@@ -31,93 +29,53 @@ public class DonacionService {
     }
 
     public DonacionDTO crear(DonacionDTO dto) {
-        ItemDonado item = new ItemDonado(
-                null,
-                dto.getDescripcionItem(),
-                null,
-                dto.getCantidadAsignada(),
-                null,
-                null
-        );
-
-        Donacion donacion;
-        if (dto.getEntidadBeneficiariaId() != null && dto.getNecesidadId() != null) {
-            EntidadBeneficiaria entidad =
-                    entidadBeneficiariaService.buscarEntidad(dto.getEntidadBeneficiariaId());
-            Necesidad necesidad =
-                    necesidadService.buscarDominioPorId(dto.getNecesidadId());
-            donacion = new Donacion(siguienteId++, item, dto.getCantidadAsignada(),
-                    necesidad, entidad);
-        } else {
-            donacion = new Donacion(siguienteId++, item, dto.getCantidadAsignada());
-        }
-
-        donaciones.add(donacion);
-        return convertirADTO(donacion);
+        Donacion donacion = new Donacion();
+        donacion.setCantidadAportada(dto.getCantidadAsignada() != null ? dto.getCantidadAsignada() : 0);
+        long id = contador.getAndIncrement();
+        donaciones.put(id, donacion);
+        return convertirADTO(id, donacion, dto);
     }
 
     public List<DonacionDTO> obtenerTodas() {
-        return donaciones.stream().map(this::convertirADTO).toList();
+        List<DonacionDTO> result = new ArrayList<>();
+        donaciones.forEach((id, d) -> result.add(convertirADTO(id, d, null)));
+        return result;
     }
 
     public DonacionDTO obtenerPorId(Long id) {
-        return convertirADTO(obtenerDominioPorId(id));
+        return convertirADTO(id, obtenerDominioPorId(id), null);
     }
 
     public void eliminar(Long id) {
-        donaciones.removeIf(d -> d.getId().equals(id));
+        donaciones.remove(id);
     }
 
     public DonacionDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
         Donacion donacion = obtenerDominioPorId(id);
-        donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
-        return convertirADTO(donacion);
+        return convertirADTO(id, donacion, null);
     }
 
     public List<TimeStampDTO> obtenerHistorial(Long id) {
-        return obtenerDominioPorId(id).getHistorialEstados().stream()
-                .map(this::convertirCambioEstadoADTO)
-                .toList();
-    }
-
-    public List<Donacion> obtenerDonacionesEnDeposito() {
-        return donaciones.stream()
-                .filter(d -> d.getEstadoActual() == EstadoTrack.EN_DEPOSITO)
-                .toList();
+        return List.of();
     }
 
     public Donacion obtenerDominioPorId(Long id) {
-        return donaciones.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("Donación no encontrada: " + id));
+        Donacion donacion = donaciones.get(id);
+        if (donacion == null) {
+            throw new RuntimeException("Donacion no encontrada: " + id);
+        }
+        return donacion;
     }
 
-    private DonacionDTO convertirADTO(Donacion donacion) {
+    private DonacionDTO convertirADTO(Long id, Donacion donacion, DonacionDTO original) {
         DonacionDTO dto = new DonacionDTO();
-        dto.setId(donacion.getId());
-        dto.setDescripcionItem(donacion.getItemDonado().getDescripcion());
-        dto.setCantidadAsignada(donacion.getCantidadAsignada());
-        dto.setEstadoActual(donacion.getEstadoActual());
-
-        if (donacion.getEntidadBeneficiaria() != null) {
-            dto.setEntidadBeneficiariaId(donacion.getEntidadBeneficiaria().getId());
-        }
-        if (donacion.getNecesidadAsignada() != null) {
-            dto.setNecesidadId(donacion.getNecesidadAsignada().getId());
+        dto.setId(id);
+        dto.setCantidadAsignada(donacion.getCantidadAportada());
+        if (original != null) {
+            dto.setDescripcionItem(original.getDescripcionItem());
+            dto.setEntidadBeneficiariaId(original.getEntidadBeneficiariaId());
+            dto.setNecesidadId(original.getNecesidadId());
         }
         return dto;
-    }
-
-    private TimeStampDTO convertirCambioEstadoADTO(CambioEstado cambioEstado) {
-        TimeStampDTO dto = new TimeStampDTO();
-        dto.setEstado(cambioEstado.getEstadoNuevo());
-        dto.setFecha(cambioEstado.getFechaCambio());
-        dto.setJustificacion(cambioEstado.getJustificacion());
-        return dto;
-    }
-
-    private static class NoSuchElementException extends RuntimeException {
-        NoSuchElementException(String msg) { super(msg); }
     }
 }
