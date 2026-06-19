@@ -1,0 +1,29 @@
+package ar.edu.utn.frba.dds.donaciones.domain.personas;
+import com.opencsv.*;
+import java.io.*;
+import java.util.*;
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+
+public class GestorDonantes{
+    private List<Donante> donantesRegistrados;
+    private List<Importador> importadores;
+
+    public void getdonantesRegistrados(){
+    return donantesRegistrados;
+    }
+
+    public importarDonantes(String nombreimportador)
+    {
+        for(Importador importador : importadores)
+            if(importador.nombre==nombreimportador){
+            donantesRegistrados.addAll(importador.listaimportador);
+            }
+    }
+
+
+}
