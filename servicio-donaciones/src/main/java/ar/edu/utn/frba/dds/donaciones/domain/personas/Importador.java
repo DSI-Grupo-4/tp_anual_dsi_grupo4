@@ -5,15 +5,15 @@ import java.util.List;
 
 public abstract class Importador {
     protected String nombre;
-    protected List<Donante> listaDonantes = new ArrayList<>();
+    protected List<Donante> tallaImportador = new ArrayList<>();
 
     public String getNombre() {
         return nombre;
     }
 
-    public List<Donante> getListaDonantes() {
-        return listaDonantes;
+    public List<Donante> getTallaImportador() {
+        return tallaImportador;
     }
 
-    public abstract void importar(String ruta);
+    public abstract void realizarRuta();
 }

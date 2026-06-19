@@ -1,41 +1,25 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Fecha;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.SolicitudDonacion;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
 public class Donante {
-    private Long id;
-    private Persona persona;
-    private List<Donacion> donaciones;
-    private LocalDate ultimaActividad;
+    private Persona personaAsociada;
+    private List<SolicitudDonacion> donacionesRealizadas = new ArrayList<>();
+    private Fecha ultimaActividad;
 
-    public Donante(Long id, Persona persona) {
-        this.id = id;
-        this.persona = persona;
-        this.ultimaActividad = getUltimaActividad();
-        this.donaciones = new ArrayList<>();
+    public Donante(Persona personaAsociada) {
+        this.personaAsociada = personaAsociada;
     }
 
-    public Persona getPersona() {
-        return persona;
-    }
-
-    public void agregarDonacion(Donacion donacion) {
-        donaciones.add(donacion);
-    }
-
-    public Integer cantidadDonaciones() {
-        return donaciones.size();
-    }
-
-    public boolean realizoDonaciones() {
-        return !donaciones.isEmpty();
+    public void crearSolicitudDonacion() {
+        donacionesRealizadas.add(new SolicitudDonacion());
     }
 }

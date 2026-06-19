@@ -1,7 +1,5 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
-public enum Genero {
-    Masculino,
-    Femenino,
-    X
+public enum TipoOrg {
+    GOB, ONG, EMPRESA, INSTITUCION
 }

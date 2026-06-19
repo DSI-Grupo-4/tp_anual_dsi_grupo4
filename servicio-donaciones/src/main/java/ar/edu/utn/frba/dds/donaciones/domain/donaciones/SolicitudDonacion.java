@@ -10,24 +10,19 @@ import java.util.List;
 @Getter
 @Setter
 public class SolicitudDonacion {
-    private String descripcion;
-    private LocalDateTime fechaRegistro;
-    private List<ItemDonado> items;
+    private LocalDateTime fechaAltas;
+    private LocalDateTime fechaLogro;
+    private List<Item> items = new ArrayList<>();
 
-    public SolicitudDonacion(String descripcion) {
-
-        this.descripcion = descripcion;
-        this.fechaRegistro = LocalDateTime.now();
-
-        this.items = new ArrayList<>();
+    public SolicitudDonacion() {
+        this.fechaAltas = LocalDateTime.now();
     }
 
-    public void agregarItem(ItemDonado item) {
+    public void agregarItem(Item item) {
         items.add(item);
     }
 
-    public List<Donacion> segmentar(){
-        List<Donacion> Donacion = List.of();
-        return Donacion; //TODO proximas entregas
+    public List<Donacion> segmentar() {
+        return List.of();
     }
 }
