@@ -1,8 +1,8 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import domain.personas.MedioContacto;
-import domain.personas.Persona;
-import domain.personas.TipoContacto;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Persona;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoMedio;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -11,23 +11,16 @@ import java.util.Optional;
 public class ContactoPreferidoResolver {
 
     public Optional<ContactoNotificacion> resolver(Persona persona) {
-        if (persona == null) {
+        if (persona == null || persona.getMedios().isEmpty()) {
             return Optional.empty();
         }
-        return persona.medioPreferido().map(this::mapear);
+        MedioContacto medio = persona.getMedios().get(0);
+        return Optional.of(new ContactoNotificacion(mapearMedio(medio.getType()), medio.getValor()));
     }
 
-    private ContactoNotificacion mapear(MedioContacto medioContacto) {
-        return new ContactoNotificacion(mapearMedio(medioContacto.getTipo()), medioContacto.getValor());
-    }
-
-    private String mapearMedio(TipoContacto tipoContacto) {
-        if (tipoContacto == TipoContacto.EMAIL) {
-            return "EMAIL";
-        }
-        if (tipoContacto == TipoContacto.WHATSAPP) {
-            return "WHATSAPP";
-        }
+    private String mapearMedio(TipoMedio tipo) {
+        if (tipo == TipoMedio.EMAIL) return "EMAIL";
+        if (tipo == TipoMedio.WHATSAPP) return "WHATSAPP";
         return "SMS";
     }
 

@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.repository;
 
-import domain.personas.Donante;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
