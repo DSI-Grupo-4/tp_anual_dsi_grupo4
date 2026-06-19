@@ -1,13 +1,12 @@
 package ar.edu.utn.frba.dds.donaciones.dto;
 
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoDonacion;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class CambioEstadoDTO {
-    private EstadoDonacion estado;
+    private EstadoTrack nuevoEstado;
     private String justificacion;
 }
-

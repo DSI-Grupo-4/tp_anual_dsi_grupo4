@@ -1,107 +1,45 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
-import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.AlgoritmoAsignacion;
-import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
-import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
+import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.Algoritmo;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-@Setter
 public class GestorDonaciones {
+    private static final GestorDonaciones INSTANCE = new GestorDonaciones();
 
-    private Deposito deposito;
-    private List<Donacion> donaciones;
-    private List<EntidadBeneficiaria> entidades;
-    private List<Necesidad> necesidades;
-    private List<AlgoritmoAsignacion> algoritmos;
+    private Deposito depositoItems;
+    private List<Necesidad> necesidadesRegistradas;
+    private List<Donacion> donacionesRegistradas;
+    private List<Algoritmo> algoritmos;
 
-    public GestorDonaciones() {
-
-        this.deposito = new Deposito();
-        this.donaciones = new ArrayList<>();
-        this.necesidades = new ArrayList<>();
-        this.entidades = new ArrayList<>();
+    private GestorDonaciones() {
+        this.depositoItems = Deposito.getInstance();
+        this.necesidadesRegistradas = new ArrayList<>();
+        this.donacionesRegistradas = new ArrayList<>();
         this.algoritmos = new ArrayList<>();
-
-        this.algoritmos.add(
-                new CompatibilidadSemantica()
-        );
-
-        this.algoritmos.add(
-                new PrioridadSubatendidos()
-        );
     }
 
-    public void registrarSolicitud(SolicitudDonacion solicitud) {
-
-        solicitud.getItems()
-                .forEach(deposito::cargarItem);
+    public static GestorDonaciones getInstance() {
+        return INSTANCE;
     }
 
-    public void registrarNecesidad(Necesidad necesidad, EntidadBeneficiaria entidad) {
-        entidad.agregarNecesidad(necesidad);
-        this.necesidades.add(necesidad);
+    public void crearDonacion(Donacion donacion, Necesidad necesidad) {
+        donacionesRegistradas.add(donacion);
     }
 
-    public Donacion asignarDonacion(
-            Long id,
-            ItemDonado item,
-            Necesidad necesidad,
-            Integer cantidad) {
-
-        item.descontar(cantidad);
-
-        necesidad.recibir(cantidad);
-
-        Donacion donacion =
-                new Donacion(
-                        id,
-                        item,
-                        cantidad,
-                        necesidad,
-                        necesidad.getEntidadBeneficiaria()
-                );
-
-        donaciones.add(donacion);
-
-        necesidad.getEntidadBeneficiaria()
-                .registrarAyuda(donacion);
-
-        deposito.eliminarSinStock();
-
-        return donacion;
+    public void registrarNecesidad() {
     }
 
-    public List<EntidadBeneficiaria> ejecutarAsignacion(
-            ItemDonado item) {
-
-        List<EntidadBeneficiaria> resultado =
-                new ArrayList<>();
-
-        for(AlgoritmoAsignacion algoritmo : algoritmos) {
-
-            resultado.addAll(
-                    algoritmo.generarRanking(
-                            item,
-                            entidades
-                    )
-            );
-        }
-
-        return resultado;
+    public void ejecutarAsignacionNecesidadesRegistradas(
+            List<Algoritmo> algoritmos,
+            Deposito depositoItems) {
+        algoritmos.forEach(Algoritmo::ejecutarAlgoritmo);
     }
 
-    public void registrarEntidad(EntidadBeneficiaria entidad) {
-        this.entidades.add(entidad);
-    }
-
-    public void agregarAlgoritmo(AlgoritmoAsignacion algoritmo) {
-        this.algoritmos.add(algoritmo);
+    public void confirmarAsignacion() {
     }
 }

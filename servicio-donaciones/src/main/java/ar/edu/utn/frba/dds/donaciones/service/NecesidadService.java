@@ -92,6 +92,14 @@ public class NecesidadService {
         return convertirADTO(necesidad);
     }
 
+    public List<NecesidadDTO> obtenerPorEntidad(Long entidadId) {
+        return necesidades.stream()
+                .filter(n -> n.getEntidadBeneficiaria() != null
+                        && n.getEntidadBeneficiaria().getId().equals(entidadId))
+                .map(this::convertirADTO)
+                .toList();
+    }
+
     public void eliminar(Long id) {
         necesidades.removeIf(n -> n.getId().equals(id));
     }

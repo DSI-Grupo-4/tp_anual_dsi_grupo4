@@ -1,25 +1,33 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.Categoria;
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Deposito {
+    private static final Deposito INSTANCE = new Deposito();
 
-    private List<ItemDonado> items;
+    private List<Item> items = new ArrayList<>();
+    private List<Categoria> categorias = new ArrayList<>();
 
-    public Deposito() {
-        this.items = new ArrayList<>();
+    private Deposito() {
     }
 
-    public void cargarItem(ItemDonado item) {
+    public static Deposito getInstance() {
+        return INSTANCE;
+    }
+
+    public void cargarItem(Item item) {
         items.add(item);
     }
 
-    public List<ItemDonado> itemsDisponibles() {
-        return items;
-    }
-
-    public void eliminarSinStock() {
-        items.removeIf(ItemDonado::sinStock);
+    public void actualizarItem(Item item) {
+        int idx = items.indexOf(item);
+        if (idx >= 0) {
+            items.set(idx, item);
+        }
     }
 }
