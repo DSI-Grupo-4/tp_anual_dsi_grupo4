@@ -27,7 +27,7 @@ public class N8nCallbackController {
     @PostMapping("/misiones/completar")
     public ResponseEntity<Void> completarMision(@RequestBody CompletarMisionRequest req) {
         cuentaDonanteService.completarMision(req.getDonanteId(), req.getMisionId());
-        notificacionesClient.notificarMisionCompletada(req.getDonanteId(), "Misión #" + req.getMisionId());
+        notificacionesClient.notificarMisionCompletada(req.getDonanteId(), "Mision #" + req.getMisionId(), req.getMedio(), req.getContacto());
         return ResponseEntity.ok().build();
     }
 
@@ -40,7 +40,7 @@ public class N8nCallbackController {
     public ResponseEntity<Void> subirCategoria(@RequestBody SubirCategoriaRequest req) {
         CategoriasDonante nueva = CategoriasDonante.valueOf(req.getNuevaCategoria().toUpperCase());
         cuentaDonanteService.subirCategoria(req.getDonanteId(), nueva);
-        notificacionesClient.notificarSubidaCategoria(req.getDonanteId(), req.getNuevaCategoria());
+        notificacionesClient.notificarSubidaCategoria(req.getDonanteId(), req.getNuevaCategoria(), req.getMedio(), req.getContacto());
         return ResponseEntity.ok().build();
     }
 
@@ -48,6 +48,8 @@ public class N8nCallbackController {
     public static class CompletarMisionRequest {
         private int donanteId;
         private int misionId;
+        private String medio;
+        private String contacto;
     }
 
     @Getter @Setter
@@ -60,5 +62,7 @@ public class N8nCallbackController {
     public static class SubirCategoriaRequest {
         private int donanteId;
         private String nuevaCategoria;
+        private String medio;
+        private String contacto;
     }
 }
