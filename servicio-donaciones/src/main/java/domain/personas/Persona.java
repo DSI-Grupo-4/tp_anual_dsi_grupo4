@@ -1,3 +1,9 @@
+package domain.personas;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public abstract class Persona {
     private List<MedioContacto> mediosContacto;
 
@@ -15,7 +21,7 @@ public abstract class Persona {
 
     public Optional<MedioContacto> medioPreferido() {
         return mediosContacto.stream()
-                .filter(MedioContacto:esPreferido)
+                .filter(MedioContacto::esPreferido)
                 .findFirst();
-    } //devuelve el medio de contacto preferido en caso de haber
+    }
 }

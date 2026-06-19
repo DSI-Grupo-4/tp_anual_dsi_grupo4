@@ -10,7 +10,3 @@ springdoc:
     path: /swagger-ui.html
   api-docs:
     path: /api-docs
-
-logging:
-  level:
-    ar.edu.utn.donatrack.notificaciones: INFO

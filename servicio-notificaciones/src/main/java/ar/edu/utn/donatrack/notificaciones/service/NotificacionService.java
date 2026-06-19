@@ -5,26 +5,24 @@ import ar.edu.utn.donatrack.notificaciones.exception.EnvioNotificacionException;
 import ar.edu.utn.donatrack.notificaciones.model.Notificacion;
 import ar.edu.utn.donatrack.notificaciones.strategy.Notificador;
 import ar.edu.utn.donatrack.notificaciones.strategy.NotificadorFactory;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class NotificacionService {
 
     private final NotificadorFactory notificadorFactory;
+    private final Map<String, Notificacion> notificacionesPorId = new ConcurrentHashMap<>();
 
     public NotificacionService(NotificadorFactory notificadorFactory) {
         this.notificadorFactory = notificadorFactory;
     }
 
-    /**
-     * Procesa una solicitud de envío de notificación de punta a punta:
-     * crea la notificación en estado PENDIENTE, ejecuta el envío a través
-     * del Notificador correspondiente al medio indicado, y la marca como
-     * COMPLETADA al finalizar.
-     * @return la notificación procesada, con su estado final.
-     */
     public Notificacion enviarNotificacion(NotificacionRequestDTO request) {
         Notificacion notificacion = new Notificacion(
                 request.getMensaje(),
@@ -33,22 +31,30 @@ public class NotificacionService {
                 request.getServicioOrigen()
         );
 
+        return despachar(notificacion);
+    }
 
+    public Notificacion despachar(Notificacion notificacion) {
         try {
             Notificador notificador = notificadorFactory.obtenerNotificador(notificacion.getMedio());
             notificador.enviarNotificacion(notificacion);
-            notificacion.marcarComoCompletada();
+            notificacionesPorId.put(notificacion.getId(), notificacion);
+            return notificacion;
         } catch (IllegalArgumentException ex) {
-            // Medio no soportado: se re-lanza para que el controller devuelva 400.
             throw ex;
         } catch (Exception ex) {
             throw new EnvioNotificacionException(
-                    "No se pudo enviar la notificación " + notificacion.getId() + " por el medio " + notificacion.getMedio(),
+                    "No se pudo enviar la notificacion " + notificacion.getId() + " por el medio " + notificacion.getMedio(),
                     ex
             );
         }
+    }
 
+    public Optional<Notificacion> buscarPorId(String id) {
+        return Optional.ofNullable(notificacionesPorId.get(id));
+    }
 
-        return notificacion;
+    public List<Notificacion> listarTodas() {
+        return new ArrayList<>(notificacionesPorId.values());
     }
 }

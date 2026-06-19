@@ -1,6 +1,7 @@
 package domain.donaciones;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SolicitudDonacion {
@@ -9,10 +10,8 @@ public class SolicitudDonacion {
     private List<ItemDonado> items;
 
     public SolicitudDonacion(String descripcionGeneral) {
-
         this.descripcionGeneral = descripcionGeneral;
         this.fechaRegistro = LocalDateTime.now();
-
         this.items = new ArrayList<>();
     }
 
@@ -20,8 +19,7 @@ public class SolicitudDonacion {
         items.add(item);
     }
 
-    public List<Donacion> segmentar(){
-        List<Donacion> Donacion;
-        return Donacion;
+    public List<Donacion> segmentar() {
+        return items.stream().map(Donacion::new).toList();
     }
 }
