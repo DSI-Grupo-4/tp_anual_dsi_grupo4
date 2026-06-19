@@ -4,29 +4,36 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-<parent>
-    <groupId>ar.edu.utn.frba.dds</groupId>
-    <artifactId>donatrack-root</artifactId>
-    <version>1.0-SNAPSHOT</version>
-</parent>
+    <parent>
+        <groupId>ar.edu.utn.frba.dds</groupId>
+        <artifactId>donatrack-root</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
     <artifactId>servicio-incentivos</artifactId>
-<dependencies>
 
-    <!-- Spring Boot -->
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
-    </dependency>
+    <dependencies>
 
-    <!-- Lombok -->
-    <dependency>
-        <groupId>org.projectlombok</groupId>
-        <artifactId>lombok</artifactId>
-        <scope>provided</scope>
-    </dependency>
+        <!-- Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-</dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+    </dependencies>
 
     <build>
         <plugins>

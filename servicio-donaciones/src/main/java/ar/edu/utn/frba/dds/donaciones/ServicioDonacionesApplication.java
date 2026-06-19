@@ -4,10 +4,14 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
-@SpringBootApplication(scanBasePackages = {"ar.edu.utn.frba.dds.donaciones", "domain"})
+@SpringBootApplication
 @EnableScheduling
 public class ServicioDonacionesApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(ServicioDonacionesApplication.class, args);
+        SpringApplication.run(
+                ServicioDonacionesApplication.class,
+                args
+        );
     }
 }
