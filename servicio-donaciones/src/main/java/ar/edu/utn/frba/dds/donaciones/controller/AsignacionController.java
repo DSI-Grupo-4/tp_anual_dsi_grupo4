@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/asignaciones")
+@RequestMapping("/api/asignaciones")
 public class AsignacionController {
+
     private final AsignacionService asignacionService;
 
     public AsignacionController(AsignacionService asignacionService) {
@@ -19,7 +20,6 @@ public class AsignacionController {
     @PostMapping("/ranking")
     public List<RankingEntidadDTO> generarRanking(
             @RequestBody SolicitudRankingDTO dto) {
-
         return asignacionService.generarRanking(dto);
     }
 }

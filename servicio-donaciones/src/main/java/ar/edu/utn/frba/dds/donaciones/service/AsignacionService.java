@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.AlgoritmoAsignacion;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.RankingEntidadDTO;
@@ -14,6 +15,7 @@ import java.util.List;
 
 @Service
 public class AsignacionService {
+
     private final EntidadBeneficiariaService entidadBeneficiariaService;
 
     public AsignacionService(EntidadBeneficiariaService entidadBeneficiariaService) {
@@ -29,11 +31,12 @@ public class AsignacionService {
                 null,
                 null
         );
+        Donacion donacionProxy = new Donacion(null, item, dto.getCantidad());
 
         AlgoritmoAsignacion algoritmo = seleccionarAlgoritmo(dto.getAlgoritmo());
 
-        return algoritmo.generarRanking(
-                        item,
+        return algoritmo.ejecutarAlgoritmo(
+                        donacionProxy,
                         entidadBeneficiariaService.obtenerEntidadesDominio()
                 )
                 .stream()
@@ -45,16 +48,11 @@ public class AsignacionService {
         if ("PRIORIDAD_SUBATENDIDOS".equalsIgnoreCase(algoritmo)) {
             return new PrioridadSubatendidos();
         }
-
         return new CompatibilidadSemantica();
     }
 
-    private RankingEntidadDTO convertirADTO(
-            EntidadBeneficiaria entidad,
-            ItemDonado item) {
-
+    private RankingEntidadDTO convertirADTO(EntidadBeneficiaria entidad, ItemDonado item) {
         RankingEntidadDTO dto = new RankingEntidadDTO();
-
         dto.setEntidadBeneficiariaId(entidad.getId());
         dto.setDescripcion(entidad.getDescripcion());
 
@@ -62,19 +60,13 @@ public class AsignacionService {
             dto.setRazonSocial(entidad.getEntidad().getRazonSocial());
         }
 
-        dto.setPuntaje(
-                (int) entidad.getNecesidades()
-                        .stream()
-                        .filter(n -> !n.satisfecha())
-                        .filter(n ->
-                                n.getSubcategoria() != null &&
-                                item.getSubcategoria() != null &&
-                                n.getSubcategoria().getNombre().equalsIgnoreCase(
-                                        item.getSubcategoria().getNombre()
-                                )
-                        )
-                        .count()
-        );
+        dto.setPuntaje((int) entidad.getNecesidades().stream()
+                .filter(n -> !n.satisfecha())
+                .filter(n -> n.getSubcategoria() != null
+                        && item.getSubcategoria() != null
+                        && n.getSubcategoria().getNombre()
+                        .equalsIgnoreCase(item.getSubcategoria().getNombre()))
+                .count());
 
         return dto;
     }

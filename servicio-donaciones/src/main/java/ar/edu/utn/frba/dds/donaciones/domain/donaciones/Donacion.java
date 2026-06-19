@@ -6,91 +6,73 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
 public class Donacion {
+
+    private static final Map<EstadoTrack, Set<EstadoTrack>> TRANSICIONES_VALIDAS;
+
+    static {
+        Map<EstadoTrack, Set<EstadoTrack>> map = new HashMap<>();
+        map.put(EstadoTrack.EN_DEPOSITO,
+                Set.of(EstadoTrack.ASIGNACION_REALIZADA, EstadoTrack.VENCIDA));
+        map.put(EstadoTrack.ASIGNACION_REALIZADA,
+                Set.of(EstadoTrack.LISTA_PARA_ENTREGAR));
+        map.put(EstadoTrack.LISTA_PARA_ENTREGAR,
+                Set.of(EstadoTrack.EN_TRASLADO));
+        map.put(EstadoTrack.EN_TRASLADO,
+                Set.of(EstadoTrack.ENTREGADA, EstadoTrack.ENTREGA_FALLIDA));
+        map.put(EstadoTrack.ENTREGA_FALLIDA,
+                Set.of(EstadoTrack.EN_DEPOSITO));
+        TRANSICIONES_VALIDAS = Collections.unmodifiableMap(map);
+    }
+
     private Long id;
     private Integer cantidadAsignada;
     private Necesidad necesidadAsignada;
     private ItemDonado itemDonado;
     private LocalDateTime fechaCreacion;
-    private EstadoDonacion estadoActual;
-    private List<TimeStamp> historialEstados;
+    private EstadoTrack estadoActual;
+    private List<CambioEstado> historialEstados;
     private EntidadBeneficiaria entidadBeneficiaria;
+    private List<EntidadBeneficiaria> candidatas;
 
-    public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada, Necesidad necesidadAsignada, EntidadBeneficiaria entidadBeneficiaria) {
+    public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada) {
         this.id = id;
         this.itemDonado = itemDonado;
         this.cantidadAsignada = cantidadAsignada;
-        this.necesidadAsignada = necesidadAsignada;
-        this.entidadBeneficiaria = entidadBeneficiaria;
         this.fechaCreacion = LocalDateTime.now();
-        this.estadoActual = EstadoDonacion.EN_DEPOSITO;
+        this.estadoActual = EstadoTrack.EN_DEPOSITO;
         this.historialEstados = new ArrayList<>();
-        this.historialEstados.add(
-                new TimeStamp(
-                        EstadoDonacion.EN_DEPOSITO,
-                        "Donacion recibida en depósito"
-                )
-        );
+        this.candidatas = new ArrayList<>();
+        this.historialEstados.add(new CambioEstado(EstadoTrack.EN_DEPOSITO, "Donación recibida en depósito"));
     }
 
-    public void asignarA(Necesidad necesidad) {
-        this.necesidadAsignada = necesidad;
-        estadoActual = EstadoDonacion.ASIGNADA;
+    public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada,
+                    Necesidad necesidadAsignada, EntidadBeneficiaria entidadBeneficiaria) {
+        this(id, itemDonado, cantidadAsignada);
+        this.necesidadAsignada = necesidadAsignada;
+        this.entidadBeneficiaria = entidadBeneficiaria;
+    }
+
+    public void cambiarEstado(EstadoTrack nuevoEstado, String justificacion) {
+        if (nuevoEstado == EstadoTrack.ENTREGA_FALLIDA
+                && (justificacion == null || justificacion.isBlank())) {
+            throw new IllegalArgumentException("La justificación es obligatoria para ENTREGA_FALLIDA");
+        }
+
+        Set<EstadoTrack> permitidas = TRANSICIONES_VALIDAS.get(estadoActual);
+        if (permitidas == null || !permitidas.contains(nuevoEstado)) {
+            throw new EstadoInvalidoException(estadoActual, nuevoEstado);
+        }
+
+        this.estadoActual = nuevoEstado;
+        this.historialEstados.add(new CambioEstado(nuevoEstado, justificacion));
     }
 
     public boolean estaAsignada() {
         return necesidadAsignada != null;
-    }
-
-    public void cambiarEstado(EstadoDonacion nuevoEstado, String justificacion) {
-        this.estadoActual = nuevoEstado;
-
-        historialEstados.add(
-                new TimeStamp(nuevoEstado, justificacion)
-        );
-    }
-
-    public void entregar() {
-        cambiarEstado(EstadoDonacion.ENTREGADA, "Entrega confirmada");
-    }
-
-    public void asignar() {
-        cambiarEstado(
-                EstadoDonacion.ASIGNADA,
-                "Asignación realizada"
-        );
-    }
-
-    public void listaParaEntregar() {
-        cambiarEstado(
-                EstadoDonacion.LISTA_PARA_ENTREGAR,
-                "Ruta planificada"
-        );
-    }
-
-    public void iniciarTraslado() {
-        cambiarEstado(
-                EstadoDonacion.EN_TRASLADO,
-                "Camión inició recorrido"
-        );
-    }
-
-    public void marcarFallida(String motivo) {
-        cambiarEstado(
-                EstadoDonacion.ENTREGA_FALLIDA,
-                motivo
-        );
-    }
-
-    public void vencer(String motivo) {
-        cambiarEstado(
-                EstadoDonacion.VENCIDA,
-                motivo
-        );
     }
 }
