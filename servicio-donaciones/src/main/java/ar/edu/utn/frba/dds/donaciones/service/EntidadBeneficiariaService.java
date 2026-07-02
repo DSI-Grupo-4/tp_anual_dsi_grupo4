@@ -1,10 +1,16 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Ciudad;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Provincia;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
+import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,6 +40,7 @@ public class EntidadBeneficiariaService {
                         personaJuridica,
                         dto.getDescripcion()
                 );
+        entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
         entidades.add(entidad);
 
         return convertirADTO(entidad);
@@ -92,6 +99,49 @@ public class EntidadBeneficiariaService {
         dto.setPersonaJuridica(personaDTO);
         dto.setDescripcion(entidad.getDescripcion());
         dto.setId(entidad.getId());
+        dto.setDireccion(convertirDireccionADTO(entidad.getDireccion()));
+
+        return dto;
+    }
+
+    private Direccion convertirDireccionDominio(DireccionDTO direccionDTO) {
+        if (direccionDTO == null) {
+            return null;
+        }
+
+        Ciudad ciudad = null;
+        if (direccionDTO.getCiudad() != null) {
+            Provincia provincia = null;
+            if (direccionDTO.getCiudad().getProvincia() != null) {
+                provincia = new Provincia(direccionDTO.getCiudad().getProvincia().getNombre());
+            }
+            ciudad = new Ciudad(direccionDTO.getCiudad().getNombre(), provincia);
+        }
+
+        return new Direccion(direccionDTO.getCalle(), direccionDTO.getNumero(), ciudad);
+    }
+
+    private DireccionDTO convertirDireccionADTO(Direccion direccion) {
+        if (direccion == null) {
+            return null;
+        }
+
+        DireccionDTO dto = new DireccionDTO();
+        dto.setCalle(direccion.getCalle());
+        dto.setNumero(direccion.getNumero());
+
+        if (direccion.getCiudad() != null) {
+            CiudadDTO ciudadDTO = new CiudadDTO();
+            ciudadDTO.setNombre(direccion.getCiudad().getNombre());
+
+            if (direccion.getCiudad().getProvincia() != null) {
+                ProvinciaDTO provinciaDTO = new ProvinciaDTO();
+                provinciaDTO.setNombre(direccion.getCiudad().getProvincia().getNombre());
+                ciudadDTO.setProvincia(provinciaDTO);
+            }
+
+            dto.setCiudad(ciudadDTO);
+        }
 
         return dto;
     }
@@ -121,6 +171,8 @@ public class EntidadBeneficiariaService {
         persona.setRubro(
                 dto.getPersonaJuridica().getRubro()
         );
+
+        entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
 
         return convertirADTO(entidad);
     }

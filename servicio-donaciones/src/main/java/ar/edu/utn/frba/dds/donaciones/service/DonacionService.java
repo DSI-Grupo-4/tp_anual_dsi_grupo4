@@ -4,10 +4,17 @@ import ar.edu.utn.frba.dds.donaciones.domain.donaciones.CambioEstado;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Ciudad;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Provincia;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +46,9 @@ public class DonacionService {
                 null,
                 null
         );
+        item.setPesoKg(dto.getPesoKg());
+        item.setVolumenM3(dto.getVolumenM3());
+        item.setAlturaM(dto.getAlturaM());
 
         Donacion donacion;
         if (dto.getEntidadBeneficiariaId() != null && dto.getNecesidadId() != null) {
@@ -84,6 +94,71 @@ public class DonacionService {
         return donaciones.stream()
                 .filter(d -> d.getEstadoActual() == EstadoTrack.EN_DEPOSITO)
                 .toList();
+    }
+
+    public List<DonacionPendienteDTO> obtenerPendientes(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("page debe ser >= 0");
+        }
+        if (size <= 0 || size > 100) {
+            throw new IllegalArgumentException("size debe estar entre 1 y 100");
+        }
+
+        int skip = page * size;
+
+        return donaciones.stream()
+                .filter(this::estaPendienteDePlanificacion)
+                .skip(skip)
+                .limit(size)
+                .map(this::convertirAPendienteDTO)
+                .toList();
+    }
+
+    private boolean estaPendienteDePlanificacion(Donacion donacion) {
+        return donacion.getEstadoActual() == EstadoTrack.ASIGNACION_REALIZADA
+                && donacion.getEntidadBeneficiaria() != null;
+    }
+
+    private DonacionPendienteDTO convertirAPendienteDTO(Donacion donacion) {
+        DonacionPendienteDTO dto = new DonacionPendienteDTO();
+        dto.setIdDonacion(donacion.getId().intValue());
+        dto.setEntidadBeneficiariaAsociadaID(
+                donacion.getEntidadBeneficiaria().getId().intValue());
+        dto.setDireccionDestino(
+                convertirDireccionADTO(donacion.getEntidadBeneficiaria().getDireccion()));
+
+        ItemDonado item = donacion.getItemDonado();
+        if (item != null) {
+            dto.setPesoKG(item.getPesoKg());
+            dto.setVolumenM3(item.getVolumenM3());
+            dto.setAlturaM(item.getAlturaM());
+        }
+        return dto;
+    }
+
+    private DireccionDTO convertirDireccionADTO(Direccion direccion) {
+        if (direccion == null) {
+            return null;
+        }
+
+        DireccionDTO dto = new DireccionDTO();
+        dto.setCalle(direccion.getCalle());
+        dto.setNumero(direccion.getNumero());
+
+        if (direccion.getCiudad() != null) {
+            CiudadDTO ciudadDTO = new CiudadDTO();
+            ciudadDTO.setNombre(direccion.getCiudad().getNombre());
+
+            if (direccion.getCiudad().getProvincia() != null) {
+                ProvinciaDTO provinciaDTO = new ProvinciaDTO();
+                provinciaDTO.setNombre(direccion.getCiudad().getProvincia().getNombre());
+                ciudadDTO.setProvincia(provinciaDTO);
+            }
+
+            dto.setCiudad(ciudadDTO);
+        }
+
+        return dto;
     }
 
     public Donacion obtenerDominioPorId(Long id) {

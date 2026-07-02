@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ public class EntidadBeneficiaria {
     private Long id;
     private PersonaJuridica entidad;
     private String descripcion;
+    private Direccion direccion;
     private List<Necesidad> necesidades;
     private List<Donacion> donacionesRecibidas;
 
