@@ -13,11 +13,11 @@ public class DonacionClienteService {
 
     private final RestTemplate restTemplate;
 
-    public DonacionClient() {
+    public DonacionClienteService() {
         this.restTemplate = new RestTemplate();
     }
 
-    public List<DonacionDTO> obtenerDonaciones(int page) {
+    public static List<DonacionDTO> obtenerDonaciones(int page) {
         String url = "http://donaciones-service/api/donaciones/pendientes?page="
                 + page + "&size=100";
 

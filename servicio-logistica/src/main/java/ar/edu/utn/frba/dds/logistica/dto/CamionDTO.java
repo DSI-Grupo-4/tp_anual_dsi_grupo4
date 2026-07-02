@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class CamionDTO {
+    private Integer idCamion;
     private String patente;
     private EstadoCamion estadoCamion;
 }

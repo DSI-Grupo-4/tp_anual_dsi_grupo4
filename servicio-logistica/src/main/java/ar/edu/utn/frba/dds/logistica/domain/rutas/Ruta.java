@@ -18,9 +18,9 @@ public class Ruta {
     private List<Parada> paradas;
     private EstadoRuta estadoRuta;
 
-    public void iniciarRuta(){};
+    public void iniciarRuta(){this.estadoRuta = EstadoRuta.INICIADA;};
 
-    public void finalizarRuta(){};
+    public void finalizarRuta(){this.estadoRuta = EstadoRuta.FINALIZADA;};
 
     public Boolean completoTodasLasEntregas() {
 

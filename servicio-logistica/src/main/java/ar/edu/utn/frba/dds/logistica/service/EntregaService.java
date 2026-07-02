@@ -34,7 +34,7 @@ public class EntregaService {
 
         return new EntregaDTO(
                 entrega.getIdEntrega(),
-                entrega.getEstadoEntrega().name()
+                entrega.getEstadoEntrega()
         );
     }
 }
