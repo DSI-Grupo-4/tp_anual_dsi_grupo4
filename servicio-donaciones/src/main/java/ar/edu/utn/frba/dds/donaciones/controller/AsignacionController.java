@@ -8,8 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/asignaciones")
+@RequestMapping("/api/asignaciones")
 public class AsignacionController {
+
     private final AsignacionService asignacionService;
 
     public AsignacionController(AsignacionService asignacionService) {
@@ -18,7 +19,7 @@ public class AsignacionController {
 
     @PostMapping("/candidatas")
     public List<EntidadCandidataDTO> obtenerCandidatas(
-        @RequestBody SolicitudAsignacionDTO dto) {
+            @RequestBody SolicitudAsignacionDTO dto) {
 
         return asignacionService.obtenerCandidatas(dto);
     }
