@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.dto;
 
-import ar.edu.utn.frba.dds.logistica.domain.rutas
+import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoEntrega;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
