@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.dto;
 
+import ar.edu.utn.frba.dds.logistica.domain.rutas
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,6 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class EntregaDTO {
     private Integer idEntrega;
-    private String estado;
+    private EstadoEntrega estado;
 
 }
