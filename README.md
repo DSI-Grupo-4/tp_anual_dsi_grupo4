@@ -58,13 +58,15 @@
 │   └── src
 │       └── main
 ├── servicio-logistica
-│   └── pom.xml
+│   ├── pom.xml
+│   └── src
+│       └── main
 └── servicio-notificaciones
     ├── pom.xml
     └── src
         └── main
 
-19 directories, 30 files
+21 directories, 30 files
 ```
 <!-- TREE_END -->
 
