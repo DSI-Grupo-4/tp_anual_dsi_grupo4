@@ -1,27 +1,35 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
 public class MedioContacto {
-    private TipoMedio type;
+    private TipoContacto tipo;
     private String valor;
+    private Boolean esPreferido;
 
-    public MedioContacto(TipoMedio type, String valor) {
-        this.type = type;
+    public MedioContacto(
+            TipoContacto tipo,
+            String valor,
+            Boolean esPreferido) {
+
+        this.tipo = tipo;
         this.valor = valor;
+        this.esPreferido = esPreferido;
     }
 
-    public TipoMedio getType() {
-        return type;
+    public void marcarComoPreferido() {
+        this.esPreferido = true;
     }
 
-    public void setType(TipoMedio type) {
-        this.type = type;
+    public void desmarcarPreferido() {
+        this.esPreferido = false;
     }
 
-    public String getValor() {
-        return valor;
-    }
-
-    public void setValor(String valor) {
-        this.valor = valor;
+    public Boolean esPreferido() {
+        return esPreferido;
     }
 }

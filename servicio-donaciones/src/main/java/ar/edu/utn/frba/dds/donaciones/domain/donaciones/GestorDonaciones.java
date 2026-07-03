@@ -1,45 +1,90 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
-import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.Algoritmo;
+import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.AlgoritmoAsignacion;
+import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
+import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+@Setter
 public class GestorDonaciones {
-    private static final GestorDonaciones INSTANCE = new GestorDonaciones();
 
-    private Deposito depositoItems;
-    private List<Necesidad> necesidadesRegistradas;
-    private List<Donacion> donacionesRegistradas;
-    private List<Algoritmo> algoritmos;
+    private Deposito deposito;
+    private List<Donacion> donaciones;
+    private List<EntidadBeneficiaria> entidades;
+    private List<Necesidad> necesidades;
+    private List<AlgoritmoAsignacion> algoritmos;
 
-    private GestorDonaciones() {
-        this.depositoItems = Deposito.getInstance();
-        this.necesidadesRegistradas = new ArrayList<>();
-        this.donacionesRegistradas = new ArrayList<>();
+    public GestorDonaciones() {
+        this.deposito = new Deposito();
+        this.donaciones = new ArrayList<>();
+        this.necesidades = new ArrayList<>();
+        this.entidades = new ArrayList<>();
         this.algoritmos = new ArrayList<>();
+        this.algoritmos.add(new CompatibilidadSemantica());
+        this.algoritmos.add(new PrioridadSubatendidos());
     }
 
-    public static GestorDonaciones getInstance() {
-        return INSTANCE;
+    public void registrarSolicitud(SolicitudDonacion solicitud) {
+        solicitud.getItems().forEach(deposito::cargarItem);
     }
 
-    public void crearDonacion(Donacion donacion, Necesidad necesidad) {
-        donacionesRegistradas.add(donacion);
+    public void registrarNecesidad(Necesidad necesidad, EntidadBeneficiaria entidad) {
+        entidad.agregarNecesidad(necesidad);
+        this.necesidades.add(necesidad);
     }
 
-    public void registrarNecesidad() {
+    public void registrarEntidad(EntidadBeneficiaria entidad) {
+        this.entidades.add(entidad);
     }
 
-    public void ejecutarAsignacionNecesidadesRegistradas(
-            List<Algoritmo> algoritmos,
-            Deposito depositoItems) {
-        algoritmos.forEach(Algoritmo::ejecutarAlgoritmo);
+    public void agregarAlgoritmo(AlgoritmoAsignacion algoritmo) {
+        this.algoritmos.add(algoritmo);
     }
 
-    public void confirmarAsignacion() {
+    public Donacion asignarDonacion(
+            Long id,
+            ItemDonado item,
+            Necesidad necesidad,
+            Integer cantidad) {
+
+        item.descontar(cantidad);
+        necesidad.recibir(cantidad);
+
+        Donacion donacion = new Donacion(id, item, cantidad, necesidad,
+                necesidad.getEntidadBeneficiaria());
+        donaciones.add(donacion);
+        necesidad.getEntidadBeneficiaria().registrarAyuda(donacion);
+        deposito.eliminarSinStock();
+
+        return donacion;
+    }
+
+    public ResultadoMatchmaking ejecutarMatchmaking(
+            Donacion donacion,
+            List<EntidadBeneficiaria> todasLasEntidades) {
+
+        List<EntidadBeneficiaria> porCompatibilidad = new CompatibilidadSemantica()
+                .ejecutarAlgoritmo(donacion, todasLasEntidades);
+        List<EntidadBeneficiaria> porSubatencion = new PrioridadSubatendidos()
+                .ejecutarAlgoritmo(donacion, todasLasEntidades);
+
+        List<EntidadBeneficiaria> interseccion = porCompatibilidad.stream()
+                .filter(porSubatencion::contains)
+                .limit(10)
+                .toList();
+
+        return new ResultadoMatchmaking(porCompatibilidad, porSubatencion, interseccion);
+    }
+
+    public void confirmarAsignacion(Donacion donacion, EntidadBeneficiaria entidad) {
+        donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
+        donacion.setEntidadBeneficiaria(entidad);
     }
 }

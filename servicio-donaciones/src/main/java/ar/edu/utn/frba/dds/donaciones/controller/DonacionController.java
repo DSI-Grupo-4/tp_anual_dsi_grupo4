@@ -5,6 +5,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.AsignarEntidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
@@ -43,6 +44,13 @@ public class DonacionController {
         return donacionService.obtenerTodas();
     }
 
+    @GetMapping("/pendientes")
+    public List<DonacionPendienteDTO> obtenerPendientes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size) {
+        return donacionService.obtenerPendientes(page, size);
+    }
+
     @GetMapping("/{id}")
     public DonacionDTO obtenerPorId(@PathVariable Long id) {
         return donacionService.obtenerPorId(id);
@@ -76,6 +84,7 @@ public class DonacionController {
     public List<EntidadBeneficiariaDTO> candidatas(@PathVariable Long id) {
         Donacion donacion = donacionService.obtenerDominioPorId(id);
         List<EntidadBeneficiaria> candidatas = matchmakingService.ejecutarMatchmaking(donacion);
+        donacion.setCandidatas(candidatas);
         return candidatas.stream()
                 .map(entidadBeneficiariaService::convertirADTO)
                 .toList();

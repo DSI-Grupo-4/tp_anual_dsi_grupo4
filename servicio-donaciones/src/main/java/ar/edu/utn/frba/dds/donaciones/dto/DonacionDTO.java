@@ -13,4 +13,11 @@ public class DonacionDTO {
     private EstadoTrack estadoActual;
     private Long entidadBeneficiariaId;
     private Long necesidadId;
+    // Id del donante que hizo la donación. Necesario para poder notificarlo
+    // cuando la donación sea asignada (Entrega 2) y para registrar su
+    // actividad (usado en la notificación por inactividad > 20 días).
+    private Long donanteId;
+    private Integer pesoKg;
+    private Integer volumenM3;
+    private Integer alturaM;
 }

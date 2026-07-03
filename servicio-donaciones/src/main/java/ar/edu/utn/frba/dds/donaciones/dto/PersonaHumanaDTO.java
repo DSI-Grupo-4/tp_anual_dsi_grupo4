@@ -12,4 +12,11 @@ public class PersonaHumanaDTO {
     private Integer edad;
     private String documento;
     private Genero genero;
+
+    // Medios de contacto: el enunciado exige al menos email de forma obligatoria
+    // (Entrega 1 - Servicio de Donaciones - Donantes) y son necesarios para poder
+    // resolver a quién y por dónde notificar (Entrega 2).
+    private String email;
+    private String telefono;
+    private String whatsapp;
 }

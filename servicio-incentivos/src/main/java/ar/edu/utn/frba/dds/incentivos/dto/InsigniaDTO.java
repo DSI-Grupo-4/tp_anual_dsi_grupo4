@@ -7,6 +7,5 @@ import lombok.Setter;
 @Setter
 public class InsigniaDTO {
     private String nombre;
-    private String imagen;
-    private String fechaAsignacion;
+    private String imagenUrl;
 }

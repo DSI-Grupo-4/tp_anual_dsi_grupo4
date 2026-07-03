@@ -1,81 +1,200 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Ciudad;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
+import ar.edu.utn.frba.dds.donaciones.domain.lugares.Provincia;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto;
+import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class EntidadBeneficiariaService {
+    private List<EntidadBeneficiaria> entidades =
+            new ArrayList<>();
 
-    private final Map<Long, EntidadBeneficiaria> entidades = new ConcurrentHashMap<>();
-    private final AtomicLong contador = new AtomicLong(1);
+    private Long siguienteId = 1L;
 
     public EntidadBeneficiariaDTO crear(EntidadBeneficiariaDTO dto) {
-        EntidadBeneficiaria entidad = new EntidadBeneficiaria();
-        entidad.setNombre(dto.getPersonaJuridica() != null ? dto.getPersonaJuridica().getRazonSocial() : dto.getDescripcion());
-        long id = contador.getAndIncrement();
-        entidades.put(id, entidad);
-        return convertirADTO(id, entidad, dto.getDescripcion(), dto.getPersonaJuridica());
+        PersonaJuridicaDTO personaJuridicaDTO = dto.getPersonaJuridica();
+
+        PersonaJuridica personaJuridica =
+                new PersonaJuridica(
+                        personaJuridicaDTO.getRazonSocial(),
+                        personaJuridicaDTO.getTipo(),
+                        personaJuridicaDTO.getRubro(),
+                        null
+                );
+
+        cargarMediosContacto(personaJuridica, personaJuridicaDTO.getEmail(), personaJuridicaDTO.getTelefono());
+
+        EntidadBeneficiaria entidad =
+                new EntidadBeneficiaria(
+                        siguienteId++,
+                        personaJuridica,
+                        dto.getDescripcion()
+                );
+        entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
+        entidades.add(entidad);
+
+        return convertirADTO(entidad);
+    }
+
+    /**
+     * Sin esto, la entidad beneficiaria quedaba sin ningún MedioContacto y no
+     * había forma de notificarla al asignarle una donación (Entrega 2).
+     */
+    private void cargarMediosContacto(PersonaJuridica persona, String email, String telefono) {
+        if (email != null && !email.isBlank()) {
+            persona.agregarMedio(new MedioContacto(TipoContacto.EMAIL, email, true));
+        }
+        if (telefono != null && !telefono.isBlank()) {
+            persona.agregarMedio(new MedioContacto(TipoContacto.TELEFONO, telefono, false));
+        }
     }
 
     public List<EntidadBeneficiariaDTO> obtenerTodas() {
-        List<EntidadBeneficiariaDTO> result = new ArrayList<>();
-        entidades.forEach((id, e) -> result.add(convertirADTO(id, e, null, null)));
-        return result;
+        return entidades.stream().map(this::convertirADTO).toList();
     }
 
     public EntidadBeneficiariaDTO obtenerPorId(Long id) {
-        return convertirADTO(id, buscarEntidad(id), null, null);
+
+        EntidadBeneficiaria entidad = entidades.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
+
+        return convertirADTO(entidad);
     }
 
     public EntidadBeneficiaria buscarEntidad(Long id) {
-        EntidadBeneficiaria entidad = entidades.get(id);
-        if (entidad == null) {
-            throw new RuntimeException("EntidadBeneficiaria no encontrada: " + id);
-        }
-        return entidad;
+
+        return entidades.stream()
+                .filter(e -> e.getId().equals(id))
+                .findFirst()
+                .orElseThrow();
     }
 
     public void eliminar(Long id) {
-        entidades.remove(id);
+
+        entidades.removeIf(
+                e -> e.getId().equals(id)
+        );
     }
 
-    public EntidadBeneficiariaDTO convertirADTO(EntidadBeneficiaria entidad) {
-        long id = entidades.entrySet().stream()
-                .filter(e -> e.getValue() == entidad)
-                .map(Map.Entry::getKey)
-                .findFirst().orElse(-1L);
-        return convertirADTO(id, entidad, null, null);
-    }
+    public EntidadBeneficiariaDTO convertirADTO(
+            EntidadBeneficiaria entidad) {
 
-    public EntidadBeneficiariaDTO actualizar(Long id, EntidadBeneficiariaDTO dto) {
-        EntidadBeneficiaria entidad = buscarEntidad(id);
-        if (dto.getPersonaJuridica() != null) {
-            entidad.setNombre(dto.getPersonaJuridica().getRazonSocial());
-        }
-        return convertirADTO(id, entidad, dto.getDescripcion(), dto.getPersonaJuridica());
-    }
+        EntidadBeneficiariaDTO dto =
+                new EntidadBeneficiariaDTO();
 
-    public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
-        return new ArrayList<>(entidades.values());
-    }
+        PersonaJuridicaDTO personaDTO =
+                new PersonaJuridicaDTO();
 
-    private EntidadBeneficiariaDTO convertirADTO(Long id, EntidadBeneficiaria entidad, String descripcion, PersonaJuridicaDTO personaJuridicaDTO) {
-        EntidadBeneficiariaDTO dto = new EntidadBeneficiariaDTO();
-        dto.setId(id);
-        dto.setDescripcion(descripcion != null ? descripcion : entidad.getNombre());
-        PersonaJuridicaDTO pjDTO = personaJuridicaDTO != null ? personaJuridicaDTO : new PersonaJuridicaDTO();
-        if (personaJuridicaDTO == null) {
-            pjDTO.setRazonSocial(entidad.getNombre());
-        }
-        dto.setPersonaJuridica(pjDTO);
+        personaDTO.setRazonSocial(
+                entidad.getEntidad().getRazonSocial()
+        );
+
+        personaDTO.setTipo(
+                entidad.getEntidad().getTipo()
+        );
+
+        personaDTO.setRubro(
+                entidad.getEntidad().getRubro()
+        );
+
+        dto.setPersonaJuridica(personaDTO);
+        dto.setDescripcion(entidad.getDescripcion());
+        dto.setId(entidad.getId());
+        dto.setDireccion(convertirDireccionADTO(entidad.getDireccion()));
+
         return dto;
     }
+
+    private Direccion convertirDireccionDominio(DireccionDTO direccionDTO) {
+        if (direccionDTO == null) {
+            return null;
+        }
+
+        Ciudad ciudad = null;
+        if (direccionDTO.getCiudad() != null) {
+            Provincia provincia = null;
+            if (direccionDTO.getCiudad().getProvincia() != null) {
+                provincia = new Provincia(direccionDTO.getCiudad().getProvincia().getNombre());
+            }
+            ciudad = new Ciudad(direccionDTO.getCiudad().getNombre(), provincia);
+        }
+
+        return new Direccion(direccionDTO.getCalle(), direccionDTO.getNumero(), ciudad);
+    }
+
+    private DireccionDTO convertirDireccionADTO(Direccion direccion) {
+        if (direccion == null) {
+            return null;
+        }
+
+        DireccionDTO dto = new DireccionDTO();
+        dto.setCalle(direccion.getCalle());
+        dto.setNumero(direccion.getNumero());
+
+        if (direccion.getCiudad() != null) {
+            CiudadDTO ciudadDTO = new CiudadDTO();
+            ciudadDTO.setNombre(direccion.getCiudad().getNombre());
+
+            if (direccion.getCiudad().getProvincia() != null) {
+                ProvinciaDTO provinciaDTO = new ProvinciaDTO();
+                provinciaDTO.setNombre(direccion.getCiudad().getProvincia().getNombre());
+                ciudadDTO.setProvincia(provinciaDTO);
+            }
+
+            dto.setCiudad(ciudadDTO);
+        }
+
+        return dto;
+    }
+
+    public EntidadBeneficiariaDTO actualizar(
+            Long id,
+            EntidadBeneficiariaDTO dto) {
+
+        EntidadBeneficiaria entidad =
+                buscarEntidad(id);
+
+        entidad.setDescripcion(
+                dto.getDescripcion()
+        );
+
+        PersonaJuridica persona =
+                entidad.getEntidad();
+
+        persona.setRazonSocial(
+                dto.getPersonaJuridica().getRazonSocial()
+        );
+
+        persona.setTipo(
+                dto.getPersonaJuridica().getTipo()
+        );
+
+        persona.setRubro(
+                dto.getPersonaJuridica().getRubro()
+        );
+
+        entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
+
+        return convertirADTO(entidad);
+    }
+
+        public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
+           return entidades;
+        }
 }

@@ -1,41 +1,33 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 public abstract class Persona {
-    private List<MedioContacto> medios = new ArrayList<>();
-    private LocalDateTime ultimaActividadDonacion;
+    private List<MedioContacto> mediosContacto;
 
-    public void setPreferredMedio(TipoMedio tipo, String nr) {
-        medios.stream()
-                .filter(m -> m.getType() == tipo && nr.equals(m.getValor()))
-                .findFirst()
-                .ifPresent(m -> {
-                });
+    public Persona() {
+        this.mediosContacto = new ArrayList<>();
     }
 
-    public void getPreferredMedio(TipoMedio tipo) {
+    public void agregarMedio(MedioContacto medio) {
+        mediosContacto.add(medio);
     }
 
-    public void addMedioContacto(TipoMedio tipo, String nr) {
-        medios.add(new MedioContacto(tipo, nr));
+    public void elimiinarMedio(MedioContacto medio) {
+        mediosContacto.remove(medio);
     }
 
-    public List<MedioContacto> getMediosTipo(TipoMedio tipo) {
-        return medios.stream()
-                .filter(m -> m.getType() == tipo)
-                .collect(Collectors.toList());
-    }
+    public Optional<MedioContacto> medioPreferido() {
+        return mediosContacto.stream()
+                .filter(MedioContacto::esPreferido)
+                .findFirst();
+    } //devuelve el medio de contacto preferido en caso de haber
 
-    public void sacarMedio(TipoMedio tipo, String nr) {
-        medios.removeIf(m -> m.getType() == tipo && nr.equals(m.getValor()));
-    }
 }
