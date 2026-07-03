@@ -16,7 +16,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
-@Service PlanificadorService {
+@Service
+public class PlanificadorService {
 
     private final DonacionClienteService donacionClient;
     private final CamionService camionService;

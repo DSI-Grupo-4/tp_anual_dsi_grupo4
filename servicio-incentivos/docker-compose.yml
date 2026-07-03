@@ -1,4 +1,3 @@
-version: "3.8"
 services:
   n8n:
     image: n8nio/n8n:latest
@@ -9,6 +8,9 @@ services:
       - credentials.env
     environment:
       - N8N_WORKFLOWS_PATH=/home/node/.n8n/workflows
+      # Deshabilita el editor/dashboard web (sigue sirviendo la REST API y los
+      # webhooks, que es lo único que necesita este servicio para funcionar).
+      - N8N_DISABLE_UI=true
     volumes:
       - n8n_data:/home/node/.n8n
       - ./workflows:/home/node/.n8n/workflows
@@ -16,6 +18,7 @@ services:
       sh -c "
         mkdir -p /home/node/.n8n/workflows &&
         n8n import:workflow --separate --input=/home/node/.n8n/workflows 2>/dev/null || true &&
+        (n8n publish:workflow --id=servicio-incentivos-difusion || n8n update:workflow --id=servicio-incentivos-difusion --active=true) 2>/dev/null || true &&
         n8n start
       "
 
