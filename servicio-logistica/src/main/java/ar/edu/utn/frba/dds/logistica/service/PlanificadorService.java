@@ -44,7 +44,7 @@ public class PlanificadorService {
 
         try {
             do {
-                loteDTO = DonacionClienteService.obtenerDonaciones(page);
+                loteDTO = donacionClient.obtenerDonaciones(page);
 
                 if (!loteDTO.isEmpty()) {
                     solicitud.recibirDonaciones(loteDTO);

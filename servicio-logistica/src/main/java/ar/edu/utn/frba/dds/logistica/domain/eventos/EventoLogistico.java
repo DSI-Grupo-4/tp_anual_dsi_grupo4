@@ -17,7 +17,9 @@ public class EventoLogistico {
     private Boolean publicado;
     private Entrega entregaAsociada;
 
-    public Entrega agregarEntrega(){}
+    public Entrega agregarEntrega(){
+        return entregaAsociada;
+    }
 
     public void marcarPublicado(){}
 }

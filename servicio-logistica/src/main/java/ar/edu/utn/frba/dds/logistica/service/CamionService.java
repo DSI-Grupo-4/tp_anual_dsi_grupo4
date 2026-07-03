@@ -25,15 +25,16 @@ public class CamionService {
 
     public List<CamionDTO> obtenerCamionesDisponibles() {
         return camiones.stream()
-                .filter(c -> c.getEstadoCamion() == EstadoCamion.DISPONIBLE)
+                .filter(c -> c.getEstado() == EstadoCamion.DISPONIBLE)
                 .map(this::toDTO)
                 .toList();
     }
 
     private CamionDTO toDTO(Camion camion) {
         return new CamionDTO(
+                camion.getIdCamion(),
                 camion.getPatente(),
-                camion.getEstadoCamion()
+                camion.getEstado()
         );
     }
 }

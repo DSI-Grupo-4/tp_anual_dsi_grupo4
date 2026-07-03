@@ -2,7 +2,7 @@
 #
 # Compila y levanta todos los servicios del TP que ya están implementados
 # (tienen una clase Spring Boot con `main`), más el workflow de n8n de
-# servicio-incentivos (sin su dashboard).
+# servicio-incentivos .
 #
 # Uso: ./run-servicios.sh [build|up|down|status|logs <servicio>]
 #   (sin argumentos equivale a "up")

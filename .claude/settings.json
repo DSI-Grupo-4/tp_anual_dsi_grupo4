@@ -26,7 +26,19 @@
       "Read(//tmp/**)",
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:5678/rest/login)",
       "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST http://localhost:5678/webhook/events/insignia-otorgada -H \"Content-Type: application/json\" -d '{}')",
-      "Bash(make down *)"
+      "Bash(make down *)",
+      "Bash(./run-servicios.sh build *)",
+      "Bash(tee /tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/83e65e58-e20e-464a-8019-1cadf8d675a0/scratchpad/build.log)",
+      "Bash(mvn -version)",
+      "Bash(mvn -q dependency:build-classpath -Dmdep.outputFile=/dev/stdout)",
+      "Read(//home/dante/.m2/**)",
+      "Bash(mvn -q compile)",
+      "Bash(mvn compile *)",
+      "Bash(mvn -q help:evaluate -Dexpression=lombok.version -DforceStdout -pl servicio-donaciones)",
+      "Bash(rm -rf /tmp/lombok-test)"
+    ],
+    "additionalDirectories": [
+      "/tmp/lombok-test"
     ]
   }
 }
