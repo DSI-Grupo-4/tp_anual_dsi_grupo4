@@ -1,13 +1,17 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.ImportadorCSV;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,5 +156,26 @@ public class DonanteService {
         );
 
         return convertirADTO(donante);
+    }
+
+    public List<DonanteDTO> importarCSV(MultipartFile archivo) {
+
+        try {
+
+            ImportadorCSV importador =
+                    new ImportadorCSV("Importador CSV");
+
+            importador.importar(archivo.getInputStream());
+
+            donantes.addAll(importador.getListaDonantes());
+
+            return importador.getListaDonantes()
+                    .stream()
+                    .map(this::convertirADTO)
+                    .toList();
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

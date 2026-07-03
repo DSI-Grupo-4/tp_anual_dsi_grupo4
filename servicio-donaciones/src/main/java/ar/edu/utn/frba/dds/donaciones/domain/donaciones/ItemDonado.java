@@ -13,6 +13,9 @@ public class ItemDonado{
     private Integer cantidad;
     private UnidadMedida unidadMedida;
     private String foto;
+    private Integer pesoKg;
+    private Integer volumenM3;
+    private Integer alturaM;
 
     public ItemDonado(
             Long id,

@@ -10,7 +10,6 @@ import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -67,29 +66,21 @@ public class GestorDonaciones {
         return donacion;
     }
 
-    public List<EntidadBeneficiaria> ejecutarMatchmaking(
+    public ResultadoMatchmaking ejecutarMatchmaking(
             Donacion donacion,
             List<EntidadBeneficiaria> todasLasEntidades) {
 
-        List<List<EntidadBeneficiaria>> resultadosPorAlgoritmo = algoritmos.stream()
-                .map(alg -> alg.ejecutarAlgoritmo(donacion, todasLasEntidades))
-                .toList();
+        List<EntidadBeneficiaria> porCompatibilidad = new CompatibilidadSemantica()
+                .ejecutarAlgoritmo(donacion, todasLasEntidades);
+        List<EntidadBeneficiaria> porSubatencion = new PrioridadSubatendidos()
+                .ejecutarAlgoritmo(donacion, todasLasEntidades);
 
-        List<EntidadBeneficiaria> interseccion = resultadosPorAlgoritmo.stream()
-                .reduce((a, b) -> a.stream()
-                        .filter(b::contains)
-                        .collect(Collectors.toList()))
-                .orElse(new ArrayList<>());
-
-        if (!interseccion.isEmpty()) {
-            return interseccion.stream().limit(10).toList();
-        }
-
-        return resultadosPorAlgoritmo.stream()
-                .flatMap(List::stream)
-                .distinct()
+        List<EntidadBeneficiaria> interseccion = porCompatibilidad.stream()
+                .filter(porSubatencion::contains)
                 .limit(10)
                 .toList();
+
+        return new ResultadoMatchmaking(porCompatibilidad, porSubatencion, interseccion);
     }
 
     public void confirmarAsignacion(Donacion donacion, EntidadBeneficiaria entidad) {
