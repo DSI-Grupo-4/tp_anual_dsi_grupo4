@@ -186,3 +186,16 @@ Notas:
 Todos los {id} de donante/entidad/donación/necesidad son Long numéricos.
 Los endpoints marcados @ResponseStatus(HttpStatus.CREATED) devuelven 201; los DELETE devuelven 204 sin body.
 No vi autenticación/autorización en ningún controller — todos los endpoints están abiertos.
+
+
+# obtencion de insignia
+
+curl -X POST http://localhost:5678/webhook/events/insignia-otorgada \
+  -H "Content-Type: application/json" \
+  -d '{
+    "donanteId": 1,
+    "donanteNombre": "Juan Perez",
+    "insigniaNombre": "Primer Paso",
+    "imagenUrl": "https://static.vecteezy.com/system/resources/previews/011/964/284/non_2x/badge-correct-mark-icon-vector.jpg",
+    "fechaObtencion": "2026-07-03"
+  }'

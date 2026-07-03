@@ -35,7 +35,11 @@
       "Bash(mvn -q compile)",
       "Bash(mvn compile *)",
       "Bash(mvn -q help:evaluate -Dexpression=lombok.version -DforceStdout -pl servicio-donaciones)",
-      "Bash(rm -rf /tmp/lombok-test)"
+      "Bash(rm -rf /tmp/lombok-test)",
+      "Bash(kill 18290)",
+      "Bash(kill -0 18290)",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8080/api/donantes/importar -F archivo=@/tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/donantes_muestra.csv -o /tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/import_response2.json -w 'HTTP_STATUS:%{http_code}\\\\n')",
+      "Bash(python3 -c 'import json; d=json.load\\(open\\('\\\\''/tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/import_response2.json'\\\\''\\)\\); print\\(json.dumps\\(d[:3], indent=2, ensure_ascii=False\\)\\)')"
     ],
     "additionalDirectories": [
       "/tmp/lombok-test"
