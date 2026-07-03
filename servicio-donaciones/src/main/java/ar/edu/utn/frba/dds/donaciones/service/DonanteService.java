@@ -167,10 +167,12 @@ public class DonanteService {
 
             importador.importar(archivo.getInputStream());
 
-            donantes.addAll(importador.getListaDonantes());
+            List<Donante> importados = importador.getListaDonantes();
+            importados.forEach(donante -> donante.setId(siguienteId++));
 
-            return importador.getListaDonantes()
-                    .stream()
+            donantes.addAll(importados);
+
+            return importados.stream()
                     .map(this::convertirADTO)
                     .toList();
 
