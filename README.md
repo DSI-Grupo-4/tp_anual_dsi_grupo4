@@ -63,13 +63,15 @@
 │   └── workflows
 │       └── servicio-incentivos-difusion.json
 ├── servicio-logistica
-│   └── pom.xml
+│   ├── pom.xml
+│   └── src
+│       └── main
 └── servicio-notificaciones
     ├── pom.xml
     └── src
         └── main
 
-20 directories, 34 files
+22 directories, 34 files
 ```
 <!-- TREE_END -->
 
