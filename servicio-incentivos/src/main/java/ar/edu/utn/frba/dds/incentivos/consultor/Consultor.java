@@ -7,6 +7,7 @@ import ar.edu.utn.frba.dds.incentivos.dto.NotificacionEventoDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.PublicacionInsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.metricas.EvolucionMensual;
 import ar.edu.utn.frba.dds.incentivos.metricas.MetricasActividad;
+import ar.edu.utn.frba.dds.incentivos.metricas.MetricasSistema;
 import ar.edu.utn.frba.dds.incentivos.metricas.Periodo;
 import ar.edu.utn.frba.dds.incentivos.misiones.GestorMisiones;
 import ar.edu.utn.frba.dds.incentivos.misiones.Insignia;
@@ -25,6 +26,7 @@ import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -97,6 +99,8 @@ public class Consultor {
         List<EvolucionMensual> evolucionMensual = calcularEvolucionMensual(donacionesEnPeriodo);
 
         return new MetricasActividad(
+                donante.getNombre(),
+                categoriaActualDe(donante),
                 periodo,
                 solicitudes,
                 (int) beneficiariosDistintos,
@@ -106,6 +110,14 @@ public class Consultor {
                 posicionRanking,
                 evolucionMensual
         );
+    }
+
+    private String categoriaActualDe(Donante donante) {
+        List<ProgresoCategoria> categoriasObtenidas = donante.getProgresoAsociado().getCategoriasObtenidas();
+        if (categoriasObtenidas.isEmpty()) {
+            return null;
+        }
+        return categoriasObtenidas.get(categoriasObtenidas.size() - 1).getNombre();
     }
 
     private List<EvolucionMensual> calcularEvolucionMensual(List<DatosDonacion> donaciones) {
@@ -119,6 +131,39 @@ public class Consultor {
                         entry.getValue().size(),
                         entry.getValue().stream().mapToInt(DatosDonacion::getCantidadBienes).sum()))
                 .toList();
+    }
+
+    public MetricasSistema obtenerMetricasSistema() {
+        List<Donante> todosLosDonantes = donantes.listarDonantes();
+
+        int donantesActivos = (int) todosLosDonantes.stream()
+                .filter(donante -> donante.getSolicitudesDonacionHechas() > 0)
+                .count();
+
+        int solicitudesTotales = todosLosDonantes.stream()
+                .mapToInt(Donante::getSolicitudesDonacionHechas)
+                .sum();
+
+        int misionesCompletadasTotales = todosLosDonantes.stream()
+                .mapToInt(donante -> (int) donante.getProgresoAsociado().getCategoriasObtenidas().stream()
+                        .flatMap(categoria -> categoria.getMisiones().stream())
+                        .map(ProgresoMision::getInsigniaObtenida)
+                        .filter(Objects::nonNull)
+                        .count())
+                .sum();
+
+        List<DatosDonacion> todasLasDonaciones = todosLosDonantes.stream()
+                .flatMap(donante -> donante.getHistorialDonaciones().stream())
+                .toList();
+        List<EvolucionMensual> evolucionMensual = calcularEvolucionMensual(todasLasDonaciones);
+
+        return new MetricasSistema(
+                donantesActivos,
+                solicitudesTotales,
+                misionesCompletadasTotales,
+                misionesCompletadasTotales,
+                evolucionMensual
+        );
     }
 
     public List<Mision> obtenerMisionesDisponibles(Donante donante) {
@@ -137,8 +182,28 @@ public class Consultor {
                 .flatMap(categoria -> categoria.getMisiones().stream())
                 .map(ProgresoMision::getInsigniaObtenida)
                 .filter(Objects::nonNull)
+                .filter(ProgresoInsignia::isVisible)
                 .map(ProgresoInsignia::getInsigniaAsociada)
                 .toList();
+    }
+
+    public void marcarInsigniaVisible(Donante donante, String insigniaNombre) {
+        buscarProgresoInsignia(donante, insigniaNombre).marcarVisible();
+    }
+
+    public void ocultarInsignia(Donante donante, String insigniaNombre) {
+        buscarProgresoInsignia(donante, insigniaNombre).ocultarInsignia();
+    }
+
+    private ProgresoInsignia buscarProgresoInsignia(Donante donante, String insigniaNombre) {
+        return donante.getProgresoAsociado().getCategoriasObtenidas().stream()
+                .flatMap(categoria -> categoria.getMisiones().stream())
+                .map(ProgresoMision::getInsigniaObtenida)
+                .filter(Objects::nonNull)
+                .filter(progresoInsignia -> progresoInsignia.getInsigniaAsociada().getNombre().equals(insigniaNombre))
+                .findFirst()
+                .orElseThrow(() -> new NoSuchElementException(
+                        "El donante no tiene la insignia: " + insigniaNombre));
     }
 
     public Beneficiario obtenerOCrearBeneficiario(Long id, String nombre) {
@@ -189,9 +254,14 @@ public class Consultor {
         return rankings.obtenerRankingDeMes(fecha);
     }
 
+    public Ranking obtenerUltimoRanking() {
+        return rankings.obtenerUltimoRanking();
+    }
+
     public void publicarInsignia(Donante donante, Insignia insignia) {
         PublicacionInsigniaDTO dto = new PublicacionInsigniaDTO();
         dto.setDonanteId(donante.getId());
+        dto.setDonanteNombre(donante.getNombre());
         dto.setInsigniaNombre(insignia.getNombre());
         dto.setImagenUrl(insignia.getImagenUrl());
         dto.setFechaObtencion(LocalDate.now());

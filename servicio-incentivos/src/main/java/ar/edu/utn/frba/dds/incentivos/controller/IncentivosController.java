@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.incentivos.dto.InsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.MetricasActividadDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.MisionDisponibleDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.ProgresoInsigniaDTO;
+import ar.edu.utn.frba.dds.incentivos.dto.VisibilidadInsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.metricas.EvolucionMensual;
 import ar.edu.utn.frba.dds.incentivos.metricas.MetricasActividad;
 import ar.edu.utn.frba.dds.incentivos.metricas.Periodo;
@@ -24,6 +25,7 @@ import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoMision;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -84,7 +86,7 @@ public class IncentivosController {
             @PathVariable Long id,
             @RequestBody DatosDonacionDTO dto) {
 
-        Donante donante = gestorDonante.obtenerDonante(id);
+        Donante donante = gestorDonante.obtenerDonante(id, dto.getDonanteNombre());
         DatosDonacion datosDonacion = convertirADominio(dto);
 
         ProgresoInsignia obtenida = consultor.registrarActividadDonacion(donante, datosDonacion);
@@ -92,6 +94,21 @@ public class IncentivosController {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
         }
         return ResponseEntity.ok(convertirADTO(obtenida));
+    }
+
+    @PatchMapping("/{id}/insignias/{insigniaNombre}/visibilidad")
+    public ResponseEntity<Void> cambiarVisibilidadInsignia(
+            @PathVariable Long id,
+            @PathVariable String insigniaNombre,
+            @RequestBody VisibilidadInsigniaDTO dto) {
+
+        Donante donante = gestorDonante.obtenerDonante(id);
+        if (dto.isVisible()) {
+            consultor.marcarInsigniaVisible(donante, insigniaNombre);
+        } else {
+            consultor.ocultarInsignia(donante, insigniaNombre);
+        }
+        return ResponseEntity.noContent().build();
     }
 
     private String categoriaActualDe(Donante donante) {
@@ -117,6 +134,8 @@ public class IncentivosController {
 
     private MetricasActividadDTO convertirADTO(MetricasActividad metricas) {
         MetricasActividadDTO dto = new MetricasActividadDTO();
+        dto.setDonanteNombre(metricas.getDonanteNombre());
+        dto.setCategoriaActual(metricas.getCategoriaActual());
         dto.setPeriodo(metricas.getPeriodo().name());
         dto.setSolicitudesDonacionHechas(metricas.getSolicitudesDonacionHechas());
         dto.setBeneficiariosAyudados(metricas.getBeneficiariosAyudados());

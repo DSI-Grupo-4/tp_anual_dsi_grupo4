@@ -34,4 +34,14 @@ public class GestorDonante {
                     return nuevo;
                 });
     }
+
+    public Donante obtenerDonante(Long id, String nombre) {
+        Donante donante = obtenerDonante(id);
+        donante.actualizarNombreSiFalta(nombre);
+        return donante;
+    }
+
+    public List<Donante> listarDonantes() {
+        return List.copyOf(donantes);
+    }
 }

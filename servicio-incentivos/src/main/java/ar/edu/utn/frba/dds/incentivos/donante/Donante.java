@@ -14,6 +14,7 @@ import java.util.List;
 public class Donante {
 
     private final Long id;
+    private String nombre;
     private int solicitudesDonacionHechas;
     private List<Beneficiario> beneficiariosAyudados;
     private ProgresoAsociado progresoAsociado;
@@ -25,6 +26,12 @@ public class Donante {
         this.beneficiariosAyudados = new ArrayList<>();
         this.progresoAsociado = new ProgresoAsociado(GestorMisiones.getInstance());
         this.historialDonaciones = new ArrayList<>();
+    }
+
+    public void actualizarNombreSiFalta(String nombre) {
+        if (this.nombre == null && nombre != null && !nombre.isBlank()) {
+            this.nombre = nombre;
+        }
     }
 
     public ProgresoInsignia registrarActividadDonacion(DatosDonacion datosDonacion) {

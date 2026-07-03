@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.incentivos.controller;
 import ar.edu.utn.frba.dds.incentivos.consultor.Consultor;
 import ar.edu.utn.frba.dds.incentivos.dto.ActividadMensualDonanteDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.RankingDTO;
+import ar.edu.utn.frba.dds.incentivos.dto.RankingPosicionDTO;
 import ar.edu.utn.frba.dds.incentivos.ranking.ActividadMensualDonante;
 import ar.edu.utn.frba.dds.incentivos.ranking.Ranking;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -30,6 +32,24 @@ public class RankingController {
     @GetMapping("/mes")
     public RankingDTO obtenerRankingDeMes(@RequestParam("fecha") LocalDate fecha) {
         return convertirADTO(consultor.obtenerRankingDeMes(fecha));
+    }
+
+    @GetMapping("/ultimo")
+    public List<RankingPosicionDTO> obtenerUltimo() {
+        Ranking ranking = consultor.obtenerUltimoRanking();
+        String mes = YearMonth.from(ranking.getFechaEmision()).toString();
+        List<ActividadMensualDonante> topDonantes = ranking.getTopDonantes();
+
+        return IntStream.range(0, topDonantes.size())
+                .mapToObj(i -> {
+                    RankingPosicionDTO dto = new RankingPosicionDTO();
+                    dto.setPuesto(i + 1);
+                    dto.setDonanteId(topDonantes.get(i).getDonanteAsociado().getId());
+                    dto.setCantidadMisiones(topDonantes.get(i).getCantidad());
+                    dto.setMes(mes);
+                    return dto;
+                })
+                .toList();
     }
 
     private RankingDTO convertirADTO(Ranking ranking) {

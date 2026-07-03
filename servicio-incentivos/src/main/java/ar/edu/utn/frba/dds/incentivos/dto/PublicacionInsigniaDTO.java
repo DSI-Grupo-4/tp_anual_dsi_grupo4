@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Setter
 public class PublicacionInsigniaDTO {
     private Long donanteId;
+    private String donanteNombre;
     private String insigniaNombre;
     private String imagenUrl;
     private LocalDate fechaObtencion;

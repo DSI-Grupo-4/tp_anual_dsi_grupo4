@@ -14,4 +14,5 @@ public class DatosDonacionDTO {
     private boolean donacionExitosa;
     private Long beneficiarioId;
     private String beneficiarioNombre;
+    private String donanteNombre;
 }

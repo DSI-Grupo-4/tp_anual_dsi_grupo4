@@ -7,6 +7,8 @@ import java.util.List;
 @Getter
 public class MetricasActividad {
 
+    private final String donanteNombre;
+    private final String categoriaActual;
     private final Periodo periodo;
     private final int solicitudesDonacionHechas;
     private final int beneficiariosAyudados;
@@ -16,9 +18,12 @@ public class MetricasActividad {
     private final Integer posicionRanking;
     private final List<EvolucionMensual> evolucionMensual;
 
-    public MetricasActividad(Periodo periodo, int solicitudesDonacionHechas, int beneficiariosAyudados,
+    public MetricasActividad(String donanteNombre, String categoriaActual, Periodo periodo,
+                              int solicitudesDonacionHechas, int beneficiariosAyudados,
                               int misionesCompletadas, int insigniasObtenidas, int impactoAcumulado,
                               Integer posicionRanking, List<EvolucionMensual> evolucionMensual) {
+        this.donanteNombre = donanteNombre;
+        this.categoriaActual = categoriaActual;
         this.periodo = periodo;
         this.solicitudesDonacionHechas = solicitudesDonacionHechas;
         this.beneficiariosAyudados = beneficiariosAyudados;

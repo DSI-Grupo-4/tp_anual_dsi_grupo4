@@ -1,0 +1,381 @@
+{
+  "name": "servicio-incentivos-difusion",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Servicio de Incentivos — Difusión\n\nEste workflow reemplaza a `servicio-insignias.json` y `Workflow-Ranking.json` (fusionados) y deja fuera a `servicio-incentivos.json` (no correspondía: validaba DTOs de donaciones, no de difusión).\n\n**Principio de diseño:** el backend (Servicio de Incentivos) es dueño de la lógica de dominio — decide qué es una misión cumplida y cómo se calcula/ordena/persiste el ranking mensual. n8n **no recalcula nada**: sólo dispara en el momento correcto, le pide al backend el dato ya calculado, genera contenido derivado (texto/imagen), lo publica en Discord y deja una bitácora en Sheets (no fuente de verdad).\n\nDos ramas independientes conviven en este mismo workflow:\n- **Rama A** (evento): insignia otorgada → Discord.\n- **Rama B** (Schedule mensual): ranking ya calculado por el backend → Sheets (bitácora) + Discord.\n\nAmbas ramas convergen en un único nodo `Publicar en Discord`, para no duplicar esa definición.",
+        "height": 420,
+        "width": 460,
+        "color": "#F9F06B"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-680, -680],
+      "id": "sticky-overview",
+      "name": "Descripción general"
+    },
+    {
+      "parameters": {
+        "content": "**Rama A — Evento de insignia otorgada**\n\nEl backend llama a este webhook (`Consultor.publicarInsignia`) cuando un donante obtiene una insignia, mandando `{ donanteId, donanteNombre, insigniaNombre, imagenUrl, fechaObtencion }` (`PublicacionInsigniaDTO`).\n\n⚠️ Corrección importante: la versión anterior de este nodo validaba `{user, badge, description}` — un contrato que **nunca coincidió** con lo que el backend realmente manda, así que cualquier llamada real era rechazada (400). Ya está arreglado.\n\nTambién se eliminó la generación de imagen vía Pollinations.ai: el backend ya manda `imagenUrl`, la URL real de la insignia (`Insignia.imagenUrl` del catálogo). Generar una imagen distinta a partir de un prompt adivinado violaría el principio de \"n8n no decide nada de dominio\". Se usa directamente el `imagenUrl` recibido.\n\nSe eliminaron también los 2 nodos vestigiales del original (descarga de binario y \"publicar en red social\" con `console.log`), y se corrigió el nodo de respuesta 200, que en el workflow original existía pero nunca estaba conectado a nada.",
+        "height": 320,
+        "width": 340,
+        "color": "#d9ead3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-200, -680],
+      "id": "sticky-rama-a",
+      "name": "Nota Rama A"
+    },
+    {
+      "parameters": {
+        "content": "**Rama B — Schedule mensual (ranking)**\n\nEl cierre mensual del ranking ya corre solo, dentro del backend (`IncentivosScheduler`, cron `0 0 1 1 * *`). Esta rama sólo dispara después (04:00 del día 1) y le pide al backend, vía `GET /ranking/ultimo`, el ranking ya calculado y ordenado por cantidad de misiones cumplidas (no por \"impacto\").\n\n⚠️ Riesgo aceptado: si algún día se cambia el horario del cron del backend o de este Schedule Trigger, podrían desincronizarse. `/ranking/ultimo` evita que n8n tenga que calcular una fecha, pero no elimina la dependencia de orden entre ambos relojes.\n\nSe guarda una bitácora simple en una única hoja de Sheets (con columna `mes`), en vez de crear una hoja nueva por mes — evita el `Merge` frágil que tenía el workflow original.\n\nSe eliminó el paso de Gmail (no formaba parte del diseño acordado).",
+        "height": 380,
+        "width": 380,
+        "color": "#cfe2f3"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [280, -680],
+      "id": "sticky-rama-b",
+      "name": "Nota Rama B"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "events/insignia-otorgada",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-200, -400],
+      "id": "webhook-insignia",
+      "name": "Insignia Otorgada",
+      "webhookId": "b7cc5de1-3a42-4f8b-9e21-57c8f90a1234"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst output = [];\n\nfor (const item of items) {\n  let data = item.json;\n\n  // Desenvolver body si n8n lo envuelve (común en webhooks)\n  if (data.body !== undefined) {\n    data = data.body;\n  }\n\n  const errors = [];\n  // Campos reales de PublicacionInsigniaDTO (Consultor.publicarInsignia)\n  const requiredFields = [\"donanteId\", \"insigniaNombre\", \"imagenUrl\", \"fechaObtencion\"];\n\n  for (const field of requiredFields) {\n    if (data[field] === undefined || data[field] === null) {\n      errors.push(`Falta el campo '${field}'`);\n    }\n  }\n\n  if (errors.length === 0) {\n    if (typeof data[\"donanteId\"] !== \"number\") {\n      errors.push(`'donanteId' debe ser numérico (recibido: ${typeof data[\"donanteId\"]})`);\n    }\n    if (typeof data[\"insigniaNombre\"] !== \"string\" || data[\"insigniaNombre\"].trim().length === 0) {\n      errors.push(`'insigniaNombre' debe ser un string no vacío`);\n    }\n    if (typeof data[\"imagenUrl\"] !== \"string\" || data[\"imagenUrl\"].trim().length === 0) {\n      errors.push(`'imagenUrl' debe ser un string no vacío`);\n    }\n    if (typeof data[\"fechaObtencion\"] !== \"string\" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(data[\"fechaObtencion\"])) {\n      errors.push(`'fechaObtencion' debe ser un string con formato YYYY-MM-DD (recibido: ${JSON.stringify(data[\"fechaObtencion\"])})`);\n    }\n    // donanteNombre es opcional (Donante.nombre es nullable en el backend)\n    if (data[\"donanteNombre\"] !== undefined && data[\"donanteNombre\"] !== null && typeof data[\"donanteNombre\"] !== \"string\") {\n      errors.push(`'donanteNombre' debe ser un string si está presente`);\n    }\n\n    const allowedFields = [\"donanteId\", \"donanteNombre\", \"insigniaNombre\", \"imagenUrl\", \"fechaObtencion\"];\n    const extraFields = Object.keys(data).filter(k => !allowedFields.includes(k));\n    if (extraFields.length > 0) {\n      errors.push(`Campos no permitidos: ${extraFields.join(\", \")}`);\n    }\n  }\n\n  if (errors.length > 0) {\n    output.push({ json: { valid: false, error: errors.join(\"; \"), data } });\n  } else {\n    output.push({ json: { valid: true, data } });\n  }\n}\n\nreturn output;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [40, -400],
+      "id": "validacion-formato",
+      "name": "Validación de formato"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cond-valid",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [280, -400],
+      "id": "if-valido",
+      "name": "¿Formato válido?"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Bad Request: formato de payload inválido",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/plain"
+              },
+              {
+                "name": "X-Error-Type",
+                "value": "Invalid Format"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [520, -280],
+      "id": "respuesta-invalida",
+      "name": "Payload Inválido (400)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst { donanteId, donanteNombre, insigniaNombre, imagenUrl, fechaObtencion } = item.json.data;\n\n// Si el backend todavía no conoce el nombre del donante, se muestra por id\nconst nombreMostrado = (donanteNombre && donanteNombre.trim().length > 0)\n  ? donanteNombre\n  : `Donante #${donanteId}`;\n\n// Texto publicable. La imagen NO se genera acá: imagenUrl ya viene resuelta\n// desde el dominio (Insignia.imagenUrl vía Consultor.publicarInsignia).\nconst postText = `🏅 ¡Felicitaciones, ${nombreMostrado}! \\n\\nAcabás de obtener la insignia \"${insigniaNombre}\" en DonaTrack. \\n\\n📅 Obtenida el ${fechaObtencion}\\n\\n¡Gracias por tu compromiso con quienes más lo necesitan! 💙 \\n\\n#DonaTrack #Donaciones #Solidaridad`;\n\nreturn [{\n  json: {\n    donanteId,\n    donanteNombre: nombreMostrado,\n    insigniaNombre,\n    imagenUrl,\n    fechaObtencion,\n    postText\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [520, -400],
+      "id": "generar-mensaje",
+      "name": "Armar mensaje de insignia"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "envelope-a-titulo",
+              "name": "titulo",
+              "value": "🏅 Nueva insignia obtenida",
+              "type": "string"
+            },
+            {
+              "id": "envelope-a-descripcion",
+              "name": "descripcion",
+              "value": "={{ $json.postText }}",
+              "type": "string"
+            },
+            {
+              "id": "envelope-a-imagen",
+              "name": "imageUrl",
+              "value": "={{ $json.imagenUrl }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [760, -400],
+      "id": "envelope-insignia",
+      "name": "Armar envelope Discord (Insignia)"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ status: \"ok\", message: \"Insignia procesada y publicada\", insignia: $('Armar mensaje de insignia').first().json.insigniaNombre, donante: $('Armar mensaje de insignia').first().json.donanteNombre }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [1000, -280],
+      "id": "respuesta-ok",
+      "name": "Responder 200 OK"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "months",
+              "triggerAtHour": 4
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [280, 40],
+      "id": "schedule-ranking",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8081/ranking/ultimo",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [520, 40],
+      "id": "get-ranking-ultimo",
+      "name": "GET Ranking Último"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg",
+          "mode": "list",
+          "cachedResultName": "ranking-donantes",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aYo5G0VDRumi-lE8AT_4m4mejWgAzZF8qMyZCLsARQg/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "ranking-mensual",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [760, 160],
+      "id": "guardar-bitacora",
+      "name": "Guardar bitácora en Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "ohTUXQfxhswyHQDw",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst lineas = items.map(item => {\n  const d = item.json;\n  const medalla = d.puesto === 1 ? \"🥇\" : d.puesto === 2 ? \"🥈\" : d.puesto === 3 ? \"🥉\" : `${d.puesto}.`;\n  return `${medalla} Donante #${d.donanteId} - ${d.cantidadMisiones} misiones cumplidas`;\n});\n\nconst mes = items.length > 0 ? items[0].json.mes : \"\";\n\nconst texto = `🏆 RANKING MENSUAL DE DONANTES\\n\\n${lineas.join(\"\\n\")}\\n\\n📅 Mes: ${mes}\\n\\nGracias a quienes hicieron posible ayudar este mes 💙`;\n\nreturn [{ json: { texto, mes } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [760, 40],
+      "id": "armar-texto-ranking",
+      "name": "Armar texto top N"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "envelope-b-titulo",
+              "name": "titulo",
+              "value": "🏆 Ranking mensual de donantes",
+              "type": "string"
+            },
+            {
+              "id": "envelope-b-descripcion",
+              "name": "descripcion",
+              "value": "={{ $json.texto }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1000, 40],
+      "id": "envelope-ranking",
+      "name": "Armar envelope Discord (Ranking)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://discord.com/api/webhooks/1516879794157912256/V-JBNLt4XHsvgwtHMKCcWXSl3bjP_C36xowRT0SBkoIpvzDH6FmO5HRZDZftvSUuUoR-",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ embeds: [ Object.assign({ title: $json.titulo, description: $json.descripcion }, $json.imageUrl ? { image: { url: $json.imageUrl } } : {}) ] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1240, -160],
+      "id": "publicar-discord",
+      "name": "Publicar en Discord"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Insignia Otorgada": {
+      "main": [
+        [
+          { "node": "Validación de formato", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Validación de formato": {
+      "main": [
+        [
+          { "node": "¿Formato válido?", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "¿Formato válido?": {
+      "main": [
+        [
+          { "node": "Armar mensaje de insignia", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Payload Inválido (400)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Armar mensaje de insignia": {
+      "main": [
+        [
+          { "node": "Armar envelope Discord (Insignia)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Armar envelope Discord (Insignia)": {
+      "main": [
+        [
+          { "node": "Publicar en Discord", "type": "main", "index": 0 },
+          { "node": "Responder 200 OK", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          { "node": "GET Ranking Último", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "GET Ranking Último": {
+      "main": [
+        [
+          { "node": "Guardar bitácora en Sheets", "type": "main", "index": 0 },
+          { "node": "Armar texto top N", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Armar texto top N": {
+      "main": [
+        [
+          { "node": "Armar envelope Discord (Ranking)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Armar envelope Discord (Ranking)": {
+      "main": [
+        [
+          { "node": "Publicar en Discord", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "servicio-incentivos-difusion",
+  "tags": []
+}

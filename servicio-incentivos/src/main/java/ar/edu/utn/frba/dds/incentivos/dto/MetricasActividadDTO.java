@@ -8,6 +8,8 @@ import java.util.List;
 @Getter
 @Setter
 public class MetricasActividadDTO {
+    private String donanteNombre;
+    private String categoriaActual;
     private String periodo;
     private int solicitudesDonacionHechas;
     private int beneficiariosAyudados;

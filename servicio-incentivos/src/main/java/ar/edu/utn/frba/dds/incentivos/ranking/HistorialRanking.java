@@ -69,6 +69,13 @@ public class HistorialRanking {
         return List.copyOf(rankings);
     }
 
+    public Ranking obtenerUltimoRanking() {
+        if (rankings.isEmpty()) {
+            throw new NoSuchElementException("Todavía no se generó ningún ranking mensual");
+        }
+        return rankings.get(rankings.size() - 1);
+    }
+
     public Ranking obtenerRankingDeMes(LocalDate fecha) {
         return rankings.stream()
                 .filter(ranking -> ranking.getFechaEmision().getYear() == fecha.getYear()

@@ -1,0 +1,24 @@
+version: "3.8"
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    env_file:
+      - credentials.env
+    environment:
+      - N8N_WORKFLOWS_PATH=/home/node/.n8n/workflows
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/home/node/.n8n/workflows
+    entrypoint: >
+      sh -c "
+        mkdir -p /home/node/.n8n/workflows &&
+        n8n import:workflow --separate --input=/home/node/.n8n/workflows 2>/dev/null || true &&
+        n8n start
+      "
+
+volumes:
+  n8n_data:
+    driver: local
