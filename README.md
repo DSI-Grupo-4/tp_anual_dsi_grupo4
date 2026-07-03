@@ -22,6 +22,7 @@
 │   ├── DCU.png
 │   ├── DDC.png
 │   └── Diagrama Secuencia.jpeg
+├── endpoints.md
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -72,7 +73,7 @@
     └── src
         └── main
 
-22 directories, 35 files
+22 directories, 36 files
 ```
 <!-- TREE_END -->
 
