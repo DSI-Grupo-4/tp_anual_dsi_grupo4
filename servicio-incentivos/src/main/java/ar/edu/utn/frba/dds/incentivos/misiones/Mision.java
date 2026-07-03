@@ -20,21 +20,14 @@ public abstract class Mision {
 
     public static class Racha extends Mision {
         private final int mesesRequeridos;
-        private final Periodicidad periodicidad;
 
-        public Racha(String nombreMision, Insignia insigniaAsociada,
-                     int mesesRequeridos, Periodicidad periodicidad) {
+        public Racha(String nombreMision, Insignia insigniaAsociada, int mesesRequeridos) {
             super(nombreMision, insigniaAsociada);
             this.mesesRequeridos = mesesRequeridos;
-            this.periodicidad = periodicidad;
         }
 
         public int getMesesRequeridos() {
             return mesesRequeridos;
-        }
-
-        public Periodicidad getPeriodicidad() {
-            return periodicidad;
         }
 
         @Override

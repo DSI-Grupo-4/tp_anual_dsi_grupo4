@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 public class HistorialRanking {
 
-    private static final int TOP_DONANTES = 10;
+    private static final int TOP_DONANTES = 3;
 
     private static HistorialRanking instancia;
 
@@ -49,6 +50,19 @@ public class HistorialRanking {
                     return nueva;
                 });
         actividad.incrementar();
+    }
+
+    public Optional<Integer> obtenerPosicionActual(Donante donante) {
+        List<ActividadMensualDonante> ordenado = donantesMisionesMensuales.stream()
+                .sorted(Comparator.comparingInt(ActividadMensualDonante::getCantidad).reversed())
+                .toList();
+
+        for (int i = 0; i < ordenado.size(); i++) {
+            if (ordenado.get(i).getDonanteAsociado().getId().equals(donante.getId())) {
+                return Optional.of(i + 1);
+            }
+        }
+        return Optional.empty();
     }
 
     public List<Ranking> obtenerHistorial() {

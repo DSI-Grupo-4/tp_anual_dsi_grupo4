@@ -6,7 +6,7 @@ import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.time.YearMonth;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -58,12 +58,18 @@ public abstract class ProgresoMision {
         @Override
         public void actualizarProgresoMision(DatosDonacion datosDonacion) {
             LocalDate fecha = datosDonacion.getFecha();
-            Mision.Racha racha = (Mision.Racha) getMisionAsociada();
-            if (ultimaDonacionRegistrada == null
-                    || ChronoUnit.MONTHS.between(ultimaDonacionRegistrada, fecha) > racha.getPeriodicidad().getMeses()) {
+            if (ultimaDonacionRegistrada == null) {
                 mesesConsecutivosActuales = 1;
             } else {
-                mesesConsecutivosActuales++;
+                YearMonth mesAnterior = YearMonth.from(ultimaDonacionRegistrada);
+                YearMonth mesNuevo = YearMonth.from(fecha);
+                if (mesNuevo.equals(mesAnterior)) {
+                    // misma donación del mes en curso, no se repite el conteo
+                } else if (mesNuevo.equals(mesAnterior.plusMonths(1))) {
+                    mesesConsecutivosActuales++;
+                } else {
+                    mesesConsecutivosActuales = 1;
+                }
             }
             ultimaDonacionRegistrada = fecha;
         }
@@ -73,8 +79,9 @@ public abstract class ProgresoMision {
             if (ultimaDonacionRegistrada == null) {
                 return;
             }
-            Mision.Racha racha = (Mision.Racha) getMisionAsociada();
-            if (ChronoUnit.MONTHS.between(ultimaDonacionRegistrada, fechaReferencia) > racha.getPeriodicidad().getMeses()) {
+            YearMonth mesUltimaDonacion = YearMonth.from(ultimaDonacionRegistrada);
+            YearMonth mesReferencia = YearMonth.from(fechaReferencia);
+            if (mesReferencia.minusMonths(1).isAfter(mesUltimaDonacion)) {
                 mesesConsecutivosActuales = 0;
             }
         }

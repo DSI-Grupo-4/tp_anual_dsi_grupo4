@@ -23,21 +23,28 @@ public class GestorMisiones {
     }
 
     private void sembrarCatalogo() {
-        Insignia rachaOro = new Insignia("Racha de Oro", "https://incentivos.local/insignias/racha-oro.png");
+        Insignia rachaColaborador = new Insignia("Racha Colaboradora", "https://incentivos.local/insignias/racha-colaborador.png");
         Insignia coleccionista = new Insignia("Coleccionista", "https://incentivos.local/insignias/coleccionista.png");
         Insignia granDonante = new Insignia("Gran Donante", "https://incentivos.local/insignias/gran-donante.png");
         Insignia donanteConfiable = new Insignia("Donante Confiable", "https://incentivos.local/insignias/donante-confiable.png");
+        Insignia rachaTransformadora = new Insignia("Racha Transformadora", "https://incentivos.local/insignias/racha-transformadora.png");
+        Insignia pilarSolidario = new Insignia("Pilar Solidario", "https://incentivos.local/insignias/pilar-solidario.png");
 
-        Categoria bronce = new Categoria("Bronce");
-        bronce.agregarMision(new Mision.Racha("Racha Bronce", rachaOro, 3, Periodicidad.MENSUAL));
-        bronce.agregarMision(new Mision.Completitud("Variedad Bronce", coleccionista, 2));
+        Categoria colaborador = new Categoria("Colaborador");
+        colaborador.agregarMision(new Mision.Racha("Racha Colaborador", rachaColaborador, 2));
+        colaborador.agregarMision(new Mision.Completitud("Variedad Colaborador", coleccionista, 2));
 
-        Categoria plata = new Categoria("Plata");
-        plata.agregarMision(new Mision.HabilDonador("Gran Aporte Plata", granDonante, 50));
-        plata.agregarMision(new Mision.DonacionesExitosas("Confiable Plata", donanteConfiable, 5));
+        Categoria sostenedor = new Categoria("Sostenedor");
+        sostenedor.agregarMision(new Mision.HabilDonador("Gran Aporte Sostenedor", granDonante, 30));
+        sostenedor.agregarMision(new Mision.DonacionesExitosas("Confiable Sostenedor", donanteConfiable, 3));
 
-        catalogoCategorias.add(bronce);
-        catalogoCategorias.add(plata);
+        Categoria transformador = new Categoria("Transformador");
+        transformador.agregarMision(new Mision.Racha("Racha Transformador", rachaTransformadora, 6));
+        transformador.agregarMision(new Mision.DonacionesExitosas("Pilar Transformador", pilarSolidario, 10));
+
+        catalogoCategorias.add(colaborador);
+        catalogoCategorias.add(sostenedor);
+        catalogoCategorias.add(transformador);
     }
 
     public void agregarCategoria(Categoria categoria) {

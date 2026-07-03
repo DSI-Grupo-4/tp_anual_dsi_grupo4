@@ -12,4 +12,6 @@ public class DatosDonacionDTO {
     private String categoriaNombre;
     private int cantidadBienes;
     private boolean donacionExitosa;
+    private Long beneficiarioId;
+    private String beneficiarioNombre;
 }

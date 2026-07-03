@@ -17,16 +17,25 @@ public class Donante {
     private int solicitudesDonacionHechas;
     private List<Beneficiario> beneficiariosAyudados;
     private ProgresoAsociado progresoAsociado;
+    private List<DatosDonacion> historialDonaciones;
 
     public Donante(Long id) {
         this.id = id;
         this.solicitudesDonacionHechas = 0;
         this.beneficiariosAyudados = new ArrayList<>();
         this.progresoAsociado = new ProgresoAsociado(GestorMisiones.getInstance());
+        this.historialDonaciones = new ArrayList<>();
     }
 
     public ProgresoInsignia registrarActividadDonacion(DatosDonacion datosDonacion) {
         solicitudesDonacionHechas++;
+        historialDonaciones.add(datosDonacion);
+
+        Beneficiario beneficiario = datosDonacion.getBeneficiario();
+        if (beneficiario != null && !beneficiariosAyudados.contains(beneficiario)) {
+            beneficiariosAyudados.add(beneficiario);
+        }
+
         return progresoAsociado.actualizarProgreso(datosDonacion);
     }
 

@@ -9,4 +9,8 @@ public class MisionDisponibleDTO {
     private String nombreMision;
     private String categoriaNombre;
     private String insigniaNombre;
+    private int progresoActual;
+    private int distanciaRestante;
+    private boolean completada;
+    private boolean activa;
 }

@@ -1,14 +1,17 @@
 package ar.edu.utn.frba.dds.incentivos.controller;
 
+import ar.edu.utn.frba.dds.incentivos.consultor.Beneficiario;
 import ar.edu.utn.frba.dds.incentivos.consultor.Consultor;
 import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
 import ar.edu.utn.frba.dds.incentivos.donante.Donante;
 import ar.edu.utn.frba.dds.incentivos.donante.GestorDonante;
 import ar.edu.utn.frba.dds.incentivos.dto.DatosDonacionDTO;
+import ar.edu.utn.frba.dds.incentivos.dto.EvolucionMensualDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.InsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.MetricasActividadDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.MisionDisponibleDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.ProgresoInsigniaDTO;
+import ar.edu.utn.frba.dds.incentivos.metricas.EvolucionMensual;
 import ar.edu.utn.frba.dds.incentivos.metricas.MetricasActividad;
 import ar.edu.utn.frba.dds.incentivos.metricas.Periodo;
 import ar.edu.utn.frba.dds.incentivos.misiones.Categoria;
@@ -17,6 +20,7 @@ import ar.edu.utn.frba.dds.incentivos.misiones.Insignia;
 import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoCategoria;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoInsignia;
+import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoMision;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/donantes")
@@ -51,10 +56,18 @@ public class IncentivosController {
     @GetMapping("/{id}/misiones")
     public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@PathVariable Long id) {
         Donante donante = gestorDonante.obtenerDonante(id);
+        List<ProgresoCategoria> categoriasObtenidas = donante.getProgresoAsociado().getCategoriasObtenidas();
         String categoriaActual = categoriaActualDe(donante);
+        ProgresoMision misionActual = donante.getProgresoAsociado().getMisionActual();
 
-        return consultor.obtenerMisionesDisponibles(donante).stream()
-                .map(mision -> convertirADTO(mision, categoriaActual))
+        List<Mision> misionesDisponibles = consultor.obtenerMisionesDisponibles(donante);
+        List<ProgresoMision> progresoMisiones = categoriasObtenidas.isEmpty()
+                ? List.of()
+                : categoriasObtenidas.get(categoriasObtenidas.size() - 1).getMisiones();
+
+        return IntStream.range(0, misionesDisponibles.size())
+                .mapToObj(i -> convertirADTO(misionesDisponibles.get(i), progresoMisiones.get(i),
+                        categoriaActual, misionActual))
                 .toList();
     }
 
@@ -94,7 +107,12 @@ public class IncentivosController {
                 .orElseThrow(() -> new IllegalArgumentException(
                         "No existe la categoría: " + dto.getCategoriaNombre()));
 
-        return new DatosDonacion(dto.getFecha(), categoria, dto.getCantidadBienes(), dto.isDonacionExitosa());
+        Beneficiario beneficiario = dto.getBeneficiarioId() != null
+                ? consultor.obtenerOCrearBeneficiario(dto.getBeneficiarioId(), dto.getBeneficiarioNombre())
+                : null;
+
+        return new DatosDonacion(dto.getFecha(), categoria, dto.getCantidadBienes(),
+                dto.isDonacionExitosa(), beneficiario);
     }
 
     private MetricasActividadDTO convertirADTO(MetricasActividad metricas) {
@@ -104,14 +122,32 @@ public class IncentivosController {
         dto.setBeneficiariosAyudados(metricas.getBeneficiariosAyudados());
         dto.setMisionesCompletadas(metricas.getMisionesCompletadas());
         dto.setInsigniasObtenidas(metricas.getInsigniasObtenidas());
+        dto.setImpactoAcumulado(metricas.getImpactoAcumulado());
+        dto.setPosicionRanking(metricas.getPosicionRanking());
+        dto.setEvolucionMensual(metricas.getEvolucionMensual().stream()
+                .map(this::convertirADTO)
+                .toList());
         return dto;
     }
 
-    private MisionDisponibleDTO convertirADTO(Mision mision, String categoriaNombre) {
+    private EvolucionMensualDTO convertirADTO(EvolucionMensual evolucionMensual) {
+        EvolucionMensualDTO dto = new EvolucionMensualDTO();
+        dto.setMes(evolucionMensual.getMes().toString());
+        dto.setSolicitudes(evolucionMensual.getSolicitudes());
+        dto.setImpacto(evolucionMensual.getImpacto());
+        return dto;
+    }
+
+    private MisionDisponibleDTO convertirADTO(Mision mision, ProgresoMision progresoMision,
+                                               String categoriaNombre, ProgresoMision misionActual) {
         MisionDisponibleDTO dto = new MisionDisponibleDTO();
         dto.setNombreMision(mision.getNombreMision());
         dto.setCategoriaNombre(categoriaNombre);
         dto.setInsigniaNombre(mision.getInsigniaAsociada().getNombre());
+        dto.setProgresoActual(progresoMision.obtenerProgresoActual());
+        dto.setDistanciaRestante(progresoMision.distanciaRestante());
+        dto.setCompletada(progresoMision.getInsigniaObtenida() != null);
+        dto.setActiva(progresoMision == misionActual);
         return dto;
     }
 
