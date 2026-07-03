@@ -48,6 +48,7 @@
 │   │   └── iniciar-sesion.png
 │   └── principal.png
 ├── pom.xml
+├── run-servicios.sh
 ├── servicio-donaciones
 │   ├── pom.xml
 │   └── src
@@ -71,7 +72,7 @@
     └── src
         └── main
 
-22 directories, 34 files
+22 directories, 35 files
 ```
 <!-- TREE_END -->
 
