@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
 import com.opencsv.CSVReader;
 import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class ImportadorCSV extends Importador {
@@ -11,18 +13,27 @@ public class ImportadorCSV extends Importador {
     }
 
     @Override
-    public void importar(String ruta) {
+    public void importar(InputStream inputStream) {
+
         listaDonantes = new ArrayList<>();
-        try (CSVReader csvReader = new CSVReader(new FileReader(ruta))) {
-            csvReader.readNext(); // saltar encabezado
+
+        try (CSVReader csvReader =
+                     new CSVReader(new InputStreamReader(inputStream))) {
+
+            csvReader.readNext();
+
             String[] fila;
             long id = 1L;
+
             while ((fila = csvReader.readNext()) != null) {
+
                 Donante donante = crearDonante(id++, fila);
+
                 if (donante != null) {
                     listaDonantes.add(donante);
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

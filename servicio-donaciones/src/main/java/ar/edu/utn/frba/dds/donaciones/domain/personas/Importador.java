@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,5 +16,5 @@ public abstract class Importador {
         return listaDonantes;
     }
 
-    public abstract void importar(String ruta);
+    public abstract void importar(InputStream inputStream);
 }

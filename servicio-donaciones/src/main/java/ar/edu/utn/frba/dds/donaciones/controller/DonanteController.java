@@ -6,6 +6,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonanteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -59,5 +60,12 @@ public class DonanteController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable Long id) {
         donanteService.eliminar(id);
+    }
+
+    @PostMapping("/importar")
+    public List<DonanteDTO> importar(
+            @RequestParam MultipartFile archivo) {
+
+        return donanteService.importarCSV(archivo);
     }
 }
