@@ -7,7 +7,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class ServicioIncentivosApplication {
+
     public static void main(String[] args) {
-        SpringApplication.run(ServicioIncentivosApplication.class, args);
+        SpringApplication.run(
+                ServicioIncentivosApplication.class,
+                args
+        );
     }
 }

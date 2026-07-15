@@ -1,4 +1,4 @@
-# Trabajo Práctico Anual Diseño de Sistemas de Información Grupo 8
+# Trabajo Práctico Anual Diseño de Sistemas de Información Grupo 4
 
 
 ## Integrantes:
@@ -18,11 +18,11 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
-├── cli.py
 ├── diagramas
 │   ├── DCU.png
 │   ├── DDC.png
 │   └── Diagrama Secuencia.jpeg
+├── endpoints.md
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -49,6 +49,7 @@
 │   │   └── iniciar-sesion.png
 │   └── principal.png
 ├── pom.xml
+├── run-servicios.sh
 ├── servicio-donaciones
 │   ├── pom.xml
 │   └── src
@@ -62,17 +63,17 @@
 │   ├── src
 │   │   └── main
 │   └── workflows
-│       ├── Workflow-Ranking.json
-│       ├── servicio-incentivos.json
-│       └── servicio-insignias.json
+│       └── servicio-incentivos-difusion.json
 ├── servicio-logistica
-│   └── pom.xml
+│   ├── pom.xml
+│   └── src
+│       └── main
 └── servicio-notificaciones
     ├── pom.xml
     └── src
         └── main
 
-20 directories, 37 files
+22 directories, 36 files
 ```
 <!-- TREE_END -->
 

@@ -1,19 +1,20 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Importador {
     protected String nombre;
-    protected List<Donante> tallaImportador = new ArrayList<>();
+    protected List<Donante> listaDonantes = new ArrayList<>();
 
     public String getNombre() {
         return nombre;
     }
 
-    public List<Donante> getTallaImportador() {
-        return tallaImportador;
+    public List<Donante> getListaDonantes() {
+        return listaDonantes;
     }
 
-    public abstract void realizarRuta();
+    public abstract void importar(InputStream inputStream);
 }

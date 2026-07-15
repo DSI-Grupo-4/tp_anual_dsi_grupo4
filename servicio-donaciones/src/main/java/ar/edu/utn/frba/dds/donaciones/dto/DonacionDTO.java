@@ -13,4 +13,7 @@ public class DonacionDTO {
     private EstadoTrack estadoActual;
     private Long entidadBeneficiariaId;
     private Long necesidadId;
+    private Integer pesoKg;
+    private Integer volumenM3;
+    private Integer alturaM;
 }

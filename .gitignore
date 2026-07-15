@@ -1,9 +1,6 @@
 target/
-*.class
-*.jar
-*.war
+.idea/
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/usage.statistics.xml
-credentials.env
+logs/
+.pids/
+servicio-incentivos/credentials.env

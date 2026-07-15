@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:community.n8n.io)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('active:', d.get\\('active'\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(docker compose *)",
+      "Bash(java -version)",
+      "Bash(mvn -v)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\('/home/dante/tp_anual_dsi_grupo4/servicio-incentivos/workflows/servicio-incentivos-difusion.json'\\)\\); print\\(d['id']\\); print\\(d['name']\\)\")",
+      "Bash(grep -n '$env\\\\.' /home/dante/tp_anual_dsi_grupo4/servicio-incentivos/workflows/servicio-incentivos-difusion.json)",
+      "WebFetch(domain:docs.n8n.io)",
+      "Bash(mvn -q -DskipTests package)",
+      "Bash(mvn -q -DskipTests -pl servicio-logistica,servicio-incentivos,servicio-notificaciones package)",
+      "Bash(mvn -q -pl servicio-incentivos -am -DskipTests package)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(mvn -q -pl servicio-notificaciones -am -DskipTests package)",
+      "Read(//tmp/lombok_test/**)",
+      "Bash(javac -cp /home/dante/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar Test.java)",
+      "Bash(java -cp .:/home/dante/.m2/repository/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar Test)",
+      "Bash(mvn -q -pl servicio-logistica -am -DskipTests package)",
+      "Bash(touch credentials.env.tmp)",
+      "Bash(cp docker-compose.yml /tmp/dc-check.yml)",
+      "Bash(make deploy *)",
+      "Bash(curl -s -o /tmp/ui.html -w \"HTTP %{http_code}\\\\n\" http://localhost:5678/)",
+      "Read(//tmp/**)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" http://localhost:5678/rest/login)",
+      "Bash(curl -s -w \"\\\\nHTTP %{http_code}\\\\n\" -X POST http://localhost:5678/webhook/events/insignia-otorgada -H \"Content-Type: application/json\" -d '{}')",
+      "Bash(make down *)",
+      "Bash(./run-servicios.sh build *)",
+      "Bash(tee /tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/83e65e58-e20e-464a-8019-1cadf8d675a0/scratchpad/build.log)",
+      "Bash(mvn -version)",
+      "Bash(mvn -q dependency:build-classpath -Dmdep.outputFile=/dev/stdout)",
+      "Read(//home/dante/.m2/**)",
+      "Bash(mvn -q compile)",
+      "Bash(mvn compile *)",
+      "Bash(mvn -q help:evaluate -Dexpression=lombok.version -DforceStdout -pl servicio-donaciones)",
+      "Bash(rm -rf /tmp/lombok-test)",
+      "Bash(kill 18290)",
+      "Bash(kill -0 18290)",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST http://localhost:8080/api/donantes/importar -F archivo=@/tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/donantes_muestra.csv -o /tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/import_response2.json -w 'HTTP_STATUS:%{http_code}\\\\n')",
+      "Bash(python3 -c 'import json; d=json.load\\(open\\('\\\\''/tmp/claude-1000/-home-dante-tp-anual-dsi-grupo4/fc5a6bb5-27c0-4826-b290-18e438a1472c/scratchpad/import_response2.json'\\\\''\\)\\); print\\(json.dumps\\(d[:3], indent=2, ensure_ascii=False\\)\\)')"
+    ],
+    "additionalDirectories": [
+      "/tmp/lombok-test"
+    ]
+  }
+}
