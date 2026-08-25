@@ -10,13 +10,13 @@ import java.util.List;
 @Setter
 public class Categoria {
     private String nombre;
-    private List<Subcategoria> subcategorias = new ArrayList<>();
+    private List<SubCategoria> subCategorias = new ArrayList<>();
 
     public Categoria() {
     }
 
-    public Categoria(String nombre, List<Subcategoria> subcategorias) {
+    public Categoria(String nombre, List<SubCategoria> subCategorias) {
         this.nombre = nombre;
-        this.subcategorias = subcategorias != null ? subcategorias : new ArrayList<>();
+        this.subCategorias = subCategorias != null ? subCategorias : new ArrayList<>();
     }
 }
