@@ -233,6 +233,7 @@ public class DonacionController {
         EntidadBeneficiaria entidad =
                 entidadBeneficiariaService.buscarEntidad(dto.getEntidadId());
         matchmakingService.confirmarAsignacion(donacion, entidad);
+        donacionService.enviarALogistica(donacion);
         return donacionService.obtenerPorId(id);
     }
 }
