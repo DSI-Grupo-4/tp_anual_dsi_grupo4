@@ -12,7 +12,7 @@ public class NotificacionesClient {
     private static final Logger logger = LoggerFactory.getLogger(NotificacionesClient.class);
     private final RestClient restClient;
 
-    public NotificacionesClient(@Value("${notificaciones.base-url:http://localhost:8083}") String baseUrl) {
+    public NotificacionesClient(@Value("${notificaciones.base-url:http://localhost:8082}") String baseUrl) {
         this.restClient = RestClient.builder().baseUrl(baseUrl).build();
     }
 
