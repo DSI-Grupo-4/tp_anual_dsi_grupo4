@@ -4,3 +4,5 @@ target/
 logs/
 .pids/
 servicio-incentivos/credentials.env
+.cli-venv/
+__pycache__/

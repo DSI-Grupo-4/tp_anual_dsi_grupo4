@@ -45,10 +45,11 @@ requests = ensure_requests()
 
 # ---------------------------------------------------------------------------
 # Constantes faciles de cambiar
-# Valores leidos del proyecto al crear este CLI:
-# - servicio-donaciones: sin application.properties/yml, Spring Boot usa 8080.
-# - servicio-incentivos: servicio-incentivos/src/main/resources/application.properties -> 8081.
-# - servicio-notificaciones: servicio-notificaciones/src/main/resources/application.yml -> 8083.
+# Valores leidos de cada servicio-*/src/main/resources/application.properties:
+# - servicio-donaciones -> 8080
+# - servicio-incentivos -> 8081
+# - servicio-notificaciones -> 8082
+# - servicio-logistica -> 8083
 # - n8n: servicio-incentivos/docker-compose.yml -> 5678:5678, via Docker Compose.
 # ---------------------------------------------------------------------------
 ROOT_DIR = Path(__file__).resolve().parent
@@ -57,12 +58,14 @@ LOG_DIR = ROOT_DIR / "logs"
 HOST = "localhost"
 DONACIONES_PORT = 8080
 INCENTIVOS_PORT = 8081
-NOTIFICACIONES_PORT = 8083
+NOTIFICACIONES_PORT = 8082
+LOGISTICA_PORT = 8083
 N8N_PORT = 5678
 
 DONACIONES_BASE_URL = f"http://{HOST}:{DONACIONES_PORT}"
 INCENTIVOS_BASE_URL = f"http://{HOST}:{INCENTIVOS_PORT}"
 NOTIFICACIONES_BASE_URL = f"http://{HOST}:{NOTIFICACIONES_PORT}"
+LOGISTICA_BASE_URL = f"http://{HOST}:{LOGISTICA_PORT}"
 N8N_BASE_URL = f"http://{HOST}:{N8N_PORT}"
 
 SERVICE_MODULES = {
@@ -72,6 +75,13 @@ SERVICE_MODULES = {
         "base_url": DONACIONES_BASE_URL,
         "health_paths": ["/actuator/health", "/"],
         "log": "donaciones.log",
+    },
+    "logistica": {
+        "module": "servicio-logistica",
+        "artifact_id": "servicio-logistica",
+        "base_url": LOGISTICA_BASE_URL,
+        "health_paths": ["/api/camiones", "/actuator/health", "/"],
+        "log": "logistica.log",
     },
     "incentivos": {
         "module": "servicio-incentivos",
@@ -102,6 +112,7 @@ class SessionState:
         self.donacion_id: str | None = None
         self.donacion_estado: str | None = None
         self.notificacion_id: str | None = None
+        self.ruta_id: str | None = None
         self.processes: dict[str, subprocess.Popen] = {}
         self.log_files: dict[str, Any] = {}
 
@@ -326,8 +337,8 @@ def detener_servicios() -> None:
 def registrar_persona_humana() -> None:
     nombre = prompt("Nombre", "Ana")
     apellido = prompt("Apellido", "Perez")
-    print("Genero: Masculino / Femenino / X")
-    genero = prompt("Genero", "Femenino")
+    print("Genero: MASCULINO / FEMENINO / X")
+    genero = prompt("Genero", "FEMENINO").upper()
     payload = {"nombre": nombre, "apellido": apellido, "genero": genero}
     response = request_json("POST", DONACIONES_BASE_URL, "/api/donantes/humanos", payload)
     data = parse_json_response(response)
@@ -367,9 +378,19 @@ def registrar_entidad() -> None:
     tipo = prompt("Tipo", "ONG")
     rubro = prompt("Rubro", "Asistencia social")
     descripcion = prompt("Descripcion", "Entidad que asiste a personas en situacion de calle")
+    print("Direccion (necesaria para que la entidad pueda recibir una Parada en servicio-logistica):")
+    calle = prompt("  Calle", "Av. Rivadavia")
+    numero = prompt("  Numero", "1234")
+    ciudad = prompt("  Ciudad", "CABA")
+    provincia = prompt("  Provincia", "Buenos Aires")
     payload = {
         "descripcion": descripcion,
         "personaJuridica": {"razonSocial": razon_social, "tipo": tipo, "rubro": rubro},
+        "direccion": {
+            "calle": calle,
+            "numero": numero,
+            "ciudad": {"nombre": ciudad, "provincia": {"nombre": provincia}},
+        },
     }
     response = request_json("POST", DONACIONES_BASE_URL, "/api/entidades", payload)
     data = parse_json_response(response)
@@ -428,9 +449,17 @@ def listar_necesidades_entidad() -> None:
 def registrar_donacion() -> None:
     descripcion = prompt("Descripcion del item", "Caja de alimentos no perecederos")
     cantidad = prompt("Cantidad", "10")
+    print("Peso/volumen/altura (necesarios para que servicio-logistica pueda planificar la ruta;")
+    print("si se dejan vacios, la donacion nunca va a entrar en un camion al planificar):")
+    peso_kg = prompt("  Peso (KG)", "5")
+    volumen_m3 = prompt("  Volumen (M3)", "1")
+    altura_m = prompt("  Altura (M)", "1")
     payload = {
         "descripcionItem": descripcion,
         "cantidadAsignada": int(cantidad),
+        "pesoKg": int(peso_kg) if peso_kg else None,
+        "volumenM3": int(volumen_m3) if volumen_m3 else None,
+        "alturaM": int(altura_m) if altura_m else None,
     }
     response = request_json("POST", DONACIONES_BASE_URL, "/api/donaciones", payload)
     data = parse_json_response(response)
@@ -442,6 +471,16 @@ def registrar_donacion() -> None:
 
 def listar_donaciones() -> None:
     request_json("GET", DONACIONES_BASE_URL, "/api/donaciones")
+
+
+def ver_donacion() -> None:
+    donacion_id = default_id(STATE.donacion_id, "ID donacion")
+    if not donacion_id:
+        return
+    response = request_json("GET", DONACIONES_BASE_URL, f"/api/donaciones/{donacion_id}")
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("estadoActual"):
+        STATE.donacion_estado = str(data["estadoActual"])
 
 
 def historial_donacion() -> None:
@@ -578,6 +617,83 @@ def ver_notificacion() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Logistica
+# ---------------------------------------------------------------------------
+def update_last_ruta_from_response(response: requests.Response | None) -> None:
+    data = parse_json_response(response)
+    if isinstance(data, dict) and data.get("idRuta") is not None:
+        STATE.ruta_id = str(data["idRuta"])
+
+
+def listar_camiones() -> None:
+    request_json("GET", LOGISTICA_BASE_URL, "/api/camiones")
+
+
+def listar_camiones_disponibles() -> None:
+    request_json("GET", LOGISTICA_BASE_URL, "/api/camiones/disponibles")
+
+
+def ejecutar_planificador() -> None:
+    print("\nDispara ahora mismo lo que el scheduler de logistica corre de madrugada:")
+    print("agrupa las Entrega PENDIENTE por entidad beneficiaria y arma una Ruta por camion.")
+    response = request_json("POST", LOGISTICA_BASE_URL, "/api/planificador/ejecutar")
+    data = parse_json_response(response)
+    if isinstance(data, list) and data:
+        STATE.ruta_id = str(data[0].get("idRuta")) if data[0].get("idRuta") is not None else STATE.ruta_id
+        print(f"\n{len(data)} ruta(s) planificada(s). Ruta guardada en sesion: ID={STATE.ruta_id}.")
+    elif isinstance(data, list):
+        print("\nNo se planifico ninguna ruta (sin entregas pendientes o sin camiones disponibles).")
+
+
+def listar_rutas() -> None:
+    request_json("GET", LOGISTICA_BASE_URL, "/api/rutas")
+
+
+def ver_ruta() -> None:
+    ruta_id = default_id(STATE.ruta_id, "ID ruta")
+    if ruta_id:
+        response = request_json("GET", LOGISTICA_BASE_URL, f"/api/rutas/{ruta_id}")
+        update_last_ruta_from_response(response)
+
+
+def iniciar_ruta() -> None:
+    ruta_id = default_id(STATE.ruta_id, "ID ruta")
+    if ruta_id:
+        request_json("POST", LOGISTICA_BASE_URL, f"/api/rutas/{ruta_id}/iniciar")
+
+
+def confirmar_parada() -> None:
+    ruta_id = default_id(STATE.ruta_id, "ID ruta")
+    parada_id = prompt("ID parada", "1")
+    if not ruta_id or not parada_id:
+        return
+    url_foto = prompt("URL foto de entrega", "https://ejemplo.org/foto.jpg")
+    payload = {"url": url_foto, "fecha": time.strftime("%Y-%m-%d")}
+    request_json("POST", LOGISTICA_BASE_URL, f"/api/rutas/{ruta_id}/paradas/{parada_id}/confirmar", payload)
+
+
+def marcar_parada_no_recibida() -> None:
+    ruta_id = default_id(STATE.ruta_id, "ID ruta")
+    parada_id = prompt("ID parada", "1")
+    if not ruta_id or not parada_id:
+        return
+    justificacion = prompt("Justificacion", "Tocamos timbre pero nadie respondio")
+    request_json("POST", LOGISTICA_BASE_URL, f"/api/rutas/{ruta_id}/paradas/{parada_id}/no-recibida", justificacion)
+
+
+def ver_estado_entrega() -> None:
+    entrega_id = prompt("ID entrega", "1")
+    if entrega_id:
+        request_json("GET", LOGISTICA_BASE_URL, f"/api/entregas/{entrega_id}/estado")
+
+
+def ver_eventos_logistica() -> None:
+    print("\nEventos generados por logistica que Donaciones todavia no consumio via polling")
+    print("(el EventosLogisticaScheduler de servicio-donaciones los consume y marca-publicado solo).")
+    request_json("GET", LOGISTICA_BASE_URL, "/api/eventos")
+
+
+# ---------------------------------------------------------------------------
 # Flujos combinados
 # ---------------------------------------------------------------------------
 def step(title: str, action: Callable[[], None]) -> None:
@@ -588,6 +704,31 @@ def step(title: str, action: Callable[[], None]) -> None:
     pause()
 
 
+def esperar_evento_logistica(timeout_s: int = 90) -> None:
+    """Espera a que el EventosLogisticaScheduler de donaciones consuma por polling
+    el ultimo evento de servicio-logistica y actualice el estado de la donacion.
+    Por defecto el scheduler corre cada 60s (logistica.eventos.poll-delay-ms)."""
+    if not STATE.donacion_id:
+        return
+    estado_previo = STATE.donacion_estado
+    print(f"\nEsperando hasta {timeout_s}s a que donaciones consuma el evento de logistica por polling...")
+    deadline = time.time() + timeout_s
+    while time.time() < deadline:
+        try:
+            response = requests.get(
+                f"{DONACIONES_BASE_URL}/api/donaciones/{STATE.donacion_id}", timeout=REQUEST_TIMEOUT
+            )
+            data = response.json() if response.status_code < 400 else None
+        except requests.RequestException:
+            data = None
+        if isinstance(data, dict) and data.get("estadoActual") and data["estadoActual"] != estado_previo:
+            STATE.donacion_estado = str(data["estadoActual"])
+            print(f"Estado actualizado: {estado_previo} -> {STATE.donacion_estado}")
+            return
+        time.sleep(3)
+    print(f"Timeout esperando el cambio de estado (seguia en {estado_previo}). Revisá los logs de ambos servicios.")
+
+
 def flujo_completo_donacion() -> None:
     print("\nFlujo completo guiado. Los IDs obtenidos en cada paso se guardan en sesion automaticamente.")
     step("1. Crear donante", registrar_persona_humana)
@@ -595,10 +736,18 @@ def flujo_completo_donacion() -> None:
     step("3. Registrar necesidad extraordinaria", registrar_necesidad_extraordinaria)
     step("4. Registrar donacion", registrar_donacion)
     step("5. Ejecutar matchmaking", ejecutar_matchmaking)
-    step("6. Confirmar asignacion", confirmar_asignacion)
-    step("7. Avanzar estado hasta ENTREGADA", cambiar_estado_donacion)
-    step("8. Verificar notificaciones registradas", ver_notificaciones)
-    step("9. Verificar metricas de incentivos", ver_metricas)
+    step("6. Confirmar asignacion (dispara el push automatico a servicio-logistica)", confirmar_asignacion)
+    step("7. Ejecutar planificacion de rutas en servicio-logistica", ejecutar_planificador)
+    esperar_evento_logistica()
+    step("8. Ver donacion (deberia estar LISTA_PARA_ENTREGAR)", ver_donacion)
+    step("9. Iniciar la ruta planificada", iniciar_ruta)
+    esperar_evento_logistica()
+    step("10. Ver donacion (deberia estar EN_TRASLADO)", ver_donacion)
+    step("11. Confirmar recepcion en la parada", confirmar_parada)
+    esperar_evento_logistica()
+    step("12. Ver donacion (deberia estar ENTREGADA)", ver_donacion)
+    step("13. Verificar notificaciones registradas", ver_notificaciones)
+    step("14. Verificar metricas de incentivos", ver_metricas)
 
 
 def simular_inactividad() -> None:
@@ -618,6 +767,7 @@ def session_summary() -> str:
             f"    Donante:  ID={STATE.donante_id or '-'} ({STATE.donante_nombre or '-'})",
             f"    Entidad:  ID={STATE.entidad_id or '-'} ({STATE.entidad_nombre or '-'})",
             f"    Donacion: ID={STATE.donacion_id or '-'} (estado: {STATE.donacion_estado or '-'})",
+            f"    Ruta:     ID={STATE.ruta_id or '-'}",
             f"    Notif.:   ID={STATE.notificacion_id or '-'}",
         ]
     )
@@ -657,6 +807,19 @@ def print_menu() -> None:
   14 Marcar donacion como ENTREGA_FALLIDA
   15 Ejecutar matchmaking para una donacion
   16 Confirmar asignacion de una donacion a una entidad
+  17 Ver detalle de una donacion
+
+  [ LOGISTICA ]
+  40 Listar camiones
+  41 Listar camiones disponibles
+  42 Ejecutar planificacion de rutas (manual, lo normal es el scheduler 3am)
+  43 Listar rutas
+  44 Ver una ruta
+  45 Iniciar ruta (el chofer arranca el recorrido)
+  46 Confirmar recepcion en una parada
+  47 Marcar parada como no recibida
+  48 Ver estado de una entrega
+  49 Ver eventos logisticos no publicados (los que donaciones todavia no consumio)
 
   [ INCENTIVOS ]
   20 Ver metricas de actividad de un donante
@@ -700,6 +863,17 @@ ACTIONS: dict[str, Callable[[], None]] = {
     "14": marcar_entrega_fallida,
     "15": ejecutar_matchmaking,
     "16": confirmar_asignacion,
+    "17": ver_donacion,
+    "40": listar_camiones,
+    "41": listar_camiones_disponibles,
+    "42": ejecutar_planificador,
+    "43": listar_rutas,
+    "44": ver_ruta,
+    "45": iniciar_ruta,
+    "46": confirmar_parada,
+    "47": marcar_parada_no_recibida,
+    "48": ver_estado_entrega,
+    "49": ver_eventos_logistica,
     "20": ver_metricas,
     "21": ver_misiones,
     "22": ver_insignias,
