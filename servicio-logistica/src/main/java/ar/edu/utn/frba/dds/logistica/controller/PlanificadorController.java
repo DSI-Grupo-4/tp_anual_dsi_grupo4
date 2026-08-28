@@ -1,7 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.controller;
 
-import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
-import ar.edu.utn.frba.dds.logistica.dto.ResultadoPlanificacionDTO;
+import ar.edu.utn.frba.dds.logistica.domain.rutas.Ruta;
 import ar.edu.utn.frba.dds.logistica.service.PlanificadorService;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,14 +16,9 @@ public class PlanificadorController {
         this.planificadorService = planificadorService;
     }
 
-    @PostMapping("/procesar")
-    public List<Entrega> procesarDonaciones() {
-        return planificadorService.procesarDonaciones();
+    // dispara manualmente lo que normalmente hace el scheduler de madrugada (útil para probar por Postman)
+    @PostMapping("/ejecutar")
+    public List<Ruta> ejecutarPlanificacion() {
+        return planificadorService.planificarRutasDelDia();
     }
-
-    @PostMapping("/callback")
-    public void recibirResultado(@RequestBody ResultadoPlanificacionDTO resultado) {
-        planificadorService.procesarResultado(resultado);
-    }
-
 }

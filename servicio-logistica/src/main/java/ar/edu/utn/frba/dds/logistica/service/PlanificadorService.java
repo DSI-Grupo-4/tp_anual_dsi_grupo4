@@ -1,111 +1,47 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
-import ar.edu.utn.frba.dds.logistica.domain.planificacion.EstadoPlanificacion;
-import ar.edu.utn.frba.dds.logistica.domain.planificacion.Lote;
-import ar.edu.utn.frba.dds.logistica.domain.planificacion.SolicitudPlanificacion;
-import ar.edu.utn.frba.dds.logistica.domain.rutas.Camion;
-import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
-import ar.edu.utn.frba.dds.logistica.dto.CamionDTO;
-import ar.edu.utn.frba.dds.logistica.dto.DonacionDTO;
-import ar.edu.utn.frba.dds.logistica.dto.ResultadoPlanificacionDTO;
-import ar.edu.utn.frba.dds.logistica.dto.RutaDTO;
-import ar.edu.utn.frba.dds.logistica.service.CamionService;
-import ar.edu.utn.frba.dds.logistica.service.DonacionClienteService;
+import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
+import ar.edu.utn.frba.dds.logistica.domain.eventos.TipoEvento;
+import ar.edu.utn.frba.dds.logistica.domain.rutas.*;
+import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PlanificadorService {
 
-    private final DonacionClienteService donacionClient;
+    private final EntregaRepository entregaRepository;
     private final CamionService camionService;
+    private final GestorRutas gestorRutas;
+    private final GestorEventos gestorEventos;
 
-    // 🔥 almacenamiento en memoria para poder resolver callback
-    private final List<Entrega> entregas = new ArrayList<>();
-    private Integer contadorId = 1;
-
-    public PlanificadorService(DonacionClienteService donacionClient,
-                               CamionService camionService) {
-        this.donacionClient = donacionClient;
+    public PlanificadorService(EntregaRepository entregaRepository,
+                               CamionService camionService,
+                               GestorRutas gestorRutas,
+                               GestorEventos gestorEventos) {
+        this.entregaRepository = entregaRepository;
         this.camionService = camionService;
+        this.gestorRutas = gestorRutas;
+        this.gestorEventos = gestorEventos;
     }
 
-    public List<Entrega> procesarDonaciones() {
-        int page = 0;
-        List<DonacionDTO> loteDTO;
-        List<Entrega> resultado = new ArrayList<>();
+    // Disparado por el scheduler (horario de baja carga) o manualmente vía endpoint
+    public List<Ruta> planificarRutasDelDia() {
+        List<Entrega> pendientes = entregaRepository.obtenerPendientes();
+        if (pendientes.isEmpty()) return List.of();
 
-        SolicitudPlanificacion solicitud = new SolicitudPlanificacion(
-                EstadoPlanificacion.SOLICITADA,
-                new ArrayList<>()
-        );
+        List<Camion> disponibles = camionService.obtenerCamionesDisponiblesEntidad();
 
-        try {
-            do {
-                loteDTO = donacionClient.obtenerDonaciones(page);
+        List<Ruta> rutasGeneradas = gestorRutas.planificar(pendientes, disponibles);
 
-                if (!loteDTO.isEmpty()) {
-                    solicitud.recibirDonaciones(loteDTO);
-                }
+        // emitimos evento por cada ruta planificada, para que Donaciones lo consuma vía GET
+        rutasGeneradas.forEach(ruta ->
+                ruta.getParadas().forEach(parada ->
+                        parada.getEntregas().forEach(entrega ->
+                                gestorEventos.crearEvento(TipoEvento.RUTA_PLANIFICADA, entrega))));
 
-                page++;
-            } while (!loteDTO.isEmpty());
-
-            solicitud.dividirEnLotes();
-
-            // 🔥 obtener entregas desde los lotes
-            List<Entrega> entregasGeneradas = new ArrayList<>();
-
-            for (Lote lote : solicitud.getDonacionesAEntregar()) {
-                for (Entrega e : lote.getEntregas()) {
-                    // asignar ID
-                    e.setIdEntrega(contadorId++);
-                    entregasGeneradas.add(e);
-                }
-            }
-
-            // guardar para callback
-            this.entregas.addAll(entregasGeneradas);
-
-            solicitud.setEstado(EstadoPlanificacion.GENERADA);
-
-            return entregasGeneradas;
-
-        } catch (Exception e) {
-            solicitud.setEstado(EstadoPlanificacion.FALLIDA);
-            throw new RuntimeException("Error en planificación", e);
-        }
-    }
-
-    //callback: procesar resultado del "planificador externo"
-    public void procesarResultado(ResultadoPlanificacionDTO resultado) {
-
-        for (RutaDTO ruta : resultado.getRutas()) {
-
-            for (Integer entregaId : ruta.getEntregasIds()) {
-
-                Entrega entrega = buscarEntrega(entregaId);
-
-                entrega.iniciarTranslado();
-            }
-        }
-    }
-
-    private Entrega buscarEntrega(Integer id) {
-        return entregas.stream()
-                .filter(e -> e.getIdEntrega().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new RuntimeException("Entrega no encontrada"));
-    }
-
-    private Camion convertirCamion(CamionDTO dto) {
-        Camion camion = new Camion();
-        camion.setIdCamion(dto.getIdCamion());
-        camion.setPatente(dto.getPatente());
-        camion.setEstado(dto.getEstadoCamion());
-        return camion;
+        return rutasGeneradas;
     }
 }
 
