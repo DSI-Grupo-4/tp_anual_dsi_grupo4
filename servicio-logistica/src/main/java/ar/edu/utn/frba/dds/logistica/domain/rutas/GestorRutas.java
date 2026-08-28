@@ -1,39 +1,40 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
-import ar.edu.utn.frba.dds.logistica.domain.planificacion.EstadoPlanificacion;
-import lombok.Getter;
-import lombok.Setter;
-
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
-@Getter
-@Setter
 public class GestorRutas {
 
-    private static GestorRutas instancia;
+    private final List<Ruta> rutas = new ArrayList<>();
+    private EstrategiaPlanificacion estrategia = new PlanificacionPropia(); // default; el broker (Entrega 4) podrá cambiarla
 
-    private Integer idPlanificacion;
-    private LocalDate fechaPlanificada;
-    private List<Ruta> rutas;
-    private List<Camion> camiones;
+    public void setEstrategia(EstrategiaPlanificacion estrategia) {
+        this.estrategia = estrategia;
+    }
 
-    // Constructor privado
-    private GestorRutas() {}
+    public List<Ruta> planificar(List<Entrega> entregasPendientes, List<Camion> camionesDisponibles) {
+        int siguienteId = rutas.size() + 1;
+        List<Ruta> nuevasRutas = estrategia.planificar(entregasPendientes, camionesDisponibles, siguienteId);
+        rutas.addAll(nuevasRutas);
+        return nuevasRutas;
+    }
 
-    public static GestorRutas getInstancia() {
-        if (instancia == null) {
-            instancia = new GestorRutas();
-        }
-        return instancia;
+    public List<Ruta> getRutas() {
+        return rutas;
+    }
+
+    public Ruta buscarPorId(Integer idRuta) {
+        return rutas.stream()
+                .filter(r -> r.getIdRuta().equals(idRuta))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No existe la ruta con id: " + idRuta));
     }
 
     public List<Entrega> donacionesNoEntregadas() {
-
         return rutas.stream()
-                .flatMap(ruta -> ruta.getParadas().stream())
-                .flatMap(parada -> parada.getEntregas().stream())
-                .filter(entrega -> entrega.getEstadoEntrega() != EstadoEntrega.ENTREGADA)
+                .flatMap(r -> r.getParadas().stream())
+                .flatMap(p -> p.getEntregas().stream())
+                .filter(e -> e.getEstadoEntrega() != EstadoEntrega.ENTREGADA)
                 .toList();
     }
 }

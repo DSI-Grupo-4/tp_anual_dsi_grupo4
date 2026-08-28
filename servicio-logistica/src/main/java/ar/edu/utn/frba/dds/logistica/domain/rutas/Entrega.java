@@ -1,16 +1,17 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
-@Setter
 @Getter
+@Setter
 public class Entrega {
     private Integer idEntrega;
     private Integer idDonacionAsociada;
+    private Integer idEntidadBeneficiariaAsociada; // NUEVO: necesario para agrupar en Paradas
+    private Direccion direccionDestino;             // NUEVO: idem, sin consultar a Donaciones
     private EstadoEntrega estadoEntrega;
     private LocalDate fecha;
     private FotoEntrega fotoEntrega;
@@ -18,16 +19,15 @@ public class Entrega {
     private Integer pesoKG;
     private Integer volumenM3;
     private Integer alturaM;
+    private String justificacionFallo; // NUEVO: pedido por el enunciado ("Tocamos timbre pero nadie respondió")
 
-    public Entrega(Integer idEntrega,
-                   Integer idDonacionAsociada,
-                   LocalDate fecha,
-                   Integer pesoKG,
-                   Integer volumenM3,
-                   Integer alturaM) {
-
+    public Entrega(Integer idEntrega, Integer idDonacionAsociada, Integer idEntidadBeneficiariaAsociada,
+                   Direccion direccionDestino, LocalDate fecha,
+                   Integer pesoKG, Integer volumenM3, Integer alturaM) {
         this.idEntrega = idEntrega;
         this.idDonacionAsociada = idDonacionAsociada;
+        this.idEntidadBeneficiariaAsociada = idEntidadBeneficiariaAsociada;
+        this.direccionDestino = direccionDestino;
         this.fecha = fecha;
         this.pesoKG = pesoKG;
         this.volumenM3 = volumenM3;
@@ -35,11 +35,26 @@ public class Entrega {
         this.estadoEntrega = EstadoEntrega.PENDIENTE;
     }
 
-    public void cambiarEstado (EstadoEntrega estadoNuevo){
+    public void cambiarEstado(EstadoEntrega estadoNuevo) {
         this.estadoEntrega = estadoNuevo;
     }
 
-    public void iniciarTranslado(){
+    public void asignarARuta(Camion camion) {
+        this.camionEntrega = camion;
+        cambiarEstado(EstadoEntrega.ASIGNADA_A_RUTA);
+    }
+
+    public void iniciarTraslado() {
         cambiarEstado(EstadoEntrega.EN_TRASLADO);
+    }
+
+    public void confirmarEntrega(FotoEntrega foto) {
+        this.fotoEntrega = foto;
+        cambiarEstado(EstadoEntrega.ENTREGADA);
+    }
+
+    public void marcarNoRecibida(String justificacion) {
+        this.justificacionFallo = justificacion;
+        cambiarEstado(EstadoEntrega.NO_RECIBIDA);
     }
 }
