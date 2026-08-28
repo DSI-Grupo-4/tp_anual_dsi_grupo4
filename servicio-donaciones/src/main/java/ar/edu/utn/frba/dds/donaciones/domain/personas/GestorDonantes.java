@@ -19,6 +19,6 @@ public class GestorDonantes {
         importadores.stream()
                 .filter(imp -> imp.getNombre().equals(nombreImportador))
                 .findFirst()
-                .ifPresent(imp -> donantesRegistrados.addAll(imp.getTallaImportador()));
+                .ifPresent(imp -> donantesRegistrados.addAll(imp.getListaDonantes()));
     }
 }

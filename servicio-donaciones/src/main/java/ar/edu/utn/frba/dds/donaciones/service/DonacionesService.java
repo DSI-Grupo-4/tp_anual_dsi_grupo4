@@ -26,7 +26,7 @@ public class DonacionesService {
     }
 
     private void notificarDonanteInactivo(Donante donante) {
-        Persona persona = donante.getPersonaAsociada();
+        Persona persona = donante.getPersona();
         enviarAPersona(persona, "Hace mas de 20 dias que no interactuas con DonaTrack. Te invitamos a realizar una nueva donacion.");
     }
 

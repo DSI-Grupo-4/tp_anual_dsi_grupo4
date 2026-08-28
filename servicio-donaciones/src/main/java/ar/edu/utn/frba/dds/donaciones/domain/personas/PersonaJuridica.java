@@ -3,21 +3,30 @@ package ar.edu.utn.frba.dds.donaciones.domain.personas;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Getter
 @Setter
 public class PersonaJuridica extends Persona {
     private String razonSocial;
-    private TipoOrg tipo;
+    private TipoOrganizacion tipo;
     private String rubro;
-    private List<PersonaHumana> representante = new ArrayList<>();
 
-    public PersonaJuridica(String razonSocial, TipoOrg tipo, String rubro) {
+    private PersonaHumana representante;
+
+    public PersonaJuridica(
+            String razonSocial,
+            TipoOrganizacion tipo,
+            String rubro,
+            PersonaHumana representante) {
+
         super();
+
         this.razonSocial = razonSocial;
         this.tipo = tipo;
         this.rubro = rubro;
+        this.representante = representante;
+    }
+
+    public String nombreRepresentante() {
+        return representante.nombreCompleto();
     }
 }
