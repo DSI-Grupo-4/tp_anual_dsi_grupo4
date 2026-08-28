@@ -36,6 +36,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 @RestController
 @RequestMapping("/donantes")
 public class IncentivosController {
@@ -44,6 +49,24 @@ public class IncentivosController {
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
     private final GestorMisiones gestorMisiones = GestorMisiones.getInstance();
 
+    @Operation(
+            summary = "Obtener métricas de un donante",
+            description = "Obtiene las métricas de actividad de un donante para el período solicitado."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Métricas obtenidas correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Período inválido"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Donante no encontrado"
+            )
+    })
     @GetMapping("/{id}/metricas")
     public MetricasActividadDTO obtenerMetricas(
             @PathVariable Long id,
@@ -55,6 +78,20 @@ public class IncentivosController {
         return convertirADTO(metricas);
     }
 
+    @Operation(
+            summary = "Obtener misiones disponibles",
+            description = "Obtiene las misiones disponibles para un donante junto con su progreso, categoría actual y estado de activación."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Misiones obtenidas correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Donante no encontrado"
+            )
+    })
     @GetMapping("/{id}/misiones")
     public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@PathVariable Long id) {
         Donante donante = gestorDonante.obtenerDonante(id);
@@ -73,6 +110,20 @@ public class IncentivosController {
                 .toList();
     }
 
+    @Operation(
+            summary = "Obtener insignias de un donante",
+            description = "Obtiene las insignias obtenidas por un donante."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Insignias obtenidas correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Donante no encontrado"
+            )
+    })
     @GetMapping("/{id}/insignias")
     public List<InsigniaDTO> obtenerInsignias(@PathVariable Long id) {
         Donante donante = gestorDonante.obtenerDonante(id);
@@ -81,6 +132,28 @@ public class IncentivosController {
                 .toList();
     }
 
+    @Operation(
+            summary = "Registrar actividad de donación",
+            description = "Registra una actividad de donación realizada por un donante y determina si como consecuencia obtuvo una nueva insignia."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Actividad registrada y progreso de insignia obtenido"
+            ),
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Actividad registrada pero no se obtuvo una nueva insignia"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Datos de la donación inválidos"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Donante o categoría no encontrada"
+            )
+    })
     @PostMapping("/{id}/actividad-donacion")
     public ResponseEntity<ProgresoInsigniaDTO> registrarActividadDonacion(
             @PathVariable Long id,
@@ -95,6 +168,21 @@ public class IncentivosController {
         }
         return ResponseEntity.ok(convertirADTO(obtenida));
     }
+
+    @Operation(
+            summary = "Cambiar visibilidad de una insignia",
+            description = "Permite mostrar u ocultar una insignia del perfil público del donante."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "204",
+                    description = "Visibilidad de la insignia modificada correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Donante o insignia no encontrada"
+            )
+    })
 
     @PatchMapping("/{id}/insignias/{insigniaNombre}/visibilidad")
     public ResponseEntity<Void> cambiarVisibilidadInsignia(

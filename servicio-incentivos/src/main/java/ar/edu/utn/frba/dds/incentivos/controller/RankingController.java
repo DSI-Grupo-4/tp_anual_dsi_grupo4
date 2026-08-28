@@ -11,6 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -22,6 +27,16 @@ public class RankingController {
 
     private final Consultor consultor = Consultor.getInstance();
 
+    @Operation(
+            summary = "Obtener historial del ranking",
+            description = "Obtiene el historial de los rankings generados, incluyendo los principales donantes de cada período."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Historial obtenido correctamente"
+            )
+    })
     @GetMapping("/historial")
     public List<RankingDTO> obtenerHistorial() {
         return consultor.obtenerHistorialRanking().stream()
@@ -29,11 +44,43 @@ public class RankingController {
                 .toList();
     }
 
+    @Operation(
+            summary = "Obtener ranking de un mes",
+            description = "Obtiene el ranking correspondiente a la fecha indicada."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Ranking obtenido correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "La fecha proporcionada no es válida"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No existe un ranking para el período indicado"
+            )
+    })
     @GetMapping("/mes")
     public RankingDTO obtenerRankingDeMes(@RequestParam("fecha") LocalDate fecha) {
         return convertirADTO(consultor.obtenerRankingDeMes(fecha));
     }
 
+    @Operation(
+            summary = "Obtener último ranking",
+            description = "Obtiene las posiciones de los donantes correspondientes al ranking más reciente."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Último ranking obtenido correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No existe ningún ranking disponible"
+            )
+    })
     @GetMapping("/ultimo")
     public List<RankingPosicionDTO> obtenerUltimo() {
         Ranking ranking = consultor.obtenerUltimoRanking();
