@@ -81,4 +81,7 @@
 ## Diagrama de Despliegue inicial
 ![Diagrama de Despliegue Inicial](./assets_md/Diagrama_de_Despliegue_Inicial.png)
 
+## Despliegue
+Servicio de Logística: https://tp-anual-dsi-grupo4-1.onrender.com
+
 
