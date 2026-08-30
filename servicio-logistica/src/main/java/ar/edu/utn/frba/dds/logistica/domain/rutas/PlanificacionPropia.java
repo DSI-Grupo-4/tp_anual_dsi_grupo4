@@ -44,9 +44,10 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
                 camionActual = camiones.next();
             }
 
+            final Camion camionParaEstaParada = camionActual;
             Parada parada = new Parada(idParada++, grupo.getKey(),
                     entregasDeLaParada.get(0).getDireccionDestino(), entregasDeLaParada);
-            entregasDeLaParada.forEach(e -> e.asignarARuta(camionActual));
+            entregasDeLaParada.forEach(e -> e.asignarARuta(camionParaEstaParada));
             paradasCamionActual.add(parada);
         }
 
