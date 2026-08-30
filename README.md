@@ -15,6 +15,7 @@
 <!-- TREE_START -->
 ```text
 .
+├── Dockerfile
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -48,6 +49,7 @@
 │   │   └── iniciar-sesion.png
 │   └── principal.png
 ├── pom.xml
+├── render.yaml
 ├── servicio-donaciones
 │   ├── pom.xml
 │   └── src
@@ -71,7 +73,7 @@
     └── src
         └── main
 
-22 directories, 34 files
+22 directories, 36 files
 ```
 <!-- TREE_END -->
 
