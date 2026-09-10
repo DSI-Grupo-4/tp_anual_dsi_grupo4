@@ -1,0 +1,46 @@
+meta {
+  name: eliminar
+  type: http
+  seq: 3
+  tags: [
+    Entidades_beneficiarias
+  ]
+}
+
+delete {
+  url: {{baseUrl}}/api/entidades/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+example {
+  name: 204 Response
+  description: No Content
+  
+  request: {
+    url: {{baseUrl}}/api/entidades/:id
+    method: DELETE
+    mode: none
+    params:path: {
+      id: 
+    }
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  
+    body: {
+      type: text
+      content: '''
+  
+      '''
+    }
+  }
+}

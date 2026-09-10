@@ -1,0 +1,112 @@
+meta {
+  name: actualizar
+  type: http
+  seq: 2
+  tags: [
+    Entidades_beneficiarias
+  ]
+}
+
+put {
+  url: {{baseUrl}}/api/entidades/:id
+  body: json
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+body:json {
+  {
+    "id": 0,
+    "personaJuridica": {
+      "razonSocial": "",
+      "tipo": "GUBERNAMENTAL",
+      "rubro": ""
+    },
+    "descripcion": "",
+    "direccion": {
+      "calle": "",
+      "numero": "",
+      "ciudad": {
+        "nombre": "",
+        "provincia": {
+          "nombre": ""
+        }
+      }
+    }
+  }
+}
+
+example {
+  name: 200 Response
+  description: OK
+  
+  request: {
+    url: {{baseUrl}}/api/entidades/:id
+    method: PUT
+    mode: json
+    params:path: {
+      id: 
+    }
+  
+    body:json: {
+      {
+        "id": 0,
+        "personaJuridica": {
+          "razonSocial": "",
+          "tipo": "GUBERNAMENTAL",
+          "rubro": ""
+        },
+        "descripcion": "",
+        "direccion": {
+          "calle": "",
+          "numero": "",
+          "ciudad": {
+            "nombre": "",
+            "provincia": {
+              "nombre": ""
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  response: {
+    headers: {
+      Content-Type: */*
+    }
+  
+    status: {
+      code: 200
+      text: OK
+    }
+  
+    body: {
+      type: text
+      content: '''
+        {
+          "id": 0,
+          "personaJuridica": {
+            "razonSocial": "",
+            "tipo": "GUBERNAMENTAL",
+            "rubro": ""
+          },
+          "descripcion": "",
+          "direccion": {
+            "calle": "",
+            "numero": "",
+            "ciudad": {
+              "nombre": "",
+              "provincia": {
+                "nombre": ""
+              }
+            }
+          }
+        }
+      '''
+    }
+  }
+}

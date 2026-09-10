@@ -1,0 +1,81 @@
+meta {
+  name: crearRecurrente
+  type: http
+  seq: 3
+  tags: [
+    Necesidades
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/entidades/:entidadId/necesidades/recurrentes
+  body: json
+  auth: inherit
+}
+
+params:path {
+  entidadId: 
+}
+
+body:json {
+  {
+    "descripcion": "",
+    "subcategoria": "",
+    "cantidadRequerida": 0,
+    "entidadBeneficiariaId": 0,
+    "periodicidad": "DIARIA"
+  }
+}
+
+example {
+  name: 201 Response
+  description: Created
+  
+  request: {
+    url: {{baseUrl}}/api/entidades/:entidadId/necesidades/recurrentes
+    method: POST
+    mode: json
+    params:path: {
+      entidadId: 
+    }
+  
+    body:json: {
+      {
+        "descripcion": "",
+        "subcategoria": "",
+        "cantidadRequerida": 0,
+        "entidadBeneficiariaId": 0,
+        "periodicidad": "DIARIA"
+      }
+    }
+  }
+  
+  response: {
+    headers: {
+      Content-Type: */*
+    }
+  
+    status: {
+      code: 201
+      text: Created
+    }
+  
+    body: {
+      type: text
+      content: '''
+        {
+          "id": 0,
+          "tipo": "",
+          "descripcion": "",
+          "subcategoria": "",
+          "cantidadRequerida": 0,
+          "cantidadRecibida": 0,
+          "satisfecha": false,
+          "entidadBeneficiariaId": 0,
+          "periodicidad": "DIARIA",
+          "tipoExtraordinario": "INUNDACION"
+        }
+      '''
+    }
+  }
+}

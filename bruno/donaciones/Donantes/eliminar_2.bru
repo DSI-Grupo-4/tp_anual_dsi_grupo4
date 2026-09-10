@@ -1,0 +1,46 @@
+meta {
+  name: eliminar_2
+  type: http
+  seq: 3
+  tags: [
+    Donantes
+  ]
+}
+
+delete {
+  url: {{baseUrl}}/api/donantes/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+example {
+  name: 204 Response
+  description: No Content
+  
+  request: {
+    url: {{baseUrl}}/api/donantes/:id
+    method: DELETE
+    mode: none
+    params:path: {
+      id: 
+    }
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  
+    body: {
+      type: text
+      content: '''
+  
+      '''
+    }
+  }
+}

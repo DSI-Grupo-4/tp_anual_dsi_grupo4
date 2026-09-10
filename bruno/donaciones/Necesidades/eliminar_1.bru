@@ -1,0 +1,48 @@
+meta {
+  name: eliminar_1
+  type: http
+  seq: 2
+  tags: [
+    Necesidades
+  ]
+}
+
+delete {
+  url: {{baseUrl}}/api/entidades/:entidadId/necesidades/:necesidadId
+  body: none
+  auth: inherit
+}
+
+params:path {
+  entidadId: 
+  necesidadId: 
+}
+
+example {
+  name: 204 Response
+  description: No Content
+  
+  request: {
+    url: {{baseUrl}}/api/entidades/:entidadId/necesidades/:necesidadId
+    method: DELETE
+    mode: none
+    params:path: {
+      entidadId: 
+      necesidadId: 
+    }
+  }
+  
+  response: {
+    status: {
+      code: 204
+      text: No Content
+    }
+  
+    body: {
+      type: text
+      content: '''
+  
+      '''
+    }
+  }
+}

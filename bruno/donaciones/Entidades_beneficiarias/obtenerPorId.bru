@@ -1,0 +1,68 @@
+meta {
+  name: obtenerPorId
+  type: http
+  seq: 1
+  tags: [
+    Entidades_beneficiarias
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/entidades/:id
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+example {
+  name: 200 Response
+  description: OK
+  
+  request: {
+    url: {{baseUrl}}/api/entidades/:id
+    method: GET
+    mode: none
+    params:path: {
+      id: 
+    }
+  }
+  
+  response: {
+    headers: {
+      Content-Type: */*
+    }
+  
+    status: {
+      code: 200
+      text: OK
+    }
+  
+    body: {
+      type: text
+      content: '''
+        {
+          "id": 0,
+          "personaJuridica": {
+            "razonSocial": "",
+            "tipo": "GUBERNAMENTAL",
+            "rubro": ""
+          },
+          "descripcion": "",
+          "direccion": {
+            "calle": "",
+            "numero": "",
+            "ciudad": {
+              "nombre": "",
+              "provincia": {
+                "nombre": ""
+              }
+            }
+          }
+        }
+      '''
+    }
+  }
+}
