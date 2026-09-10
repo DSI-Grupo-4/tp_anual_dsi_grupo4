@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.AsignarEntidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
@@ -11,11 +12,14 @@ import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import ar.edu.utn.frba.dds.donaciones.service.EntidadBeneficiariaService;
 import ar.edu.utn.frba.dds.donaciones.service.MatchmakingService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Donaciones", description = "Alta por carga múltiple, segmentación, estados y matchmaking de donaciones")
 @RestController
 @RequestMapping("/api/donaciones")
 public class DonacionController {
@@ -35,7 +39,7 @@ public class DonacionController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public DonacionDTO crear(@RequestBody DonacionDTO dto) {
+    public List<DonacionDTO> crear(@Valid @RequestBody CargaDonacionDTO dto) {
         return donacionService.crear(dto);
     }
 
@@ -58,8 +62,7 @@ public class DonacionController {
 
     @PutMapping("/{id}")
     public DonacionDTO actualizar(@PathVariable Long id, @RequestBody DonacionDTO dto) {
-        dto.setId(id);
-        return donacionService.crear(dto);
+        return donacionService.actualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")
@@ -93,11 +96,9 @@ public class DonacionController {
     @PostMapping("/{id}/asignar")
     public DonacionDTO asignar(
             @PathVariable Long id,
-            @RequestBody AsignarEntidadDTO dto) {
-        Donacion donacion = donacionService.obtenerDominioPorId(id);
+            @Valid @RequestBody AsignarEntidadDTO dto) {
         EntidadBeneficiaria entidad =
                 entidadBeneficiariaService.buscarEntidad(dto.getEntidadId());
-        matchmakingService.confirmarAsignacion(donacion, entidad);
-        return donacionService.obtenerPorId(id);
+        return donacionService.confirmarAsignacion(id, entidad);
     }
 }

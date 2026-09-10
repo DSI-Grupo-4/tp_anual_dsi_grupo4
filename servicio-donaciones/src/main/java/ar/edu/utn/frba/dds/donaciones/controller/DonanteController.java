@@ -4,12 +4,15 @@ import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonanteService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Tag(name = "Donantes", description = "Alta, edición e importación masiva por CSV de personas donantes (humanas o jurídicas)")
 @RestController
 @RequestMapping("/api/donantes")
 public class DonanteController {
@@ -32,28 +35,25 @@ public class DonanteController {
 
     @PostMapping("/humanos")
     @ResponseStatus(HttpStatus.CREATED)
-    public DonanteDTO crearHumano(@RequestBody PersonaHumanaDTO dto) {
+    public DonanteDTO crearHumano(@Valid @RequestBody PersonaHumanaDTO dto) {
         return donanteService.crearDonanteHumano(dto);
     }
 
     @PostMapping("/juridicos")
     @ResponseStatus(HttpStatus.CREATED)
-    public DonanteDTO crearJuridico(@RequestBody PersonaJuridicaDTO dto) {
+    public DonanteDTO crearJuridico(@Valid @RequestBody PersonaJuridicaDTO dto) {
         return donanteService.crearDonanteJuridico(dto);
     }
 
     @PutMapping("/{id}")
     public DonanteDTO actualizar(@PathVariable Long id, @RequestBody DonanteDTO dto) {
-        if ("HUMANA".equalsIgnoreCase(dto.getTipo())) {
-            PersonaHumanaDTO humanaDTO = new PersonaHumanaDTO();
-            humanaDTO.setNombre(dto.getNombre());
-            humanaDTO.setApellido(dto.getApellido());
-            humanaDTO.setDocumento(dto.getDocumento());
-            return donanteService.actualizarHumano(id, humanaDTO);
-        }
-        PersonaJuridicaDTO juridicaDTO = new PersonaJuridicaDTO();
-        juridicaDTO.setRazonSocial(dto.getRazonSocial());
-        return donanteService.actualizarJuridico(id, juridicaDTO);
+        // PUT reemplaza el estado completo: el cliente debe mandar todos los
+        // campos que quiere conservar (semántica estándar de PUT). El tipo
+        // (humano/jurídico) NO lo decide el body — es inmutable y se
+        // determina en DonanteService a partir del donante real ya guardado;
+        // antes se confiaba en dto.getTipo() y un mismatch tiraba
+        // ClassCastException (500 sin manejar, ver scan de calidad).
+        return donanteService.actualizar(id, dto);
     }
 
     @DeleteMapping("/{id}")

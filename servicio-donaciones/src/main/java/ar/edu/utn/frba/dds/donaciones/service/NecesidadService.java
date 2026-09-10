@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class NecesidadService {
@@ -64,8 +65,8 @@ public class NecesidadService {
         return convertirADTO(buscarDominioPorId(id));
     }
 
-    public NecesidadDTO actualizarRecurrente(Long id, NecesidadRecurrenteDTO dto) {
-        Necesidad necesidad = buscarDominioPorId(id);
+    public NecesidadDTO actualizarRecurrente(Long entidadId, Long id, NecesidadRecurrenteDTO dto) {
+        Necesidad necesidad = buscarDominioPorId(entidadId, id);
 
         necesidad.setDescripcion(dto.getDescripcion());
         necesidad.setSubcategoria(new Subcategoria(dto.getSubcategoria()));
@@ -78,8 +79,8 @@ public class NecesidadService {
         return convertirADTO(necesidad);
     }
 
-    public NecesidadDTO actualizarExtraordinaria(Long id, NecesidadExtraordinariaDTO dto) {
-        Necesidad necesidad = buscarDominioPorId(id);
+    public NecesidadDTO actualizarExtraordinaria(Long entidadId, Long id, NecesidadExtraordinariaDTO dto) {
+        Necesidad necesidad = buscarDominioPorId(entidadId, id);
 
         necesidad.setDescripcion(dto.getDescripcion());
         necesidad.setSubcategoria(new Subcategoria(dto.getSubcategoria()));
@@ -100,7 +101,11 @@ public class NecesidadService {
                 .toList();
     }
 
-    public void eliminar(Long id) {
+    public void eliminar(Long entidadId, Long id) {
+        // Valida pertenencia antes de borrar: sin esto, cualquier
+        // entidadId en el path (incluso uno inexistente) podía borrar una
+        // necesidad de otra entidad — bug crítico confirmado en vivo.
+        buscarDominioPorId(entidadId, id);
         necesidades.removeIf(n -> n.getId().equals(id));
     }
 
@@ -108,7 +113,26 @@ public class NecesidadService {
         return necesidades.stream()
                 .filter(n -> n.getId().equals(id))
                 .findFirst()
-                .orElseThrow();
+                .orElseThrow(() -> new NoSuchElementException("No existe la necesidad " + id));
+    }
+
+    /**
+     * A diferencia de buscarDominioPorId(id), valida que la necesidad
+     * encontrada pertenezca de verdad a entidadId — usado por los
+     * endpoints anidados bajo /api/entidades/{entidadId}/necesidades/{id}
+     * para que un entidadId ajeno (o inexistente) no pueda tocar una
+     * necesidad de otra entidad.
+     */
+    public Necesidad buscarDominioPorId(Long entidadId, Long necesidadId) {
+        Necesidad necesidad = buscarDominioPorId(necesidadId);
+
+        if (necesidad.getEntidadBeneficiaria() == null
+                || !necesidad.getEntidadBeneficiaria().getId().equals(entidadId)) {
+            throw new NoSuchElementException(
+                    "No existe la necesidad " + necesidadId + " para la entidad " + entidadId);
+        }
+
+        return necesidad;
     }
 
     private void asignarEntidadBeneficiaria(Necesidad necesidad, Long entidadBeneficiariaId) {

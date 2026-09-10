@@ -2,11 +2,14 @@ package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.EntidadBeneficiariaService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Entidades beneficiarias", description = "Gestión de entidades beneficiarias registradas")
 @RestController
 @RequestMapping("/api/entidades")
 public class EntidadBeneficiariaController {
@@ -29,7 +32,7 @@ public class EntidadBeneficiariaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EntidadBeneficiariaDTO crear(@RequestBody EntidadBeneficiariaDTO dto) {
+    public EntidadBeneficiariaDTO crear(@Valid @RequestBody EntidadBeneficiariaDTO dto) {
         return entidadService.crear(dto);
     }
 

@@ -4,11 +4,14 @@ import ar.edu.utn.frba.dds.donaciones.dto.NecesidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadExtraordinariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadRecurrenteDTO;
 import ar.edu.utn.frba.dds.donaciones.service.NecesidadService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Necesidades", description = "Necesidades materiales (recurrentes y extraordinarias) de una entidad beneficiaria")
 @RestController
 @RequestMapping("/api/entidades/{entidadId}/necesidades")
 public class NecesidadController {
@@ -28,7 +31,7 @@ public class NecesidadController {
     @ResponseStatus(HttpStatus.CREATED)
     public NecesidadDTO crearRecurrente(
             @PathVariable Long entidadId,
-            @RequestBody NecesidadRecurrenteDTO dto) {
+            @Valid @RequestBody NecesidadRecurrenteDTO dto) {
         dto.setEntidadBeneficiariaId(entidadId);
         return necesidadService.crearRecurrente(dto);
     }
@@ -37,7 +40,7 @@ public class NecesidadController {
     @ResponseStatus(HttpStatus.CREATED)
     public NecesidadDTO crearExtraordinaria(
             @PathVariable Long entidadId,
-            @RequestBody NecesidadExtraordinariaDTO dto) {
+            @Valid @RequestBody NecesidadExtraordinariaDTO dto) {
         dto.setEntidadBeneficiariaId(entidadId);
         return necesidadService.crearExtraordinaria(dto);
     }
@@ -54,7 +57,7 @@ public class NecesidadController {
             recDTO.setCantidadRequerida(dto.getCantidadRequerida());
             recDTO.setPeriodicidad(dto.getPeriodicidad());
             recDTO.setEntidadBeneficiariaId(entidadId);
-            return necesidadService.actualizarRecurrente(necesidadId, recDTO);
+            return necesidadService.actualizarRecurrente(entidadId, necesidadId, recDTO);
         }
         NecesidadExtraordinariaDTO extDTO = new NecesidadExtraordinariaDTO();
         extDTO.setDescripcion(dto.getDescripcion());
@@ -62,7 +65,7 @@ public class NecesidadController {
         extDTO.setCantidadRequerida(dto.getCantidadRequerida());
         extDTO.setTipoExtraordinario(dto.getTipoExtraordinario());
         extDTO.setEntidadBeneficiariaId(entidadId);
-        return necesidadService.actualizarExtraordinaria(necesidadId, extDTO);
+        return necesidadService.actualizarExtraordinaria(entidadId, necesidadId, extDTO);
     }
 
     @DeleteMapping("/{necesidadId}")
@@ -70,6 +73,6 @@ public class NecesidadController {
     public void eliminar(
             @PathVariable Long entidadId,
             @PathVariable Long necesidadId) {
-        necesidadService.eliminar(necesidadId);
+        necesidadService.eliminar(entidadId, necesidadId);
     }
 }

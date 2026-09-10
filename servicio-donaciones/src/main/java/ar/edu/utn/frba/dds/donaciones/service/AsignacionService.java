@@ -17,10 +17,13 @@ import java.util.List;
 public class AsignacionService {
 
     private final EntidadBeneficiariaService entidadBeneficiariaService;
-    private final GestorDonaciones gestorDonaciones = new GestorDonaciones();
+    private final GestorDonaciones gestorDonaciones;
 
-    public AsignacionService(EntidadBeneficiariaService entidadBeneficiariaService) {
+    public AsignacionService(
+            EntidadBeneficiariaService entidadBeneficiariaService,
+            GestorDonaciones gestorDonaciones) {
         this.entidadBeneficiariaService = entidadBeneficiariaService;
+        this.gestorDonaciones = gestorDonaciones;
     }
 
     public ResultadoMatchmakingDTO obtenerCandidatas(SolicitudAsignacionDTO dto) {
@@ -29,7 +32,6 @@ public class AsignacionService {
                 dto.getDescripcionItem(),
                 new Subcategoria(dto.getSubcategoria()),
                 dto.getCantidad(),
-                null,
                 null
         );
 

@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.ImportadorCSV;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
@@ -10,16 +11,17 @@ import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class DonanteService {
-    private List<Donante> donantes = new ArrayList<>();
 
-    private Long siguienteId = 1L; //por ahora asignamos ids, despues con la persistencia esto cambia
+    private final GestorDonantes gestorDonantes;
+
+    public DonanteService(GestorDonantes gestorDonantes) {
+        this.gestorDonantes = gestorDonantes;
+    }
 
     public DonanteDTO convertirADTO(Donante donante) {
 
@@ -30,6 +32,8 @@ public class DonanteService {
             dto.setTipo("HUMANA");
             dto.setNombre(humana.getNombre());
             dto.setApellido(humana.getApellido());
+            dto.setEdad(humana.getEdad());
+            dto.setGenero(humana.getGenero());
             dto.setDocumento(humana.getDocumento());
         }
 
@@ -37,6 +41,8 @@ public class DonanteService {
 
             dto.setTipo("JURIDICA");
             dto.setRazonSocial(juridica.getRazonSocial());
+            dto.setTipoOrganizacion(juridica.getTipo());
+            dto.setRubro(juridica.getRubro());
         }
 
         dto.setId(donante.getId());
@@ -52,13 +58,12 @@ public class DonanteService {
                 dto.getDocumento(),
                 dto.getGenero()
         );
-        Donante donante = new Donante(siguienteId++, persona);
-        donantes.add(donante);
+        Donante donante = gestorDonantes.registrarDonante(persona);
         return convertirADTO(donante);
     }
 
     public List<DonanteDTO> obtenerTodos() {
-        return donantes.stream()
+        return gestorDonantes.getDonantesRegistrados().stream()
                 .map(this::convertirADTO)
                 .toList();
     }
@@ -73,40 +78,51 @@ public class DonanteService {
                         null
                 );
 
-        Donante donante = new Donante(siguienteId++, persona);
+        Donante donante = gestorDonantes.registrarDonante(persona);
 
-        donantes.add(donante);
         return convertirADTO(donante);
     }
 
     public DonanteDTO buscarPorId(Long id) {
-        Donante donante = donantes.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
-        return convertirADTO(donante);
+        return convertirADTO(gestorDonantes.buscarPorId(id));
     }
 
     public void eliminar(Long id) {
-
-        donantes.removeIf(
-                d -> d.getId().equals(id)
-        );
+        gestorDonantes.eliminar(id);
     }
 
-    private Donante buscarPorIdDominio(Long id) {
+    /**
+     * El tipo de un donante (humano/jurídico) es inmutable una vez creado —
+     * el cliente no decide la rama en un PUT, se determina acá a partir del
+     * tipo real ya guardado. Antes DonanteController confiaba en dto.getTipo()
+     * (lo que mandaba el cliente); un mismatch producía un ClassCastException
+     * (500 sin manejar) — confirmado en vivo en el scan de calidad.
+     */
+    public DonanteDTO actualizar(Long id, DonanteDTO dto) {
+        Donante donante = gestorDonantes.buscarPorId(id);
 
-        return donantes.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
-                .orElseThrow();
+        if (donante.getPersona() instanceof PersonaHumana) {
+            PersonaHumanaDTO humanaDTO = new PersonaHumanaDTO();
+            humanaDTO.setNombre(dto.getNombre());
+            humanaDTO.setApellido(dto.getApellido());
+            humanaDTO.setEdad(dto.getEdad());
+            humanaDTO.setGenero(dto.getGenero());
+            humanaDTO.setDocumento(dto.getDocumento());
+            return actualizarHumano(id, humanaDTO);
+        }
+
+        PersonaJuridicaDTO juridicaDTO = new PersonaJuridicaDTO();
+        juridicaDTO.setRazonSocial(dto.getRazonSocial());
+        juridicaDTO.setTipo(dto.getTipoOrganizacion());
+        juridicaDTO.setRubro(dto.getRubro());
+        return actualizarJuridico(id, juridicaDTO);
     }
 
     public DonanteDTO actualizarHumano(
             Long id,
             PersonaHumanaDTO dto) {
 
-        Donante donante = buscarPorIdDominio(id);
+        Donante donante = gestorDonantes.buscarPorId(id);
 
         PersonaHumana persona =
                 (PersonaHumana) donante.getPersona();
@@ -138,7 +154,7 @@ public class DonanteService {
             Long id,
             PersonaJuridicaDTO dto) {
 
-        Donante donante = buscarPorIdDominio(id);
+        Donante donante = gestorDonantes.buscarPorId(id);
 
         PersonaJuridica persona =
                 (PersonaJuridica) donante.getPersona();
@@ -167,9 +183,9 @@ public class DonanteService {
 
             importador.importar(archivo.getInputStream());
 
-            donantes.addAll(importador.getListaDonantes());
+            gestorDonantes.agregarImportador(importador);
 
-            return importador.getListaDonantes()
+            return gestorDonantes.importarDonantes(importador.getNombre())
                     .stream()
                     .map(this::convertirADTO)
                     .toList();
