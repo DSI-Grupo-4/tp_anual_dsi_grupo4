@@ -20,7 +20,7 @@ public abstract class Persona {
         mediosContacto.add(medio);
     }
 
-    public void elimiinarMedio(MedioContacto medio) {
+    public void eliminarMedio(MedioContacto medio) {
         mediosContacto.remove(medio);
     }
 

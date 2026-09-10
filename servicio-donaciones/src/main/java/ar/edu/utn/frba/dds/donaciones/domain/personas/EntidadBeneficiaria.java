@@ -45,4 +45,13 @@ public class EntidadBeneficiaria {
                 .filter(n -> !n.satisfecha())
                 .toList();
     }
+
+    /**
+     * A diferencia de un donante jurídico (1 solo representante, ver
+     * Donante.agregarRepresentante), una entidad beneficiaria admite varios
+     * representantes sin restricción de cardinalidad — D-004.
+     */
+    public void agregarRepresentante(PersonaHumana representante) {
+        entidad.agregarRepresentante(representante);
+    }
 }

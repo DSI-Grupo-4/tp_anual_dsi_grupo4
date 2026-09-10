@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
+package ar.edu.utn.frba.dds.donaciones.domain.categorias;
 
 public enum UnidadMedida {
     UNIDAD,

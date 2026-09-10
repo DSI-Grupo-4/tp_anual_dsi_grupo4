@@ -38,4 +38,21 @@ public class Donante {
     public boolean realizoDonaciones() {
         return !donaciones.isEmpty();
     }
+
+    /**
+     * Una persona jurídica que actúa como donante admite un único
+     * representante (a diferencia de una entidad beneficiaria, que admite
+     * varios) — cardinalidad por rol acordada en D-004.
+     */
+    public void agregarRepresentante(PersonaHumana representante) {
+        if (!(persona instanceof PersonaJuridica juridica)) {
+            throw new IllegalStateException(
+                    "Solo las personas jurídicas admiten representantes");
+        }
+        if (!juridica.getRepresentantes().isEmpty()) {
+            throw new IllegalStateException(
+                    "Una persona jurídica donante admite un único representante");
+        }
+        juridica.agregarRepresentante(representante);
+    }
 }

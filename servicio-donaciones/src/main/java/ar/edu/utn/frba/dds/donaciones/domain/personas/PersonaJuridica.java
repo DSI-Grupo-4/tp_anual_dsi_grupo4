@@ -3,6 +3,9 @@ package ar.edu.utn.frba.dds.donaciones.domain.personas;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 public class PersonaJuridica extends Persona {
@@ -10,23 +13,31 @@ public class PersonaJuridica extends Persona {
     private TipoOrganizacion tipo;
     private String rubro;
 
-    private PersonaHumana representante;
+    // Lista siempre (nunca un único representante fijo): la cardinalidad
+    // real depende del rol que cumpla esta persona jurídica (1 si actúa
+    // como donante, N si actúa como entidad beneficiaria) y se valida en
+    // Donante/EntidadBeneficiaria, que son quienes conocen ese rol. Ver D-004.
+    private List<PersonaHumana> representantes;
 
     public PersonaJuridica(
             String razonSocial,
             TipoOrganizacion tipo,
             String rubro,
-            PersonaHumana representante) {
+            List<PersonaHumana> representantes) {
 
         super();
 
         this.razonSocial = razonSocial;
         this.tipo = tipo;
         this.rubro = rubro;
-        this.representante = representante;
+        this.representantes = representantes != null ? representantes : new ArrayList<>();
+    }
+
+    public void agregarRepresentante(PersonaHumana representante) {
+        representantes.add(representante);
     }
 
     public String nombreRepresentante() {
-        return representante.nombreCompleto();
+        return representantes.isEmpty() ? null : representantes.get(0).nombreCompleto();
     }
 }

@@ -22,7 +22,11 @@ public class CompatibilidadSemantica implements AlgoritmoAsignacion {
 
     private int puntaje(EntidadBeneficiaria entidad, Donacion donacion) {
         if (donacion.getItemDonado() == null
-                || donacion.getItemDonado().getSubcategoria() == null) {
+                || donacion.getItemDonado().getSubcategoria() == null
+                || donacion.getItemDonado().getSubcategoria().getNombre() == null) {
+            // Confirmado en vivo: sin este último chequeo, una donación con
+            // subcategoría de nombre null provocaba NPE acá abajo en vez de
+            // simplemente no matchear con ninguna necesidad.
             return 0;
         }
         String subcatDonacion = donacion.getItemDonado().getSubcategoria().getNombre();

@@ -6,6 +6,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -26,8 +27,20 @@ public class SolicitudDonacion {
         items.add(item);
     }
 
-    public List<Donacion> segmentar(){
-        List<Donacion> Donacion = List.of();
-        return Donacion; //TODO proximas entregas
+    /**
+     * Segmenta la carga única en donaciones independientes: cada ItemDonado
+     * ya llega con su propia subcategoría (y, si es perecedero, su propio
+     * valor de fechaVencimiento vía AtributoValor), así que alcanza con
+     * generar una Donacion por ítem para que "cada donación resultante
+     * quede asociada a una única subcategoría" (consigna, Entrega 1) y que
+     * los perecederos con vencimientos distintos queden en donaciones
+     * separadas. No se fusionan ítems de igual subcategoría entre sí: la
+     * consigna no da un ejemplo que lo exija y fusionar cantidades/fotos
+     * de ítems distintos agregaría una regla no pedida explícitamente.
+     */
+    public List<Donacion> segmentar() {
+        return items.stream()
+                .map(item -> new Donacion(null, item, item.getCantidad()))
+                .collect(Collectors.toList());
     }
 }

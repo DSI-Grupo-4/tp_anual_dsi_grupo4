@@ -14,3 +14,52 @@
   - C) Compose raíz solo para infraestructura compartida (MySQL/RabbitMQ/n8n) + cada servicio con el suyo propio.
 - **Decisión tomada:** Opción A — un único `docker-compose.yml` en la raíz del repo que levanta todo: MySQL8, RabbitMQ, n8n y los 4 servicios Spring Boot. La configuración existente en `servicio-incentivos/docker-compose.yml` y `servicio-incentivos/credentials.env` debe consolidarse ahí como parte del audit (no queda como fuente de verdad paralela).
 - **Definida por:** usuario
+
+## [D-002] Modelo de categorías/subcategorías de bienes donados
+- **Fecha:** 2026-09-10
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4 (afecta dominio heredado de Entrega 1)
+- **Contexto:** Al comparar DDC vs. código vs. consigna para el flujo de carga de donaciones, se detectó que `Subcategoria` en código es un objeto plano (solo `nombre`), sin atributos propios. La consigna (PDF, pág. 12) exige que ciertas subcategorías tengan atributos particulares (usado/nuevo para mobiliario/vestimenta, fecha de vencimiento para perecederos, cantidad en una unidad determinada siempre). El diagrama original (nota de diseño en `diagramas/ddc/DONACIONES.drawio.xml`) apuntaba a que el Depósito gestione categorías/subcategorías dinámicamente, "para poder construir los atributos de cada tipo de ítem sin recompilar". El código tiene además 3 clases huérfanas (`Alimento`, `Mobiliario`, `Vestimenta`) que sugieren el camino alternativo de subclases fijas por tipo, nunca terminado ni conectado.
+- **Fuentes revisadas:** decisiones.md (sin match) / entrega4-requerimientos.md (no cubre modelado de dominio de Entrega 1) / PDF consigna sección "Servicio de Donaciones - Donaciones y segmentación" (exige los atributos variables por subcategoría, pero no define el mecanismo de implementación).
+- **Opciones consideradas:**
+  - A) Subclases fijas por tipo (`Alimento`/`Mobiliario`/`Vestimenta` ya esbozadas).
+  - B) Atributos dinámicos gestionados por el Depósito (diseño original del equipo, tipo EAV).
+  - C) Híbrido: subclases fijas + flags genéricos reusables (fechaVencimiento/estadoUso opcionales en la clase base).
+- **Decisión tomada:** Opción B — atributos dinámicos gestionados por Depósito, fiel al diseño original documentado en la nota del DDC. Las clases huérfanas `Alimento`/`Mobiliario`/`Vestimenta` quedan obsoletas y se eliminan como parte del refactor de dominio.
+- **Definida por:** usuario
+
+## [D-003] Estado `PENDIENTE_CONFIRMACION` de la donación
+- **Fecha:** 2026-09-10
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4 (afecta dominio heredado de Entrega 2)
+- **Contexto:** El enum `EstadoTrack` declara `PENDIENTE_CONFIRMACION`, pero no aparece en la Figura 2 (máquina de estados oficial) del PDF de consigna, que va directo de "En depósito" a "Asignación realizada" cuando el algoritmo asigna entidad. El estado tampoco tiene ninguna transición válida definida en `Donacion.TRANSICIONES_VALIDAS`, ni se usa como estado inicial — es un literal muerto. El texto de la consigna sí describe una ventana donde el algoritmo propone candidatas y un administrador debe confirmar el destino final antes de asignar, lo cual podría justificar un estado intermedio.
+- **Fuentes revisadas:** decisiones.md (sin match) / entrega4-requerimientos.md (no detalla la máquina de estados) / PDF consigna sección "Servicio de Donaciones - Estados de las donaciones" y Figura 2 (7 estados oficiales, sin `PENDIENTE_CONFIRMACION`).
+- **Opciones consideradas:**
+  - A) Eliminarlo — ajustarse estrictamente a los 7 estados de la Figura 2; la ventana de candidatas sin confirmar se maneja como dato transitorio (campo `candidatas` en `Donacion`), no como estado formal.
+  - B) Mantenerlo como 8vo estado real, intermedio entre "En depósito" y "Asignación realizada".
+- **Decisión tomada:** Opción A — se elimina el estado `PENDIENTE_CONFIRMACION` del enum `EstadoTrack`. La máquina de estados queda ceñida a los 7 estados oficiales de la Figura 2 del PDF.
+- **Definida por:** usuario
+
+## [D-004] Cardinalidad de representantes de `PersonaJuridica`
+- **Fecha:** 2026-09-10
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4 (afecta dominio heredado de Entrega 1)
+- **Contexto:** `PersonaJuridica.representante` es hoy un único `PersonaHumana`, usado de igual forma tanto para donantes jurídicos como para entidades beneficiarias. La nota de diseño original del equipo (en `diagramas/ddc/DONACIONES.drawio.xml`, nota *11) aclaraba que debía ser 1 representante para donantes pero una lista de representantes para entidades beneficiarias — el código nunca implementó esa distinción.
+- **Fuentes revisadas:** decisiones.md (sin match) / entrega4-requerimientos.md (no cubre este detalle) / PDF consigna pág. 11-12 ("Cada organización tendrá personas representantes habilitadas a operar en su nombre" — no distingue cardinalidad por rol de forma explícita, es genérico en plural para ambos casos).
+- **Opciones consideradas:**
+  - A) Cardinalidad distinta según el rol (fiel a la nota de diseño original): lista siempre, restringida a 1 elemento cuando la persona jurídica actúa como donante.
+  - B) Lista de representantes siempre, sin restricción por rol.
+- **Decisión tomada:** Opción A — cardinalidad distinta según el rol, fiel a la nota de diseño original del equipo.
+- **Definida por:** usuario
+
+## [D-005] Corrección del bug de concurrencia (colisión de ids) detectado en el escaneo de calidad
+- **Fecha:** 2026-09-10
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** Escaneo de calidad (revisión de código + prueba de estrés en vivo) sobre servicio-donaciones confirmó pérdida silenciosa de datos bajo carga concurrente: 50 altas de donante en paralelo generaron solo 45 registros únicos (3 ids colisionados, 5 registros perdidos), sin ningún error visible. Causa: `Long siguienteId++` no atómico + `ArrayList` no thread-safe en `GestorDonaciones`/`GestorDonantes`, expuestos a multi-threading real de Spring MVC.
+- **Fuentes revisadas:** decisiones.md (sin match) / entrega4-requerimientos.md (no cubre este nivel de detalle de implementación) — no es una ambigüedad de dominio/consigna sino una decisión de priorización de esfuerzo, se preguntó directamente al usuario.
+- **Opciones consideradas:**
+  - A) Esperar a la etapa de persistencia (JPA/MySQL generan ids de forma atómica y transaccional de fábrica).
+  - B) Mitigación mínima ahora (`CopyOnWriteArrayList`/`synchronizedList` + `AtomicLong` en los Gestores), a sabiendas de que es un parche transitorio que se descarta al migrar a persistencia.
+- **Decisión tomada:** Opción A — esperar a la etapa de persistencia. No se parchea ahora.
+- **Definida por:** usuario
