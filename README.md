@@ -19,10 +19,29 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
+├── consigna
+│   ├── DDS-TP-Anual-2026-CursoK3002 Entrega 4.pdf
+│   └── entrega4-requerimientos.md
+├── decisiones.md
 ├── diagramas
-│   ├── DCU.png
-│   ├── DDC.png
-│   └── Diagrama Secuencia.jpeg
+│   └── ddc
+│       ├── DONACIONES.drawio.xml
+│       ├── INCENTIVOS.drawio.xml
+│       ├── LOGISTICA.drawio.xml
+│       └── NOTIFICACIONES.drawio.xml
+├── logs
+│   ├── donaciones.log
+│   ├── incentivos.log
+│   ├── logistica.log
+│   ├── notificaciones.log
+│   ├── servicio-donaciones-build.log
+│   ├── servicio-donaciones.log
+│   ├── servicio-incentivos-build.log
+│   ├── servicio-incentivos.log
+│   ├── servicio-logistica-build.log
+│   ├── servicio-logistica.log
+│   ├── servicio-notificaciones-build.log
+│   └── servicio-notificaciones.log
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -58,6 +77,7 @@
 ├── servicio-incentivos
 │   ├── Makefile
 │   ├── README.md
+│   ├── credentials.env
 │   ├── docker-compose.yml
 │   ├── pom.xml
 │   ├── src
@@ -73,7 +93,7 @@
     └── src
         └── main
 
-22 directories, 36 files
+25 directories, 53 files
 ```
 <!-- TREE_END -->
 
