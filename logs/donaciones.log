@@ -1,0 +1,283 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T08:51:35.902-03:00  INFO 8553 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 8553 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T08:51:35.905-03:00  INFO 8553 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T08:51:37.102-03:00  INFO 8553 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T08:51:37.149-03:00  INFO 8553 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 33 ms. Found 0 JPA repository interfaces.
+2026-08-28T08:51:37.786-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T08:51:37.798-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T08:51:37.799-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T08:51:37.825-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T08:51:37.826-03:00  INFO 8553 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1848 ms
+2026-08-28T08:51:37.929-03:00  INFO 8553 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T08:51:38.111-03:00  INFO 8553 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:095fa2e0-9dca-434f-94d5-f1d99950f938 user=SA
+2026-08-28T08:51:38.113-03:00  INFO 8553 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T08:51:38.149-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T08:51:38.197-03:00  INFO 8553 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T08:51:38.222-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T08:51:38.405-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T08:51:38.468-03:00  INFO 8553 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T08:51:38.727-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T08:51:38.731-03:00  INFO 8553 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T08:51:39.067-03:00  WARN 8553 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T08:51:39.561-03:00  INFO 8553 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T08:51:39.590-03:00  INFO 8553 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 4.188 seconds (process running for 4.754)
+2026-08-28T08:51:40.903-03:00  INFO 8553 --- [servicio-donaciones] [nio-8080-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T08:51:40.903-03:00  INFO 8553 --- [servicio-donaciones] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T08:51:40.904-03:00  INFO 8553 --- [servicio-donaciones] [nio-8080-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-08-28T08:52:08.126-03:00  WARN 8553 --- [servicio-donaciones] [nio-8080-exec-1] .w.s.m.s.DefaultHandlerExceptionResolver : Resolved [org.springframework.http.converter.HttpMessageNotReadableException: JSON parse error: Cannot deserialize value of type `ar.edu.utn.frba.dds.donaciones.domain.personas.Genero` from String "Femenino": not one of the values accepted for Enum class: [X, FEMENINO, MASCULINO]]
+2026-08-28T08:55:38.494-03:00  INFO 8553 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T08:55:38.497-03:00  INFO 8553 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T08:55:38.502-03:00  INFO 8553 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T08:55:38.503-03:00  INFO 8553 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T08:55:38.505-03:00  INFO 8553 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T10:06:45.272-03:00  INFO 32869 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 32869 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T10:06:45.275-03:00  INFO 32869 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T10:06:46.524-03:00  INFO 32869 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T10:06:46.562-03:00  INFO 32869 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 25 ms. Found 0 JPA repository interfaces.
+2026-08-28T10:06:47.346-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T10:06:47.368-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T10:06:47.369-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T10:06:47.430-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T10:06:47.433-03:00  INFO 32869 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2099 ms
+2026-08-28T10:06:47.661-03:00  INFO 32869 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T10:06:47.919-03:00  INFO 32869 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:f77d7067-5a29-4d6e-9ec3-cb398e3e7528 user=SA
+2026-08-28T10:06:47.921-03:00  INFO 32869 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T10:06:47.977-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T10:06:48.045-03:00  INFO 32869 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T10:06:48.093-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T10:06:48.415-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T10:06:48.487-03:00  INFO 32869 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T10:06:48.752-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T10:06:48.757-03:00  INFO 32869 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:06:49.091-03:00  WARN 32869 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T10:06:49.534-03:00  INFO 32869 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T10:06:49.560-03:00  INFO 32869 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 4.921 seconds (process running for 5.502)
+2026-08-28T10:06:50.130-03:00  INFO 32869 --- [servicio-donaciones] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T10:06:50.131-03:00  INFO 32869 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T10:06:50.132-03:00  INFO 32869 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-08-28T10:07:27.235-03:00  INFO 32869 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T10:07:27.239-03:00  INFO 32869 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T10:07:27.246-03:00  INFO 32869 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:07:27.249-03:00  INFO 32869 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T10:07:27.251-03:00  INFO 32869 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T10:08:10.743-03:00  INFO 34200 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 34200 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T10:08:10.748-03:00  INFO 34200 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T10:08:12.084-03:00  INFO 34200 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T10:08:12.124-03:00  INFO 34200 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 23 ms. Found 0 JPA repository interfaces.
+2026-08-28T10:08:12.862-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T10:08:12.883-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T10:08:12.884-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T10:08:12.937-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T10:08:12.939-03:00  INFO 34200 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2117 ms
+2026-08-28T10:08:13.114-03:00  INFO 34200 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T10:08:13.392-03:00  INFO 34200 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:1669816c-0a9c-43d2-ac45-6bd133834086 user=SA
+2026-08-28T10:08:13.394-03:00  INFO 34200 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T10:08:13.457-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T10:08:13.537-03:00  INFO 34200 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T10:08:13.586-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T10:08:13.853-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T10:08:13.918-03:00  INFO 34200 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T10:08:14.165-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T10:08:14.169-03:00  INFO 34200 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:08:14.480-03:00  WARN 34200 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T10:08:14.898-03:00  INFO 34200 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T10:08:14.913-03:00  INFO 34200 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 4.755 seconds (process running for 5.291)
+2026-08-28T10:08:15.688-03:00  INFO 34200 --- [servicio-donaciones] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T10:08:15.688-03:00  INFO 34200 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T10:08:15.690-03:00  INFO 34200 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-08-28T10:10:06.289-03:00  INFO 34200 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T10:10:06.293-03:00  INFO 34200 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T10:10:06.300-03:00  INFO 34200 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:10:06.303-03:00  INFO 34200 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T10:10:06.306-03:00  INFO 34200 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T10:11:52.109-03:00  INFO 35758 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 35758 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T10:11:52.113-03:00  INFO 35758 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T10:11:53.487-03:00  INFO 35758 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T10:11:53.521-03:00  INFO 35758 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 23 ms. Found 0 JPA repository interfaces.
+2026-08-28T10:11:54.233-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T10:11:54.254-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T10:11:54.255-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T10:11:54.301-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T10:11:54.305-03:00  INFO 35758 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2113 ms
+2026-08-28T10:11:54.486-03:00  INFO 35758 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T10:11:54.743-03:00  INFO 35758 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:5c3c76be-1b99-4e67-8195-04b5602a971a user=SA
+2026-08-28T10:11:54.745-03:00  INFO 35758 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T10:11:54.803-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T10:11:54.875-03:00  INFO 35758 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T10:11:54.917-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T10:11:55.258-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T10:11:55.363-03:00  INFO 35758 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T10:11:55.753-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T10:11:55.757-03:00  INFO 35758 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:11:56.075-03:00  WARN 35758 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T10:11:56.598-03:00  INFO 35758 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T10:11:56.625-03:00  INFO 35758 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 5.154 seconds (process running for 5.771)
+2026-08-28T10:11:56.920-03:00  INFO 35758 --- [servicio-donaciones] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T10:11:56.920-03:00  INFO 35758 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T10:11:56.922-03:00  INFO 35758 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 2 ms
+2026-08-28T10:19:05.937-03:00  INFO 35758 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T10:19:05.941-03:00  INFO 35758 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T10:19:05.947-03:00  INFO 35758 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:19:05.950-03:00  INFO 35758 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T10:19:05.952-03:00  INFO 35758 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T10:21:03.054-03:00  INFO 39370 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 39370 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T10:21:03.057-03:00  INFO 39370 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T10:21:04.325-03:00  INFO 39370 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T10:21:04.360-03:00  INFO 39370 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 0 JPA repository interfaces.
+2026-08-28T10:21:04.993-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T10:21:05.014-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T10:21:05.014-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T10:21:05.065-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T10:21:05.067-03:00  INFO 39370 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1929 ms
+2026-08-28T10:21:05.207-03:00  INFO 39370 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T10:21:05.450-03:00  INFO 39370 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:46352bba-261c-4225-8601-f4ecd1f38662 user=SA
+2026-08-28T10:21:05.452-03:00  INFO 39370 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T10:21:05.516-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T10:21:05.596-03:00  INFO 39370 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T10:21:05.644-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T10:21:05.981-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T10:21:06.080-03:00  INFO 39370 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T10:21:06.460-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T10:21:06.467-03:00  INFO 39370 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:21:06.969-03:00  WARN 39370 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T10:21:07.616-03:00  INFO 39370 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T10:21:07.643-03:00  INFO 39370 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 5.213 seconds (process running for 5.819)
+2026-08-28T10:21:07.892-03:00  INFO 39370 --- [servicio-donaciones] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T10:21:07.892-03:00  INFO 39370 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T10:21:07.894-03:00  INFO 39370 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-08-28T10:36:42.979-03:00  INFO 39370 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T10:36:42.981-03:00  INFO 39370 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T10:36:42.985-03:00  INFO 39370 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:36:42.987-03:00  INFO 39370 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T10:36:42.989-03:00  INFO 39370 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-08-28T10:42:34.526-03:00  INFO 46171 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Starting ServicioDonacionesApplication v1.0-SNAPSHOT using Java 17.0.20 with PID 46171 (/home/dante/tp_anual_dsi_grupo4/servicio-donaciones/target/servicio-donaciones-1.0-SNAPSHOT.jar started by dante in /home/dante/tp_anual_dsi_grupo4)
+2026-08-28T10:42:34.530-03:00  INFO 46171 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : No active profile set, falling back to 1 default profile: "default"
+2026-08-28T10:42:35.885-03:00  INFO 46171 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-28T10:42:35.934-03:00  INFO 46171 --- [servicio-donaciones] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 30 ms. Found 0 JPA repository interfaces.
+2026-08-28T10:42:36.721-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8080 (http)
+2026-08-28T10:42:36.736-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-08-28T10:42:36.737-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-08-28T10:42:36.779-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-08-28T10:42:36.781-03:00  INFO 46171 --- [servicio-donaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2152 ms
+2026-08-28T10:42:36.912-03:00  INFO 46171 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-08-28T10:42:37.099-03:00  INFO 46171 --- [servicio-donaciones] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:5265ea90-e629-4339-ada9-000d572acd8b user=SA
+2026-08-28T10:42:37.101-03:00  INFO 46171 --- [servicio-donaciones] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-08-28T10:42:37.148-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-08-28T10:42:37.208-03:00  INFO 46171 --- [servicio-donaciones] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.6.26.Final
+2026-08-28T10:42:37.239-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-08-28T10:42:37.459-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-28T10:42:37.518-03:00  INFO 46171 --- [servicio-donaciones] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-08-28T10:42:37.687-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-08-28T10:42:37.689-03:00  INFO 46171 --- [servicio-donaciones] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:42:37.953-03:00  WARN 46171 --- [servicio-donaciones] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-28T10:42:38.432-03:00  INFO 46171 --- [servicio-donaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8080 (http) with context path '/'
+2026-08-28T10:42:38.453-03:00  INFO 46171 --- [servicio-donaciones] [           main] .e.u.f.d.d.ServicioDonacionesApplication : Started ServicioDonacionesApplication in 4.587 seconds (process running for 5.101)
+2026-08-28T10:42:39.395-03:00  INFO 46171 --- [servicio-donaciones] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-28T10:42:39.395-03:00  INFO 46171 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-08-28T10:42:39.396-03:00  INFO 46171 --- [servicio-donaciones] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-08-28T10:57:42.943-03:00  INFO 46171 --- [servicio-donaciones] [ionShutdownHook] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-28T10:57:42.947-03:00  INFO 46171 --- [servicio-donaciones] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-08-28T10:57:42.951-03:00  INFO 46171 --- [servicio-donaciones] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-28T10:57:42.952-03:00  INFO 46171 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-08-28T10:57:42.953-03:00  INFO 46171 --- [servicio-donaciones] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
