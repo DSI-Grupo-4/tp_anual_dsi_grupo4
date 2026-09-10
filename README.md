@@ -19,6 +19,17 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
+├── bruno
+│   └── donaciones
+│       ├── Asignaciones
+│       ├── Donaciones
+│       ├── Donantes
+│       ├── Entidades_beneficiarias
+│       ├── Necesidades
+│       ├── bruno.json
+│       ├── collection.bru
+│       ├── environments
+│       └── servicio-donaciones-controller
 ├── consigna
 │   ├── DDS-TP-Anual-2026-CursoK3002 Entrega 4.pdf
 │   └── entrega4-requerimientos.md
@@ -73,7 +84,8 @@
 │   ├── pom.xml
 │   └── src
 │       ├── data
-│       └── main
+│       ├── main
+│       └── test
 ├── servicio-incentivos
 │   ├── Makefile
 │   ├── README.md
@@ -93,7 +105,7 @@
     └── src
         └── main
 
-25 directories, 53 files
+35 directories, 55 files
 ```
 <!-- TREE_END -->
 
