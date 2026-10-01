@@ -33,6 +33,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Cola asincronica entre los servicios de dominio y Notificaciones -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
         <!-- Documentacion interactiva de la API (Swagger UI) -->
         <dependency>
             <groupId>org.springdoc</groupId>

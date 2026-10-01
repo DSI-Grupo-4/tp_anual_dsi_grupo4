@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.client.LogisticaClient;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.CambioEstado;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
@@ -17,6 +16,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
+import ar.edu.utn.frba.dds.donaciones.integration.LogisticaBroker;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -30,21 +30,21 @@ public class DonacionService {
 
     private final EntidadBeneficiariaService entidadBeneficiariaService;
     private final NecesidadService necesidadService;
-    private final LogisticaClient logisticaClient;
+    private final LogisticaBroker logisticaBroker;
 
     public DonacionService(
             EntidadBeneficiariaService entidadBeneficiariaService,
             NecesidadService necesidadService,
-            LogisticaClient logisticaClient) {
+            LogisticaBroker logisticaBroker) {
         this.entidadBeneficiariaService = entidadBeneficiariaService;
         this.necesidadService = necesidadService;
-        this.logisticaClient = logisticaClient;
+        this.logisticaBroker = logisticaBroker;
     }
 
     // Se dispara al confirmar la asignación de una entidad (ver DonacionController.asignar):
     // le avisa a servicio-logistica que ya tiene una donación lista para planificar su entrega.
     public void enviarALogistica(Donacion donacion) {
-        logisticaClient.enviarLote(List.of(convertirAPendienteDTO(donacion)));
+        logisticaBroker.enviarLote(List.of(convertirAPendienteDTO(donacion)));
     }
 
     public DonacionDTO crear(DonacionDTO dto) {

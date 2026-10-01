@@ -85,4 +85,10 @@
 ## Diagrama de Despliegue inicial
 ![Diagrama de Despliegue Inicial](./assets_md/Diagrama_de_Despliegue_Inicial.png)
 
+## Integracion y despliegue
+
+- Servicio de Logistica desplegado: https://tp-anual-dsi-grupo4-1.onrender.com
+- RabbitMQ local: `docker compose -f docker-compose.integration.yml up -d`
+- Consola de RabbitMQ: http://localhost:15672 (`guest` / `guest`)
+- El broker alterna cada envio entre Logistica local (`http://localhost:8083`) y el despliegue web. Si el elegido no responde, prueba el otro en ese mismo envio.
 

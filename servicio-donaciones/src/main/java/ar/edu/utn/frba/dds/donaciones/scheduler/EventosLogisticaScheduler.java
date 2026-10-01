@@ -1,9 +1,9 @@
 package ar.edu.utn.frba.dds.donaciones.scheduler;
 
-import ar.edu.utn.frba.dds.donaciones.client.LogisticaClient;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
+import ar.edu.utn.frba.dds.donaciones.integration.LogisticaBroker;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,24 +19,24 @@ public class EventosLogisticaScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(EventosLogisticaScheduler.class);
 
-    private final LogisticaClient logisticaClient;
+    private final LogisticaBroker logisticaBroker;
     private final DonacionService donacionService;
 
-    public EventosLogisticaScheduler(LogisticaClient logisticaClient, DonacionService donacionService) {
-        this.logisticaClient = logisticaClient;
+    public EventosLogisticaScheduler(LogisticaBroker logisticaBroker, DonacionService donacionService) {
+        this.logisticaBroker = logisticaBroker;
         this.donacionService = donacionService;
     }
 
     @Scheduled(fixedDelayString = "${logistica.eventos.poll-delay-ms:60000}")
     public void consumirEventos() {
-        for (EventoLogisticoDTO evento : logisticaClient.obtenerEventosNoPublicados()) {
+        for (EventoLogisticoDTO evento : logisticaBroker.obtenerEventosNoPublicados()) {
             try {
                 aplicarEvento(evento);
             } catch (Exception e) {
                 logger.warn("No se pudo aplicar el evento {} ({}) a la donación asociada: {}",
                         evento.getIdEvento(), evento.getTipoEvento(), e.getMessage());
             }
-            logisticaClient.marcarPublicado(evento.getIdEvento());
+            logisticaBroker.marcarPublicado(evento.getIdEvento());
         }
     }
 
