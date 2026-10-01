@@ -15,6 +15,7 @@
 <!-- TREE_START -->
 ```text
 .
+├── Dockerfile
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -23,6 +24,7 @@
 │   ├── DCU.png
 │   ├── DDC.png
 │   └── Diagrama Secuencia.jpeg
+├── docker-compose.integration.yml
 ├── endpoints.md
 ├── mockups
 │   ├── administrador
@@ -50,6 +52,7 @@
 │   │   └── iniciar-sesion.png
 │   └── principal.png
 ├── pom.xml
+├── render.yaml
 ├── run-servicios.sh
 ├── servicio-donaciones
 │   ├── pom.xml
@@ -77,7 +80,7 @@
     └── src
         └── main
 
-22 directories, 40 files
+22 directories, 43 files
 ```
 <!-- TREE_END -->
 
