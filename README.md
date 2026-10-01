@@ -25,6 +25,8 @@
 │   ├── DDC.png
 │   └── Diagrama Secuencia.jpeg
 ├── docker-compose.integration.yml
+├── docs
+│   └── entrega4-integracion.md
 ├── endpoints.md
 ├── mockups
 │   ├── administrador
@@ -58,14 +60,16 @@
 │   ├── pom.xml
 │   └── src
 │       ├── data
-│       └── main
+│       ├── main
+│       └── test
 ├── servicio-incentivos
 │   ├── Makefile
 │   ├── README.md
 │   ├── docker-compose.yml
 │   ├── pom.xml
 │   ├── src
-│   │   └── main
+│   │   ├── main
+│   │   └── test
 │   └── workflows
 │       ├── Workflow-Ranking.json
 │       ├── servicio-incentivos-difusion.json
@@ -78,9 +82,10 @@
 └── servicio-notificaciones
     ├── pom.xml
     └── src
-        └── main
+        ├── main
+        └── test
 
-22 directories, 43 files
+26 directories, 44 files
 ```
 <!-- TREE_END -->
 
