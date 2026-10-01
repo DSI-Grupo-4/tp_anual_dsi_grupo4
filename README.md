@@ -94,4 +94,5 @@
 - RabbitMQ local: `docker compose -f docker-compose.integration.yml up -d`
 - Consola de RabbitMQ: http://localhost:15672 (`guest` / `guest`)
 - El broker alterna cada envio entre Logistica local (`http://localhost:8083`) y el despliegue web. Si el elegido no responde, prueba el otro en ese mismo envio.
+- Arquitectura, decisiones, diagramas editables y pruebas: [docs/entrega4-integracion.md](docs/entrega4-integracion.md)
 

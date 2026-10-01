@@ -30,12 +30,22 @@ public class LogisticaBroker {
             @Value("${logistica.proveedores.propia-url:http://localhost:8083}") String propiaUrl,
             @Value("${logistica.proveedores.alternativa-url:}") String alternativaUrl,
             @Value("${logistica.broker.estrategia:ROUND_ROBIN}") String estrategia) {
-        this.proveedores = new ArrayList<>();
-        this.proveedores.add(new LogisticaClient("PROPIA", propiaUrl));
+        List<LogisticaClient> configurados = new ArrayList<>();
+        configurados.add(new LogisticaClient("PROPIA", propiaUrl));
         if (alternativaUrl != null && !alternativaUrl.isBlank()) {
-            this.proveedores.add(new LogisticaClient("ALTERNATIVA", alternativaUrl));
+            configurados.add(new LogisticaClient("ALTERNATIVA", alternativaUrl));
         }
+        this.proveedores = List.copyOf(configurados);
         this.estrategia = EstrategiaSeleccion.valueOf(estrategia.toUpperCase(Locale.ROOT));
+        this.proveedorActivo = this.proveedores.get(0);
+    }
+
+    LogisticaBroker(List<LogisticaClient> proveedores, EstrategiaSeleccion estrategia) {
+        if (proveedores == null || proveedores.isEmpty()) {
+            throw new IllegalArgumentException("Debe configurarse al menos un proveedor logistico");
+        }
+        this.proveedores = List.copyOf(proveedores);
+        this.estrategia = estrategia;
         this.proveedorActivo = this.proveedores.get(0);
     }
 
