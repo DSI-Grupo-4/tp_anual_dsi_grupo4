@@ -5,6 +5,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ public class LogisticaBroker {
     private final ConcurrentHashMap<UUID, LogisticaClient> origenPorEvento = new ConcurrentHashMap<>();
     private volatile LogisticaClient proveedorActivo;
 
+    @Autowired
     public LogisticaBroker(
             @Value("${logistica.proveedores.propia-url:http://localhost:8083}") String propiaUrl,
             @Value("${logistica.proveedores.alternativa-url:}") String alternativaUrl,
