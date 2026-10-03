@@ -1,4 +1,132 @@
-# Entrega 4 - Integración asincrónica y broker de logística
+# QUICK START - DEMO ENTREGA 4
+
+## 1. Antes de empezar
+
+Tener instalados:
+
+- Java 17
+- Maven
+- Docker Desktop
+
+Abrir Docker Desktop y esperar a que el Engine esté funcionando.
+
+## 2. Levantar RabbitMQ
+
+Desde la raíz del repo:
+
+```powershell
+docker compose -f docker-compose.integration.yml up -d
+```
+
+Verificar:
+
+```powershell
+docker ps
+```
+
+Debe aparecer `donatrack-rabbitmq`.
+
+RabbitMQ Management:
+
+http://localhost:15672
+
+Usuario: `guest`  
+Password: `guest`
+
+## 3. Levantar DonaTrack
+
+RabbitMQ debe estar iniciado antes que los servicios.
+
+Desde la raíz:
+
+```bash
+./run-servicios.sh up
+```
+
+Servicios:
+
+- Donaciones: 8080
+- Incentivos: 8081
+- Notificaciones: 8082
+- Logística local: 8083
+
+## 4. Ver RabbitMQ
+
+En http://localhost:15672:
+
+**Exchanges**
+
+`donatrack.notificaciones`
+
+**Queues and Streams**
+
+`donatrack.notificaciones.solicitadas`
+
+`donatrack.notificaciones.fallidas`
+
+Flujo:
+
+`Donaciones/Incentivos -> RabbitMQ -> Notificaciones`
+
+## 5. Prueba manual rápida
+
+En RabbitMQ Management:
+
+1. `Exchanges`
+2. `donatrack.notificaciones`
+3. `Publish message`
+4. Routing key:
+
+`notificacion.solicitada`
+
+5. Payload:
+
+```json
+{
+  "mensaje": "Prueba manual desde RabbitMQ",
+  "medio": "EMAIL",
+  "contacto": "prueba@correo.com",
+  "servicioOrigen": "demo"
+}
+```
+
+6. Publicar.
+7. Verificar que Notificaciones lo consume.
+
+## 6. Tests
+
+Todos:
+
+```powershell
+mvn test
+```
+
+RabbitMQ solamente:
+
+```powershell
+mvn -pl servicio-notificaciones -Dtest=RabbitNotificacionesIntegrationTest test
+```
+
+Resultado esperado:
+
+`Failures: 0, Errors: 0, Skipped: 0`
+
+## 7. Broker de Logística - qué mostrar/explicar
+
+Está dentro de Donaciones:
+
+`Donaciones -> LogisticaBroker -> PROPIA / ALTERNATIVA`
+
+La selección inicial usa `ROUND_ROBIN`:
+
+`PROPIA -> ALTERNATIVA -> PROPIA -> ALTERNATIVA...`
+
+Si el proveedor seleccionado falla, intenta el siguiente.
+
+Los tests están en `LogisticaBrokerTest`.
+
+#############################################################3
+# Explicacion tecnica
 
 ## Alcance
 
@@ -33,16 +161,19 @@ modelo de dominio.
 
 ### Decisión
 
-Se eligió RabbitMQ porque el problema consiste en entregar comandos discretos de
-notificación a un único consumidor. RabbitMQ ofrece colas durables, confirmación
-de consumo, reintentos, dead-letter queues y una interfaz web sencilla para
-operación y demostración.
-
-Kafka fue descartado porque está orientado principalmente a streams de eventos,
-retención prolongada y múltiples consumidores que reproducen un historial. Esas
-capacidades agregaban complejidad sin aportar valor al caso actual. ActiveMQ
-también era válido, pero la integración de RabbitMQ con Spring AMQP y su consola
-de administración simplifican la implementación y la defensa.
+Se eligió RabbitMQ porque el problema consiste en entregar solicitudes de
+notificación de forma asincrónica a un consumidor.
+RabbitMQ aporta las colas durables, el enrutamiento mediante exchanges y
+routing keys, acknowledgements, dead-lettering y una interfaz web de
+administración.
+Los reintentos del procesamiento no los realiza RabbitMQ directamente:
+están configurados mediante Spring AMQP en el Servicio de Notificaciones.
+El consumer realiza hasta tres intentos. Si todos fallan, el mensaje se
+rechaza y RabbitMQ lo enruta mediante el dead-letter exchange hacia
+`donatrack.notificaciones.fallidas`.
+La cola de fallidos no posee un mecanismo automático de reproceso. Los mensajes permanecen allí hasta ser revisados o reinyectados manualmente.
+Kafka fue descartado porque está orientado principalmente a streams de eventos, retención prolongada y múltiples consumidores que pueden reproducir
+un historial. Esas capacidades agregaban complejidad innecesaria para este caso. ActiveMQ también era una alternativa válida; se eligió RabbitMQ por su integración con Spring AMQP y por su consola de administración.
 
 ### Flujo
 
