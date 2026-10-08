@@ -15,4 +15,8 @@ public class DatosDonacionDTO {
     private Long beneficiarioId;
     private String beneficiarioNombre;
     private String donanteNombre;
+    // D-010: opcionales -- si quien llama (hoy nadie) los manda, se guardan
+    // en el Donante para que NotificacionesClient pueda usarlos después.
+    private String donanteMedioContacto;
+    private String donanteContacto;
 }

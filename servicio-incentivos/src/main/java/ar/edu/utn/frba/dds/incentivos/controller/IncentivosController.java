@@ -87,6 +87,7 @@ public class IncentivosController {
             @RequestBody DatosDonacionDTO dto) {
 
         Donante donante = gestorDonante.obtenerDonante(id, dto.getDonanteNombre());
+        donante.actualizarContactoSiFalta(dto.getDonanteMedioContacto(), dto.getDonanteContacto());
         DatosDonacion datosDonacion = convertirADominio(dto);
 
         ProgresoInsignia obtenida = consultor.registrarActividadDonacion(donante, datosDonacion);

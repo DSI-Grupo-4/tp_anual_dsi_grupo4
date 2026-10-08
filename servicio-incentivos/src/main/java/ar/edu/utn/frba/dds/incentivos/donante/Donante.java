@@ -15,6 +15,13 @@ public class Donante {
 
     private final Long id;
     private String nombre;
+    // D-010: sin fuente real todavía -- nada en el sistema hoy le pasa a
+    // Incentivos el contacto del donante (el endpoint de actividad-donacion
+    // que podría traerlo ni siquiera está cableado desde Donaciones). Mismo
+    // tipo de límite que D-007/D-008 en Donaciones: se deja la plumbing
+    // lista, no se inventa un contacto. Ver decisiones.md.
+    private String medioContactoPreferido;
+    private String contactoPreferido;
     private int solicitudesDonacionHechas;
     private List<Beneficiario> beneficiariosAyudados;
     private ProgresoAsociado progresoAsociado;
@@ -31,6 +38,13 @@ public class Donante {
     public void actualizarNombreSiFalta(String nombre) {
         if (this.nombre == null && nombre != null && !nombre.isBlank()) {
             this.nombre = nombre;
+        }
+    }
+
+    public void actualizarContactoSiFalta(String medio, String contacto) {
+        if (this.contactoPreferido == null && medio != null && contacto != null && !contacto.isBlank()) {
+            this.medioContactoPreferido = medio;
+            this.contactoPreferido = contacto;
         }
     }
 
