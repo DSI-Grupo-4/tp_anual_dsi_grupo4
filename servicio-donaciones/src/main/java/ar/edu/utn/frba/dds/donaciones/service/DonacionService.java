@@ -122,8 +122,9 @@ public class DonacionService {
         donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
 
         DonacionDTO resultado = convertirADTO(donacion);
-        // Punto de enganche de RF-3 (todavía no-op, ver PublicadorEventosPort).
-        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", resultado);
+        // RF-3: se publica el dominio, no el DTO, porque RabbitPublicadorEventos
+        // necesita resolver la EntidadBeneficiaria para el contacto (ver decisiones.md).
+        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);
         return resultado;
     }
 
@@ -140,7 +141,7 @@ public class DonacionService {
         donacion.setEntidadBeneficiaria(entidad);
 
         DonacionDTO resultado = convertirADTO(donacion);
-        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", resultado);
+        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);
         return resultado;
     }
 

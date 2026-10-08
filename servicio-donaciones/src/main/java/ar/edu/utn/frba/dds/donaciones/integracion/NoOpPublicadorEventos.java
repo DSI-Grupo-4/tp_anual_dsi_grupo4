@@ -2,15 +2,15 @@ package ar.edu.utn.frba.dds.donaciones.integracion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /**
- * Adapter no-op de PublicadorEventosPort: solo loguea. Permite desplegar y
- * probar Donaciones sin depender de que RabbitMQ ni el Servicio de
- * Notificaciones estén levantados (Etapa 4). Se reemplaza por un adapter
- * real de RabbitMQ cuando se implemente RF-3.
+ * Adapter no-op de PublicadorEventosPort: solo loguea. Ya no es un
+ * @Component — RF-3 está implementado (ver RabbitPublicadorEventos), que es
+ * el bean real registrado. Esta clase queda disponible para instanciar a
+ * mano en tests o smoke tests locales sin RabbitMQ levantado, no se registra
+ * en el contexto de Spring para evitar un conflicto de bean con
+ * RabbitPublicadorEventos.
  */
-@Component
 public class NoOpPublicadorEventos implements PublicadorEventosPort {
 
     private static final Logger logger = LoggerFactory.getLogger(NoOpPublicadorEventos.class);

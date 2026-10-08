@@ -63,3 +63,32 @@
   - B) Mitigación mínima ahora (`CopyOnWriteArrayList`/`synchronizedList` + `AtomicLong` en los Gestores), a sabiendas de que es un parche transitorio que se descarta al migrar a persistencia.
 - **Decisión tomada:** Opción A — esperar a la etapa de persistencia. No se parchea ahora.
 - **Definida por:** usuario
+
+## [D-006] Reconciliación `refactor`/`cola-broker` vía port selectivo (RF-3/RF-4)
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Donaciones, Notificaciones (Logística e Incentivos no se tocaron en esta pasada)
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** `cola-broker` (rama de Agustina Fuentes) implementó RF-3 (cola de notificaciones) y RF-4 (broker multi-proveedor de Logística) sobre una versión pre-refactor del dominio de Donaciones — `DonacionService` en esa rama usa `LogisticaClient`, `DonacionPendienteDTO`/`TimeStampDTO` con forma distinta a la actual, y no vio nunca las skills ni `decisiones.md` (no existían en esa rama). Un merge/rebase de Git no resuelve esto: no es conflicto de texto, es diseño construido sobre dos formas distintas del mismo dominio. Ver `skills/donatrack-branch-reconciliation`, creada a partir de este caso.
+- **Fuentes revisadas:** decisiones.md (sin entrada previa sobre esto) / `progress/cola-broker.md` y `progress/refactor.md` (comparación detallada hecha en sesión) / consigna Entrega 4 (RF-3/RF-4 explícitos, sin indicar cómo reconciliar código ya escrito en paralelo — fuera del alcance del PDF).
+- **Opciones consideradas:**
+  - A) `git merge`/`git rebase` de `cola-broker` sobre `refactor` (o viceversa) y resolver conflictos a mano.
+  - B) Port selectivo: clasificar cada pieza nueva en import limpio / reimplementar contra el dominio actual / descartar, sin intentar reconciliar la historia de Git.
+- **Decisión tomada:** Opción B. Ejecutado en esta sesión:
+  - **Import limpio:** `servicio-notificaciones` completo (no existía en `refactor`), `docker-compose.integration.yml` (infra RabbitMQ), dependencia `spring-boot-starter-amqp` en el pom de Donaciones.
+  - **Reimplementado contra el dominio actual:** `LogisticaClient`/`EventoLogisticoDTO`/`EntregaEventoDTO`/`LogisticaBroker` (portados casi sin cambios, movidos de paquete `integration` a `integracion` por consistencia de convención); `RabbitPublicadorEventos` nueva (reemplaza a `NoOpPublicadorEventos` como implementación real de `PublicadorEventosPort`, el seam que ya estaba preparado); `EnvioLogisticaScheduler` nueva (a diferencia de `cola-broker`, que empujaba una donación a la vez al confirmar asignación, reutiliza `DonacionService.obtenerPendientes(page,size)` ya existente para loteo real de ≤100 en horario de baja carga); `EventosLogisticaScheduler` portado con un solo cambio de import (paquete).
+  - **Descartado explícitamente:** el árbol `domain/`+`service/`+controllers nuevo de Incentivos en `cola-broker` (servicios stub que devuelven DTOs vacíos, `RankingScheduler` con criterio equivocado — por total de donaciones en vez de por misiones cumplidas). No se mergea nada de ahí.
+  - **Diferido, no descartado:** el cableado de `NotificacionesClient` de Incentivos (Consultor → Notificaciones) — `Consultor` es un singleton manual (`getInstance()`), no un bean de Spring, enchufarle un `RabbitTemplate` requiere una decisión de diseño propia (¿se hace `Consultor` un `@Component`? ¿se inyecta desde afuera?) que no se tomó en esta pasada.
+- **Definida por:** usuario (aprobó la estrategia de port selectivo antes de ejecutar)
+
+## [D-007] Hueco de dominio: `Donacion` no tiene referencia al `Donante`
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** Al implementar `RabbitPublicadorEventos` (D-006) se encontró que `PublicadorEventosPort.publicar(tipoEvento, payload)` no puede resolver destinatario+contacto para los eventos dirigidos a la persona donante (ej. "tu donación fue asignada", Entrega 2) porque `Donacion` solo referencia `EntidadBeneficiaria`, nunca al `Donante` que la originó. `NotificacionRequestDTO.contacto` es `@NotBlank` en Notificaciones — no hay forma de enviar ese caso sin inventar un contacto.
+- **Fuentes revisadas:** decisiones.md (sin match) / DDC de Donaciones (`SolicitudDonacion`/`Donacion`/`Donante` — tampoco modela esa referencia, confirma que es un hueco real de diseño, no un olvido de implementación) / consigna (no detalla el modelo de datos a este nivel).
+- **Opciones consideradas:**
+  - A) Acotar el alcance: `RabbitPublicadorEventos` solo notifica cuando el payload trae una `EntidadBeneficiaria` resolvible; cuando no, loguea advertencia y no publica. No se inventa un contacto.
+  - B) Agregar la referencia `Donacion → Donante` (o la cadena que corresponda vía `SolicitudDonacion`) al dominio antes de seguir.
+  - C) Publicar con un contacto placeholder/log-only.
+- **Decisión tomada:** Opción A. Pendiente para una sesión futura: decidir cómo modelar la referencia de vuelta al donante (opción B) — hoy ningún evento de Entrega 2 dirigido al donante se puede notificar realmente (ver `progress/refactor.md`).
+- **Definida por:** usuario
