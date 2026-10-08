@@ -20,16 +20,40 @@
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
 ├── bruno
-│   └── donaciones
-│       ├── Asignaciones
-│       ├── Donaciones
-│       ├── Donantes
-│       ├── Entidades_beneficiarias
-│       ├── Necesidades
+│   ├── donaciones
+│   │   ├── Asignaciones
+│   │   ├── Donaciones
+│   │   ├── Donantes
+│   │   ├── Entidades_beneficiarias
+│   │   ├── Logistica
+│   │   ├── Necesidades
+│   │   ├── bruno.json
+│   │   ├── collection.bru
+│   │   ├── environments
+│   │   └── servicio-donaciones-controller
+│   ├── incentivos
+│   │   ├── Admin
+│   │   ├── Donantes
+│   │   ├── Ranking
+│   │   ├── bruno.json
+│   │   ├── collection.bru
+│   │   └── environments
+│   ├── logistica
+│   │   ├── Camiones
+│   │   ├── Entregas
+│   │   ├── Eventos
+│   │   ├── Lotes
+│   │   ├── Paradas
+│   │   ├── Planificador
+│   │   ├── Rutas
+│   │   ├── bruno.json
+│   │   ├── collection.bru
+│   │   └── environments
+│   └── notificaciones
+│       ├── Notificaciones
 │       ├── bruno.json
 │       ├── collection.bru
-│       ├── environments
-│       └── servicio-donaciones-controller
+│       └── environments
 ├── consigna
 │   ├── DDS-TP-Anual-2026-CursoK3002 Entrega 4.pdf
 │   └── entrega4-requerimientos.md
@@ -94,7 +118,7 @@
         ├── main
         └── test
 
-35 directories, 44 files
+53 directories, 50 files
 ```
 <!-- TREE_END -->
 
