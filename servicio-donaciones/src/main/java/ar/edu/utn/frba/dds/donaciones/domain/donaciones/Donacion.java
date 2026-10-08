@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,6 +39,9 @@ public class Donacion {
     private List<CambioEstado> historialEstados;
     private EntidadBeneficiaria entidadBeneficiaria;
     private List<EntidadBeneficiaria> candidatas;
+    // D-008 (resuelve D-007): quién hizo la donación — antes no se registraba
+    // en ningún lado, pese a ser requerimiento explícito de Entrega 1.
+    private Donante donante;
 
     public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada) {
         this.id = id;

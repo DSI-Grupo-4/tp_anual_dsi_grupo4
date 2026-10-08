@@ -11,7 +11,9 @@ import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.SolicitudDonacion;
 import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
 import ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
@@ -31,10 +33,13 @@ import java.util.Map;
 public class DonacionService {
 
     private final GestorDonaciones gestorDonaciones;
+    private final GestorDonantes gestorDonantes;
     private final PublicadorEventosPort publicadorEventos;
 
-    public DonacionService(GestorDonaciones gestorDonaciones, PublicadorEventosPort publicadorEventos) {
+    public DonacionService(GestorDonaciones gestorDonaciones, GestorDonantes gestorDonantes,
+                            PublicadorEventosPort publicadorEventos) {
         this.gestorDonaciones = gestorDonaciones;
+        this.gestorDonantes = gestorDonantes;
         this.publicadorEventos = publicadorEventos;
     }
 
@@ -45,7 +50,10 @@ public class DonacionService {
      * que había antes, que ni siquiera aceptaba categoría/subcategoría.
      */
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
+        Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
+
         SolicitudDonacion solicitud = new SolicitudDonacion(dto.getDescripcion());
+        solicitud.setDonante(donante);
 
         for (ItemDonadoDTO itemDto : dto.getItems()) {
             solicitud.agregarItem(convertirItemDominio(itemDto));
@@ -123,8 +131,12 @@ public class DonacionService {
 
         DonacionDTO resultado = convertirADTO(donacion);
         // RF-3: se publica el dominio, no el DTO, porque RabbitPublicadorEventos
-        // necesita resolver la EntidadBeneficiaria para el contacto (ver decisiones.md).
-        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);
+        // necesita resolver la EntidadBeneficiaria/Donante para el contacto.
+        // origenEvento permite que un cambio de estado disparado por un evento
+        // de Logística (ver EventosLogisticaScheduler) publique el tipoEvento
+        // real en vez del genérico, sin abrir un segundo camino de publicación.
+        String tipoEvento = dto.getOrigenEvento() != null ? dto.getOrigenEvento() : "CAMBIO_ESTADO_DONACION";
+        publicadorEventos.publicar(tipoEvento, donacion);
         return resultado;
     }
 
@@ -229,6 +241,9 @@ public class DonacionService {
     private DonacionDTO convertirADTO(Donacion donacion) {
         DonacionDTO dto = new DonacionDTO();
         dto.setId(donacion.getId());
+        if (donacion.getDonante() != null) {
+            dto.setDonanteId(donacion.getDonante().getId());
+        }
         dto.setDescripcionItem(donacion.getItemDonado().getDescripcion());
         dto.setCantidadAsignada(donacion.getCantidadAsignada());
         dto.setEstadoActual(donacion.getEstadoActual());

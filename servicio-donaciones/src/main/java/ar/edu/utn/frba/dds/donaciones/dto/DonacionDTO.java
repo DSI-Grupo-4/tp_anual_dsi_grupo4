@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 public class DonacionDTO {
     private Long id;
+    private Long donanteId;
     private String descripcionItem;
     private Integer cantidadAsignada;
     private EstadoTrack estadoActual;

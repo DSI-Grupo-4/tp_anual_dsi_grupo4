@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,9 @@ public class SolicitudDonacion {
     private String descripcion;
     private LocalDateTime fechaRegistro;
     private List<ItemDonado> items;
+    // D-008: opcional a nivel constructor para no romper los tests existentes
+    // que no necesitan donante — DonacionService.crear() lo setea siempre.
+    private Donante donante;
 
     public SolicitudDonacion(String descripcion) {
 
@@ -40,7 +44,11 @@ public class SolicitudDonacion {
      */
     public List<Donacion> segmentar() {
         return items.stream()
-                .map(item -> new Donacion(null, item, item.getCantidad()))
+                .map(item -> {
+                    Donacion donacion = new Donacion(null, item, item.getCantidad());
+                    donacion.setDonante(donante);
+                    return donacion;
+                })
                 .collect(Collectors.toList());
     }
 }

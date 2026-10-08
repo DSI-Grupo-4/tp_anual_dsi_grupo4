@@ -6,7 +6,9 @@ import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrganizacion;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
@@ -40,17 +42,20 @@ class DonacionServiceTest {
     @Mock
     private GestorDonaciones gestorDonaciones;
     @Mock
+    private GestorDonantes gestorDonantes;
+    @Mock
     private PublicadorEventosPort publicadorEventos;
 
     private DonacionService donacionService;
 
     @BeforeEach
     void setUp() {
-        donacionService = new DonacionService(gestorDonaciones, publicadorEventos);
+        donacionService = new DonacionService(gestorDonaciones, gestorDonantes, publicadorEventos);
     }
 
     @Test
     void crearSegmentaLaCargaEnUnaDonacionPorItem() {
+        when(gestorDonantes.buscarPorId(1L)).thenReturn(new Donante(1L, null));
         when(gestorDonaciones.getDeposito()).thenReturn(new Deposito());
         when(gestorDonaciones.registrarDonacion(any(Donacion.class)))
                 .thenAnswer(invocation -> {
@@ -62,6 +67,7 @@ class DonacionServiceTest {
                 });
 
         CargaDonacionDTO carga = new CargaDonacionDTO();
+        carga.setDonanteId(1L);
         carga.setDescripcion("Mudanza oficina");
 
         ItemDonadoDTO sillas = new ItemDonadoDTO();

@@ -54,6 +54,7 @@ class DonacionControllerTest {
     @Test
     void postDonacionesAceptaLaCargaMultiItemYDevuelveUnaListaDeDonaciones() throws Exception {
         CargaDonacionDTO carga = new CargaDonacionDTO();
+        carga.setDonanteId(1L);
         carga.setDescripcion("Mudanza oficina");
         ItemDonadoDTO item = new ItemDonadoDTO();
         item.setDescripcion("Sillas");
