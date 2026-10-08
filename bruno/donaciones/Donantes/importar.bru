@@ -9,55 +9,16 @@ meta {
 
 post {
   url: {{baseUrl}}/api/donantes/importar
-  body: json
+  body: multipartForm
   auth: inherit
 }
 
-body:json {
-  {
-    "archivo": ""
-  }
+body:multipart-form {
+  archivo: @file(Donantes/donantes-ejemplo.csv)
 }
 
-example {
-  name: 200 Response
-  description: OK
-  
-  request: {
-    url: {{baseUrl}}/api/donantes/importar
-    method: POST
-    mode: json
-    body:json: {
-      {
-        "archivo": ""
-      }
-    }
-  }
-  
-  response: {
-    headers: {
-      Content-Type: */*
-    }
-  
-    status: {
-      code: 200
-      text: OK
-    }
-  
-    body: {
-      type: text
-      content: '''
-        [
-          {
-            "id": 0,
-            "tipo": "",
-            "nombre": "",
-            "apellido": "",
-            "razonSocial": "",
-            "documento": ""
-          }
-        ]
-      '''
-    }
-  }
+docs {
+  Importa un CSV de donantes (humanos y jurídicos). El endpoint espera un multipart/form-data real con el campo "archivo" (no JSON) -- el ejemplo apunta a donantes-ejemplo.csv, incluido en esta misma carpeta, con el formato que espera ImportadorCSV: tipo,_,documento,nombreCompleto,email,telefono (la segunda columna no se usa).
+
+  La versión anterior de esta colección mandaba `{"archivo": ""}` como JSON, lo que no coincide con la firma real del controller (@RequestParam MultipartFile) y producía 500 en vez de un resultado válido.
 }

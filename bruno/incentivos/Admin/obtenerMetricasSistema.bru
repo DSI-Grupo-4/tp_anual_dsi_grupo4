@@ -1,0 +1,18 @@
+meta {
+  name: obtenerMetricasSistema
+  type: http
+  seq: 1
+  tags: [
+    Admin
+  ]
+}
+
+get {
+  url: {{baseUrl}}/admin/metricas
+  body: none
+  auth: none
+}
+
+docs {
+  Métricas agregadas de todo el sistema: donantes activos, solicitudes de donación totales, misiones/insignias otorgadas totales y evolución mensual.
+}

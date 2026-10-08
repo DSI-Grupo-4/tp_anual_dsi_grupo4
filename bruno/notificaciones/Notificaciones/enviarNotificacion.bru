@@ -1,0 +1,70 @@
+meta {
+  name: enviarNotificacion
+  type: http
+  seq: 1
+  tags: [
+    Notificaciones
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/notificaciones
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "mensaje": "Tu donación fue entregada con éxito",
+    "medio": "EMAIL",
+    "contacto": "donante@ejemplo.com",
+    "servicioOrigen": "donaciones",
+    "tipoEvento": "ENTREGA_CONFIRMADA",
+    "eventoId": "evt-ejemplo-1"
+  }
+}
+
+docs {
+  Envía (simulado, por ahora solo logging) una notificación por el medio indicado (WHATSAPP, EMAIL o SMS). Devuelve 201 con la notificación creada. Idempotente por eventoId: si se reenvía el mismo eventoId (ej. un reintento de la cola), devuelve la notificación ya existente en vez de despacharla de nuevo.
+
+  Todos los campos son obligatorios salvo servicioOrigen -- 400 con el detalle del campo si falta alguno.
+}
+
+example {
+  name: 400 Response
+  description: Bad Request (falta eventoId)
+
+  request: {
+    url: {{baseUrl}}/api/notificaciones
+    method: POST
+    mode: json
+    body:json: {
+      {
+        "mensaje": "hola",
+        "medio": "EMAIL",
+        "contacto": "x@x.com",
+        "tipoEvento": "TEST"
+      }
+    }
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 400
+      text: Bad Request
+    }
+
+    body: {
+      type: text
+      content: '''
+        {
+          "eventoId": "eventoId es obligatorio (permite deduplicar en reintentos de la cola)"
+        }
+      '''
+    }
+  }
+}

@@ -1,0 +1,49 @@
+meta {
+  name: obtenerCamiones
+  type: http
+  seq: 1
+  tags: [
+    Camiones
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/camiones
+  body: none
+  auth: none
+}
+
+docs {
+  Lista todos los camiones registrados (cualquier estado).
+}
+
+example {
+  name: 200 Response
+  description: OK (seed de datos de ejemplo del servicio)
+
+  request: {
+    url: {{baseUrl}}/api/camiones
+    method: GET
+    mode: none
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 200
+      text: OK
+    }
+
+    body: {
+      type: text
+      content: '''
+        [
+          { "idCamion": 1, "patente": "AA123BB", "estadoCamion": "DISPONIBLE" }
+        ]
+      '''
+    }
+  }
+}

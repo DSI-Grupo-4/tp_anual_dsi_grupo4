@@ -1,0 +1,72 @@
+meta {
+  name: obtenerMetricas
+  type: http
+  seq: 1
+  tags: [
+    Donantes
+  ]
+}
+
+get {
+  url: {{baseUrl}}/donantes/:id/metricas?periodo=HISTORICO
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}
+
+params:query {
+  periodo: HISTORICO
+}
+
+docs {
+  Métricas de actividad del donante (solicitudes hechas, beneficiarios ayudados, misiones/insignias, impacto, posición en el ranking) para un período dado (MENSUAL, TRIMESTRAL, SEMESTRAL, ANUAL, HISTORICO -- default HISTORICO). Si el id no existe todavía en Incentivos, se crea un donante vacío en el momento (lazy-create) y devuelve métricas en cero -- no hay 404 posible en este endpoint, es comportamiento esperado.
+}
+
+example {
+  name: 200 Response
+  description: OK (donante recién creado por lazy-create)
+
+  request: {
+    url: {{baseUrl}}/donantes/:id/metricas?periodo=HISTORICO
+    method: GET
+    mode: none
+    params:path: {
+      id: 777
+    }
+    params:query: {
+      periodo: HISTORICO
+    }
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 200
+      text: OK
+    }
+
+    body: {
+      type: text
+      content: '''
+        {
+          "donanteNombre": null,
+          "categoriaActual": "Colaborador",
+          "periodo": "HISTORICO",
+          "solicitudesDonacionHechas": 0,
+          "beneficiariosAyudados": 0,
+          "misionesCompletadas": 0,
+          "insigniasObtenidas": 0,
+          "impactoAcumulado": 0,
+          "posicionRanking": null,
+          "evolucionMensual": []
+        }
+      '''
+    }
+  }
+}

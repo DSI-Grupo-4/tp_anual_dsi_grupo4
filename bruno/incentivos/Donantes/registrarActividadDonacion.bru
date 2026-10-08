@@ -1,0 +1,75 @@
+meta {
+  name: registrarActividadDonacion
+  type: http
+  seq: 4
+  tags: [
+    Donantes
+  ]
+}
+
+post {
+  url: {{baseUrl}}/donantes/:id/actividad-donacion
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 1
+}
+
+body:json {
+  {
+    "fecha": "2026-10-08",
+    "categoriaNombre": "Colaborador",
+    "cantidadBienes": 5,
+    "donacionExitosa": true,
+    "beneficiarioId": 10,
+    "beneficiarioNombre": "Comedor Sonrisas",
+    "donanteNombre": "Juan Perez",
+    "donanteMedioContacto": null,
+    "donanteContacto": null
+  }
+}
+
+docs {
+  Registra una actividad de donación para el donante (se llama desde Donaciones; hoy no hay ningún caller real todavía). Si la actividad completa una misión, devuelve 200 con la insignia obtenida; si no completa ninguna, devuelve 204 sin cuerpo. 400 si categoriaNombre no existe.
+
+  donanteMedioContacto/donanteContacto son opcionales: si se mandan y el donante todavía no tiene contacto registrado, quedan guardados para que Incentivos pueda notificarlo vía RabbitMQ (NotificacionesClient).
+}
+
+example {
+  name: 204 Response
+  description: No Content (no completó ninguna misión nueva)
+
+  request: {
+    url: {{baseUrl}}/donantes/:id/actividad-donacion
+    method: POST
+    mode: json
+    params:path: {
+      id: 1
+    }
+    body:json: {
+      {
+        "fecha": "2026-10-08",
+        "categoriaNombre": "Colaborador",
+        "cantidadBienes": 1,
+        "donacionExitosa": true
+      }
+    }
+  }
+
+  response: {
+    headers: {
+    }
+
+    status: {
+      code: 204
+      text: No Content
+    }
+
+    body: {
+      type: text
+      content: ''''''
+    }
+  }
+}

@@ -1,0 +1,56 @@
+meta {
+  name: marcarPublicado
+  type: http
+  seq: 2
+  tags: [
+    Eventos
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/eventos/:id/marcar-publicado
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 00000000-0000-0000-0000-000000000000
+}
+
+docs {
+  Marca un evento como publicado para que deje de aparecer en obtenerEventosNoPublicados. 404 si el id no existe -- antes de Fase 2 este endpoint devolvía 200 silenciosamente incluso con un id inexistente (no-op); ahora valida y tira 404.
+}
+
+example {
+  name: 404 Response
+  description: Not Found (id inexistente)
+
+  request: {
+    url: {{baseUrl}}/api/eventos/:id/marcar-publicado
+    method: POST
+    mode: none
+    params:path: {
+      id: 00000000-0000-0000-0000-000000000000
+    }
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 404
+      text: Not Found
+    }
+
+    body: {
+      type: text
+      content: '''
+        {
+          "error": "No existe el evento con id: 00000000-0000-0000-0000-000000000000"
+        }
+      '''
+    }
+  }
+}

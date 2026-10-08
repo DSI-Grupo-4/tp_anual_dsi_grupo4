@@ -1,0 +1,18 @@
+meta {
+  name: obtenerRutas
+  type: http
+  seq: 1
+  tags: [
+    Rutas
+  ]
+}
+
+get {
+  url: {{baseUrl}}/api/rutas
+  body: none
+  auth: none
+}
+
+docs {
+  Lista todas las rutas registradas en el sistema (cualquier estado).
+}

@@ -15,6 +15,7 @@ post {
 
 body:json {
   {
+    "donanteId": 1,
     "descripcion": "La oficina corporativa de Arcos Plateados está en proceso de mudanza",
     "items": [
       {
@@ -32,6 +33,10 @@ body:json {
       }
     ]
   }
+}
+
+docs {
+  donanteId es obligatorio y debe referenciar un donante ya registrado (404 si no existe) -- correr antes Donantes/crearHumano o Donantes/crearJuridico, o ajustar el id a uno real de tu entorno.
 }
 
 tests {
@@ -58,6 +63,7 @@ example {
     mode: json
     body:json: {
       {
+        "donanteId": 0,
         "descripcion": "",
         "items": [
           {

@@ -1,0 +1,18 @@
+meta {
+  name: obtenerHistorial
+  type: http
+  seq: 1
+  tags: [
+    Ranking
+  ]
+}
+
+get {
+  url: {{baseUrl}}/ranking/historial
+  body: none
+  auth: none
+}
+
+docs {
+  Lista todos los rankings mensuales generados hasta el momento (puede devolver [] si nunca se generó ninguno).
+}

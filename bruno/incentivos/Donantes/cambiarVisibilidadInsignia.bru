@@ -1,0 +1,31 @@
+meta {
+  name: cambiarVisibilidadInsignia
+  type: http
+  seq: 5
+  tags: [
+    Donantes
+  ]
+}
+
+patch {
+  url: {{baseUrl}}/donantes/:id/insignias/:insigniaNombre/visibilidad
+  body: json
+  auth: none
+}
+
+params:path {
+  id: 1
+  insigniaNombre: Racha Colaboradora
+}
+
+body:json {
+  {
+    "visible": false
+  }
+}
+
+docs {
+  Muestra u oculta una insignia obtenida en el perfil público del donante. 204 sin cuerpo si se aplicó correctamente. 404 si el donante todavía no obtuvo esa insignia -- es el caso esperado al probar contra un donante sin actividad real, no un error de la colección.
+
+  Insignias existentes en el seed: Racha Colaboradora, Coleccionista, Gran Donante, Donante Confiable, Racha Transformadora, Pilar Solidario.
+}

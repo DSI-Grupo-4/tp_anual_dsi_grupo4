@@ -1,0 +1,35 @@
+meta {
+  name: recibirLote
+  type: http
+  seq: 1
+  tags: [
+    Lotes
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/lotes
+  body: json
+  auth: none
+}
+
+body:json {
+  [
+    {
+      "idDonacion": 1,
+      "entidadBeneficiariaAsociadaID": 1,
+      "direccionDestino": {
+        "calle": "Falsa",
+        "numero": "123",
+        "ciudad": { "nombre": "CABA", "provincia": { "nombre": "Buenos Aires" } }
+      },
+      "pesoKG": 10,
+      "volumenM3": 1,
+      "alturaM": 1
+    }
+  ]
+}
+
+docs {
+  Recibe un lote de donaciones y genera las entregas correspondientes para su posterior planificación. El lote no puede superar las 100 donaciones (400 si se excede). Validado en vivo: 201 con la lista de Entrega creadas.
+}

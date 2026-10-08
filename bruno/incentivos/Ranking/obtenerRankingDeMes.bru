@@ -1,0 +1,56 @@
+meta {
+  name: obtenerRankingDeMes
+  type: http
+  seq: 2
+  tags: [
+    Ranking
+  ]
+}
+
+get {
+  url: {{baseUrl}}/ranking/mes?fecha=2026-10-01
+  body: none
+  auth: none
+}
+
+params:query {
+  fecha: 2026-10-01
+}
+
+docs {
+  Ranking del mes que contiene la fecha dada (cualquier día de ese mes/año sirve). 404 si no existe ranking para ese mes.
+}
+
+example {
+  name: 404 Response
+  description: Not Found (sin ranking para el mes pedido)
+
+  request: {
+    url: {{baseUrl}}/ranking/mes?fecha=2026-10-01
+    method: GET
+    mode: none
+    params:query: {
+      fecha: 2026-10-01
+    }
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 404
+      text: Not Found
+    }
+
+    body: {
+      type: text
+      content: '''
+        {
+          "error": "No existe ranking para el mes solicitado: 2026-10-01"
+        }
+      '''
+    }
+  }
+}

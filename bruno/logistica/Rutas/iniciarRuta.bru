@@ -1,0 +1,56 @@
+meta {
+  name: iniciarRuta
+  type: http
+  seq: 3
+  tags: [
+    Rutas
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/rutas/:id/iniciar
+  body: none
+  auth: none
+}
+
+params:path {
+  id: 1
+}
+
+docs {
+  El chofer informa el comienzo de su recorrido. Pasa la ruta a INICIADA, el camión a EN_RUTA y cada entrega a EN_TRASLADO (dispara eventos RUTA_INICIADA). 404 si la ruta no existe, 409 si la ruta no está en estado PLANIFICADA (ej. ya fue iniciada) -- ambos validados en vivo.
+}
+
+example {
+  name: 409 Response
+  description: Conflict (ruta ya iniciada)
+
+  request: {
+    url: {{baseUrl}}/api/rutas/:id/iniciar
+    method: POST
+    mode: none
+    params:path: {
+      id: 1
+    }
+  }
+
+  response: {
+    headers: {
+      Content-Type: application/json
+    }
+
+    status: {
+      code: 409
+      text: Conflict
+    }
+
+    body: {
+      type: text
+      content: '''
+        {
+          "error": "La ruta 1 no puede iniciarse estando en estado INICIADA"
+        }
+      '''
+    }
+  }
+}

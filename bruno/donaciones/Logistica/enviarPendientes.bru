@@ -1,0 +1,18 @@
+meta {
+  name: enviarPendientes
+  type: http
+  seq: 1
+  tags: [
+    Logistica
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/logistica/enviar-pendientes
+  body: none
+  auth: inherit
+}
+
+docs {
+  Dispara manualmente lo que normalmente ejecuta EnvioLogisticaScheduler de madrugada: empuja en lotes de a lo sumo 100 las donaciones en estado "Asignación realizada" hacia Logística (POST /api/lotes del servicio de Logística).
+}

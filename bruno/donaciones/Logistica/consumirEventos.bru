@@ -1,0 +1,18 @@
+meta {
+  name: consumirEventos
+  type: http
+  seq: 2
+  tags: [
+    Logistica
+  ]
+}
+
+post {
+  url: {{baseUrl}}/api/logistica/consumir-eventos
+  body: none
+  auth: inherit
+}
+
+docs {
+  Dispara manualmente lo que normalmente ejecuta EventosLogisticaScheduler de madrugada: consulta los eventos no publicados de Logística (GET /api/eventos del servicio de Logística) y actualiza el estado de cada Donacion asociada, publicando a su vez la notificación correspondiente.
+}
