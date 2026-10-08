@@ -111,14 +111,15 @@
 ├── servicio-logistica
 │   ├── pom.xml
 │   └── src
-│       └── main
+│       ├── main
+│       └── test
 └── servicio-notificaciones
     ├── pom.xml
     └── src
         ├── main
         └── test
 
-53 directories, 50 files
+54 directories, 50 files
 ```
 <!-- TREE_END -->
 
