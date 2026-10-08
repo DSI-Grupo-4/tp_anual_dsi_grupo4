@@ -13,15 +13,18 @@ public class PlanificadorService {
 
     private final EntregaRepository entregaRepository;
     private final CamionService camionService;
+    private final ChoferService choferService;
     private final GestorRutas gestorRutas;
     private final GestorEventos gestorEventos;
 
     public PlanificadorService(EntregaRepository entregaRepository,
                                CamionService camionService,
+                               ChoferService choferService,
                                GestorRutas gestorRutas,
                                GestorEventos gestorEventos) {
         this.entregaRepository = entregaRepository;
         this.camionService = camionService;
+        this.choferService = choferService;
         this.gestorRutas = gestorRutas;
         this.gestorEventos = gestorEventos;
     }
@@ -32,8 +35,9 @@ public class PlanificadorService {
         if (pendientes.isEmpty()) return List.of();
 
         List<Camion> disponibles = camionService.obtenerCamionesDisponiblesEntidad();
+        List<Chofer> choferesDisponibles = choferService.obtenerChoferesHabilitados();
 
-        List<Ruta> rutasGeneradas = gestorRutas.planificar(pendientes, disponibles);
+        List<Ruta> rutasGeneradas = gestorRutas.planificar(pendientes, disponibles, choferesDisponibles);
 
         // emitimos evento por cada ruta planificada, para que Donaciones lo consuma vía GET
         rutasGeneradas.forEach(ruta ->

@@ -8,8 +8,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class Chofer {
+    private Integer idChofer;
     private String nombre;
     private Integer dni;
     private Boolean habilitado;
 
+    public boolean estaHabilitado() {
+        return Boolean.TRUE.equals(habilitado);
+    }
 }

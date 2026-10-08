@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 public class PlanificacionPropia implements EstrategiaPlanificacion {
 
     @Override
-    public List<Ruta> planificar(List<Entrega> entregas, List<Camion> camionesDisponibles, Integer idRutaInicial) {
+    public List<Ruta> planificar(List<Entrega> entregas, List<Camion> camionesDisponibles,
+                                  List<Chofer> choferesDisponibles, Integer idRutaInicial) {
         List<Ruta> rutas = new ArrayList<>();
 
         // Agrupamos las entregas por entidad beneficiaria -> cada grupo será una Parada
@@ -25,6 +26,12 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
         }
 
         Camion camionActual = camiones.next();
+        // No hay EstadoChofer que distinga "ocupado"/"libre", así que se asigna de forma
+        // cíclica entre los choferes habilitados (un chofer puede terminar en más de una
+        // ruta si hay más camiones que choferes); si no hay ninguno, la ruta queda sin
+        // chofer asignado en vez de romper la planificación.
+        int siguienteChoferIdx = 0;
+        Chofer choferActual = choferesDisponibles.isEmpty() ? null : choferesDisponibles.get(siguienteChoferIdx++ % choferesDisponibles.size());
         List<Parada> paradasCamionActual = new ArrayList<>();
         int idRuta = idRutaInicial;
         int idParada = 1;
@@ -36,12 +43,26 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
             int volumenTotal = entregasDeLaParada.stream().mapToInt(Entrega::getVolumenM3).sum();
             int alturaMax = entregasDeLaParada.stream().mapToInt(Entrega::getAlturaM).max().orElse(0);
 
-            // si no entra en el camión actual, cerramos su ruta y probamos con el siguiente camión
-            if (!camionActual.puedeCargar(pesoTotal, volumenTotal, alturaMax) && !paradasCamionActual.isEmpty()) {
-                rutas.add(new Ruta(idRuta++, camionActual, null, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
-                paradasCamionActual = new ArrayList<>();
-                if (!camiones.hasNext()) break; // no quedan más camiones
-                camionActual = camiones.next();
+            // Si no entra en el camión actual, cerramos su ruta (si tiene paradas) y
+            // probamos con el siguiente. Antes esto solo se chequeaba cuando el camión
+            // ya tenía paradas asignadas (!paradasCamionActual.isEmpty()), así que la
+            // primera parada de un camión que de entrada no podía cargarla pasaba sin
+            // validar -- bug confirmado con un caso real (99.999kg en un camión de
+            // 1200kg). Ahora se valida siempre, probando camiones siguientes hasta
+            // encontrar uno que pueda, o se deja la parada sin planificar si ninguno puede.
+            while (camionActual != null && !camionActual.puedeCargar(pesoTotal, volumenTotal, alturaMax)) {
+                if (!paradasCamionActual.isEmpty()) {
+                    rutas.add(new Ruta(idRuta++, camionActual, choferActual, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
+                    paradasCamionActual = new ArrayList<>();
+                }
+                camionActual = camiones.hasNext() ? camiones.next() : null;
+                choferActual = choferesDisponibles.isEmpty() ? null
+                        : choferesDisponibles.get(siguienteChoferIdx++ % choferesDisponibles.size());
+            }
+
+            if (camionActual == null) {
+                // ningún camión disponible puede cargar esta parada -- queda sin planificar
+                continue;
             }
 
             final Camion camionParaEstaParada = camionActual;
@@ -51,8 +72,8 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
             paradasCamionActual.add(parada);
         }
 
-        if (!paradasCamionActual.isEmpty()) {
-            rutas.add(new Ruta(idRuta, camionActual, null, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
+        if (camionActual != null && !paradasCamionActual.isEmpty()) {
+            rutas.add(new Ruta(idRuta, camionActual, choferActual, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
         }
 
         return rutas;

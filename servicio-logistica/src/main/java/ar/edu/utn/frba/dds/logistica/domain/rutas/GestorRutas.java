@@ -12,9 +12,10 @@ public class GestorRutas {
         this.estrategia = estrategia;
     }
 
-    public List<Ruta> planificar(List<Entrega> entregasPendientes, List<Camion> camionesDisponibles) {
+    public List<Ruta> planificar(List<Entrega> entregasPendientes, List<Camion> camionesDisponibles,
+                                  List<Chofer> choferesDisponibles) {
         int siguienteId = rutas.size() + 1;
-        List<Ruta> nuevasRutas = estrategia.planificar(entregasPendientes, camionesDisponibles, siguienteId);
+        List<Ruta> nuevasRutas = estrategia.planificar(entregasPendientes, camionesDisponibles, choferesDisponibles, siguienteId);
         rutas.addAll(nuevasRutas);
         return nuevasRutas;
     }
