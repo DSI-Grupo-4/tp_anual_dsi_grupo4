@@ -177,21 +177,21 @@
           <mxGeometry height="340" width="2044" x="-1440" y="-980" as="geometry" />
         </mxCell>
         <mxCell id="59" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#fa6800;fontColor=#000000;strokeColor=#C73500;" value="Consultor" vertex="1">
-          <mxGeometry height="380" width="320" x="90" y="-500" as="geometry">
+          <mxGeometry height="480" width="320" x="90" y="-500" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="60" parent="59" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&amp;lt;&amp;lt;singleton&amp;gt;&amp;gt;" vertex="1">
           <mxGeometry height="25" width="320" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="61" parent="59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- misiones: GestorMisiones&lt;div&gt;- donantes: GestorDonante&lt;/div&gt;&lt;div&gt;- rankings: HistorialRanking&lt;/div&gt;&lt;div&gt;- beneficiarios: &amp;lt;set&amp;gt; Beneficiario&lt;/div&gt;" vertex="1">
+        <mxCell id="61" parent="59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- misiones: GestorMisiones&lt;div&gt;- donantes: GestorDonante&lt;/div&gt;&lt;div&gt;- rankings: HistorialRanking&lt;/div&gt;&lt;div&gt;- beneficiarios: &amp;lt;set&amp;gt; Beneficiario&lt;/div&gt;&lt;div&gt;- restTemplate: RestTemplate&lt;/div&gt;&lt;div&gt;- webhookN8nUrl: String&lt;/div&gt;&lt;div&gt;- notificacionesBaseUrl: String&lt;/div&gt;" vertex="1">
           <mxGeometry height="105" width="320" y="51" as="geometry" />
         </mxCell>
         <mxCell id="62" parent="59" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="320" y="156" as="geometry" />
         </mxCell>
-        <mxCell id="63" parent="59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ obtenerMetricasActividad(donante: Donante, periodo: Periodo): MetricasActividad&lt;/div&gt;&lt;div&gt;+ obtenerMisionesDisponibles(donante: Donante): List&amp;lt;Mision&amp;gt;&lt;/div&gt;&lt;div&gt;+ obtenerInsignias(donante: Donante): List&amp;lt;Insignia&amp;gt;&lt;/div&gt;&lt;div&gt;+&amp;nbsp;registrarActividadDonacion(donante, datosDonacion)&lt;/div&gt;&lt;div&gt;+ notificarCambioCategoria(donante, categoriaNombre)&lt;/div&gt;&lt;div&gt;+ obtenerHistorialRanking(): List&amp;lt;Ranking&amp;gt;&lt;/div&gt;&lt;div&gt;+ obtenerRankingDeMes(fecha): Ranking&lt;/div&gt;&lt;div&gt;+ obtenerOCrearBeneficiario(id, nombre): Beneficiario&lt;/div&gt;&lt;div&gt;+ obtenerUltimoRanking(): Ranking&lt;/div&gt;&lt;div&gt;+ marcarInsigniaVisible(donante, insigniaNombre)&lt;/div&gt;&lt;div&gt;+ ocultarInsignia(donante, insigniaNombre)&lt;/div&gt;&lt;div&gt;+ obtenerMetricasSistema(): MetricasSistema&lt;/div&gt;" vertex="1">
-          <mxGeometry height="216" width="320" y="164" as="geometry" />
+        <mxCell id="63" parent="59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ obtenerMetricasActividad(donante: Donante, periodo: Periodo): MetricasActividad&lt;/div&gt;&lt;div&gt;+ obtenerMisionesDisponibles(donante: Donante): List&amp;lt;Mision&amp;gt;&lt;/div&gt;&lt;div&gt;+ obtenerInsignias(donante: Donante): List&amp;lt;Insignia&amp;gt;&lt;/div&gt;&lt;div&gt;+&amp;nbsp;registrarActividadDonacion(donante, datosDonacion)&lt;/div&gt;&lt;div&gt;+ notificarMisionCompletada(donante, insignia)&lt;/div&gt;&lt;div&gt;+ notificarCambioCategoria(donante, categoriaNombre)&lt;/div&gt;&lt;div&gt;+ obtenerHistorialRanking(): List&amp;lt;Ranking&amp;gt;&lt;/div&gt;&lt;div&gt;+ obtenerRankingDeMes(fecha): Ranking&lt;/div&gt;&lt;div&gt;+ obtenerOCrearBeneficiario(id, nombre): Beneficiario&lt;/div&gt;&lt;div&gt;+ obtenerUltimoRanking(): Ranking&lt;/div&gt;&lt;div&gt;+ marcarInsigniaVisible(donante, insigniaNombre)&lt;/div&gt;&lt;div&gt;+ ocultarInsignia(donante, insigniaNombre)&lt;/div&gt;&lt;div&gt;+ obtenerMetricasSistema(): MetricasSistema&lt;/div&gt;&lt;div&gt;+ configurarWebhookN8n(webhookN8nUrl)&lt;/div&gt;&lt;div&gt;+ configurarNotificaciones(notificacionesBaseUrl)&lt;/div&gt;&lt;div&gt;+ publicarInsignia(donante, insignia)&lt;/div&gt;&lt;div&gt;+ ejecutarVerificacionVigenciaMisiones() &lt;i&gt;(job programado)&lt;/i&gt;&lt;/div&gt;&lt;div&gt;+ ejecutarCierreMensualRanking() &lt;i&gt;(job programado)&lt;/i&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="316" width="320" y="164" as="geometry" />
         </mxCell>
         <mxCell id="64" edge="1" parent="1" source="65" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.153;entryY=0.99;entryDx=0;entryDy=0;entryPerimeter=0;" target="114">
           <mxGeometry relative="1" as="geometry">
@@ -202,18 +202,18 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="65" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" value="Donante" vertex="1">
-          <mxGeometry height="176" width="390" x="-30" y="244" as="geometry">
+          <mxGeometry height="200" width="390" x="-30" y="244" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="66" parent="65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- nombre: String&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- solicitudesDonacionHechas: int&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- beneficiariosAyudados: &amp;lt;list&amp;gt; Beneficiario&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- progresoAsociado: ProgresoAsociado&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- historialDonaciones: &amp;lt;list&amp;gt; DatosDonacion&lt;/span&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="66" parent="65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- id: Long&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- nombre: String&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- solicitudesDonacionHechas: int&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- beneficiariosAyudados: &amp;lt;list&amp;gt; Beneficiario&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- progresoAsociado: ProgresoAsociado&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- historialDonaciones: &amp;lt;list&amp;gt; DatosDonacion&lt;/span&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="390" y="26" as="geometry" />
         </mxCell>
         <mxCell id="67" parent="65" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="390" y="106" as="geometry" />
         </mxCell>
-        <mxCell id="68" parent="65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ registrarActividadDonacion(datosDonacion: DatosDonacion): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ verificarVigenciaMisiones()&lt;/div&gt;" vertex="1">
-          <mxGeometry height="62" width="390" y="114" as="geometry" />
+        <mxCell id="68" parent="65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ registrarActividadDonacion(datosDonacion: DatosDonacion): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ verificarVigenciaMisiones()&lt;/div&gt;&lt;div&gt;+ actualizarNombreSiFalta(nombre: String)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="390" y="114" as="geometry" />
         </mxCell>
         <mxCell id="69" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="ProgresoMision&amp;nbsp;" vertex="1">
           <mxGeometry height="293" width="290" x="670" y="774" as="geometry">
@@ -260,7 +260,7 @@
         <mxCell id="81" parent="79" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="190" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="82" parent="79" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="82" parent="79" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;+ crearProgreso(): ProgresoMision&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="190" y="138" as="geometry" />
         </mxCell>
         <mxCell id="83" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Completitud" vertex="1">
@@ -274,7 +274,7 @@
         <mxCell id="85" parent="83" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="310" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="86" parent="83" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="86" parent="83" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;+ crearProgreso(): ProgresoMision&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="310" y="138" as="geometry" />
         </mxCell>
         <mxCell id="87" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Habil Donador" vertex="1">
@@ -288,7 +288,7 @@
         <mxCell id="89" parent="87" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="260" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="90" parent="87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="90" parent="87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;+ crearProgreso(): ProgresoMision&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="260" y="138" as="geometry" />
         </mxCell>
         <mxCell id="91" edge="1" parent="1" source="92" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;endSize=16;startArrow=none;startFill=0;dashed=0;" target="121">
@@ -309,13 +309,13 @@
         <mxCell id="94" parent="92" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="280" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="95" parent="92" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="95" parent="92" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;+ crearProgreso(): ProgresoMision&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="280" y="138" as="geometry" />
         </mxCell>
         <mxCell id="96" edge="1" parent="1" source="97" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="61">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="97" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" value="HistorialRankings" vertex="1">
+        <mxCell id="97" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" value="HistorialRanking" vertex="1">
           <mxGeometry height="262" width="320" x="514" y="9" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
@@ -347,15 +347,18 @@
           <mxGeometry height="8" width="250" y="80" as="geometry" />
         </mxCell>
         <mxCell id="106" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" value="ActividadMensualDonante" vertex="1">
-          <mxGeometry height="138" width="250" x="895" y="44" as="geometry">
+          <mxGeometry height="170" width="250" x="895" y="44" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
         <mxCell id="107" parent="106" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- donanteAsociado: Donante&lt;br&gt;&lt;div&gt;- cantidad: int&lt;/div&gt;" vertex="1">
-          <mxGeometry height="104" width="250" y="26" as="geometry" />
+          <mxGeometry height="64" width="250" y="26" as="geometry" />
         </mxCell>
         <mxCell id="108" parent="106" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="250" y="130" as="geometry" />
+          <mxGeometry height="8" width="250" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="220" parent="106" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ incrementar()&lt;/div&gt;" vertex="1">
+          <mxGeometry height="44" width="250" y="98" as="geometry" />
         </mxCell>
         <mxCell id="109" edge="1" parent="1" source="107" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="97">
           <mxGeometry relative="1" as="geometry" />
@@ -394,8 +397,8 @@
         <mxCell id="119" parent="116" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="230" y="155" as="geometry" />
         </mxCell>
-        <mxCell id="120" parent="116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=1;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;movable=1;resizable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;div&gt;+ agregarCategoria()&lt;/div&gt;&lt;div&gt;+ siguiente&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Categoria( int): Categoria&lt;/span&gt;&lt;/div&gt;&lt;div&gt;+ cantCategorias(): int&lt;/div&gt;" vertex="1">
-          <mxGeometry height="82" width="230" y="163" as="geometry" />
+        <mxCell id="120" parent="116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=1;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;movable=1;resizable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;div&gt;+ agregarCategoria()&lt;/div&gt;&lt;div&gt;+ siguiente&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Categoria( int): Categoria&lt;/span&gt;&lt;/div&gt;&lt;div&gt;+ cantCategorias(): int&lt;/div&gt;&lt;div&gt;+ buscarCategoriaPorNombre(nombre: String): Optional&amp;lt;Categoria&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="100" width="230" y="163" as="geometry" />
         </mxCell>
         <mxCell id="121" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Mision &amp;lt;&amp;lt;Abstract&amp;gt;&amp;gt;" vertex="1">
           <mxGeometry height="200" width="260" x="-910" y="674" as="geometry">
@@ -408,7 +411,7 @@
         <mxCell id="123" parent="121" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="260" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="124" parent="121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="124" parent="121" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;nbsp;+ validarCumplimiento(ProgresoMision): bool&lt;/div&gt;&lt;div&gt;+ crearProgreso(): ProgresoMision &lt;i&gt;(abstract, factory)&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="260" y="138" as="geometry" />
         </mxCell>
         <mxCell id="125" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Categoria" vertex="1">
@@ -470,8 +473,8 @@
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="135" parent="134" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- categoriasObtenidas&amp;lt;list&amp;gt; ProgresoCategoria&lt;div&gt;- gestorAsociado: GestorMisiones&lt;/div&gt;&lt;div&gt;- misionActual: ProgresoMision&lt;/div&gt;" vertex="1">
-          <mxGeometry height="64" width="350" y="26" as="geometry" />
+        <mxCell id="135" parent="134" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- categoriasObtenidas&amp;lt;list&amp;gt; ProgresoCategoria&lt;div&gt;- gestorAsociado: GestorMisiones&lt;/div&gt;&lt;div&gt;- misionActual: ProgresoMision&lt;/div&gt;&lt;div&gt;- indiceMisionActual: int&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="350" y="26" as="geometry" />
         </mxCell>
         <mxCell id="136" parent="134" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="350" y="90" as="geometry" />
@@ -518,7 +521,7 @@
         <mxCell id="144" parent="142" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="220" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="145" parent="142" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;&lt;div&gt;+ evaluarVigencia(fechaReferencia: Fecha)&lt;/div&gt;" vertex="1">
+        <mxCell id="145" parent="142" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;&lt;div&gt;+ evaluarVigencia(fechaReferencia: Fecha)&lt;/div&gt;&lt;div&gt;+ obtenerProgresoActual(): int&lt;/div&gt;&lt;div&gt;+ distanciaRestante(): int&lt;/div&gt;" vertex="1">
           <mxGeometry height="82" width="220" y="138" as="geometry" />
         </mxCell>
         <mxCell id="146" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="ProgresoCompletitud" vertex="1">
@@ -532,7 +535,7 @@
         <mxCell id="148" parent="146" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="230" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="149" parent="146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;" vertex="1">
+        <mxCell id="149" parent="146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;&lt;div&gt;+ obtenerProgresoActual(): int&lt;/div&gt;&lt;div&gt;+ distanciaRestante(): int&lt;/div&gt;" vertex="1">
           <mxGeometry height="82" width="230" y="138" as="geometry" />
         </mxCell>
         <mxCell id="150" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="ProgresoHabilDonador" vertex="1">
@@ -546,7 +549,7 @@
         <mxCell id="152" parent="150" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="190" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="153" parent="150" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;" vertex="1">
+        <mxCell id="153" parent="150" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;&lt;div&gt;+ obtenerProgresoActual(): int&lt;/div&gt;&lt;div&gt;+ distanciaRestante(): int&lt;/div&gt;" vertex="1">
           <mxGeometry height="82" width="190" y="138" as="geometry" />
         </mxCell>
         <mxCell id="154" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="ProgresoDonacionesExitosas" vertex="1">
@@ -560,7 +563,7 @@
         <mxCell id="156" parent="154" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="190" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="157" parent="154" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;" vertex="1">
+        <mxCell id="157" parent="154" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ completarMision(): ProgresoInsignia&lt;/div&gt;&lt;div&gt;+ actualizarProgresoMision(datosDonacion: DatosDonacion)&lt;/div&gt;&lt;div&gt;+ asignarInsignia()&lt;/div&gt;&lt;div&gt;+ obtenerProgresoActual(): int&lt;/div&gt;&lt;div&gt;+ distanciaRestante(): int&lt;/div&gt;" vertex="1">
           <mxGeometry height="82" width="190" y="138" as="geometry" />
         </mxCell>
         <mxCell id="158" edge="1" parent="1" source="142" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=0;endSize=16;startArrow=none;startFill=0;dashed=0;entryX=0.005;entryY=0.657;entryDx=0;entryDy=0;entryPerimeter=0;" target="73">
@@ -595,7 +598,7 @@
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="163" parent="162" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- nombre: str&lt;div&gt;- imagen: Imagen&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="163" parent="162" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- nombre: str&lt;div&gt;- imagenUrl: String &lt;i&gt;(no hay clase Imagen, es solo la URL)&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="64" width="160" y="26" as="geometry" />
         </mxCell>
         <mxCell id="164" parent="162" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
@@ -659,13 +662,13 @@
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="176" parent="175" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- nombre: str" vertex="1">
+        <mxCell id="176" parent="175" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- id: Long&lt;div&gt;- nombre: str&lt;/div&gt;" vertex="1">
           <mxGeometry height="44" width="150" y="26" as="geometry" />
         </mxCell>
         <mxCell id="177" parent="175" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="150" y="70" as="geometry" />
         </mxCell>
-        <mxCell id="178" parent="175" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+&amp;nbsp;&lt;/div&gt;" vertex="1">
+        <mxCell id="178" parent="175" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;i&gt;identidad por id (equals/hashCode)&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="62" width="150" y="78" as="geometry" />
         </mxCell>
         <mxCell id="179" edge="1" parent="1" source="175" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.009;entryY=0.838;entryDx=0;entryDy=0;entryPerimeter=0;" target="61">

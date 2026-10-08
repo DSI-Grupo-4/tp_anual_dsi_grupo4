@@ -19,7 +19,7 @@
         <mxCell id="5" parent="3" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="290" y="130" as="geometry" />
         </mxCell>
-        <mxCell id="6" parent="3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ cambiarEstado()" vertex="1">
+        <mxCell id="6" parent="3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ cambiarEstado()&lt;/div&gt;&lt;div&gt;+ puedeCargar(pesoKg, volumenM3, alturaM): boolean&lt;/div&gt;" vertex="1">
           <mxGeometry height="82" width="290" y="138" as="geometry" />
         </mxCell>
         <mxCell id="7" parent="1" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="ENUM EstadoCamion" vertex="1">
@@ -37,18 +37,18 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="11" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="gestorRutas&lt;div&gt;&amp;lt;singleton&amp;gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="234" width="260" x="650" y="66" as="geometry">
+          <mxGeometry height="290" width="260" x="650" y="66" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;-rutas: List&amp;lt;Ruta&amp;gt;&lt;/div&gt;&lt;div&gt;-CamionesDisponibles: List&amp;lt;Camion&amp;gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="12" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-rutas: List&amp;lt;Ruta&amp;gt;&lt;/div&gt;&lt;div&gt;-estrategia: EstrategiaPlanificacion &lt;i&gt;(default PlanificacionPropia)&lt;/i&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;(camionesDisponibles NO es un campo, se recibe como parámetro de planificar())&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="104" width="260" y="40" as="geometry" />
         </mxCell>
         <mxCell id="13" parent="11" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="260" y="144" as="geometry" />
         </mxCell>
-        <mxCell id="14" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=1;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;movable=1;resizable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;br&gt;&lt;div&gt;+ cambiarEstado(): void&lt;/div&gt;&lt;div&gt;+ procesarRuta(): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="82" width="260" y="152" as="geometry" />
+        <mxCell id="14" parent="11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=1;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;movable=1;resizable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;br&gt;&lt;div&gt;+ setEstrategia(estrategia: EstrategiaPlanificacion): void&lt;/div&gt;&lt;div&gt;+ planificar(entregasPendientes, camionesDisponibles): List&amp;lt;Ruta&amp;gt;&lt;/div&gt;&lt;div&gt;+ getRutas(): List&amp;lt;Ruta&amp;gt;&lt;/div&gt;&lt;div&gt;+ buscarPorId(idRuta): Ruta&lt;/div&gt;&lt;div&gt;+ donacionesNoEntregadas(): List&amp;lt;Entrega&amp;gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;(cambiarEstado()/procesarRuta() del boceto original no se implementaron — las transiciones de estado viven en Ruta/Entrega/Camion directamente, sin caller real detrás de esos dos nombres)&lt;/i&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="138" width="260" y="152" as="geometry" />
         </mxCell>
         <mxCell id="15" parent="1" style="swimlane;fontStyle=0;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="ENUM EstadoPlanificacion" vertex="1">
           <mxGeometry height="116" width="180" x="560" y="-126" as="geometry">
@@ -69,7 +69,7 @@
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="20" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-idRuta: Int&lt;/div&gt;&lt;div&gt;-camionAsociado: Camion&lt;/div&gt;&lt;div&gt;-choferAsociado: Chofer&lt;/div&gt;&lt;div&gt;-fecha: Fecha&lt;/div&gt;&lt;div&gt;-paradas: List&amp;lt;Parada&amp;gt;&lt;/div&gt;&lt;div&gt;-estadoRuta: EstadoRuta&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="20" parent="19" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-idRuta: Int&lt;/div&gt;&lt;div&gt;-camionAsociado: Camion&lt;/div&gt;&lt;div&gt;-chofer: Chofer&lt;/div&gt;&lt;div&gt;-fecha: Fecha&lt;/div&gt;&lt;div&gt;-paradas: List&amp;lt;Parada&amp;gt;&lt;/div&gt;&lt;div&gt;-estadoRuta: EstadoRuta&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="104" width="260" y="26" as="geometry" />
         </mxCell>
         <mxCell id="21" parent="19" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
