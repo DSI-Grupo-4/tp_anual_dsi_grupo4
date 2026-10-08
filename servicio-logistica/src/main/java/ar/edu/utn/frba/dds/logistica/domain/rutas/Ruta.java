@@ -27,6 +27,10 @@ public class Ruta {
     }
 
     public void iniciarRuta() {
+        if (this.estadoRuta != EstadoRuta.PLANIFICADA) {
+            throw new IllegalStateException(
+                    "La ruta " + idRuta + " no puede iniciarse estando en estado " + estadoRuta);
+        }
         this.estadoRuta = EstadoRuta.INICIADA;
         this.camionAsociado.cambiarEstado(EstadoCamion.EN_RUTA);
         paradas.stream()

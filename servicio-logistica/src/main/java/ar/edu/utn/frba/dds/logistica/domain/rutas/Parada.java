@@ -26,6 +26,9 @@ public class Parada {
     }
 
     public void marcarNoRecibida(String justificacion) {
+        if (justificacion == null || justificacion.isBlank()) {
+            throw new IllegalArgumentException("La justificación de la entrega no recibida es obligatoria");
+        }
         entregas.forEach(entrega -> entrega.marcarNoRecibida(justificacion));
     }
 }

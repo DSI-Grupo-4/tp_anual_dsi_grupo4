@@ -23,7 +23,7 @@ public class EntregaRepository {
 
     public Entrega buscarPorId(Integer id) {
         Entrega e = entregas.get(id);
-        if (e == null) throw new RuntimeException("No existe la entrega con id: " + id);
+        if (e == null) throw new NoSuchElementException("No existe la entrega con id: " + id);
         return e;
     }
 

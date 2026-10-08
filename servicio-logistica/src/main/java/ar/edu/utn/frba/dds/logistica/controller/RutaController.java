@@ -73,7 +73,7 @@ public class RutaController {
                     description = "No se encontró una ruta con el ID indicado"
             ),
             @ApiResponse(
-                    responseCode = "400",
+                    responseCode = "409",
                     description = "La ruta no puede ser iniciada en su estado actual"
             )
     })

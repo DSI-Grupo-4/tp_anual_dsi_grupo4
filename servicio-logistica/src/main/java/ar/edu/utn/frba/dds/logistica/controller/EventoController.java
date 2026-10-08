@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/eventos")
@@ -53,9 +54,10 @@ public class EventoController {
     })
     @PostMapping("/{id}/marcar-publicado")
     public void marcarPublicado(@PathVariable java.util.UUID id) {
-        gestorEventos.getEventos().stream()
+        EventoLogistico evento = gestorEventos.getEventos().stream()
                 .filter(e -> e.getIdEvento().equals(id))
                 .findFirst()
-                .ifPresent(EventoLogistico::marcarPublicado);
+                .orElseThrow(() -> new NoSuchElementException("No existe el evento con id: " + id));
+        evento.marcarPublicado();
     }
 }

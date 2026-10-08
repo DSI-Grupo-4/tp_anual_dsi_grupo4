@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class GestorRutas {
 
@@ -28,7 +29,7 @@ public class GestorRutas {
         return rutas.stream()
                 .filter(r -> r.getIdRuta().equals(idRuta))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No existe la ruta con id: " + idRuta));
+                .orElseThrow(() -> new NoSuchElementException("No existe la ruta con id: " + idRuta));
     }
 
     public List<Entrega> donacionesNoEntregadas() {

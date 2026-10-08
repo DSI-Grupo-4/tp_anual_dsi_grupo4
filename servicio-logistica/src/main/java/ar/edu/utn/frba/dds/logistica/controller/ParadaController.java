@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
+import java.util.NoSuchElementException;
+
 @RestController
 @RequestMapping("/api/rutas/{idRuta}/paradas/{idParada}")
 public class ParadaController {
@@ -79,6 +81,6 @@ public class ParadaController {
         return ruta.getParadas().stream()
                 .filter(p -> p.getIdParada().equals(idParada))
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No existe la parada con id: " + idParada));
+                .orElseThrow(() -> new NoSuchElementException("No existe la parada con id: " + idParada));
     }
 }
