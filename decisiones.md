@@ -126,3 +126,26 @@
   - B) No tocar nada hasta resolver el cableado completo Donaciones→Incentivos de actividad de donación.
 - **Decisión tomada:** Opción A. `Donante.actualizarContactoSiFalta(medio, contacto)` (mismo patrón que `actualizarNombreSiFalta`), `DatosDonacionDTO` gana `donanteMedioContacto`/`donanteContacto` opcionales, `NotificacionesClient` nuevo (RabbitMQ real) reemplaza al `RestTemplate`, pero sigue sin poder notificar a nadie hoy porque nada popula el contacto todavía — logueado como advertencia, no como error, mismo comportamiento que D-007 en Donaciones.
 - **Definida por:** usuario (mismo criterio que D-008/D-009, dentro de la Fase 1 de modelado)
+
+## [D-011] Prohibición de referenciar requerimientos/notaciones internas desde comentarios del código de proyecto
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Todos (Donaciones, Logística, Incentivos, Notificaciones)
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** El código de este repo es un trabajo grupal. El usuario señaló que el repo de contexto de trabajo con agentes (`decisiones.md`, `plan-ataque-entrega4.md`, `progress/refactor.md`, `skills/`) es suyo y de los agentes que despliega para la tarea, no del resto del equipo. Hasta hoy varios comentarios en el código de producción referenciaban directamente notaciones internas (`D-00x`, `RF-x`, "Entrega N", "ver decisiones.md", "ver skills/...", "consigna pág. N", nombres de test con "DelPdf") que no tienen sentido fuera de ese contexto y mezclan el proceso de trabajo con IA con el código compartido del equipo.
+- **Fuentes revisadas:** código del proyecto (`grep` de `D-00x`/`RF-x`/`Entrega N`/`decisiones.md`/`skills/`/`consigna` en todos los `*.java`, ~20 ocurrencias encontradas).
+- **Opciones consideradas:** no hubo alternativas de diseño — es una regla de higiene de comentarios, no una decisión de arquitectura.
+- **Decisión tomada:** los comentarios del código de producción y de tests explican el *por qué* en términos funcionales/de dominio (ej. "quién hizo la donación — antes no se registraba en ningún lado"), sin citar el identificador de la decisión, el número de requerimiento ni el número de entrega. Esas referencias viven solo en `decisiones.md`/`plan-ataque-entrega4.md`/`progress/refactor.md` (repo de contexto del usuario), nunca en el código fuente del proyecto. Regla aplicada retroactivamente a las ~20 ocurrencias existentes y vigente para todo trabajo futuro.
+- **Definida por:** usuario
+
+## [D-012] Arquitectura de persistencia decidida y registrada de antemano, implementación diferida hasta tener el DER
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Todos (Donaciones, Logística, Incentivos, Notificaciones)
+- **Entrega vigente al momento:** Entrega 4 (Tier 1 del plan de ataque — ver `plan-ataque-entrega4.md`)
+- **Contexto:** El usuario definió que la persistencia es intencionalmente lo último que se toca (después de la Fase 1 de modelado, la Fase 2 de endpoints y la Fase 3 de documentación/pruebas de API), porque hoy cada servicio maneja su estado de un modo distinto (todo en memoria vía singletons/listas) y prefiere estabilizar antes modelado y comunicación. Aun así quiso dejar registrada de antemano la decisión tecnológica, para no tener que redecidirla cuando llegue el momento, y fue explícito en que no es "hacer consultas a pulmón" sino agregar una capa de implementación real con un ORM.
+- **Fuentes revisadas:** `decisiones.md` (D-001, que ya fija MySQL + un esquema por servicio para la organización de `docker-compose`, pero no la tecnología de acceso a datos) / `pom.xml` de `servicio-donaciones` (ya tiene `spring-boot-starter-data-jpa` + H2 sin usar, scaffolding muerto) / los 4 servicios ya corren sobre Spring Boot.
+- **Opciones consideradas:**
+  - A) Spring Data JPA en los 4 servicios, contra MySQL real en contenedor Docker (+ contenedor de MySQL Workbench para administración visual).
+  - B) Persistencia distinta por servicio según conveniencia (ej. H2 en memoria para algunos, Mongo para otros).
+  - C) Un ORM distinto a JPA (ej. jOOQ, MyBatis) sobre el mismo MySQL.
+- **Decisión tomada:** Opción A. Spring Data JPA en los 4 servicios — es la opción más directa dado que todo el stack ya es Spring Boot — contra una única instancia de MySQL real (no H2) levantada en contenedor Docker, con un esquema por servicio (consistente con D-001). Se suma un contenedor de MySQL Workbench para poder administrar/inspeccionar la base visualmente durante el desarrollo. **Condición explícita del usuario, que bloquea esta decisión hasta nuevo aviso:** no se implementa nada de esto (ni entidades `@Entity`, ni el `docker-compose` de MySQL, ni Workbench) hasta tener resuelto el DER necesario por servicio — ver Tier 4 #10 de `plan-ataque-entrega4.md`, hoy `PENDIENTE`, que pasa a ser prerrequisito explícito de este ítem. Mapear entidades JPA sobre un dominio todavía no decidido en sus cardinalidades/claves arriesga repetir el mismo tipo de hueco que ya costó D-007/D-008.
+- **Definida por:** usuario
