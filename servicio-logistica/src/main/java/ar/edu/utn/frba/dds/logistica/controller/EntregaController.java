@@ -38,4 +38,29 @@ public class EntregaController {
         var entrega = entregaRepository.buscarPorId(id);
         return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());
     }
+
+    @Operation(
+            summary = "Reingresar una entrega NO_RECIBIDA al depósito",
+            description = "La persona administradora revisó el caso y decide que la donación vuelve al depósito: la entrega pasa a PENDIENTE para que la próxima planificación la vuelva a tomar."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Entrega reingresada correctamente, queda en estado PENDIENTE"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No se encontró una entrega con el ID indicado"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "La entrega no está en estado NO_RECIBIDA"
+            )
+    })
+    @PostMapping("/{id}/reingresar")
+    public EntregaDTO reingresar(@PathVariable Integer id) {
+        var entrega = entregaRepository.buscarPorId(id);
+        entrega.reingresarADeposito();
+        return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());
+    }
 }

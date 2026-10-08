@@ -2,10 +2,40 @@ package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DonanteTest {
+
+    @Test
+    void unDonanteRecienCreadoNoDebeNotificarsePorInactividad() {
+        Donante donante = new Donante(1L, new PersonaHumana("Ana", "Perez", 30, "1", null));
+
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+    }
+
+    @Test
+    void unDonanteConMasDe20DiasSinActividadDebeNotificarse() {
+        Donante donante = new Donante(1L, new PersonaHumana("Ana", "Perez", 30, "1", null));
+        donante.setUltimaActividad(LocalDate.now().minusDays(21));
+
+        assertThat(donante.debeNotificarsePorInactividad(20)).isTrue();
+    }
+
+    @Test
+    void unaVezNotificadoNoVuelveANotificarseHastaQueHayaActividadNueva() {
+        Donante donante = new Donante(1L, new PersonaHumana("Ana", "Perez", 30, "1", null));
+        donante.setUltimaActividad(LocalDate.now().minusDays(21));
+
+        donante.marcarNotificadoPorInactividad();
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+
+        donante.registrarActividad();
+        donante.setUltimaActividad(LocalDate.now().minusDays(21));
+        assertThat(donante.debeNotificarsePorInactividad(20)).isTrue();
+    }
 
     @Test
     void unDonanteJuridicoAdmiteUnUnicoRepresentante() {

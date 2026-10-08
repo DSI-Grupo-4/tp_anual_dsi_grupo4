@@ -15,16 +15,38 @@ public class Donante {
     private Persona persona;
     private List<Donacion> donaciones;
     private LocalDate ultimaActividad;
+    // Evita re-notificar todos los días una vez cruzado el umbral -- se
+    // resetea apenas hay actividad nueva, así cada episodio de inactividad
+    // se notifica una sola vez (ver InactividadScheduler).
+    private boolean notificadoPorInactividad;
 
     public Donante(Long id, Persona persona) {
         this.id = id;
         this.persona = persona;
-        this.ultimaActividad = getUltimaActividad();
+        this.ultimaActividad = LocalDate.now();
         this.donaciones = new ArrayList<>();
     }
 
     public Persona getPersona() {
         return persona;
+    }
+
+    // Registrarse ya cuenta como interacción con la plataforma; cada
+    // donación nueva también la renueva (ver DonacionService.crear()).
+    public void registrarActividad() {
+        this.ultimaActividad = LocalDate.now();
+        this.notificadoPorInactividad = false;
+    }
+
+    public boolean debeNotificarsePorInactividad(int dias) {
+        if (notificadoPorInactividad || ultimaActividad == null) {
+            return false;
+        }
+        return !ultimaActividad.isAfter(LocalDate.now().minusDays(dias));
+    }
+
+    public void marcarNotificadoPorInactividad() {
+        this.notificadoPorInactividad = true;
     }
 
     public void agregarDonacion(Donacion donacion) {

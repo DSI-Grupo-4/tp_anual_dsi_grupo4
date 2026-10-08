@@ -54,6 +54,7 @@ public class DonacionService {
      */
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
         Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
+        donante.registrarActividad();
 
         SolicitudDonacion solicitud = new SolicitudDonacion(dto.getDescripcion());
         solicitud.setDonante(donante);

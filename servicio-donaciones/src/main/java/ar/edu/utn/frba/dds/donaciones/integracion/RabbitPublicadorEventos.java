@@ -37,20 +37,56 @@ public class RabbitPublicadorEventos implements PublicadorEventosPort {
 
     @Override
     public void publicar(String tipoEvento, Object payload) {
-        if (!(payload instanceof Donacion donacion)) {
-            logger.warn("No se pudo publicar el evento '{}': el payload no es una Donacion ({}).",
-                    tipoEvento, payload == null ? "null" : payload.getClass());
+        if (payload instanceof Donacion donacion) {
+            boolean notificoAlguna = false;
+            notificoAlguna |= notificarEntidad(tipoEvento, donacion);
+            notificoAlguna |= notificarDonante(tipoEvento, donacion);
+            if (!notificoAlguna) {
+                logger.info("Evento '{}' de la donación {} sin ningún destinatario con contacto resolvible.",
+                        tipoEvento, donacion.getId());
+            }
             return;
         }
 
-        boolean notificoAlguna = false;
-        notificoAlguna |= notificarEntidad(tipoEvento, donacion);
-        notificoAlguna |= notificarDonante(tipoEvento, donacion);
-
-        if (!notificoAlguna) {
-            logger.info("Evento '{}' de la donación {} sin ningún destinatario con contacto resolvible.",
-                    tipoEvento, donacion.getId());
+        if (payload instanceof Donante donante) {
+            notificarDonanteDirecto(tipoEvento, donante);
+            return;
         }
+
+        logger.warn("No se pudo publicar el evento '{}': el payload no es una Donacion ni un Donante ({}).",
+                tipoEvento, payload == null ? "null" : payload.getClass());
+    }
+
+    private void notificarDonanteDirecto(String tipoEvento, Donante donante) {
+        if (donante.getPersona() == null) {
+            return;
+        }
+        Optional<MedioContacto> medio = donante.getPersona().medioPreferido();
+        if (medio.isEmpty()) {
+            logger.warn("El donante {} no tiene medio de contacto preferido"
+                    + " — no se pudo notificar el evento '{}'.", donante.getId(), tipoEvento);
+            return;
+        }
+        NotificacionRequest mensaje = new NotificacionRequest(
+                mensajeParaEventoDeDonante(tipoEvento),
+                mapearMedio(medio.get().getTipo()),
+                medio.get().getValor(),
+                "donaciones",
+                tipoEvento,
+                UUID.randomUUID().toString());
+
+        rabbitTemplate.convertAndSend(
+                RabbitNotificacionesConfig.EXCHANGE,
+                RabbitNotificacionesConfig.ROUTING_KEY,
+                mensaje);
+    }
+
+    private String mensajeParaEventoDeDonante(String tipoEvento) {
+        return switch (tipoEvento) {
+            case "INACTIVIDAD_20_DIAS" ->
+                    "¡Te extrañamos! Hace más de 20 días que no registrás actividad en DonaTrack. ¿Tenés algo para donar?";
+            default -> "Actualización de tu cuenta en DonaTrack (%s)".formatted(tipoEvento);
+        };
     }
 
     private boolean notificarEntidad(String tipoEvento, Donacion donacion) {

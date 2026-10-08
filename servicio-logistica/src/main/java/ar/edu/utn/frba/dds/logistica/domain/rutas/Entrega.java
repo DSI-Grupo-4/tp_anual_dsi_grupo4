@@ -57,4 +57,18 @@ public class Entrega {
         this.justificacionFallo = justificacion;
         cambiarEstado(EstadoEntrega.NO_RECIBIDA);
     }
+
+    /**
+     * La persona administradora revisó una entrega NO_RECIBIDA y decidió que
+     * la donación vuelve al depósito para replanificarse -- la deja
+     * disponible para que el próximo PlanificadorService.planificarRutasDelDia()
+     * la vuelva a tomar (filtra por EstadoEntrega.PENDIENTE).
+     */
+    public void reingresarADeposito() {
+        if (estadoEntrega != EstadoEntrega.NO_RECIBIDA) {
+            throw new IllegalStateException(
+                    "La entrega " + idEntrega + " no puede reingresar al depósito estando en estado " + estadoEntrega);
+        }
+        cambiarEstado(EstadoEntrega.PENDIENTE);
+    }
 }

@@ -49,6 +49,29 @@ class GestorDonantesTest {
     }
 
     @Test
+    void laImportacionMasivaActualizaAlDonanteExistenteSiElEmailYaEstaRegistrado() {
+        String csv = "TipoPersona,TipoDoc,Documento,Nombre,Email,Telefono\n"
+                + "HUMANA,DNI,11111111,Ana Viejo,ana@mail.com,000\n";
+        ImportadorCSV importador = new ImportadorCSV("csv-test");
+        importador.importar(new ByteArrayInputStream(csv.getBytes(StandardCharsets.UTF_8)));
+        gestor.agregarImportador(importador);
+        Donante primeraImportacion = gestor.importarDonantes("csv-test").get(0);
+
+        // Reimportar el mismo email, con datos actualizados -- no debe duplicar.
+        String csvActualizado = "TipoPersona,TipoDoc,Documento,Nombre,Email,Telefono\n"
+                + "HUMANA,DNI,11111111,Ana Nueva,ana@mail.com,999\n";
+        ImportadorCSV importador2 = new ImportadorCSV("csv-test-2");
+        importador2.importar(new ByteArrayInputStream(csvActualizado.getBytes(StandardCharsets.UTF_8)));
+        gestor.agregarImportador(importador2);
+        Donante segundaImportacion = gestor.importarDonantes("csv-test-2").get(0);
+
+        assertThat(gestor.getDonantesRegistrados()).hasSize(1);
+        assertThat(segundaImportacion.getId()).isEqualTo(primeraImportacion.getId());
+        PersonaHumana actualizada = (PersonaHumana) segundaImportacion.getPersona();
+        assertThat(actualizada.getNombre()).isEqualTo("Ana");
+    }
+
+    @Test
     void buscarPorIdLanzaExcepcionSiNoExiste() {
         assertThatThrownBy(() -> gestor.buscarPorId(404L))
                 .isInstanceOf(NoSuchElementException.class);

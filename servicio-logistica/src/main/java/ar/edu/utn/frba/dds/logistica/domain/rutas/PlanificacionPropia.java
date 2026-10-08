@@ -35,6 +35,13 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
         List<Parada> paradasCamionActual = new ArrayList<>();
         int idRuta = idRutaInicial;
         int idParada = 1;
+        // Carga ya comprometida en camionActual por paradas anteriores -- sin esto,
+        // cada parada se validaba contra la capacidad TOTAL del camión en vez de la
+        // RESTANTE, y un camión podía terminar sobrecargado por la suma de varias
+        // paradas que individualmente entraban (bug confirmado, Tier 3 #9b).
+        int pesoAcumulado = 0;
+        int volumenAcumulado = 0;
+        int alturaMaxAcumulada = 0;
 
         for (Map.Entry<Integer, List<Entrega>> grupo : entregasPorEntidad.entrySet()) {
             List<Entrega> entregasDeLaParada = grupo.getValue();
@@ -43,14 +50,11 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
             int volumenTotal = entregasDeLaParada.stream().mapToInt(Entrega::getVolumenM3).sum();
             int alturaMax = entregasDeLaParada.stream().mapToInt(Entrega::getAlturaM).max().orElse(0);
 
-            // Si no entra en el camión actual, cerramos su ruta (si tiene paradas) y
-            // probamos con el siguiente. Antes esto solo se chequeaba cuando el camión
-            // ya tenía paradas asignadas (!paradasCamionActual.isEmpty()), así que la
-            // primera parada de un camión que de entrada no podía cargarla pasaba sin
-            // validar -- bug confirmado con un caso real (99.999kg en un camión de
-            // 1200kg). Ahora se valida siempre, probando camiones siguientes hasta
-            // encontrar uno que pueda, o se deja la parada sin planificar si ninguno puede.
-            while (camionActual != null && !camionActual.puedeCargar(pesoTotal, volumenTotal, alturaMax)) {
+            // Si no entra en el camión actual (carga ya acumulada + esta parada),
+            // cerramos su ruta (si tiene paradas) y probamos con el siguiente, que
+            // arranca con los acumuladores en cero.
+            while (camionActual != null && !camionActual.puedeCargar(
+                    pesoAcumulado + pesoTotal, volumenAcumulado + volumenTotal, Math.max(alturaMaxAcumulada, alturaMax))) {
                 if (!paradasCamionActual.isEmpty()) {
                     rutas.add(new Ruta(idRuta++, camionActual, choferActual, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
                     paradasCamionActual = new ArrayList<>();
@@ -58,6 +62,9 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
                 camionActual = camiones.hasNext() ? camiones.next() : null;
                 choferActual = choferesDisponibles.isEmpty() ? null
                         : choferesDisponibles.get(siguienteChoferIdx++ % choferesDisponibles.size());
+                pesoAcumulado = 0;
+                volumenAcumulado = 0;
+                alturaMaxAcumulada = 0;
             }
 
             if (camionActual == null) {
@@ -70,6 +77,9 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
                     entregasDeLaParada.get(0).getDireccionDestino(), entregasDeLaParada);
             entregasDeLaParada.forEach(e -> e.asignarARuta(camionParaEstaParada));
             paradasCamionActual.add(parada);
+            pesoAcumulado += pesoTotal;
+            volumenAcumulado += volumenTotal;
+            alturaMaxAcumulada = Math.max(alturaMaxAcumulada, alturaMax);
         }
 
         if (camionActual != null && !paradasCamionActual.isEmpty()) {
