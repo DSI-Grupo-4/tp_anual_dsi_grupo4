@@ -1,3 +1,5 @@
 target/
 .idea/
 *.iml
+# instalado por donatrack-agent-toolkit — no versionar
+.claude/skills
