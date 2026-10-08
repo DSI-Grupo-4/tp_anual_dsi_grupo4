@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-// In-memory por ahora; en Entrega 4 esto se reemplaza por un repo con persistencia real.
+// In-memory por ahora; esto se reemplazará por un repo con persistencia real.
 @Component
 public class EntregaRepository {
 

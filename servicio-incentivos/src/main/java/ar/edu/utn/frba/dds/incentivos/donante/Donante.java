@@ -15,11 +15,10 @@ public class Donante {
 
     private final Long id;
     private String nombre;
-    // D-010: sin fuente real todavía -- nada en el sistema hoy le pasa a
-    // Incentivos el contacto del donante (el endpoint de actividad-donacion
-    // que podría traerlo ni siquiera está cableado desde Donaciones). Mismo
-    // tipo de límite que D-007/D-008 en Donaciones: se deja la plumbing
-    // lista, no se inventa un contacto. Ver decisiones.md.
+    // Sin fuente real todavía -- nada en el sistema hoy le pasa a Incentivos
+    // el contacto del donante (el endpoint de actividad-donacion que podría
+    // traerlo ni siquiera está cableado desde Donaciones). Se deja la
+    // plumbing lista, no se inventa un contacto.
     private String medioContactoPreferido;
     private String contactoPreferido;
     private int solicitudesDonacionHechas;

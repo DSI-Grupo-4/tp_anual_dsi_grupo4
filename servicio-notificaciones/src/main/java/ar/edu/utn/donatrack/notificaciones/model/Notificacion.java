@@ -21,8 +21,7 @@ public class Notificacion {
     private EstadoNotificacion estado;
     private String servicioOrigen;
     private String fechaCreacion;
-    // D-009: tipoEvento (trazabilidad) + eventoId (idempotencia en reintentos
-    // de la cola) -- ver decisiones.md y skills/donatrack-async-notifications.
+    // tipoEvento (trazabilidad) + eventoId (idempotencia en reintentos de la cola).
     private String tipoEvento;
     private String eventoId;
 

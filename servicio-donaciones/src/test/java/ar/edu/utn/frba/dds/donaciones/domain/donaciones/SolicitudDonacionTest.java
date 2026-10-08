@@ -41,8 +41,8 @@ class SolicitudDonacionTest {
 
     @Test
     void perecederosConVencimientosDistintosQuedanEnDonacionesSeparadas() {
-        // Consigna (Entrega 1): "el sistema podrá generar donaciones
-        // separadas cuando existan diferencias en la fecha de vencimiento".
+        // El sistema debe generar donaciones separadas cuando existan
+        // diferencias en la fecha de vencimiento.
         SolicitudDonacion solicitud = new SolicitudDonacion("Donacion planta industrial");
         Subcategoria fideos = new Subcategoria("fideos secos");
         AtributoDefinicion fechaVencimiento = new AtributoDefinicion("fechaVencimiento", TipoDato.FECHA, true);

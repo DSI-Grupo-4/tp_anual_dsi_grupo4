@@ -9,9 +9,9 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * Publica hacia la cola de Notificaciones vía RabbitMQ (RF-3). Reemplaza al
- * RestTemplate síncrono que tenía Consultor, que violaba la restricción de
- * Entrega 4 de que la integración con Notificaciones sea asíncrona.
+ * Publica hacia la cola de Notificaciones vía RabbitMQ. Reemplaza al
+ * RestTemplate síncrono que tenía Consultor, para que la integración con
+ * Notificaciones sea asíncrona.
  *
  * Consultor es un singleton manual (no un bean de Spring), así que esta
  * clase se le inyecta al boot vía NotificacionesClienteConfigurer
@@ -32,8 +32,8 @@ public class NotificacionesClient {
     /**
      * @param medio    EMAIL | SMS | WHATSAPP, tal como lo espera
      *                 servicio-notificaciones. Si es null (el Donante no
-     *                 tiene contacto configurado todavía, ver decisiones.md),
-     *                 no se publica nada -- no se inventa un contacto.
+     *                 tiene contacto configurado todavía), no se publica
+     *                 nada -- no se inventa un contacto.
      */
     public void enviar(String tipoEvento, String mensaje, String medio, String contacto) {
         if (medio == null || contacto == null || contacto.isBlank()) {

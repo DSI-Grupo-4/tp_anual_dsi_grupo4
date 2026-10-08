@@ -21,6 +21,6 @@ public class ItemDonadoDTO {
     private Integer volumenM3;
     private Integer alturaM;
     // Valores de atributos dinámicos de la subcategoría (ej.
-    // "fechaVencimiento" -> "2027-01-01", "estadoUso" -> "USADO"). Ver D-002.
+    // "fechaVencimiento" -> "2027-01-01", "estadoUso" -> "USADO").
     private Map<String, String> valoresAtributos;
 }

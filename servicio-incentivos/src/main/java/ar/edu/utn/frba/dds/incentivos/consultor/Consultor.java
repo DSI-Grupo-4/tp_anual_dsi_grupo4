@@ -42,10 +42,10 @@ public class Consultor {
     private final Set<Beneficiario> beneficiarios;
     private final RestTemplate restTemplate;
     private String webhookN8nUrl;
-    // D-009/D-010: reemplaza a notificacionesBaseUrl + RestTemplate síncrono
-    // (violaba la restricción de Entrega 4 de integración asíncrona con
-    // Notificaciones). Se inyecta al boot vía NotificacionesClienteConfigurer,
-    // mismo patrón que webhookN8nUrl con WebhookN8nConfigurer.
+    // Reemplaza a notificacionesBaseUrl + RestTemplate síncrono (integración
+    // ahora asíncrona vía cola con Notificaciones). Se inyecta al boot vía
+    // NotificacionesConfigurer, mismo patrón que webhookN8nUrl con
+    // WebhookN8nConfigurer.
     private ar.edu.utn.frba.dds.incentivos.client.NotificacionesClient notificacionesClient;
 
     private Consultor() {

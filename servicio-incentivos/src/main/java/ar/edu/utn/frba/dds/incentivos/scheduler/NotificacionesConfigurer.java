@@ -6,8 +6,8 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-// D-009/D-010: Consultor es un singleton manual, no un bean de Spring --
-// este ApplicationRunner le inyecta al boot el NotificacionesClient real
+// Consultor es un singleton manual, no un bean de Spring -- este
+// ApplicationRunner le inyecta al boot el NotificacionesClient real
 // (RabbitMQ), reemplazando la URL que usaba el RestTemplate síncrono viejo.
 @Component
 public class NotificacionesConfigurer implements ApplicationRunner {

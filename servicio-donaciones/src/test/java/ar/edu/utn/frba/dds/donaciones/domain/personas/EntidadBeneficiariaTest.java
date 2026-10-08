@@ -8,8 +8,8 @@ class EntidadBeneficiariaTest {
 
     @Test
     void unaEntidadBeneficiariaAdmiteMasDeUnRepresentanteSinLimite() {
-        // D-004: a diferencia de Donante (máx. 1), EntidadBeneficiaria no
-        // tiene tope de representantes.
+        // A diferencia de Donante (máx. 1), EntidadBeneficiaria no tiene
+        // tope de representantes.
         PersonaJuridica persona = new PersonaJuridica("Comedor Sonrisas", TipoOrganizacion.ONG, null, null);
         EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L, persona, "Comedor infantil");
 

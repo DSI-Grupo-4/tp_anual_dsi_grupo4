@@ -6,7 +6,7 @@ import java.util.List;
 public class GestorRutas {
 
     private final List<Ruta> rutas = new ArrayList<>();
-    private EstrategiaPlanificacion estrategia = new PlanificacionPropia(); // default; el broker (Entrega 4) podrá cambiarla
+    private EstrategiaPlanificacion estrategia = new PlanificacionPropia(); // default; el broker podrá cambiarla
 
     public void setEstrategia(EstrategiaPlanificacion estrategia) {
         this.estrategia = estrategia;

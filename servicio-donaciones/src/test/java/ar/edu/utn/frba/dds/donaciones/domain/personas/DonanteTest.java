@@ -20,7 +20,7 @@ class DonanteTest {
 
     @Test
     void unDonanteJuridicoRechazaUnSegundoRepresentante() {
-        // D-004: cardinalidad 1 para donante (a diferencia de EntidadBeneficiaria).
+        // Cardinalidad 1 para donante (a diferencia de EntidadBeneficiaria).
         PersonaJuridica persona = new PersonaJuridica("Arcos Plateados SA", TipoOrganizacion.EMPRESA, null, null);
         Donante donante = new Donante(1L, persona);
         donante.agregarRepresentante(new PersonaHumana("Juan", "Perez", 40, "12345678", null));

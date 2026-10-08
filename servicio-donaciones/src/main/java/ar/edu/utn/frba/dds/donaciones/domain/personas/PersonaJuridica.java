@@ -16,7 +16,7 @@ public class PersonaJuridica extends Persona {
     // Lista siempre (nunca un único representante fijo): la cardinalidad
     // real depende del rol que cumpla esta persona jurídica (1 si actúa
     // como donante, N si actúa como entidad beneficiaria) y se valida en
-    // Donante/EntidadBeneficiaria, que son quienes conocen ese rol. Ver D-004.
+    // Donante/EntidadBeneficiaria, que son quienes conocen ese rol.
     private List<PersonaHumana> representantes;
 
     public PersonaJuridica(

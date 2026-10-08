@@ -14,7 +14,7 @@ public class Deposito {
     private List<ItemDonado> items;
     // Categorías/subcategorías conocidas por el depósito: permite dar de alta
     // categorías nuevas (con sus atributos dinámicos) sin recompilar el
-    // sistema, según la nota de diseño original del DDC (D-002).
+    // sistema, según la nota de diseño original del DDC.
     private List<Categoria> categorias;
 
     public Deposito() {

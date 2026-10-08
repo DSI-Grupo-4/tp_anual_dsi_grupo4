@@ -20,7 +20,7 @@ public class ItemDonado{
     private Integer volumenM3;
     private Integer alturaM;
     // Valores concretos de los atributos dinámicos definidos por la
-    // Subcategoria (ej. fechaVencimiento, estadoUso). Ver D-002.
+    // Subcategoria (ej. fechaVencimiento, estadoUso).
     private List<AtributoValor> valoresAtributos;
 
     public ItemDonado(

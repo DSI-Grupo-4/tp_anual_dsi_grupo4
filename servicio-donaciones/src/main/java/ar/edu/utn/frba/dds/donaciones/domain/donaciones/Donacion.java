@@ -39,8 +39,7 @@ public class Donacion {
     private List<CambioEstado> historialEstados;
     private EntidadBeneficiaria entidadBeneficiaria;
     private List<EntidadBeneficiaria> candidatas;
-    // D-008 (resuelve D-007): quién hizo la donación — antes no se registraba
-    // en ningún lado, pese a ser requerimiento explícito de Entrega 1.
+    // Quién hizo la donación — antes no se registraba en ningún lado.
     private Donante donante;
 
     public Donacion(Long id, ItemDonado itemDonado, Integer cantidadAsignada) {

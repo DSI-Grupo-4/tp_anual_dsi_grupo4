@@ -16,7 +16,7 @@ class SubcategoriaTest {
 
     @Test
     void agregarAtributoLoSumaALaListaDeAtributosDeLaSubcategoria() {
-        // D-002: la extensibilidad de categorías se resuelve con atributos
+        // La extensibilidad de categorías se resuelve con atributos
         // dinámicos gestionados por Deposito, no con subclases por tipo.
         Subcategoria fideos = new Subcategoria("fideos secos");
         AtributoDefinicion fechaVencimiento = new AtributoDefinicion("fechaVencimiento", TipoDato.FECHA, true);
@@ -42,8 +42,8 @@ class SubcategoriaTest {
 
     @Test
     void laUnidadDeMedidaEsUnaPropiedadDeLaSubcategoriaNoDelItem() {
-        // Antes vivía en ItemDonado; se movió acá porque la consigna
-        // (pág. 12) la describe como propiedad del tipo de bien, no del ítem.
+        // Antes vivía en ItemDonado; se movió acá porque es una propiedad
+        // del tipo de bien, no del ítem individual.
         Subcategoria sillas = new Subcategoria("sillas", new Categoria("mobiliario", null), UnidadMedida.UNIDAD);
 
         assertThat(sillas.getUnidadMedida()).isEqualTo(UnidadMedida.UNIDAD);

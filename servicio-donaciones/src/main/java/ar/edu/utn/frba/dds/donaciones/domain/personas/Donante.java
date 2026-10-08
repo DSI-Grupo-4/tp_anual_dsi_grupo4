@@ -42,7 +42,7 @@ public class Donante {
     /**
      * Una persona jurídica que actúa como donante admite un único
      * representante (a diferencia de una entidad beneficiaria, que admite
-     * varios) — cardinalidad por rol acordada en D-004.
+     * varios) — cardinalidad por rol acordada en el diseño.
      */
     public void agregarRepresentante(PersonaHumana representante) {
         if (!(persona instanceof PersonaJuridica juridica)) {

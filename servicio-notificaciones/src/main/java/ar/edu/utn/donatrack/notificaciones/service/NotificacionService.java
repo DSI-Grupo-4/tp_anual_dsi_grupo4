@@ -18,8 +18,8 @@ public class NotificacionService {
 
     private final NotificadorFactory notificadorFactory;
     private final Map<String, Notificacion> notificacionesPorId = new ConcurrentHashMap<>();
-    // D-009: idempotencia -- un reintento de la cola con el mismo eventoId no
-    // debe volver a despachar la notificación. Mapa separado (no basta con
+    // Idempotencia -- un reintento de la cola con el mismo eventoId no debe
+    // volver a despachar la notificación. Mapa separado (no basta con
     // notificacionesPorId porque el id interno se genera random en cada intento).
     private final Map<String, Notificacion> notificacionesPorEventoId = new ConcurrentHashMap<>();
 

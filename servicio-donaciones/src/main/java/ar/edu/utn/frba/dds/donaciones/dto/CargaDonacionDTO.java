@@ -10,10 +10,10 @@ import lombok.Setter;
 import java.util.List;
 
 /**
- * Representa la "única carga" que describe la consigna (Entrega 1): una
- * persona donante (o la persona administradora en su nombre) registra en
- * un solo POST la descripción general y todos los bienes que trae. El
- * servicio se encarga de segmentarla en N Donacion, una por subcategoría
+ * Representa la "única carga": una persona donante (o la persona
+ * administradora en su nombre) registra en un solo POST la descripción
+ * general y todos los bienes que trae. El servicio se encarga de
+ * segmentarla en N Donacion, una por subcategoría
  * (ver SolicitudDonacion.segmentar()).
  */
 @Getter

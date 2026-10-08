@@ -29,9 +29,9 @@ class DonacionTest {
     }
 
     @Test
-    void laMaquinaDeEstadosTieneExactamenteLos7EstadosDeLaFigura2DelPdf() {
-        // Regresión D-003: PENDIENTE_CONFIRMACION no está en la Figura 2
-        // oficial de la consigna y se eliminó del enum.
+    void laMaquinaDeEstadosTieneExactamenteLos7EstadosDefinidos() {
+        // Regresión: PENDIENTE_CONFIRMACION no forma parte de la máquina de
+        // estados oficial y se eliminó del enum.
         assertThat(EstadoTrack.values())
                 .extracting(Enum::name)
                 .containsExactlyInAnyOrder(

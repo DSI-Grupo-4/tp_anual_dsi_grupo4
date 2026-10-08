@@ -7,7 +7,7 @@ import lombok.Setter;
  * Define un atributo propio de una Subcategoria (ej. "fechaVencimiento" para
  * perecederos, "estadoUso" para mobiliario/vestimenta) sin necesidad de
  * crear una subclase de Java por cada categoria nueva. Diseño original
- * documentado en la nota *4 del DDC de Donaciones (D-002).
+ * documentado en la nota *4 del DDC de Donaciones.
  */
 @Getter
 @Setter

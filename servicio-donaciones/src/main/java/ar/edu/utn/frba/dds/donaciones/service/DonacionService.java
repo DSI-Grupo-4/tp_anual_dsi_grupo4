@@ -44,10 +44,10 @@ public class DonacionService {
     }
 
     /**
-     * Carga única de bienes (consigna, Entrega 1): arma una SolicitudDonacion
-     * con todos los ítems recibidos y deja que segmentar() la parta en una
-     * Donacion por subcategoría. Reemplaza el alta directa de un único ítem
-     * que había antes, que ni siquiera aceptaba categoría/subcategoría.
+     * Carga única de bienes: arma una SolicitudDonacion con todos los ítems
+     * recibidos y deja que segmentar() la parta en una Donacion por
+     * subcategoría. Reemplaza el alta directa de un único ítem que había
+     * antes, que ni siquiera aceptaba categoría/subcategoría.
      */
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
         Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
@@ -130,7 +130,7 @@ public class DonacionService {
         donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
 
         DonacionDTO resultado = convertirADTO(donacion);
-        // RF-3: se publica el dominio, no el DTO, porque RabbitPublicadorEventos
+        // Se publica el dominio, no el DTO, porque RabbitPublicadorEventos
         // necesita resolver la EntidadBeneficiaria/Donante para el contacto.
         // origenEvento permite que un cambio de estado disparado por un evento
         // de Logística (ver EventosLogisticaScheduler) publique el tipoEvento

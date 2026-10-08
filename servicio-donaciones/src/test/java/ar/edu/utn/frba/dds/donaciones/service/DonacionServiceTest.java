@@ -33,8 +33,7 @@ import static org.mockito.Mockito.when;
 
 /**
  * Tests de aplicación con Mockito: GestorDonaciones se mockea, no se toca
- * ninguna base de datos ni ningún otro servicio (todavía no trabajamos
- * persistencia — ver decisiones.md).
+ * ninguna base de datos ni ningún otro servicio (todavía no hay persistencia).
  */
 @ExtendWith(MockitoExtension.class)
 class DonacionServiceTest {

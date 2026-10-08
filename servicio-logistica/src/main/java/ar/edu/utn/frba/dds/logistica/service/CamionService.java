@@ -12,7 +12,7 @@ import java.util.List;
 @Service
 public class CamionService {
 
-    // TODO Entrega 4: reemplazar por repositorio con persistencia real
+    // TODO: reemplazar por repositorio con persistencia real
     private final List<Camion> camiones = new ArrayList<>();
 
     @PostConstruct

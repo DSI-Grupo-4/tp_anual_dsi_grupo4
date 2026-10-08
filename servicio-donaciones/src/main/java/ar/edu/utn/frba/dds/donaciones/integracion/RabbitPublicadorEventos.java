@@ -16,13 +16,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Implementación real de PublicadorEventosPort (RF-3): publica a la cola de
+ * Implementación real de PublicadorEventosPort: publica a la cola de
  * Notificaciones vía RabbitMQ. Reemplaza a NoOpPublicadorEventos.
  *
- * D-008/D-009: ahora que Donacion referencia al Donante, se notifica a
- * ambas partes (entidad beneficiaria y donante) cuando cada una tiene un
- * medio de contacto resolvible — son mensajes independientes, cada uno con
- * su propio eventoId, no la misma notificación duplicada.
+ * Ahora que Donacion referencia al Donante, se notifica a ambas partes
+ * (entidad beneficiaria y donante) cuando cada una tiene un medio de
+ * contacto resolvible — son mensajes independientes, cada uno con su propio
+ * eventoId, no la misma notificación duplicada.
  */
 @Component
 public class RabbitPublicadorEventos implements PublicadorEventosPort {
@@ -99,8 +99,8 @@ public class RabbitPublicadorEventos implements PublicadorEventosPort {
                 mensaje);
     }
 
-    // Entrega 3: casos de notificación con texto distinto por tipo de evento
-    // real de Logística — el resto (enlace al mapa en vivo, comprobante con
+    // Casos de notificación con texto distinto por tipo de evento real de
+    // Logística — el resto (enlace al mapa en vivo, comprobante con
     // camión/fecha/hora, aviso a personas administradoras) queda pendiente,
     // no hay modelo de "persona administradora" contactable en el dominio hoy.
     private String mensajeParaEvento(String tipoEvento, Donacion donacion) {

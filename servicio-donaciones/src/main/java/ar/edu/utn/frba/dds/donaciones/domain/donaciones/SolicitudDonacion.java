@@ -15,8 +15,8 @@ public class SolicitudDonacion {
     private String descripcion;
     private LocalDateTime fechaRegistro;
     private List<ItemDonado> items;
-    // D-008: opcional a nivel constructor para no romper los tests existentes
-    // que no necesitan donante — DonacionService.crear() lo setea siempre.
+    // Opcional a nivel constructor para no romper los tests existentes que
+    // no necesitan donante — DonacionService.crear() lo setea siempre.
     private Donante donante;
 
     public SolicitudDonacion(String descripcion) {
@@ -35,12 +35,12 @@ public class SolicitudDonacion {
      * Segmenta la carga única en donaciones independientes: cada ItemDonado
      * ya llega con su propia subcategoría (y, si es perecedero, su propio
      * valor de fechaVencimiento vía AtributoValor), así que alcanza con
-     * generar una Donacion por ítem para que "cada donación resultante
-     * quede asociada a una única subcategoría" (consigna, Entrega 1) y que
-     * los perecederos con vencimientos distintos queden en donaciones
-     * separadas. No se fusionan ítems de igual subcategoría entre sí: la
-     * consigna no da un ejemplo que lo exija y fusionar cantidades/fotos
-     * de ítems distintos agregaría una regla no pedida explícitamente.
+     * generar una Donacion por ítem para que cada donación resultante
+     * quede asociada a una única subcategoría y que los perecederos con
+     * vencimientos distintos queden en donaciones separadas. No se
+     * fusionan ítems de igual subcategoría entre sí: fusionar
+     * cantidades/fotos de ítems distintos agregaría una regla no pedida
+     * explícitamente.
      */
     public List<Donacion> segmentar() {
         return items.stream()
