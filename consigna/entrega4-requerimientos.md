@@ -18,6 +18,33 @@ La Entrega 4 **no es un punto de partida**, es la maduración de decisiones ya t
 - Un único motor de base de datos relacional (MySQL8 según diagrama de despliegue orientativo, Figura 1), con **un esquema por servicio** — no una base por servicio.
 - El Servicio de Incentivos ya corre un workflow **n8n** (contenedor Docker) para la difusión de insignias en redes sociales y el ranking mensual (Entrega 2). Este componente debe seguir apareciendo en el `docker-compose.yml` y en el diagrama de despliegue/componentes actualizado de esta entrega — no es infraestructura "aparte", es parte de la arquitectura del servicio.
 
+## Checklist de madurez heredado de Entrega 3 (PDF pág. 20-22)
+La cátedra fue explícita: *"Es importante que para esta entrega los requerimientos y decisiones de entregas 1 y 2 estén maduros"* — esto no es historia vieja, es criterio de evaluación vigente para Entrega 4. Verificado contra código el 2026-10-08 (ver `progress/plan-ataque-entrega4.md`, sección "Hallazgos de auditoría").
+
+Servicio de Donaciones (Modelo de Objetos y Código):
+1. Donaciones originales vs. segmentadas, segmentación responsabilidad de la donación/fachada (Entrega 1).
+2. Necesidades recurrentes bien definidas (Entrega 1).
+3. Importación masiva de donantes en CSV funcional (Entrega 1).
+4. Proceso de asignación con Strategy o similar (Entrega 2).
+
+Endpoints Donaciones: 5. Exposición correcta de operaciones (Entrega 2).
+
+Servicio de Incentivos (Modelo de Objetos, Código):
+6. Manejo de pérdida de misiones (ej. "racha" se pierde sin donar en un mes) (Entrega 2).
+
+Workflow de publicación (Código y N8N): 7. Integración con redes sociales vía N8N (Entrega 2).
+
+Endpoints Incentivos: 8. Exposición correcta de operaciones (Entrega 2). 9. **Las donaciones deben impactar en el cálculo de progreso** (Entrega 2).
+
+Servicio de Notificaciones (Modelo de Objetos y Código):
+10. Envío por diversos medios vía Strategy o similar (Entrega 2).
+11. Notificación a donante sin interacción en más de 20 días (Entrega 2).
+12. Notificación a entidad beneficiaria cuando se le asigna una donación (Entrega 2).
+13. Notificación a donante cuando cumple una misión (Entrega 2).
+14. Notificación a donante cuando cambia de categoría (Entrega 2).
+
+Endpoints Notificaciones: 15. Exposición correcta de operaciones (Entrega 2).
+
 ## Requerimientos funcionales (RF)
 
 | ID | Requerimiento | Fuente |
