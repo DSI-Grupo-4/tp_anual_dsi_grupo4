@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrganizacion;
+import ar.edu.utn.frba.dds.donaciones.client.IncentivosClient;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
@@ -27,6 +28,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -44,12 +46,14 @@ class DonacionServiceTest {
     private GestorDonantes gestorDonantes;
     @Mock
     private PublicadorEventosPort publicadorEventos;
+    @Mock
+    private IncentivosClient incentivosClient;
 
     private DonacionService donacionService;
 
     @BeforeEach
     void setUp() {
-        donacionService = new DonacionService(gestorDonaciones, gestorDonantes, publicadorEventos);
+        donacionService = new DonacionService(gestorDonaciones, gestorDonantes, publicadorEventos, incentivosClient);
     }
 
     @Test
@@ -126,6 +130,24 @@ class DonacionServiceTest {
         donacionService.cambiarEstado(1L, dto);
 
         verify(publicadorEventos).publicar(eq("CAMBIO_ESTADO_DONACION"), any());
+        verify(incentivosClient, never()).registrarActividadDonacion(any());
+    }
+
+    @Test
+    void cambiarEstadoAEntregadaNotificaLaActividadDeDonacionAIncentivos() {
+        ItemDonado item = new ItemDonado(1L, "Frazadas", new Subcategoria("frazadas"), 10, null);
+        Donacion existente = new Donacion(1L, item, 10);
+        existente.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
+        existente.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
+        existente.cambiarEstado(EstadoTrack.EN_TRASLADO, null);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        CambioEstadoDTO dto = new CambioEstadoDTO();
+        dto.setNuevoEstado(EstadoTrack.ENTREGADA);
+
+        donacionService.cambiarEstado(1L, dto);
+
+        verify(incentivosClient).registrarActividadDonacion(existente);
     }
 
     @Test

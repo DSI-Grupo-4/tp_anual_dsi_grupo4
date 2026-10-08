@@ -1,7 +1,6 @@
 package ar.edu.utn.frba.dds.incentivos.progreso;
 
 import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
-import ar.edu.utn.frba.dds.incentivos.misiones.Categoria;
 import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import lombok.Getter;
 
@@ -100,7 +99,7 @@ public abstract class ProgresoMision {
 
     @Getter
     public static class ProgresoCompletitud extends ProgresoMision {
-        private final Set<Categoria> categoriasCubiertas;
+        private final Set<String> categoriasCubiertas;
 
         public ProgresoCompletitud(Mision misionAsociada) {
             super(misionAsociada);
@@ -109,8 +108,8 @@ public abstract class ProgresoMision {
 
         @Override
         public void actualizarProgresoMision(DatosDonacion datosDonacion) {
-            if (datosDonacion.getCategoria() != null) {
-                categoriasCubiertas.add(datosDonacion.getCategoria());
+            if (datosDonacion.getCategoriaBien() != null) {
+                categoriasCubiertas.add(datosDonacion.getCategoriaBien());
             }
         }
 

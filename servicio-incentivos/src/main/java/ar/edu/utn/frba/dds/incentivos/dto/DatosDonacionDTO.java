@@ -9,6 +9,10 @@ import java.time.LocalDate;
 @Setter
 public class DatosDonacionDTO {
     private LocalDate fecha;
+    // Categoría del bien donado (Alimentos/Mobiliario/Vestimenta, tal como la
+    // modela el Servicio de Donaciones) -- usada solo para la misión
+    // "Completitud" (variedad de categorías donadas). No es el rango del
+    // donante (Colaborador/Sostenedor/Transformador), eso lo calcula Incentivos.
     private String categoriaNombre;
     private int cantidadBienes;
     private boolean donacionExitosa;

@@ -15,8 +15,6 @@ import ar.edu.utn.frba.dds.incentivos.dto.VisibilidadInsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.metricas.EvolucionMensual;
 import ar.edu.utn.frba.dds.incentivos.metricas.MetricasActividad;
 import ar.edu.utn.frba.dds.incentivos.metricas.Periodo;
-import ar.edu.utn.frba.dds.incentivos.misiones.Categoria;
-import ar.edu.utn.frba.dds.incentivos.misiones.GestorMisiones;
 import ar.edu.utn.frba.dds.incentivos.misiones.Insignia;
 import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoCategoria;
@@ -42,7 +40,6 @@ public class IncentivosController {
 
     private final Consultor consultor = Consultor.getInstance();
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
-    private final GestorMisiones gestorMisiones = GestorMisiones.getInstance();
 
     @GetMapping("/{id}/metricas")
     public MetricasActividadDTO obtenerMetricas(
@@ -121,15 +118,11 @@ public class IncentivosController {
     }
 
     private DatosDonacion convertirADominio(DatosDonacionDTO dto) {
-        Categoria categoria = gestorMisiones.buscarCategoriaPorNombre(dto.getCategoriaNombre())
-                .orElseThrow(() -> new IllegalArgumentException(
-                        "No existe la categoría: " + dto.getCategoriaNombre()));
-
         Beneficiario beneficiario = dto.getBeneficiarioId() != null
                 ? consultor.obtenerOCrearBeneficiario(dto.getBeneficiarioId(), dto.getBeneficiarioNombre())
                 : null;
 
-        return new DatosDonacion(dto.getFecha(), categoria, dto.getCantidadBienes(),
+        return new DatosDonacion(dto.getFecha(), dto.getCategoriaNombre(), dto.getCantidadBienes(),
                 dto.isDonacionExitosa(), beneficiario);
     }
 

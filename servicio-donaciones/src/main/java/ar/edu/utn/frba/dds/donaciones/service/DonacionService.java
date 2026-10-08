@@ -14,6 +14,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
+import ar.edu.utn.frba.dds.donaciones.client.IncentivosClient;
 import ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
@@ -35,12 +36,14 @@ public class DonacionService {
     private final GestorDonaciones gestorDonaciones;
     private final GestorDonantes gestorDonantes;
     private final PublicadorEventosPort publicadorEventos;
+    private final IncentivosClient incentivosClient;
 
     public DonacionService(GestorDonaciones gestorDonaciones, GestorDonantes gestorDonantes,
-                            PublicadorEventosPort publicadorEventos) {
+                            PublicadorEventosPort publicadorEventos, IncentivosClient incentivosClient) {
         this.gestorDonaciones = gestorDonaciones;
         this.gestorDonantes = gestorDonantes;
         this.publicadorEventos = publicadorEventos;
+        this.incentivosClient = incentivosClient;
     }
 
     /**
@@ -137,6 +140,14 @@ public class DonacionService {
         // real en vez del genérico, sin abrir un segundo camino de publicación.
         String tipoEvento = dto.getOrigenEvento() != null ? dto.getOrigenEvento() : "CAMBIO_ESTADO_DONACION";
         publicadorEventos.publicar(tipoEvento, donacion);
+
+        // Integración con Incentivos: una donación entregada es la señal de
+        // "actividad de donación" más confiable que tenemos (sabemos con
+        // certeza categoría, cantidad y que fue exitosa) -- dispara el
+        // cálculo de progreso de misiones del donante.
+        if (dto.getNuevoEstado() == EstadoTrack.ENTREGADA) {
+            incentivosClient.registrarActividadDonacion(donacion);
+        }
         return resultado;
     }
 
