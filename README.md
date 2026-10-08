@@ -40,19 +40,7 @@
 │       ├── INCENTIVOS.drawio.xml
 │       ├── LOGISTICA.drawio.xml
 │       └── NOTIFICACIONES.drawio.xml
-├── logs
-│   ├── donaciones.log
-│   ├── incentivos.log
-│   ├── logistica.log
-│   ├── notificaciones.log
-│   ├── servicio-donaciones-build.log
-│   ├── servicio-donaciones.log
-│   ├── servicio-incentivos-build.log
-│   ├── servicio-incentivos.log
-│   ├── servicio-logistica-build.log
-│   ├── servicio-logistica.log
-│   ├── servicio-notificaciones-build.log
-│   └── servicio-notificaciones.log
+├── docker-compose.integration.yml
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -103,9 +91,10 @@
 └── servicio-notificaciones
     ├── pom.xml
     └── src
-        └── main
+        ├── main
+        └── test
 
-35 directories, 55 files
+35 directories, 44 files
 ```
 <!-- TREE_END -->
 
