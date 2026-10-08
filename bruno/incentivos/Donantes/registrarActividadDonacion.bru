@@ -20,7 +20,7 @@ params:path {
 body:json {
   {
     "fecha": "2026-10-08",
-    "categoriaNombre": "Colaborador",
+    "categoriaNombre": "Alimentos",
     "cantidadBienes": 5,
     "donacionExitosa": true,
     "beneficiarioId": 10,
@@ -32,7 +32,7 @@ body:json {
 }
 
 docs {
-  Registra una actividad de donación para el donante (se llama desde Donaciones; hoy no hay ningún caller real todavía). Si la actividad completa una misión, devuelve 200 con la insignia obtenida; si no completa ninguna, devuelve 204 sin cuerpo. 400 si categoriaNombre no existe.
+  Registra una actividad de donación para el donante. Lo llama automáticamente IncentivosClient (Donaciones) cuando una donación llega a ENTREGADA -- no hace falta invocarlo a mano salvo para pruebas. Si la actividad completa una misión, devuelve 200 con la insignia obtenida; si no completa ninguna, devuelve 204 sin cuerpo. categoriaNombre es el nombre de la categoría del bien donado (Alimentos/Mobiliario/etc.), no el rango del donante -- no se valida contra ningún catálogo.
 
   donanteMedioContacto/donanteContacto son opcionales: si se mandan y el donante todavía no tiene contacto registrado, quedan guardados para que Incentivos pueda notificarlo vía RabbitMQ (NotificacionesClient).
 }
@@ -51,7 +51,7 @@ example {
     body:json: {
       {
         "fecha": "2026-10-08",
-        "categoriaNombre": "Colaborador",
+        "categoriaNombre": "Alimentos",
         "cantidadBienes": 1,
         "donacionExitosa": true
       }
