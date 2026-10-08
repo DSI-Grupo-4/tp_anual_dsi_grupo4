@@ -128,7 +128,7 @@
         <mxCell id="36" parent="33" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=1;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;movable=1;resizable=1;deletable=1;editable=1;locked=0;connectable=1;" value="&lt;div&gt;&amp;nbsp;+iniciarTraslado():Void&lt;/div&gt;" vertex="1">
           <mxGeometry height="92" width="330" y="188" as="geometry" />
         </mxCell>
-        <mxCell id="37" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="SolicitudPlanificacion" vertex="1">
+        <mxCell id="37" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="SolicitudPlanificacion (NO IMPLEMENTADO — ver nota)" vertex="1">
           <mxGeometry height="224" width="260" x="240" y="-54" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
@@ -221,7 +221,7 @@
             </Array>
           </mxGeometry>
         </mxCell>
-        <mxCell id="60" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="Lote" vertex="1">
+        <mxCell id="60" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="Lote (NO IMPLEMENTADO — ver nota)" vertex="1">
           <mxGeometry height="224" width="260" x="-50" y="170" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
@@ -316,6 +316,9 @@
         </mxCell>
         <mxCell id="84" edge="1" parent="1" source="83" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.638;entryY=0.012;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;fillColor=#e3c800;strokeColor=#B09500;" target="65">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="85" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;" value="Lote/SolicitudPlanificacion: decisión 2026-10-08 — el código real no implementa estas clases como abstracciones de dominio. LoteService mapea DonacionDTO -> Entrega directo contra EntregaRepository, sin esta capa intermedia. No se vio necesidad funcional de construirlas (el límite real de 100 por lote ya lo valida LoteService). Si en algún momento se necesita, implementar ahí, no inventar las clases solo para calzar con el diagrama." vertex="1">
+          <mxGeometry height="140" width="280" x="-50" y="420" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

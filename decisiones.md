@@ -92,3 +92,37 @@
   - C) Publicar con un contacto placeholder/log-only.
 - **Decisión tomada:** Opción A. Pendiente para una sesión futura: decidir cómo modelar la referencia de vuelta al donante (opción B) — hoy ningún evento de Entrega 2 dirigido al donante se puede notificar realmente (ver `progress/refactor.md`).
 - **Definida por:** usuario
+
+## [D-008] Resuelve D-007: `donanteId` en la carga de donación
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Donaciones
+- **Entrega vigente al momento:** Entrega 4 (fase de modelado, previa a persistencia — decisión explícita del usuario de resolver consistencia de modelado y comunicación antes de la Entrega 4 propiamente)
+- **Contexto:** Al investigar D-007 en profundidad se encontró que el hueco era más grande de lo documentado: `CargaDonacionDTO`/`SolicitudDonacion`/`Donacion` no capturaban en ningún lado quién hacía la donación — ni siquiera había un campo `donanteId` en el alta. Esto no es solo un problema de notificaciones: la consigna (Entrega 1, Persona administradora, ítem 15) exige explícitamente que la persona administradora registre donaciones "asociándolas a la persona donante correspondiente", requerimiento incumplido hasta hoy.
+- **Fuentes revisadas:** decisiones.md (D-007, mismo tema, sin resolver el modelado) / PDF consigna, Entrega 1 "Persona administradora" ítem 15 (explícito) / código (`CargaDonacionDTO`, `SolicitudDonacion`, `DonacionController.crear` — confirmado el hueco).
+- **Opciones consideradas:** no hubo alternativas reales — es un requerimiento explícito incumplido, no una ambigüedad de diseño.
+- **Decisión tomada:** `CargaDonacionDTO` gana `donanteId` (obligatorio); `DonacionService.crear()` resuelve el `Donante` vía `GestorDonantes.buscarPorId` y lo propaga a `SolicitudDonacion` → cada `Donacion` segmentada. `DonacionDTO` expone `donanteId` en la respuesta. Esto habilita (parcialmente, ver D-009) que `RabbitPublicadorEventos` notifique también al donante, no solo a la entidad beneficiaria.
+- **Definida por:** usuario (aprobó la Fase 1 de modelado donde este punto se identificó como corrección directa, no como decisión a consultar)
+
+## [D-009] Contrato de mensaje hacia Notificaciones ensanchado (`tipoEvento` + `eventoId`)
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Notificaciones, Donaciones, Incentivos
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** El DDC de Notificaciones modela un diseño rico (`GestorNotificaciones` con 8 métodos específicos por evento + `ENUM EstadoEntrega`) que nunca se implementó — el código real usaba un contrato genérico (`mensaje`/`medio`/`contacto`/`servicioOrigen`) sin forma de deduplicar reintentos de la cola (gap ya señalado contra `skills/donatrack-async-notifications`, que exige idempotencia por `eventoId`). El usuario, al definir la Fase 1 de modelado/comunicación previa a persistencia, pidió explícitamente resolver esto antes de seguir.
+- **Fuentes revisadas:** decisiones.md (D-006, documenta que el gap de idempotencia ya estaba señalado) / DDC de Notificaciones (el diseño de 8 métodos + `EstadoEntrega`) / `skills/donatrack-async-notifications` (exige idempotencia por `eventoId` explícitamente).
+- **Opciones consideradas:**
+  - A) Ensanchar el contrato ahora: agregar `tipoEvento`+`eventoId` a `NotificacionRequestDTO`, implementar idempotencia real en `NotificacionService`, actualizar los 3 productores.
+  - B) Mantener el contrato genérico y dejarlo para después de persistencia.
+- **Decisión tomada:** Opción A, con un matiz de alcance que el agente propuso y el usuario no objetó: el `mensaje` lo sigue armando quien publica (Donaciones/Incentivos), **no** se mueve el templating de texto hacia Notificaciones — implementar los 8 métodos específicos de `GestorNotificaciones` con conocimiento del dominio de cada servicio productor es un salto de arquitectura mayor al pedido ("ensanchar el contrato"), queda como backlog aparte si se decide abordarlo. Se implementó: `NotificacionRequestDTO`/`Notificacion`/`NotificacionResponseDTO` ganan `tipoEvento`+`eventoId`; `NotificacionService.enviarNotificacion` deduplica por `eventoId` (mapa separado, un reintento de la cola con el mismo id devuelve la notificación ya existente sin volver a despachar); `RabbitPublicadorEventos` (Donaciones) genera `eventoId` por mensaje y usa el `tipoEvento` real del evento (no siempre el genérico `CAMBIO_ESTADO_DONACION`) vía un nuevo campo `origenEvento` en `CambioEstadoDTO`; `EventosLogisticaScheduler` setea ese campo con el tipo real del evento de Logística, así los 3 casos de Entrega 3 (ruta planificada/iniciada, entrega confirmada/fallida) generan mensajes con texto distinto. Validado en vivo: mismo `eventoId` publicado dos veces → una sola notificación registrada.
+- **Definida por:** usuario
+
+## [D-010] Hueco de dominio en Incentivos: `Donante` sin ninguna fuente de contacto
+- **Fecha:** 2026-10-08
+- **Servicio(s) afectado(s):** Incentivos
+- **Entrega vigente al momento:** Entrega 4
+- **Contexto:** Al cablear `Consultor` hacia RabbitMQ (reemplazo del `RestTemplate` síncrono que violaba la restricción de integración asíncrona de Entrega 4) se encontró que el `Donante` de Incentivos (clase propia de este servicio, distinta de la de Donaciones) no tiene ningún campo de contacto, y el endpoint que podría traerlo desde Donaciones (`POST /donantes/{id}/actividad-donacion`) ni siquiera está invocado por nadie todavía. Mismo tipo de límite que D-007/D-008, pero en otro servicio.
+- **Fuentes revisadas:** decisiones.md (D-007/D-008, mismo patrón de hueco) / código (`Donante.java` de Incentivos, `DatosDonacionDTO`, `IncentivosController` — confirmado que no hay ningún caller real del endpoint de actividad desde Donaciones).
+- **Opciones consideradas:**
+  - A) Dejar la plumbing de RabbitMQ lista (cliente real, config) y agregar campos opcionales de contacto a `Donante` + `DatosDonacionDTO` para cuando alguien los popule, documentando el límite explícitamente — no inventar un contacto.
+  - B) No tocar nada hasta resolver el cableado completo Donaciones→Incentivos de actividad de donación.
+- **Decisión tomada:** Opción A. `Donante.actualizarContactoSiFalta(medio, contacto)` (mismo patrón que `actualizarNombreSiFalta`), `DatosDonacionDTO` gana `donanteMedioContacto`/`donanteContacto` opcionales, `NotificacionesClient` nuevo (RabbitMQ real) reemplaza al `RestTemplate`, pero sigue sin poder notificar a nadie hoy porque nada popula el contacto todavía — logueado como advertencia, no como error, mismo comportamiento que D-007 en Donaciones.
+- **Definida por:** usuario (mismo criterio que D-008/D-009, dentro de la Fase 1 de modelado)

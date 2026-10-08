@@ -9,11 +9,11 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="3" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=26;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" value="Notificacion" vertex="1">
-          <mxGeometry height="248" width="270" x="180" y="70" as="geometry">
+          <mxGeometry height="300" width="320" x="180" y="70" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="4" parent="3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-id: String&lt;/div&gt;&lt;div&gt;-mensaje: String&lt;/div&gt;&lt;div&gt;-medio: MedioComunicacion&lt;/div&gt;&lt;div&gt;-contacto: String&lt;/div&gt;&lt;div&gt;-estado: EstadoNotificacion&lt;/div&gt;&lt;div&gt;-servicioOrigen: String&lt;/div&gt;&lt;div&gt;-fechaCreacion: String&lt;/div&gt;&lt;div&gt;&lt;i&gt;fechaEnvio/estadoEntrega: diseño no implementado, ver nota de GestorNotificaciones abajo&lt;/i&gt;&lt;/div&gt;" vertex="1">
+        <mxCell id="4" parent="3" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-id: String&lt;/div&gt;&lt;div&gt;-mensaje: String&lt;/div&gt;&lt;div&gt;-medio: MedioComunicacion&lt;/div&gt;&lt;div&gt;-contacto: String&lt;/div&gt;&lt;div&gt;-estado: EstadoNotificacion&lt;/div&gt;&lt;div&gt;-servicioOrigen: String&lt;/div&gt;&lt;div&gt;-fechaCreacion: String&lt;/div&gt;&lt;div&gt;-tipoEvento: String &lt;b&gt;(D-009)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;-eventoId: String &lt;b&gt;(D-009, idempotencia)&lt;/b&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;fechaEnvio/estadoEntrega: diseño no implementado, ver nota de GestorNotificaciones abajo&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="144" width="270" y="26" as="geometry" />
         </mxCell>
         <mxCell id="5" parent="3" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
@@ -110,7 +110,7 @@
           <mxGeometry height="56" width="200" y="34" as="geometry" />
         </mxCell>
         <mxCell id="32" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;" value="NotificacionService &amp;lt;&amp;lt;@Service&amp;gt;&amp;gt; (real; GestorNotificaciones de abajo es diseño propuesto, no implementado)" vertex="1">
-          <mxGeometry height="360" width="320" x="200" y="-320" as="geometry">
+          <mxGeometry height="420" width="320" x="200" y="-380" as="geometry">
             <mxRectangle height="40" width="50" x="200" y="220" as="alternateBounds" />
           </mxGeometry>
         </mxCell>
@@ -120,8 +120,8 @@
         <mxCell id="34" parent="32" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
           <mxGeometry height="8" width="320" y="110" as="geometry" />
         </mxCell>
-        <mxCell id="35" parent="32" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ enviarNotificacion(request: NotificacionRequestDTO): Notificacion&lt;/div&gt;&lt;div&gt;+ despachar(notificacion: Notificacion): Notificacion&lt;/div&gt;&lt;div&gt;+ buscarPorId(id): Optional&amp;lt;Notificacion&amp;gt;&lt;/div&gt;&lt;div&gt;+ listarTodas(): List&amp;lt;Notificacion&amp;gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;BACKLOG (no implementado): los 8 métodos específicos (notificarInicioRuta, notificarEntregaExitosa, etc.) y el ENUM EstadoEntrega de abajo son el diseño original — hoy el contrato es genérico (mensaje/medio/contacto/servicioOrigen en texto plano, sin tipoEvento). Requiere ensanchar el contrato de la cola y que cada productor lo use — ver plan de ataque.&lt;/i&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="230" width="320" y="118" as="geometry" />
+        <mxCell id="35" parent="32" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ enviarNotificacion(request: NotificacionRequestDTO): Notificacion&lt;/div&gt;&lt;div&gt;+ despachar(notificacion: Notificacion): Notificacion&lt;/div&gt;&lt;div&gt;+ buscarPorId(id): Optional&amp;lt;Notificacion&amp;gt;&lt;/div&gt;&lt;div&gt;+ listarTodas(): List&amp;lt;Notificacion&amp;gt;&lt;/div&gt;&lt;div&gt;&lt;b&gt;IMPLEMENTADO (D-009)&lt;/b&gt;: request ya trae tipoEvento+eventoId; enviarNotificacion deduplica por eventoId (idempotencia real en reintentos de la cola).&lt;/div&gt;&lt;div&gt;&lt;i&gt;BACKLOG, sigue sin implementar: los 8 métodos específicos (notificarInicioRuta, notificarEntregaExitosa, etc.) y el ENUM EstadoEntrega de abajo — el mensaje lo arma quien publica (Donaciones/Incentivos), Notificaciones no conoce el dominio de cada productor. Ver decisiones.md D-009.&lt;/i&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="280" width="320" y="118" as="geometry" />
         </mxCell>
         <mxCell id="36" edge="1" parent="1" source="35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.474;exitY=1;exitDx=0;exitDy=0;entryX=0.596;entryY=0.015;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" target="3">
           <mxGeometry relative="1" as="geometry" />
