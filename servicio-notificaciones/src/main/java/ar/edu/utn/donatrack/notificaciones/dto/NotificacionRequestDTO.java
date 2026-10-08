@@ -21,14 +21,23 @@ public class NotificacionRequestDTO {
 
     private String servicioOrigen;
 
+    @NotBlank(message = "tipoEvento es obligatorio (trazabilidad y, a futuro, enrutamiento del mensaje)")
+    private String tipoEvento;
+
+    @NotBlank(message = "eventoId es obligatorio (permite deduplicar en reintentos de la cola)")
+    private String eventoId;
+
     public NotificacionRequestDTO() {
     }
 
-    public NotificacionRequestDTO(String mensaje, MedioComunicacion medio, String contacto, String servicioOrigen) {
+    public NotificacionRequestDTO(String mensaje, MedioComunicacion medio, String contacto, String servicioOrigen,
+                                   String tipoEvento, String eventoId) {
         this.mensaje = mensaje;
         this.medio = medio;
         this.contacto = contacto;
         this.servicioOrigen = servicioOrigen;
+        this.tipoEvento = tipoEvento;
+        this.eventoId = eventoId;
     }
 
     public String getMensaje() {
@@ -61,5 +70,21 @@ public class NotificacionRequestDTO {
 
     public void setServicioOrigen(String servicioOrigen) {
         this.servicioOrigen = servicioOrigen;
+    }
+
+    public String getTipoEvento() {
+        return tipoEvento;
+    }
+
+    public void setTipoEvento(String tipoEvento) {
+        this.tipoEvento = tipoEvento;
+    }
+
+    public String getEventoId() {
+        return eventoId;
+    }
+
+    public void setEventoId(String eventoId) {
+        this.eventoId = eventoId;
     }
 }

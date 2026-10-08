@@ -2,8 +2,10 @@ package ar.edu.utn.frba.dds.donaciones.integracion;
 
 import ar.edu.utn.frba.dds.donaciones.config.RabbitNotificacionesConfig;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Persona;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,17 +13,16 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Implementación real de PublicadorEventosPort (RF-3): publica a la cola de
  * Notificaciones vía RabbitMQ. Reemplaza a NoOpPublicadorEventos.
  *
- * Limitación conocida (ver decisiones.md): el dominio actual no tiene una
- * referencia Donacion -> Donante, así que solo se puede resolver
- * destinatario/contacto cuando el payload trae una EntidadBeneficiaria
- * asociada. Los eventos dirigidos a la persona donante (ej. "tu donación
- * fue asignada") no se pueden publicar todavía por este medio — quedan
- * logueados como advertencia en vez de fallar silenciosamente.
+ * D-008/D-009: ahora que Donacion referencia al Donante, se notifica a
+ * ambas partes (entidad beneficiaria y donante) cuando cada una tiene un
+ * medio de contacto resolvible — son mensajes independientes, cada uno con
+ * su propio eventoId, no la misma notificación duplicada.
  */
 @Component
 public class RabbitPublicadorEventos implements PublicadorEventosPort {
@@ -42,26 +43,55 @@ public class RabbitPublicadorEventos implements PublicadorEventosPort {
             return;
         }
 
+        boolean notificoAlguna = false;
+        notificoAlguna |= notificarEntidad(tipoEvento, donacion);
+        notificoAlguna |= notificarDonante(tipoEvento, donacion);
+
+        if (!notificoAlguna) {
+            logger.info("Evento '{}' de la donación {} sin ningún destinatario con contacto resolvible.",
+                    tipoEvento, donacion.getId());
+        }
+    }
+
+    private boolean notificarEntidad(String tipoEvento, Donacion donacion) {
         EntidadBeneficiaria entidad = donacion.getEntidadBeneficiaria();
         if (entidad == null) {
-            logger.info("Evento '{}' de la donación {} sin entidad beneficiaria asociada todavía"
-                    + " — no hay a quién notificar por este camino (falta modelar Donacion -> Donante).",
-                    tipoEvento, donacion.getId());
-            return;
+            return false;
         }
-
         Optional<MedioContacto> medio = entidad.getEntidad().medioPreferido();
         if (medio.isEmpty()) {
             logger.warn("La entidad beneficiaria {} no tiene medio de contacto preferido"
                     + " — no se pudo notificar el evento '{}'.", entidad.getId(), tipoEvento);
-            return;
+            return false;
         }
+        publicarMensaje(tipoEvento, donacion, medio.get());
+        return true;
+    }
 
+    private boolean notificarDonante(String tipoEvento, Donacion donacion) {
+        Donante donante = donacion.getDonante();
+        if (donante == null || donante.getPersona() == null) {
+            return false;
+        }
+        Persona persona = donante.getPersona();
+        Optional<MedioContacto> medio = persona.medioPreferido();
+        if (medio.isEmpty()) {
+            logger.warn("El donante {} no tiene medio de contacto preferido"
+                    + " — no se pudo notificar el evento '{}'.", donante.getId(), tipoEvento);
+            return false;
+        }
+        publicarMensaje(tipoEvento, donacion, medio.get());
+        return true;
+    }
+
+    private void publicarMensaje(String tipoEvento, Donacion donacion, MedioContacto medio) {
         NotificacionRequest mensaje = new NotificacionRequest(
                 mensajeParaEvento(tipoEvento, donacion),
-                mapearMedio(medio.get().getTipo()),
-                medio.get().getValor(),
-                "donaciones");
+                mapearMedio(medio.getTipo()),
+                medio.getValor(),
+                "donaciones",
+                tipoEvento,
+                UUID.randomUUID().toString());
 
         rabbitTemplate.convertAndSend(
                 RabbitNotificacionesConfig.EXCHANGE,
@@ -69,11 +99,33 @@ public class RabbitPublicadorEventos implements PublicadorEventosPort {
                 mensaje);
     }
 
+    // Entrega 3: casos de notificación con texto distinto por tipo de evento
+    // real de Logística — el resto (enlace al mapa en vivo, comprobante con
+    // camión/fecha/hora, aviso a personas administradoras) queda pendiente,
+    // no hay modelo de "persona administradora" contactable en el dominio hoy.
     private String mensajeParaEvento(String tipoEvento, Donacion donacion) {
-        if ("CAMBIO_ESTADO_DONACION".equals(tipoEvento)) {
-            return "La donación #%d cambió de estado: %s".formatted(donacion.getId(), donacion.getEstadoActual());
-        }
-        return "Actualización de la donación #%d (%s)".formatted(donacion.getId(), tipoEvento);
+        return switch (tipoEvento) {
+            case "CAMBIO_ESTADO_DONACION" ->
+                    "La donación #%d cambió de estado: %s".formatted(donacion.getId(), donacion.getEstadoActual());
+            case "RUTA_PLANIFICADA" ->
+                    "La donación #%d ya tiene una ruta de entrega planificada.".formatted(donacion.getId());
+            case "RUTA_INICIADA" ->
+                    "El camión inició el traslado de la donación #%d.".formatted(donacion.getId());
+            case "ENTREGA_CONFIRMADA" ->
+                    "La donación #%d fue entregada con éxito.".formatted(donacion.getId());
+            case "ENTREGA_NO_RECIBIDA", "ENTREGA_FALLIDA" ->
+                    "La donación #%d no pudo entregarse: %s"
+                            .formatted(donacion.getId(), justificacionDeLaUltimaEntregaFallida(donacion));
+            default -> "Actualización de la donación #%d (%s)".formatted(donacion.getId(), tipoEvento);
+        };
+    }
+
+    private String justificacionDeLaUltimaEntregaFallida(Donacion donacion) {
+        return donacion.getHistorialEstados().stream()
+                .filter(c -> c.getEstadoNuevo() == donacion.getEstadoActual())
+                .reduce((primero, ultimo) -> ultimo)
+                .map(c -> c.getJustificacion() != null ? c.getJustificacion() : "sin justificación informada")
+                .orElse("sin justificación informada");
     }
 
     private String mapearMedio(TipoContacto tipo) {
@@ -84,6 +136,7 @@ public class RabbitPublicadorEventos implements PublicadorEventosPort {
         };
     }
 
-    private record NotificacionRequest(String mensaje, String medio, String contacto, String servicioOrigen) {
+    private record NotificacionRequest(String mensaje, String medio, String contacto, String servicioOrigen,
+                                        String tipoEvento, String eventoId) {
     }
 }

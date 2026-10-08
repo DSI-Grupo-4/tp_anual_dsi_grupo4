@@ -18,20 +18,33 @@ public class NotificacionService {
 
     private final NotificadorFactory notificadorFactory;
     private final Map<String, Notificacion> notificacionesPorId = new ConcurrentHashMap<>();
+    // D-009: idempotencia -- un reintento de la cola con el mismo eventoId no
+    // debe volver a despachar la notificación. Mapa separado (no basta con
+    // notificacionesPorId porque el id interno se genera random en cada intento).
+    private final Map<String, Notificacion> notificacionesPorEventoId = new ConcurrentHashMap<>();
 
     public NotificacionService(NotificadorFactory notificadorFactory) {
         this.notificadorFactory = notificadorFactory;
     }
 
     public Notificacion enviarNotificacion(NotificacionRequestDTO request) {
+        Notificacion existente = notificacionesPorEventoId.get(request.getEventoId());
+        if (existente != null) {
+            return existente;
+        }
+
         Notificacion notificacion = new Notificacion(
                 request.getMensaje(),
                 request.getMedio(),
                 request.getContacto(),
-                request.getServicioOrigen()
+                request.getServicioOrigen(),
+                request.getTipoEvento(),
+                request.getEventoId()
         );
 
-        return despachar(notificacion);
+        Notificacion despachada = despachar(notificacion);
+        notificacionesPorEventoId.put(request.getEventoId(), despachada);
+        return despachada;
     }
 
     public Notificacion despachar(Notificacion notificacion) {

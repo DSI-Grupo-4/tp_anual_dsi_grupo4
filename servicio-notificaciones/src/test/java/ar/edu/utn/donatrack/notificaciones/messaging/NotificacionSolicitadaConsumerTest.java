@@ -18,7 +18,9 @@ class NotificacionSolicitadaConsumerTest {
                 "Completaste una mision",
                 MedioComunicacion.EMAIL,
                 "donante@correo.com",
-                "incentivos");
+                "incentivos",
+                "MISION_COMPLETADA",
+                "evt-1");
 
         consumer.consumir(solicitud);
 

@@ -70,6 +70,7 @@ public class EventosLogisticaScheduler {
 
         CambioEstadoDTO dto = new CambioEstadoDTO();
         dto.setNuevoEstado(nuevoEstado);
+        dto.setOrigenEvento(evento.getTipoEvento());
         if (nuevoEstado == EstadoTrack.ENTREGA_FALLIDA) {
             String justificacion = evento.getEntregaAsociada().getJustificacionFallo();
             // cambiarEstado exige justificación no vacía para ENTREGA_FALLIDA

@@ -47,7 +47,9 @@ class RabbitNotificacionesIntegrationTest {
                 "Donacion asignada",
                 MedioComunicacion.EMAIL,
                 "donante@correo.com",
-                "donaciones");
+                "donaciones",
+                "DONACION_ASIGNADA",
+                "evt-integration-1");
 
         rabbitTemplate.convertAndSend(
                 RabbitNotificacionesConfig.EXCHANGE,
