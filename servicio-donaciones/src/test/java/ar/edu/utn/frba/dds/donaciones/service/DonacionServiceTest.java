@@ -210,10 +210,12 @@ class DonacionServiceTest {
     }
 
     @Test
-    void confirmarAsignacionVinculaYDescuentaContraUnaNecesidadPendienteDeLaMismaSubcategoria() {
+    void confirmarAsignacionVinculaLaNecesidadPeroNoLaAcreditaHastaQueSeConfirmaLaEntrega() {
         // Regresión del hallazgo más grave de la auditoría: Necesidad.recibir()
         // no tenía un solo caller real -- ninguna donación llegaba jamás a
         // satisfacer una necesidad, sin importar cuántas se asignaran.
+        // El crédito real ocurre en cambiarEstado(ENTREGADA), no acá: asignar
+        // es una promesa que todavía puede fallar en el traslado.
         ItemDonado item = DatosPrueba.item(1L, "Sillas de oficina", Subcategoria.SILLA, 6, null);
         Donacion existente = DatosPrueba.donacion(1L, item, 6);
         when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
@@ -232,8 +234,56 @@ class DonacionServiceTest {
         donacionService.confirmarAsignacion(1L, entidad);
 
         assertThat(existente.getNecesidadAsignada()).isEqualTo(necesidad);
+        assertThat(necesidad.getCantidadRecibida()).isEqualTo(BigDecimal.ZERO);
+        assertThat(necesidad.satisfecha()).isFalse();
+
+        avanzarHastaEntregada();
+
         assertThat(necesidad.getCantidadRecibida()).isEqualTo(BigDecimal.valueOf(6));
         assertThat(necesidad.satisfecha()).isFalse();
+    }
+
+    @Test
+    void unaEntregaQueFallaNuncaAcreditaLaNecesidad() {
+        // Lo que el bug anterior (acreditar en confirmarAsignacion) hubiera
+        // hecho mal: una entrega que falla en el traslado no debe dejar
+        // ninguna cantidad acreditada en la necesidad.
+        ItemDonado item = DatosPrueba.item(1L, "Sillas de oficina", Subcategoria.SILLA, 6, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 6);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,
+                new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null), "Escuela");
+        ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad necesidad =
+                new ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadExtraordinaria(
+                        1L, "30 sillas por la inundación", Subcategoria.SILLA,
+                        ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida.UNIDAD,
+                        BigDecimal.valueOf(30),
+                        ar.edu.utn.frba.dds.donaciones.domain.necesidades.TipoExtraordinario.INUNDACION);
+        entidad.agregarNecesidad(necesidad);
+        existente.setResultadoMatchmaking(new ResultadoMatchmaking(List.of(entidad), List.of(), List.of()));
+        donacionService.confirmarAsignacion(1L, entidad);
+
+        avanzar(EstadoTrack.LISTA_PARA_ENTREGAR);
+        avanzar(EstadoTrack.EN_TRASLADO);
+        CambioEstadoDTO fallo = new CambioEstadoDTO();
+        fallo.setNuevoEstado(EstadoTrack.ENTREGA_FALLIDA);
+        fallo.setJustificacion("Incidente logístico");
+        donacionService.cambiarEstado(1L, fallo);
+
+        assertThat(necesidad.getCantidadRecibida()).isEqualTo(BigDecimal.ZERO);
+    }
+
+    private void avanzarHastaEntregada() {
+        avanzar(EstadoTrack.LISTA_PARA_ENTREGAR);
+        avanzar(EstadoTrack.EN_TRASLADO);
+        avanzar(EstadoTrack.ENTREGADA);
+    }
+
+    private void avanzar(EstadoTrack estado) {
+        CambioEstadoDTO dto = new CambioEstadoDTO();
+        dto.setNuevoEstado(estado);
+        donacionService.cambiarEstado(1L, dto);
     }
 
     @Test

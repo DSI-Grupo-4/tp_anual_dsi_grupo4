@@ -61,6 +61,13 @@ public class EventosLogisticaScheduler {
             case "RUTA_INICIADA" -> EstadoTrack.EN_TRASLADO;
             case "ENTREGA_CONFIRMADA" -> EstadoTrack.ENTREGADA;
             case "ENTREGA_NO_RECIBIDA", "ENTREGA_FALLIDA" -> EstadoTrack.ENTREGA_FALLIDA;
+            // Logística revisó una entrega fallida y la reingresó para
+            // replanificar -- sin este caso, la Donacion quedaba congelada
+            // en ENTREGA_FALLIDA para siempre (su única salida es volver a
+            // EN_DEPOSITO) mientras Logística seguía adelante y la
+            // replanificaba igual, generando un RUTA_PLANIFICADA que
+            // después fallaba en silencio por transición inválida.
+            case "ENTREGA_REPLANIFICADA" -> EstadoTrack.EN_DEPOSITO;
             default -> null;
         };
 

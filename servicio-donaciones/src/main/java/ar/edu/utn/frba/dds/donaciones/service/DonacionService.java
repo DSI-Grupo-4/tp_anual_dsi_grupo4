@@ -119,6 +119,17 @@ public class DonacionService {
         Donacion donacion = obtenerDominioPorId(id);
         donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
 
+        // La necesidad se descuenta recién cuando la entrega se confirma de
+        // verdad (ENTREGADA), no cuando se asigna (ver confirmarAsignacion)
+        // -- "se considera satisfecha cuando SE RECIBE una cantidad de
+        // bienes" (texto del enunciado). Antes se acreditaba en el momento
+        // de asignar, así que una entrega que después fallaba en el
+        // traslado dejaba una Necesidad acreditada con bienes que nunca
+        // llegaron, sin forma de revertirlo.
+        if (dto.getNuevoEstado() == EstadoTrack.ENTREGADA && donacion.getNecesidadAsignada() != null) {
+            donacion.getNecesidadAsignada().recibir(donacion.getCantidadAsignada());
+        }
+
         DonacionDTO resultado = convertirADTO(donacion);
         // Se publica el dominio, no el DTO, porque RabbitPublicadorEventos
         // necesita resolver la EntidadBeneficiaria/Donante para el contacto.
@@ -149,9 +160,10 @@ public class DonacionService {
      * (GET /{id}/candidatas), no puede ser cualquiera -- si todavía no se
      * corrió matchmaking, 409; si la entidad no apareció en ninguna de las
      * 3 listas, 400. Si además la entidad tiene una necesidad pendiente de
-     * la misma subcategoría/unidad, se vincula y se descuenta la cantidad
-     * contra ella -- sin esto ninguna Necesidad llegaba jamás a
-     * satisfecha(), sin importar cuántas donaciones se le asignaran.
+     * la misma subcategoría/unidad, se vincula (necesidadAsignada) -- el
+     * descuento real contra ella ocurre recién en cambiarEstado() cuando
+     * la entrega se confirma ENTREGADA, no acá: asignar es una promesa,
+     * todavía puede fallar en el traslado.
      */
     public DonacionDTO confirmarAsignacion(Long id, EntidadBeneficiaria entidad) {
         Donacion donacion = obtenerDominioPorId(id);
@@ -169,10 +181,7 @@ public class DonacionService {
                 .filter(n -> n.getSubcategoria() == donacion.getSubcategoria()
                         && n.getUnidadMedida() == donacion.getUnidadMedida())
                 .findFirst()
-                .ifPresent(necesidad -> {
-                    donacion.setNecesidadAsignada(necesidad);
-                    necesidad.recibir(donacion.getCantidadAsignada());
-                });
+                .ifPresent(donacion::setNecesidadAsignada);
 
         DonacionDTO resultado = convertirADTO(donacion);
         publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);

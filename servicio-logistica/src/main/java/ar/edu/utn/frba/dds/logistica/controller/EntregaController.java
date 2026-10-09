@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.logistica.controller;
 
+import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
+import ar.edu.utn.frba.dds.logistica.domain.eventos.TipoEvento;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.dto.EntregaDTO;
 import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
@@ -18,9 +20,11 @@ import java.util.List;
 public class EntregaController {
 
     private final EntregaRepository entregaRepository;
+    private final GestorEventos gestorEventos;
 
-    public EntregaController(EntregaRepository entregaRepository) {
+    public EntregaController(EntregaRepository entregaRepository, GestorEventos gestorEventos) {
         this.entregaRepository = entregaRepository;
+        this.gestorEventos = gestorEventos;
     }
 
     @Operation(
@@ -82,6 +86,7 @@ public class EntregaController {
     public EntregaDTO reingresar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         var entrega = entregaRepository.buscarPorId(id);
         entrega.reingresarADeposito();
+        gestorEventos.crearEvento(TipoEvento.ENTREGA_REPLANIFICADA, entrega);
         return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());
     }
 }
