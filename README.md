@@ -17,6 +17,7 @@
 .
 ├── Dockerfile
 ├── GUIA-LEVANTAR-SERVICIOS.md
+├── NOTIFICACIONES.md
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -91,7 +92,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-28 directories, 48 files
+28 directories, 49 files
 ```
 <!-- TREE_END -->
 
