@@ -5,6 +5,8 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $runDirectory = Join-Path $repoRoot ".servicios"
+$composeFile = Join-Path $repoRoot "docker-compose.integration.yml"
+$credentialsEnv = Join-Path $repoRoot "servicio-incentivos\credentials.env"
 $mavenCommand = Get-Command "mvn.cmd" -ErrorAction SilentlyContinue
 
 if ($null -eq $mavenCommand) {
@@ -23,6 +25,32 @@ $services = @(
 )
 
 New-Item -ItemType Directory -Path $runDirectory -Force | Out-Null
+
+if (-not (Test-Path -LiteralPath $credentialsEnv)) {
+    Write-Host "No existe $credentialsEnv, se crea vacio (completar con las credenciales reales de Discord/Sheets si el workflow las necesita)."
+    New-Item -ItemType File -Path $credentialsEnv -Force | Out-Null
+}
+
+Write-Host "Levantando infraestructura (RabbitMQ, MySQL, n8n)..."
+docker compose -f $composeFile up -d
+if ($LASTEXITCODE -ne 0) {
+    throw "No se pudo levantar la infraestructura de Docker. Revisa que Docker Desktop este corriendo."
+}
+# "docker compose up -d" vuelve en cuanto el contenedor arranco, pero el
+# entrypoint de n8n todavia tiene que importar y publicar el workflow adentro
+# -- confirmado en vivo: tarda entre 8 y 22s segun la maquina, asi que se
+# sondea el webhook en vez de adivinar un tiempo fijo. Sin esto, Incentivos
+# le pega al webhook antes de que este registrado y recibe 404.
+Write-Host "Esperando a que n8n registre el webhook (hasta 60s)..."
+for ($i = 0; $i -lt 30; $i++) {
+    try {
+        $response = Invoke-WebRequest -Uri "http://localhost:5678/webhook/events/insignia-otorgada" -Method Post -UseBasicParsing -ErrorAction SilentlyContinue
+        if ($response.StatusCode -ne 404) { break }
+    } catch {
+        if ($_.Exception.Response -and $_.Exception.Response.StatusCode -ne 404) { break }
+    }
+    Start-Sleep -Seconds 2
+}
 
 if (-not $SkipBuild) {
     Write-Host "Compilando los modulos..."
@@ -46,9 +74,16 @@ foreach ($service in $services) {
     $stdoutPath = Join-Path $runDirectory ($service.Name + ".out.log")
     $stderrPath = Join-Path $runDirectory ($service.Name + ".err.log")
 
+    $mvnArgs = @("-f", $pomPath, "spring-boot:run")
+    if ($service.Module -eq "servicio-logistica") {
+        # Hasta que exista el DER y un logistica.sql con el esquema real,
+        # Hibernate crea las tablas solo contra el MySQL del compose (D-026).
+        $mvnArgs += "-Dspring-boot.run.jvmArguments=-Dspring.jpa.hibernate.ddl-auto=update"
+    }
+
     $process = Start-Process `
         -FilePath $mavenCommand.Source `
-        -ArgumentList @("-f", $pomPath, "spring-boot:run") `
+        -ArgumentList $mvnArgs `
         -WorkingDirectory $repoRoot `
         -RedirectStandardOutput $stdoutPath `
         -RedirectStandardError $stderrPath `
@@ -67,4 +102,5 @@ Write-Host "  Notificaciones: http://localhost:8082/swagger-ui/index.html"
 Write-Host "  Logística:      http://localhost:8083/swagger-ui/index.html"
 Write-Host ""
 Write-Host ("Logs disponibles en " + $runDirectory)
+Write-Host "n8n: http://localhost:5678  |  RabbitMQ: http://localhost:15672"
 Write-Host "Para detener los servicios: .\stop-servicios.ps1"

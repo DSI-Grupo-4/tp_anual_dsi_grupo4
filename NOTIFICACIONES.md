@@ -16,10 +16,9 @@ Donaciones e Incentivos guardan solicitudes de aviso en una bandeja local y las 
 
 ## Configuración y pruebas en Swagger
 
-Desde la raíz del repositorio, con Docker disponible:
+Desde la raíz del repositorio, con Docker disponible (`run-servicios.ps1` levanta RabbitMQ solo, junto con el resto de la infraestructura):
 
 ```powershell
-docker compose -f docker-compose.integration.yml up -d rabbitmq
 $env:NOTIFICACIONES_ADMIN_EMAILS = "administrador@example.org"
 $env:LOGISTICA_PUBLIC_BASE_URL = "http://localhost:8083"
 .\run-servicios.ps1

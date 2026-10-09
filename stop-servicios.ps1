@@ -7,6 +7,11 @@ param(
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $runDirectory = Join-Path $repoRoot ".servicios"
+$composeFile = Join-Path $repoRoot "docker-compose.integration.yml"
+# Solo baja la infra (RabbitMQ, MySQL, n8n) si se pidieron los 4 servicios --
+# si se pasó un subconjunto puntual (-Service donaciones), el resto puede
+# seguir dependiendo de ella.
+$stopAll = -not $PSBoundParameters.ContainsKey("Service")
 $modules = @{
     donaciones = "servicio-donaciones"
     incentivos = "servicio-incentivos"
@@ -60,6 +65,11 @@ foreach ($name in $Service) {
         Remove-Item -LiteralPath $pidFile
         Write-Host "$name detenido."
     }
+}
+
+if ($stopAll -and $PSCmdlet.ShouldProcess($composeFile, "Bajar infraestructura (RabbitMQ, MySQL, n8n)")) {
+    Write-Host "Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
+    docker compose -f $composeFile down
 }
 
 if ($failed) {

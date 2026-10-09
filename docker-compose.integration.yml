@@ -1,3 +1,6 @@
+include:
+  - servicio-incentivos/docker-compose.yml
+
 services:
   rabbitmq:
     image: rabbitmq:4-management
@@ -13,5 +16,22 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
+  mysql:
+    image: mysql:8
+    container_name: donatrack-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: BasededatosTP1
+      MYSQL_DATABASE: logistica
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pBasededatosTP1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - mysql-data:/var/lib/mysql
+
 volumes:
   rabbitmq-data:
+  mysql-data:

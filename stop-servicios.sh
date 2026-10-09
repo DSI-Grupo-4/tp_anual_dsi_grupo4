@@ -3,16 +3,25 @@
 # Detiene los servicios Java levantados por run-servicios.sh (equivalente en
 # bash/Linux de stop-servicios.ps1). Lee los PID de .pids/<servicio>.pid y
 # valida, antes de matar, que el proceso todavía corresponda a ese servicio
-# -- para no tocar un proceso ajeno si el sistema reusó el PID.
+# -- para no tocar un proceso ajeno si el sistema reusó el PID. Si se detienen
+# los 4 (sin argumentos), también baja la infra (RabbitMQ, MySQL, n8n) de
+# docker-compose.integration.yml.
 #
 # Uso: ./stop-servicios.sh [servicio ...]
-#   (sin argumentos detiene los 4 servicios)
+#   (sin argumentos detiene los 4 servicios + la infra)
 
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PID_DIR="$ROOT_DIR/.pids"
+COMPOSE_FILE="$ROOT_DIR/docker-compose.integration.yml"
 SERVICE_ORDER=(servicio-donaciones servicio-logistica servicio-incentivos servicio-notificaciones)
+
+# Solo baja la infra (RabbitMQ, MySQL, n8n) si se pidieron todos los
+# servicios -- si se pasó un subconjunto puntual (ej. "stop-servicios.sh
+# servicio-incentivos"), el resto puede seguir dependiendo de ella.
+stop_all=0
+[[ $# -eq 0 ]] && stop_all=1
 
 targets=("$@")
 [[ ${#targets[@]} -eq 0 ]] && targets=("${SERVICE_ORDER[@]}")
@@ -77,5 +86,10 @@ for name in "${targets[@]}"; do
   rm -f "$pid_file"
   echo "    $name detenido."
 done
+
+if [[ "$stop_all" -eq 1 ]]; then
+  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
+  docker compose -f "$COMPOSE_FILE" down
+fi
 
 exit $failed

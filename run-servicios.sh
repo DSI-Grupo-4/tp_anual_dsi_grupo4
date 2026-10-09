@@ -13,6 +13,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$ROOT_DIR/logs"
 PID_DIR="$ROOT_DIR/.pids"
 INCENTIVOS_DIR="$ROOT_DIR/servicio-incentivos"
+COMPOSE_FILE="$ROOT_DIR/docker-compose.integration.yml"
 
 mkdir -p "$LOG_DIR" "$PID_DIR"
 
@@ -47,10 +48,10 @@ Uso: $0 <comando>
 
 Comandos:
   build            Compila (mvn package) todos los servicios implementados
-  up               Compila si hace falta y levanta todos los servicios + n8n (default)
-  down             Detiene todos los servicios y el contenedor de n8n
-  status           Muestra el estado de cada servicio
-  logs <servicio>  Sigue el log de un servicio (ej: servicio-incentivos, n8n)
+  up               Compila si hace falta y levanta todos los servicios + infra (default)
+  down             Detiene todos los servicios y la infra (RabbitMQ, MySQL, n8n)
+  status           Muestra el estado de cada servicio y de la infra
+  logs <servicio>  Sigue el log de un servicio (ej: servicio-incentivos, n8n, mysql, rabbitmq)
 EOF
 }
 
@@ -95,7 +96,14 @@ start_java_service() {
   fi
 
   echo "==> Iniciando $name en el puerto $port..."
-  nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
+  # Logística: hasta que exista el DER y un logistica.sql con el esquema
+  # real, Hibernate crea las tablas solo contra el MySQL de
+  # docker-compose.integration.yml (ver D-026).
+  if [[ "$name" == "servicio-logistica" ]]; then
+    JPA_DDL_AUTO="${JPA_DDL_AUTO:-update}" nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
+  else
+    nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
+  fi
   echo $! > "$pid_file"
 }
 
@@ -121,15 +129,26 @@ ensure_credentials_env() {
   fi
 }
 
-start_n8n() {
+start_infra() {
   ensure_credentials_env
-  echo "==> Levantando n8n (workflow de incentivos, sin dashboard)..."
-  (cd "$INCENTIVOS_DIR" && make deploy)
+  echo "==> Levantando infraestructura (RabbitMQ, MySQL, n8n)..."
+  docker compose -f "$COMPOSE_FILE" up -d
+  # "docker compose up -d" vuelve en cuanto el contenedor arrancó, pero el
+  # entrypoint de n8n todavía tiene que importar y publicar el workflow
+  # adentro -- confirmado en vivo: tarda entre 8 y 22s según la máquina, así
+  # que se sondea el webhook en vez de adivinar un tiempo fijo. Sin esto,
+  # Incentivos le pega al webhook antes de que esté registrado y recibe 404.
+  echo "    Esperando a que n8n registre el webhook (hasta 60s)..."
+  for _ in $(seq 1 30); do
+    code="$(curl -s -o /dev/null -w '%{http_code}' -X POST http://localhost:5678/webhook/events/insignia-otorgada 2>/dev/null)"
+    [[ "$code" != "404" && "$code" != "000" ]] && break
+    sleep 2
+  done
 }
 
-stop_n8n() {
-  echo "==> Deteniendo n8n..."
-  (cd "$INCENTIVOS_DIR" && make down)
+stop_infra() {
+  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
+  docker compose -f "$COMPOSE_FILE" down
 }
 
 up() {
@@ -141,10 +160,11 @@ up() {
     build || echo "==> Sigo con lo que sí compiló."
   fi
 
+  start_infra
+
   for name in $(implemented_services); do
     start_java_service "$name"
   done
-  start_n8n
 
   echo ""
   status
@@ -154,7 +174,7 @@ down() {
   for name in $(implemented_services); do
     stop_java_service "$name"
   done
-  stop_n8n
+  stop_infra
 }
 
 status() {
@@ -171,11 +191,17 @@ status() {
       echo "  [DOWN] $name"
     fi
   done
-  if docker compose -f "$INCENTIVOS_DIR/docker-compose.yml" --project-directory "$INCENTIVOS_DIR" ps --status running 2>/dev/null | grep -q n8n; then
-    echo "  [UP]   n8n (workflow de incentivos, puerto 5678, dashboard deshabilitado)"
-  else
-    echo "  [DOWN] n8n"
-  fi
+  echo ""
+  echo "Infraestructura:"
+  local running
+  running="$(docker compose -f "$COMPOSE_FILE" ps --status running --format '{{.Service}}' 2>/dev/null)"
+  for infra in rabbitmq mysql n8n; do
+    if echo "$running" | grep -qx "$infra"; then
+      echo "  [UP]   $infra"
+    else
+      echo "  [DOWN] $infra"
+    fi
+  done
 }
 
 logs() {
@@ -184,8 +210,8 @@ logs() {
     echo "Uso: $0 logs <servicio>" >&2
     exit 1
   fi
-  if [[ "$name" == "n8n" ]]; then
-    (cd "$INCENTIVOS_DIR" && docker compose logs -f n8n)
+  if [[ "$name" == "n8n" || "$name" == "mysql" || "$name" == "rabbitmq" ]]; then
+    docker compose -f "$COMPOSE_FILE" logs -f "$name"
   else
     tail -f "$LOG_DIR/$name.log"
   fi

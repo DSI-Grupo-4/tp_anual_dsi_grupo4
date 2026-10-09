@@ -4,7 +4,8 @@
 
 - Java 17 o superior.
 - Maven disponible desde la terminal (`mvn -version`).
-- Puertos 8080, 8081, 8082 y 8083 libres.
+- Docker Desktop corriendo (para RabbitMQ, MySQL y n8n).
+- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ) y 5678 (n8n) libres.
 
 Ejecutar los comandos desde la raíz del repositorio:
 
@@ -20,7 +21,7 @@ En PowerShell:
 .\run-servicios.ps1
 ```
 
-El script compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios en segundo plano. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`.
+El script levanta primero la infraestructura de Docker (RabbitMQ, MySQL y n8n, definida en `docker-compose.integration.yml`), compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios en segundo plano. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`. Requiere Docker Desktop corriendo.
 
 Si el proyecto ya está compilado y se quiere omitir ese paso:
 
@@ -61,11 +62,7 @@ Para aplicar cambios de código, detener los servicios y volver a compilar e ini
 
 Cerrar la terminal que ejecutó `run-servicios.ps1` no detiene los servicios en segundo plano. Si se iniciaron manualmente en terminales separadas con `spring-boot:run`, usar **Ctrl+C** en cada terminal para solicitar el cierre normal de Spring.
 
-Si n8n se inició por separado con Docker Compose, detenerlo por separado:
-
-```powershell
-docker compose -f .\servicio-incentivos\docker-compose.yml stop
-```
+`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, n8n) cuando se detienen los 4 servicios (sin `-Service`). Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
 
 ## Levantar los servicios manualmente
 
@@ -111,12 +108,17 @@ Test-NetConnection localhost -Port 8083
 
 La primera ejecución puede tardar porque Maven necesita descargar dependencias y compilar los módulos.
 
-## n8n opcional
+## Infraestructura (RabbitMQ, MySQL, n8n)
 
-Si también se quieren probar los webhooks de n8n y existe el archivo `servicio-incentivos/docker-compose.yml`:
+`run-servicios.ps1`/`run-servicios.sh` ya la levantan solos. Para manejarla aparte (por ejemplo, para levantar solo la infraestructura sin los servicios Java):
 
 ```powershell
-docker compose -f .\servicio-incentivos\docker-compose.yml up -d
+docker compose -f docker-compose.integration.yml up -d
+docker compose -f docker-compose.integration.yml down
 ```
 
-La interfaz de n8n queda normalmente en http://localhost:5678.
+- n8n (workflow de difusión de insignias de Incentivos): http://localhost:5678
+- RabbitMQ (management UI): http://localhost:15672
+- MySQL (persistencia de Logística): `localhost:3306`, usuario `root`, password `BasededatosTP1`, base `logistica`.
+
+Logística todavía no tiene un script de esquema (`logistica.sql`) -- hasta que exista el DER, `run-servicios.ps1`/`.sh` arrancan Logística con `spring.jpa.hibernate.ddl-auto=update`, que crea las tablas solo a partir de las entidades JPA.
