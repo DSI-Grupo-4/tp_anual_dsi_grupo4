@@ -176,6 +176,7 @@ public class DonanteService {
         );
 
         donante.registrarActividad();
+        gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
         return convertirADTO(donante);
     }
@@ -204,12 +205,15 @@ public class DonanteService {
         );
 
         donante.registrarActividad();
+        gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
         return convertirADTO(donante);
     }
 
     public void registrarInteraccion(Long id) {
-        gestorDonantes.buscarPorId(id).registrarActividad();
+        Donante donante = gestorDonantes.buscarPorId(id);
+        donante.registrarActividad();
+        gestorDonantes.guardar(donante);
     }
 
     /**
@@ -224,6 +228,10 @@ public class DonanteService {
         return ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.validar(contactos);
     }
 
+    // Una sola transacción para los ~20000 save() del CSV -- sin esto, cada
+    // fila abre/cierra su propia transacción contra MySQL, reintroduciendo
+    // el costo de latencia por fila que D-021 ya había eliminado en memoria.
+    @org.springframework.transaction.annotation.Transactional
     public ImportacionDonantesDTO importarCSV(MultipartFile archivo) {
 
         try {

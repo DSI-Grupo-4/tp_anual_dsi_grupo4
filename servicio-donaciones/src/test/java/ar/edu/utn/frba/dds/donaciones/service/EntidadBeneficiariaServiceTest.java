@@ -21,6 +21,10 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -39,7 +43,29 @@ class EntidadBeneficiariaServiceTest {
 
     @BeforeEach
     void setUp() {
-        entidadBeneficiariaService = new EntidadBeneficiariaService(gestorDonaciones);
+        ar.edu.utn.frba.dds.donaciones.repository.EntidadBeneficiariaRepository repo =
+                mock(ar.edu.utn.frba.dds.donaciones.repository.EntidadBeneficiariaRepository.class);
+        List<EntidadBeneficiaria> guardadas = new java.util.ArrayList<>();
+        java.util.concurrent.atomic.AtomicLong siguienteId = new java.util.concurrent.atomic.AtomicLong(1L);
+        lenient().when(repo.save(any())).thenAnswer(inv -> {
+            EntidadBeneficiaria e = inv.getArgument(0);
+            if (e.getId() == null) e.setId(siguienteId.getAndIncrement());
+            guardadas.removeIf(x -> x.getId().equals(e.getId()));
+            guardadas.add(e);
+            return e;
+        });
+        lenient().when(repo.findAll()).thenAnswer(inv -> List.copyOf(guardadas));
+        lenient().when(repo.findById(any())).thenAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            return guardadas.stream().filter(x -> x.getId().equals(id)).findFirst();
+        });
+        lenient().doAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            guardadas.removeIf(x -> x.getId().equals(id));
+            return null;
+        }).when(repo).deleteById(any());
+
+        entidadBeneficiariaService = new EntidadBeneficiariaService(repo, gestorDonaciones);
     }
 
     private EntidadBeneficiariaDTO crearEntidad(Long id, String razonSocial) {

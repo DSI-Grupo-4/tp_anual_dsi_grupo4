@@ -98,7 +98,7 @@ public class DonacionController {
     public ResultadoMatchmakingDTO candidatas(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         Donacion donacion = donacionService.obtenerDominioPorId(id);
         ResultadoMatchmaking resultado = matchmakingService.ejecutarMatchmaking(donacion);
-        donacion.setResultadoMatchmaking(resultado);
+        donacionService.registrarResultadoMatchmaking(donacion, resultado);
         return entidadBeneficiariaService.convertirResultadoADTO(
                 resultado, donacion.getSubcategoria(), donacion.getUnidadMedida());
     }

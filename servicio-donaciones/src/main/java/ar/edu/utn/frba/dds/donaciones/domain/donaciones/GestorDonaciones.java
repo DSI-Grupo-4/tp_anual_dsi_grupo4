@@ -4,12 +4,12 @@ import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.AlgoritmoAsignacion;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository;
+import ar.edu.utn.frba.dds.donaciones.repository.SolicitudDonacionRepository;
 import lombok.Getter;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -19,44 +19,42 @@ import java.util.NoSuchElementException;
 public class GestorDonaciones {
 
     private Deposito deposito;
-    private List<Donacion> donaciones;
     private List<AlgoritmoAsignacion> algoritmos;
-    private Long siguienteId = 1L;
-    private Long siguienteSolicitudId = 1L;
-    private final List<SolicitudDonacion> solicitudes = new ArrayList<>();
+    private final DonacionRepository donacionRepository;
+    private final SolicitudDonacionRepository solicitudDonacionRepository;
 
-    // Constructor de conveniencia (tests, uso manual sin contexto de Spring).
-    public GestorDonaciones() {
-        this(new Deposito());
-    }
-
-    @Autowired
-    public GestorDonaciones(Deposito deposito) {
+    public GestorDonaciones(Deposito deposito, DonacionRepository donacionRepository,
+                             SolicitudDonacionRepository solicitudDonacionRepository) {
         this.deposito = deposito;
-        this.donaciones = new ArrayList<>();
-        this.algoritmos = new ArrayList<>();
+        this.donacionRepository = donacionRepository;
+        this.solicitudDonacionRepository = solicitudDonacionRepository;
+        this.algoritmos = new java.util.ArrayList<>();
         this.algoritmos.add(new CompatibilidadSemantica());
         this.algoritmos.add(new PrioridadSubatendidos());
     }
 
+    public List<Donacion> getDonaciones() {
+        return donacionRepository.findAll();
+    }
+
     /**
      * Registra una donación ya construida (por ej. resultado de
-     * SolicitudDonacion.segmentar(), que llega con id=null) asignándole id
-     * si no tiene, y la agrega a la única lista real de donaciones.
+     * SolicitudDonacion.segmentar(), que llega con id=null) persistiéndola
+     * -- el id lo asigna la base al guardar.
      */
     public Donacion registrarDonacion(Donacion donacion) {
-        if (donacion.getId() == null) {
-            donacion.setId(siguienteId++);
-        }
-        donaciones.add(donacion);
+        donacion = donacionRepository.save(donacion);
         if (donacion.getDonante() != null) donacion.getDonante().agregarDonacion(donacion);
         return donacion;
     }
 
+    /** Persiste mutaciones hechas sobre una Donacion ya existente (cambiarEstado, confirmarAsignacion, etc). */
+    public Donacion guardar(Donacion donacion) {
+        return donacionRepository.save(donacion);
+    }
+
     public Donacion buscarPorId(Long id) {
-        return donaciones.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
+        return donacionRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException(
                         "No existe la donación " + id));
     }
@@ -66,13 +64,12 @@ public class GestorDonaciones {
         if (donacion.getEstadoActual() != EstadoTrack.EN_DEPOSITO)
             throw new IllegalStateException("Solo puede eliminarse una donación en depósito");
         deposito.reemplazarItems(donacion.getItems(), List.of());
-        donaciones.remove(donacion);
+        donacionRepository.deleteById(id);
         if (donacion.getDonante() != null) donacion.getDonante().getDonaciones().remove(donacion);
     }
 
     public void registrarSolicitud(SolicitudDonacion solicitud) {
-        if (solicitud.getId() == null) solicitud.setId(siguienteSolicitudId++);
-        solicitudes.add(solicitud);
+        solicitud = solicitudDonacionRepository.save(solicitud);
         solicitud.getItems().forEach(deposito::cargarItem);
     }
 

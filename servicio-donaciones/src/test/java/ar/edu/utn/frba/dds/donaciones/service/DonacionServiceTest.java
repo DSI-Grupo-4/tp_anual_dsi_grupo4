@@ -35,6 +35,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 /**
@@ -52,12 +53,35 @@ class DonacionServiceTest {
     private PublicadorEventosPort publicadorEventos;
     @Mock
     private IncentivosClient incentivosClient;
+    @Mock
+    private ar.edu.utn.frba.dds.donaciones.repository.EventoAplicadoRepository eventoAplicadoRepository;
+    @Mock
+    private ar.edu.utn.frba.dds.donaciones.repository.NecesidadRepository necesidadRepository;
+    @Mock
+    private ar.edu.utn.frba.dds.donaciones.repository.ItemDonadoRepository itemDonadoRepository;
 
     private DonacionService donacionService;
 
     @BeforeEach
     void setUp() {
-        donacionService = new DonacionService(gestorDonaciones, gestorDonantes, publicadorEventos, incentivosClient);
+        donacionService = new DonacionService(gestorDonaciones, gestorDonantes, publicadorEventos, incentivosClient,
+                eventoAplicadoRepository, necesidadRepository, itemDonadoRepository);
+        // cambiarEstado/confirmarAsignacion guardan la donación mutada y
+        // devuelven lo que guardaron -- el mock, sin este stub, devolvería
+        // null por default.
+        lenient().when(gestorDonaciones.guardar(any(Donacion.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // eventoAplicadoRepository es un mock sin comportamiento real: sin
+        // respaldarlo con un set en memoria, existsById()/save() quedan
+        // desconectados entre sí (antes esto era un HashSet<String> real en
+        // DonacionService, que sí vinculaba ambas operaciones).
+        java.util.Set<String> eventosAplicados = new java.util.HashSet<>();
+        lenient().when(eventoAplicadoRepository.existsById(any())).thenAnswer(inv -> eventosAplicados.contains(inv.getArgument(0)));
+        lenient().when(eventoAplicadoRepository.save(any())).thenAnswer(inv -> {
+            ar.edu.utn.frba.dds.donaciones.domain.donaciones.EventoAplicado evento = inv.getArgument(0);
+            eventosAplicados.add(evento.getEventoId());
+            return evento;
+        });
     }
 
     @Test

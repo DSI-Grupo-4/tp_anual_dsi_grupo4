@@ -19,9 +19,9 @@ import ar.edu.utn.frba.dds.donaciones.dto.EntidadCandidataDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ResultadoMatchmakingDTO;
+import ar.edu.utn.frba.dds.donaciones.repository.EntidadBeneficiariaRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -37,14 +37,12 @@ public class EntidadBeneficiariaService {
             EstadoTrack.LISTA_PARA_ENTREGAR,
             EstadoTrack.EN_TRASLADO);
 
-    private List<EntidadBeneficiaria> entidades =
-            new ArrayList<>();
-
-    private Long siguienteId = 1L;
-
+    private final EntidadBeneficiariaRepository entidadBeneficiariaRepository;
     private final GestorDonaciones gestorDonaciones;
 
-    public EntidadBeneficiariaService(GestorDonaciones gestorDonaciones) {
+    public EntidadBeneficiariaService(EntidadBeneficiariaRepository entidadBeneficiariaRepository,
+                                       GestorDonaciones gestorDonaciones) {
+        this.entidadBeneficiariaRepository = entidadBeneficiariaRepository;
         this.gestorDonaciones = gestorDonaciones;
     }
 
@@ -62,35 +60,26 @@ public class EntidadBeneficiariaService {
         personaJuridica.setMediosContacto(ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.validar(personaJuridicaDTO.getMediosContacto()));
         EntidadBeneficiaria entidad =
                 new EntidadBeneficiaria(
-                        siguienteId++,
+                        null,
                         personaJuridica,
                         dto.getDescripcion()
                 );
         entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
-        entidades.add(entidad);
+        entidad = entidadBeneficiariaRepository.save(entidad);
 
         return convertirADTO(entidad);
     }
 
     public List<EntidadBeneficiariaDTO> obtenerTodas() {
-        return entidades.stream().map(this::convertirADTO).toList();
+        return entidadBeneficiariaRepository.findAll().stream().map(this::convertirADTO).toList();
     }
 
     public EntidadBeneficiariaDTO obtenerPorId(Long id) {
-
-        EntidadBeneficiaria entidad = entidades.stream()
-                .filter(e -> e.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("No existe la entidad beneficiaria " + id));
-
-        return convertirADTO(entidad);
+        return convertirADTO(buscarEntidad(id));
     }
 
     public EntidadBeneficiaria buscarEntidad(Long id) {
-
-        return entidades.stream()
-                .filter(e -> e.getId().equals(id))
-                .findFirst()
+        return entidadBeneficiariaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No existe la entidad beneficiaria " + id));
     }
 
@@ -108,9 +97,7 @@ public class EntidadBeneficiariaService {
                             + donacionesActivas + " donación(es) activa(s) asignada(s)");
         }
 
-        entidades.removeIf(
-                e -> e.getId().equals(id)
-        );
+        entidadBeneficiariaRepository.deleteById(id);
     }
 
     public EntidadBeneficiariaDTO convertirADTO(
@@ -219,7 +206,7 @@ public class EntidadBeneficiariaService {
     }
 
         public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
-           return entidades;
+           return entidadBeneficiariaRepository.findAll();
         }
 
     /**

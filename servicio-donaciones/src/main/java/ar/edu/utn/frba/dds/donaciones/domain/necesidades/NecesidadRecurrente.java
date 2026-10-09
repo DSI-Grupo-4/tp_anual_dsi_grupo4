@@ -1,6 +1,10 @@
 package ar.edu.utn.frba.dds.donaciones.domain.necesidades;
 
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import java.math.BigDecimal;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
@@ -10,13 +14,22 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
+@jakarta.persistence.Entity
+@DiscriminatorValue("RECURRENTE")
 public class NecesidadRecurrente extends Necesidad {
+    @Enumerated(EnumType.STRING)
+    @Column(name = "periodicidad")
     private Periodicidad periodicidad;
     // Arranque del período que se está evaluando actualmente -- al vencer,
     // la cantidad recibida se reinicia para el período siguiente. Sin esto,
     // una necesidad recurrente quedaba satisfecha para siempre la primera
     // vez que se cubría, contradiciendo que se evalúa "dentro de cada período".
+    @Column(name = "inicio_periodo_actual")
     private LocalDate inicioPeriodoActual;
+
+    protected NecesidadRecurrente() {
+        // requerido por JPA
+    }
 
     public NecesidadRecurrente(
             Long id,

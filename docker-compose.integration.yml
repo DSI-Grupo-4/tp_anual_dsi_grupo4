@@ -33,6 +33,7 @@ services:
       - mysql-data:/var/lib/mysql
       - ./servicio-logistica/src/main/resources/db/logistica.sql:/docker-entrypoint-initdb.d/01-logistica.sql:ro
       - ./servicio-incentivos/src/main/resources/db/incentivos.sql:/docker-entrypoint-initdb.d/02-incentivos.sql:ro
+      - ./servicio-donaciones/src/main/resources/db/donaciones.sql:/docker-entrypoint-initdb.d/03-donaciones.sql:ro
 
   # Consola de administración de la base (D-012 preveía MySQL Workbench,
   # pero es una app de escritorio -- no es un buen ciudadano de Docker,

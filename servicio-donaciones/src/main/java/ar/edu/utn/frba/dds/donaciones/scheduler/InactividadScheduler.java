@@ -31,6 +31,7 @@ public class InactividadScheduler {
             if (donante.debeNotificarsePorInactividad(UMBRAL_DIAS_INACTIVIDAD)) {
                 publicadorEventos.publicar("INACTIVIDAD_20_DIAS", donante);
                 donante.marcarNotificadoPorInactividad();
+                gestorDonantes.guardar(donante);
             }
         }
     }

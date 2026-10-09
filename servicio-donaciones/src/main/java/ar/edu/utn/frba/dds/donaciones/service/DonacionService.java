@@ -11,7 +11,11 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
 import ar.edu.utn.frba.dds.donaciones.client.IncentivosClient;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EventoAplicado;
 import ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort;
+import ar.edu.utn.frba.dds.donaciones.repository.EventoAplicadoRepository;
+import ar.edu.utn.frba.dds.donaciones.repository.ItemDonadoRepository;
+import ar.edu.utn.frba.dds.donaciones.repository.NecesidadRepository;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
@@ -34,14 +38,21 @@ public class DonacionService {
     private final GestorDonantes gestorDonantes;
     private final PublicadorEventosPort publicadorEventos;
     private final IncentivosClient incentivosClient;
-    private final java.util.Set<String> eventosAplicados = new java.util.HashSet<>();
+    private final EventoAplicadoRepository eventoAplicadoRepository;
+    private final NecesidadRepository necesidadRepository;
+    private final ItemDonadoRepository itemDonadoRepository;
 
     public DonacionService(GestorDonaciones gestorDonaciones, GestorDonantes gestorDonantes,
-                            PublicadorEventosPort publicadorEventos, IncentivosClient incentivosClient) {
+                            PublicadorEventosPort publicadorEventos, IncentivosClient incentivosClient,
+                            EventoAplicadoRepository eventoAplicadoRepository, NecesidadRepository necesidadRepository,
+                            ItemDonadoRepository itemDonadoRepository) {
         this.gestorDonaciones = gestorDonaciones;
         this.gestorDonantes = gestorDonantes;
         this.publicadorEventos = publicadorEventos;
         this.incentivosClient = incentivosClient;
+        this.eventoAplicadoRepository = eventoAplicadoRepository;
+        this.necesidadRepository = necesidadRepository;
+        this.itemDonadoRepository = itemDonadoRepository;
     }
 
     /**
@@ -50,6 +61,12 @@ public class DonacionService {
      * subcategoría. Reemplaza el alta directa de un único ítem que había
      * antes, que ni siquiera aceptaba categoría/subcategoría.
      */
+    // Transaccional: solicitud+items se persisten primero (quedan
+    // administrados por la sesión), y segmentar() recién después reasigna
+    // esos mismos items a las Donacion nuevas -- sin esto, la reasignación
+    // de FK pasa sobre entidades transitorias y el cascade de persistencia
+    // no sabe en qué orden resolverlas.
+    @org.springframework.transaction.annotation.Transactional
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
         Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
 
@@ -60,8 +77,8 @@ public class DonacionService {
             solicitud.agregarItem(convertirItemDominio(itemDto));
         }
 
-        List<Donacion> segmentadas = solicitud.segmentar();
         gestorDonaciones.registrarSolicitud(solicitud);
+        List<Donacion> segmentadas = solicitud.segmentar();
         donante.registrarActividad();
         return segmentadas.stream()
                 .map(gestorDonaciones::registrarDonacion)
@@ -108,18 +125,25 @@ public class DonacionService {
     }
 
     /** Reemplazo validado y atómico del grupo; conserva identidad, origen e historial. */
+    @org.springframework.transaction.annotation.Transactional
     public DonacionDTO actualizar(Long id, ActualizarDonacionDTO dto) {
         Donacion donacion = obtenerDominioPorId(id);
         List<ItemDonado> nuevos = dto.getItems().stream().map(this::convertirItemDominio).toList();
         List<ItemDonado> anteriores = donacion.getItems();
         donacion.reemplazarItems(nuevos);
+        // Los items viejos quedan huérfanos (donacion = null) en vez de
+        // borrarse -- ya no forman parte de donacion.items, así que el
+        // cascade de Donacion no los alcanza; hay que guardarlos aparte.
+        itemDonadoRepository.saveAll(anteriores);
+        donacion = gestorDonaciones.guardar(donacion);
         gestorDonaciones.getDeposito().reemplazarItems(anteriores, nuevos);
         return convertirADTO(donacion);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public synchronized DonacionDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
         Donacion donacion = obtenerDominioPorId(id);
-        if (dto.getEventoId() != null && eventosAplicados.contains(dto.getEventoId())) return convertirADTO(donacion);
+        if (dto.getEventoId() != null && eventoAplicadoRepository.existsById(dto.getEventoId())) return convertirADTO(donacion);
         boolean repetido = dto.getEventoId() != null && donacion.getEstadoActual() == dto.getNuevoEstado();
         if (!repetido) donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
 
@@ -132,8 +156,10 @@ public class DonacionService {
         // llegaron, sin forma de revertirlo.
         if (!repetido && dto.getNuevoEstado() == EstadoTrack.ENTREGADA && donacion.getNecesidadAsignada() != null) {
             donacion.getNecesidadAsignada().recibir(donacion.getCantidadAsignada());
+            necesidadRepository.save(donacion.getNecesidadAsignada());
         }
 
+        donacion = gestorDonaciones.guardar(donacion);
         DonacionDTO resultado = convertirADTO(donacion);
         // Se publica el dominio, no el DTO, porque RabbitPublicadorEventos
         // necesita resolver la EntidadBeneficiaria/Donante para el contacto.
@@ -147,7 +173,7 @@ public class DonacionService {
         if (dto.getNuevoEstado() == EstadoTrack.ENTREGADA) {
             incentivosClient.registrarActividadDonacion(donacion);
         }
-        if (dto.getEventoId() != null) eventosAplicados.add(dto.getEventoId());
+        if (dto.getEventoId() != null) eventoAplicadoRepository.save(new EventoAplicado(dto.getEventoId()));
         return resultado;
     }
 
@@ -167,6 +193,7 @@ public class DonacionService {
      * la entrega se confirma ENTREGADA, no acá: asignar es una promesa,
      * todavía puede fallar en el traslado.
      */
+    @org.springframework.transaction.annotation.Transactional
     public DonacionDTO confirmarAsignacion(Long id, EntidadBeneficiaria entidad) {
         Donacion donacion = obtenerDominioPorId(id);
         if (donacion.getPesoKg() == null || donacion.getVolumenM3() == null || donacion.getAlturaM() == null)
@@ -185,8 +212,9 @@ public class DonacionService {
                 .findFirst()
                 .ifPresent(donacion::setNecesidadAsignada);
 
-        DonacionDTO resultado = convertirADTO(donacion);
-        publicadorEventos.publicar("DONACION_ASIGNADA", donacion);
+        Donacion donacionGuardada = gestorDonaciones.guardar(donacion);
+        DonacionDTO resultado = convertirADTO(donacionGuardada);
+        publicadorEventos.publicar("DONACION_ASIGNADA", donacionGuardada);
         return resultado;
     }
 
@@ -266,6 +294,12 @@ public class DonacionService {
 
     public Donacion obtenerDominioPorId(Long id) {
         return gestorDonaciones.buscarPorId(id);
+    }
+
+    /** GET /{id}/candidatas corre el matchmaking a demanda y necesita persistir el resultado vigente. */
+    public void registrarResultadoMatchmaking(Donacion donacion, ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking resultado) {
+        donacion.setResultadoMatchmaking(resultado);
+        gestorDonaciones.guardar(donacion);
     }
 
     private DonacionDTO convertirADTO(Donacion donacion) {

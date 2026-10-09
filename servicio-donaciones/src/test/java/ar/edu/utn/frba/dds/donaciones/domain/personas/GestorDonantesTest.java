@@ -1,23 +1,58 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+// DonanteRepository se simula con un mock respaldado por una lista en
+// memoria: estos tests verifican el comportamiento de GestorDonantes en sí
+// (ids secuenciales sin colisión entre alta manual e importación CSV,
+// dedup por email), no el mapeo JPA.
 class GestorDonantesTest {
 
     private GestorDonantes gestor;
+    private final List<Donante> donantesGuardados = new ArrayList<>();
+    private final AtomicLong siguienteId = new AtomicLong(1L);
 
     @BeforeEach
     void setUp() {
-        gestor = new GestorDonantes();
+        DonanteRepository donanteRepository = mock(DonanteRepository.class);
+
+        when(donanteRepository.save(any())).thenAnswer(invocation -> {
+            Donante donante = invocation.getArgument(0);
+            if (donante.getId() == null) {
+                donante.setId(siguienteId.getAndIncrement());
+            }
+            donantesGuardados.removeIf(d -> d.getId().equals(donante.getId()));
+            donantesGuardados.add(donante);
+            return donante;
+        });
+        when(donanteRepository.findAll()).thenAnswer(invocation -> List.copyOf(donantesGuardados));
+        when(donanteRepository.findById(any())).thenAnswer(invocation -> {
+            Long id = invocation.getArgument(0);
+            return donantesGuardados.stream().filter(d -> d.getId().equals(id)).findFirst();
+        });
+        doAnswer(invocation -> {
+            Long id = invocation.getArgument(0);
+            donantesGuardados.removeIf(d -> d.getId().equals(id));
+            return null;
+        }).when(donanteRepository).deleteById(any());
+
+        gestor = new GestorDonantes(donanteRepository);
     }
 
     @Test

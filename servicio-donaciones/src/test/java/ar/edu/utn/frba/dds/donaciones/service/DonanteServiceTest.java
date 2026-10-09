@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -31,6 +32,28 @@ class DonanteServiceTest {
     @BeforeEach
     void setUp() {
         donanteService = new DonanteService(gestorDonantes);
+    }
+
+    // Para los tests que necesitan un GestorDonantes real (no mockeado) como
+    // fixture liviano: simula DonanteRepository con una lista en memoria.
+    private static GestorDonantes nuevoGestorDonantesReal() {
+        ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository repo =
+                org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository.class);
+        java.util.List<Donante> guardados = new java.util.ArrayList<>();
+        java.util.concurrent.atomic.AtomicLong siguienteId = new java.util.concurrent.atomic.AtomicLong(1L);
+        lenient().when(repo.save(any())).thenAnswer(inv -> {
+            Donante d = inv.getArgument(0);
+            if (d.getId() == null) d.setId(siguienteId.getAndIncrement());
+            guardados.removeIf(x -> x.getId().equals(d.getId()));
+            guardados.add(d);
+            return d;
+        });
+        lenient().when(repo.findAll()).thenAnswer(inv -> java.util.List.copyOf(guardados));
+        lenient().when(repo.findById(any())).thenAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            return guardados.stream().filter(x -> x.getId().equals(id)).findFirst();
+        });
+        return new GestorDonantes(repo);
     }
 
     @Test
@@ -144,7 +167,7 @@ class DonanteServiceTest {
 
     @Test
     void csvExponeContactosYPermiteCambiarPreferido() {
-        var gestor = new GestorDonantes();
+        var gestor = nuevoGestorDonantesReal();
         var servicio = new DonanteService(gestor);
         String csv = "tipo,id,documento,nombre,email,telefono\nHUMANA,1,123,Ana Perez,ana@example.org,3515551234\n";
         servicio.importarCSV(new org.springframework.mock.web.MockMultipartFile("archivo", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
@@ -165,7 +188,7 @@ class DonanteServiceTest {
 
     @Test
     void rechazaAltaSinEmailYCsvInvalidoSinAltasParciales() {
-        var gestor = new GestorDonantes();
+        var gestor = nuevoGestorDonantesReal();
         var servicio = new DonanteService(gestor);
         org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.crearDonanteHumano(new PersonaHumanaDTO()))
             .isInstanceOf(IllegalArgumentException.class);
@@ -177,7 +200,7 @@ class DonanteServiceTest {
     }
     @Test
     void bienvenidaSoloAlAltaYLaInteraccionReiniciaInactividad() {
-        var gestor = new GestorDonantes(); var servicio = new DonanteService(gestor);
+        var gestor = nuevoGestorDonantesReal(); var servicio = new DonanteService(gestor);
         var publicador = org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort.class);
         servicio.configurarPublicador(publicador);
         var dto = new PersonaHumanaDTO(); dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
@@ -192,7 +215,7 @@ class DonanteServiceTest {
         assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
     }
     @Test void altaHumanaSincronizaIdentidadEnIncentivosSinDonacion() {
-        var gestor=new GestorDonantes();var servicio=new DonanteService(gestor);
+        var gestor=nuevoGestorDonantesReal();var servicio=new DonanteService(gestor);
         var cliente=org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.client.IncentivosClient.class);servicio.configurarIncentivos(cliente);
         var dto=new PersonaHumanaDTO();dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
         servicio.crearDonanteHumano(dto);

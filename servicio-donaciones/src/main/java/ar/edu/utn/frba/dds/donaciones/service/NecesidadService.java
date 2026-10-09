@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadExtraordinaria;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadRecurrente;
@@ -8,26 +7,25 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadExtraordinariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadRecurrenteDTO;
+import ar.edu.utn.frba.dds.donaciones.repository.NecesidadRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
 public class NecesidadService {
-    private List<Necesidad> necesidades = new ArrayList<>();
-    private Long siguienteId = 1L;
-
+    private final NecesidadRepository necesidadRepository;
     private final EntidadBeneficiariaService entidadBeneficiariaService;
 
-    public NecesidadService(EntidadBeneficiariaService entidadBeneficiariaService) {
+    public NecesidadService(NecesidadRepository necesidadRepository, EntidadBeneficiariaService entidadBeneficiariaService) {
+        this.necesidadRepository = necesidadRepository;
         this.entidadBeneficiariaService = entidadBeneficiariaService;
     }
 
     public NecesidadDTO crearRecurrente(NecesidadRecurrenteDTO dto) {
         NecesidadRecurrente necesidad = new NecesidadRecurrente(
-                siguienteId++,
+                null,
                 dto.getDescripcion(),
                 dto.getSubcategoria(),
                 dto.getUnidadMedida(),
@@ -36,14 +34,14 @@ public class NecesidadService {
         );
 
         asignarEntidadBeneficiaria(necesidad, dto.getEntidadBeneficiariaId());
-        necesidades.add(necesidad);
+        necesidad = (NecesidadRecurrente) necesidadRepository.save(necesidad);
 
         return convertirADTO(necesidad);
     }
 
     public NecesidadDTO crearExtraordinaria(NecesidadExtraordinariaDTO dto) {
         NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(
-                siguienteId++,
+                null,
                 dto.getDescripcion(),
                 dto.getSubcategoria(),
                 dto.getUnidadMedida(),
@@ -52,13 +50,13 @@ public class NecesidadService {
         );
 
         asignarEntidadBeneficiaria(necesidad, dto.getEntidadBeneficiariaId());
-        necesidades.add(necesidad);
+        necesidad = (NecesidadExtraordinaria) necesidadRepository.save(necesidad);
 
         return convertirADTO(necesidad);
     }
 
     public List<NecesidadDTO> obtenerTodas() {
-        return necesidades.stream()
+        return necesidadRepository.findAll().stream()
                 .map(this::convertirADTO)
                 .toList();
     }
@@ -78,6 +76,7 @@ public class NecesidadService {
             recurrente.setPeriodicidad(dto.getPeriodicidad());
         }
 
+        necesidad = necesidadRepository.save(necesidad);
         return convertirADTO(necesidad);
     }
 
@@ -92,13 +91,12 @@ public class NecesidadService {
             extraordinaria.setTipoExtraordinario(dto.getTipoExtraordinario());
         }
 
+        necesidad = necesidadRepository.save(necesidad);
         return convertirADTO(necesidad);
     }
 
     public List<NecesidadDTO> obtenerPorEntidad(Long entidadId) {
-        return necesidades.stream()
-                .filter(n -> n.getEntidadBeneficiaria() != null
-                        && n.getEntidadBeneficiaria().getId().equals(entidadId))
+        return necesidadRepository.findByEntidadBeneficiaria_Id(entidadId).stream()
                 .map(this::convertirADTO)
                 .toList();
     }
@@ -108,13 +106,11 @@ public class NecesidadService {
         // entidadId en el path (incluso uno inexistente) podía borrar una
         // necesidad de otra entidad — bug crítico confirmado en vivo.
         buscarDominioPorId(entidadId, id);
-        necesidades.removeIf(n -> n.getId().equals(id));
+        necesidadRepository.deleteById(id);
     }
 
     public Necesidad buscarDominioPorId(Long id) {
-        return necesidades.stream()
-                .filter(n -> n.getId().equals(id))
-                .findFirst()
+        return necesidadRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No existe la necesidad " + id));
     }
 

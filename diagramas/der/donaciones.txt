@@ -1,0 +1,175 @@
+// DER fisico - Servicio de Donaciones (esquema: donaciones)
+// Pegar en https://dbdiagram.io/d para ver y exportar el diagrama.
+// Las referencias a otros servicios (Logistica, Incentivos) NO llevan FK: no hay
+// ninguna en este esquema porque Donaciones no guarda IDs de ellos.
+
+Enum tipo_persona { HUMANA JURIDICA }
+Enum genero { MASCULINO FEMENINO X }
+Enum tipo_organizacion { GUBERNAMENTAL ONG EMPRESA INSTITUCION }
+Enum tipo_contacto { EMAIL TELEFONO WHATSAPP }
+Enum tipo_necesidad { RECURRENTE EXTRAORDINARIA }
+Enum periodicidad { DIARIA SEMANAL MENSUAL ANUAL }
+Enum tipo_extraordinario { INUNDACION SISMO OLA_POLAR }
+Enum categoria { ALIMENTOS MOBILIARIO VESTIMENTA }
+Enum subcategoria {
+  SILLA MESA BANCO COLCHON
+  FIDEOS_SECOS ARROZ LEGUMBRES_SECAS ACEITE_VEGETAL TOMATE FRUTA
+  CAMPERA REMERA PANTALON ROPA_INFANTIL FRAZADA
+}
+Enum unidad_medida { UNIDAD KILOGRAMO CAJA PAQUETE LITRO }
+Enum condicion { NUEVO USADO }
+Enum estado_track {
+  EN_DEPOSITO ASIGNACION_REALIZADA LISTA_PARA_ENTREGAR EN_TRASLADO
+  ENTREGADA ENTREGA_FALLIDA VENCIDA
+}
+Enum lista_matchmaking { COMPATIBILIDAD SUBATENCION INTERSECCION }
+
+// ---------------- Personas (herencia JOINED) ----------------
+Table persona {
+  id bigint [pk, increment]
+  tipo_persona tipo_persona [not null, note: 'Discriminador de la herencia']
+}
+
+Table persona_humana {
+  persona_id bigint [pk, ref: - persona.id]
+  nombre varchar(100) [not null]
+  apellido varchar(100) [not null, default: '']
+  edad int [null, note: 'NULL cuando viene del CSV de importacion']
+  documento varchar(20) [null]
+  genero genero [null]
+}
+
+Table persona_juridica {
+  persona_id bigint [pk, ref: - persona.id]
+  razon_social varchar(150) [not null]
+  tipo_organizacion tipo_organizacion [null, note: 'NULL cuando viene del CSV']
+  rubro varchar(100) [null]
+}
+
+Table representante {
+  persona_juridica_id bigint [not null, ref: > persona_juridica.persona_id]
+  persona_humana_id bigint [not null, ref: > persona_humana.persona_id]
+
+  indexes {
+    (persona_juridica_id, persona_humana_id) [pk]
+  }
+}
+
+Table medio_contacto {
+  id bigint [pk, increment]
+  persona_id bigint [not null, ref: > persona.id]
+  tipo tipo_contacto [not null]
+  valor varchar(150) [not null]
+  es_preferido boolean [not null, default: false]
+
+  indexes {
+    (persona_id, tipo, valor) [unique]
+    (tipo, valor) [note: 'Busqueda de donante por email (importacion CSV)']
+  }
+}
+
+Table donante {
+  id bigint [pk, increment]
+  persona_id bigint [not null, unique, ref: - persona.id]
+  ultima_actividad date [not null]
+  notificado_por_inactividad boolean [not null, default: false]
+}
+
+Table entidad_beneficiaria {
+  id bigint [pk, increment]
+  persona_juridica_id bigint [not null, unique, ref: - persona_juridica.persona_id]
+  descripcion varchar(255)
+  dir_calle varchar(150)
+  dir_numero varchar(20)
+  dir_ciudad varchar(100)
+  dir_provincia varchar(100)
+}
+
+// ---------------- Necesidades (herencia SINGLE_TABLE) ----------------
+Table necesidad {
+  id bigint [pk, increment]
+  tipo_necesidad tipo_necesidad [not null, note: 'Discriminador de la herencia']
+  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id, note: 'Nullable: el codigo actual permite crear una necesidad sin entidad']
+  descripcion varchar(255) [not null]
+  subcategoria subcategoria [not null]
+  unidad_medida unidad_medida [not null]
+  cantidad_requerida decimal(12,3) [not null]
+  cantidad_recibida decimal(12,3) [not null, default: 0]
+  periodicidad periodicidad [null, note: 'Solo RECURRENTE']
+  inicio_periodo_actual date [null, note: 'Solo RECURRENTE']
+  tipo_extraordinario tipo_extraordinario [null, note: 'Solo EXTRAORDINARIA']
+}
+
+// ---------------- Donaciones ----------------
+Table solicitud_donacion {
+  id bigint [pk, increment]
+  donante_id bigint [not null, ref: > donante.id]
+  descripcion varchar(255) [not null]
+  fecha_registro datetime [not null]
+  note: 'Donacion ORIGINAL: una sola carga del donante, antes de segmentar'
+}
+
+Table donacion {
+  id bigint [pk, increment]
+  solicitud_id bigint [not null, ref: > solicitud_donacion.id]
+  donante_id bigint [not null, ref: > donante.id]
+  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id]
+  necesidad_asignada_id bigint [null, ref: > necesidad.id]
+  fecha_creacion datetime [not null]
+  estado_actual estado_track [not null, default: 'EN_DEPOSITO']
+  matchmaking_ejecutado_en datetime [null, note: 'NULL = nunca se ejecuto el matchmaking (distingue "sin ejecutar" de "ejecutado sin candidatas")']
+  note: 'Donacion SEGMENTADA: unidad minima de asignacion (una subcategoria)'
+
+  indexes {
+    estado_actual
+    entidad_beneficiaria_id
+  }
+}
+
+Table item_donado {
+  id bigint [pk, increment]
+  solicitud_id bigint [null, ref: > solicitud_donacion.id, note: 'Items originales de la carga']
+  donacion_id bigint [null, ref: > donacion.id, note: 'Items vigentes de la donacion. NULL si fue reemplazado por una edicion']
+  descripcion varchar(255) [not null]
+  foto varchar(500)
+  categoria categoria [not null]
+  subcategoria subcategoria [not null]
+  unidad_medida unidad_medida [not null]
+  cantidad decimal(12,3) [not null]
+  fecha_vencimiento date [null, note: 'Perecedero: solo ALIMENTOS']
+  condicion condicion [null, note: 'ConEstado: solo MOBILIARIO / VESTIMENTA']
+  peso_kg int
+  volumen_m3 int
+  altura_m int
+}
+
+Table cambio_estado {
+  id bigint [pk, increment]
+  donacion_id bigint [not null, ref: > donacion.id]
+  estado_nuevo estado_track [not null]
+  fecha_cambio datetime [not null]
+  justificacion varchar(255)
+  note: 'Auditoria de estados. Se lee ordenado por id'
+
+  indexes {
+    (donacion_id, id)
+  }
+}
+
+Table candidata_matchmaking {
+  donacion_id bigint [not null, ref: > donacion.id]
+  lista lista_matchmaking [not null]
+  posicion int [not null]
+  entidad_beneficiaria_id bigint [not null, ref: > entidad_beneficiaria.id]
+  note: 'ResultadoMatchmaking: las 3 listas (hasta 10 entidades cada una)'
+
+  indexes {
+    (donacion_id, lista, posicion) [pk]
+  }
+}
+
+Table evento_aplicado {
+  evento_id varchar(36) [pk]
+  aplicado_en datetime [not null]
+  note: 'Idempotencia de eventos de Logistica (hoy un Set en memoria en DonacionService)'
+}

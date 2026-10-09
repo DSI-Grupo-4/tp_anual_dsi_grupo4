@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -11,41 +13,53 @@ import java.util.Optional;
 
 @Component
 public class GestorDonantes {
-    private List<Donante> donantesRegistrados = new ArrayList<>();
+    private final DonanteRepository donanteRepository;
     private List<Importador> importadores = new ArrayList<>();
-    private Long siguienteId = 1L;
 
     // Índice por email (lowercase) -- buscarPorEmail() escaneaba toda la
     // lista por cada donante a registrar; con un CSV de 20000 filas eso es
     // ~20000 * n/2 comparaciones (O(n²)), el cuello de botella real de la
     // importación masiva (confirmado en vivo: ~16s tanto antes como después
-    // de recortar la respuesta del endpoint, que no tocaba este costo).
+    // de recortar la respuesta del endpoint, que no tocaba este costo). Se
+    // mantiene en memoria (en vez de una query por fila) para no reintroducir
+    // ese costo ahora que hay una base real de por medio; se recarga al boot
+    // y se mantiene al día en cada alta/actualización.
     private final Map<String, Donante> donantesPorEmail = new HashMap<>();
 
+    public GestorDonantes(DonanteRepository donanteRepository) {
+        this.donanteRepository = donanteRepository;
+    }
+
+    @PostConstruct
+    void cargarIndiceDeEmails() {
+        donanteRepository.findAll().forEach(this::indexarEmail);
+    }
+
+    /** Persiste mutaciones hechas sobre un Donante ya existente (registrarActividad, marcarNotificadoPorInactividad, etc). */
+    public Donante guardar(Donante donante) {
+        return donanteRepository.save(donante);
+    }
+
     public List<Donante> getDonantesRegistrados() {
-        return donantesRegistrados;
+        return donanteRepository.findAll();
     }
 
     public Donante registrarDonante(Persona persona) {
-        Donante donante = new Donante(siguienteId++, persona);
-        donantesRegistrados.add(donante);
+        Donante donante = new Donante(null, persona);
+        donante = donanteRepository.save(donante);
         indexarEmail(donante);
         return donante;
     }
 
     public Donante buscarPorId(Long id) {
-        return donantesRegistrados.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
+        return donanteRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No existe el donante " + id));
     }
 
     public void eliminar(Long id) {
-        donantesRegistrados.stream()
-                .filter(d -> d.getId().equals(id))
-                .findFirst()
+        donanteRepository.findById(id)
                 .ifPresent(d -> donantesPorEmail.remove(claveEmail(emailDe(d.getPersona()))));
-        donantesRegistrados.removeIf(d -> d.getId().equals(id));
+        donanteRepository.deleteById(id);
     }
 
     public void agregarImportador(Importador importador) {
@@ -79,7 +93,7 @@ public class GestorDonantes {
                 // Mismo email -> misma clave en el índice, no hace falta reindexar.
                 existente.get().setPersona(persona);
                 existente.get().registrarActividad();
-                return existente.get();
+                return donanteRepository.save(existente.get());
             }
         }
         return registrarDonante(persona);
@@ -88,6 +102,7 @@ public class GestorDonantes {
     public void actualizarContactos(Donante donante, List<MedioContacto> contactos) {
         donantesPorEmail.remove(claveEmail(emailDe(donante.getPersona())), donante);
         donante.getPersona().setMediosContacto(new ArrayList<>(contactos));
+        donante = donanteRepository.save(donante);
         indexarEmail(donante);
     }
 

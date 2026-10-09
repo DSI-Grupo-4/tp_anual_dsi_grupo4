@@ -28,7 +28,7 @@ public class MatchmakingScheduler {
 
         for (Donacion donacion : enDeposito) {
             ResultadoMatchmaking resultado = matchmakingService.ejecutarMatchmaking(donacion);
-            donacion.setResultadoMatchmaking(resultado);
+            donacionService.registrarResultadoMatchmaking(donacion, resultado);
         }
     }
 }
