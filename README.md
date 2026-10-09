@@ -27,11 +27,14 @@
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
-│   └── ddc
-│       ├── DONACIONES.drawio.xml
-│       ├── INCENTIVOS.drawio.xml
-│       ├── LOGISTICA.drawio.xml
-│       └── NOTIFICACIONES.drawio.xml
+│   ├── ddc
+│   │   ├── DONACIONES.drawio.xml
+│   │   ├── INCENTIVOS.drawio.xml
+│   │   ├── LOGISTICA.drawio.xml
+│   │   └── NOTIFICACIONES.drawio.xml
+│   └── der
+│       ├── incentivos.txt
+│       └── logistica.txt
 ├── docker-compose.integration.yml
 ├── mockups
 │   ├── administrador
@@ -92,7 +95,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-28 directories, 49 files
+29 directories, 51 files
 ```
 <!-- TREE_END -->
 
