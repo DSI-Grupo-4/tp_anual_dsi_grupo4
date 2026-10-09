@@ -197,7 +197,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://localhost:8081/ranking/ultimo",
+        "url": "http://localhost:8081/api/ranking/ultimo",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",

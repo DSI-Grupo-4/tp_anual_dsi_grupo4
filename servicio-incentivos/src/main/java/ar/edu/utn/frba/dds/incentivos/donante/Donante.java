@@ -15,10 +15,9 @@ public class Donante {
 
     private final Long id;
     private String nombre;
-    // Sin fuente real todavía -- nada en el sistema hoy le pasa a Incentivos
-    // el contacto del donante (el endpoint de actividad-donacion que podría
-    // traerlo ni siquiera está cableado desde Donaciones). Se deja la
-    // plumbing lista, no se inventa un contacto.
+    // Lo manda Donaciones en cada actividad-donacion (medio/contacto
+    // preferido de la Persona) -- se completa la primera vez que llega y
+    // no se vuelve a pisar (ver actualizarContactoSiFalta).
     private String medioContactoPreferido;
     private String contactoPreferido;
     private int solicitudesDonacionHechas;

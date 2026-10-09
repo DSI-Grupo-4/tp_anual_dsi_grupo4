@@ -20,6 +20,7 @@ import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoCategoria;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoInsignia;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoMision;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,7 +36,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @RestController
-@RequestMapping("/donantes")
+@RequestMapping("/api/donantes")
 public class IncentivosController {
 
     private final Consultor consultor = Consultor.getInstance();
@@ -85,10 +86,8 @@ public class IncentivosController {
     @PostMapping("/{id}/actividad-donacion")
     public ResponseEntity<ProgresoInsigniaDTO> registrarActividadDonacion(
             @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
-            @RequestBody DatosDonacionDTO dto) {
+            @Valid @RequestBody DatosDonacionDTO dto) {
 
-        if (dto.getFecha() == null || dto.getCantidadBienes() == null || dto.getCantidadBienes().signum() <= 0)
-            throw new IllegalArgumentException("fecha y cantidadBienes positiva son obligatorias");
         Donante donante = gestorDonante.obtenerDonante(id, dto.getDonanteNombre());
         donante.actualizarContactoSiFalta(dto.getDonanteMedioContacto(), dto.getDonanteContacto());
         DatosDonacion datosDonacion = convertirADominio(dto);

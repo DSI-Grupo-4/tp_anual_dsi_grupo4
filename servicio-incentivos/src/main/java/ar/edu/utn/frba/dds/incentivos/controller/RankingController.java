@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 @RestController
-@RequestMapping("/ranking")
+@RequestMapping("/api/ranking")
 public class RankingController {
 
     private final Consultor consultor = Consultor.getInstance();

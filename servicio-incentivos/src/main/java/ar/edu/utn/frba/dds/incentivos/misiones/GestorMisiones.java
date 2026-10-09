@@ -22,25 +22,55 @@ public class GestorMisiones {
         return instancia;
     }
 
+    /**
+     * Catálogo cerrado: 5 misiones por categoría, escalando en dificultad
+     * (Colaborador &lt; Sostenedor &lt; Transformador), usando únicamente los
+     * 4 tipos de misión que da el enunciado como ejemplo (Racha, Completitud,
+     * HabilDonador, DonacionesExitosas) -- se repite DonacionesExitosas una
+     * vez por categoría (con un umbral más alto) para llegar a 5 sin inventar
+     * un 5to tipo que el enunciado no pide.
+     * Los umbrales son placeholders a propósito, ajustables sin tocar
+     * estructura. Excepción real: Completitud no puede pedir más de 3
+     * (Donaciones solo tiene 3 categorías de bienes: Alimentos/Mobiliario/
+     * Vestimenta), así que Sostenedor y Transformador quedan en el mismo
+     * techo -- no hay forma de escalarlo más sin tocar otro servicio.
+     */
     private void sembrarCatalogo() {
-        Insignia rachaColaborador = new Insignia("Racha Colaboradora", "https://incentivos.local/insignias/racha-colaborador.png");
-        Insignia coleccionista = new Insignia("Coleccionista", "https://incentivos.local/insignias/coleccionista.png");
-        Insignia granDonante = new Insignia("Gran Donante", "https://incentivos.local/insignias/gran-donante.png");
-        Insignia donanteConfiable = new Insignia("Donante Confiable", "https://incentivos.local/insignias/donante-confiable.png");
-        Insignia rachaTransformadora = new Insignia("Racha Transformadora", "https://incentivos.local/insignias/racha-transformadora.png");
-        Insignia pilarSolidario = new Insignia("Pilar Solidario", "https://incentivos.local/insignias/pilar-solidario.png");
-
         Categoria colaborador = new Categoria("Colaborador");
-        colaborador.agregarMision(new Mision.Racha("Racha Colaborador", rachaColaborador, 2));
-        colaborador.agregarMision(new Mision.Completitud("Variedad Colaborador", coleccionista, 2));
+        colaborador.agregarMision(new Mision.Racha("Racha Colaborador",
+                new Insignia("Primer Paso", "https://incentivos.local/insignias/primer-paso.png"), 1));
+        colaborador.agregarMision(new Mision.DonacionesExitosas("Confiable Colaborador",
+                new Insignia("Mano Amiga", "https://incentivos.local/insignias/mano-amiga.png"), 2));
+        colaborador.agregarMision(new Mision.HabilDonador("Generoso Colaborador",
+                new Insignia("Aporte Destacado", "https://incentivos.local/insignias/aporte-destacado.png"), 5));
+        colaborador.agregarMision(new Mision.Completitud("Variedad Colaborador",
+                new Insignia("Coleccionista", "https://incentivos.local/insignias/coleccionista.png"), 2));
+        colaborador.agregarMision(new Mision.DonacionesExitosas("Constante Colaborador",
+                new Insignia("Donante Recurrente", "https://incentivos.local/insignias/donante-recurrente.png"), 5));
 
         Categoria sostenedor = new Categoria("Sostenedor");
-        sostenedor.agregarMision(new Mision.HabilDonador("Gran Aporte Sostenedor", granDonante, 30));
-        sostenedor.agregarMision(new Mision.DonacionesExitosas("Confiable Sostenedor", donanteConfiable, 3));
+        sostenedor.agregarMision(new Mision.Racha("Racha Sostenedor",
+                new Insignia("Compromiso Sostenido", "https://incentivos.local/insignias/compromiso-sostenido.png"), 3));
+        sostenedor.agregarMision(new Mision.DonacionesExitosas("Confiable Sostenedor",
+                new Insignia("Donante Confiable", "https://incentivos.local/insignias/donante-confiable.png"), 8));
+        sostenedor.agregarMision(new Mision.HabilDonador("Gran Aporte Sostenedor",
+                new Insignia("Gran Donante", "https://incentivos.local/insignias/gran-donante.png"), 15));
+        sostenedor.agregarMision(new Mision.Completitud("Variedad Sostenedor",
+                new Insignia("Donante Integral", "https://incentivos.local/insignias/donante-integral.png"), 3));
+        sostenedor.agregarMision(new Mision.DonacionesExitosas("Constante Sostenedor",
+                new Insignia("Pilar de la Comunidad", "https://incentivos.local/insignias/pilar-comunidad.png"), 15));
 
         Categoria transformador = new Categoria("Transformador");
-        transformador.agregarMision(new Mision.Racha("Racha Transformador", rachaTransformadora, 6));
-        transformador.agregarMision(new Mision.DonacionesExitosas("Pilar Transformador", pilarSolidario, 10));
+        transformador.agregarMision(new Mision.Racha("Racha Transformador",
+                new Insignia("Racha Transformadora", "https://incentivos.local/insignias/racha-transformadora.png"), 6));
+        transformador.agregarMision(new Mision.DonacionesExitosas("Confiable Transformador",
+                new Insignia("Impacto Real", "https://incentivos.local/insignias/impacto-real.png"), 20));
+        transformador.agregarMision(new Mision.HabilDonador("Gran Aporte Transformador",
+                new Insignia("Mecenas", "https://incentivos.local/insignias/mecenas.png"), 30));
+        transformador.agregarMision(new Mision.Completitud("Variedad Transformador",
+                new Insignia("Donante Completo", "https://incentivos.local/insignias/donante-completo.png"), 3));
+        transformador.agregarMision(new Mision.DonacionesExitosas("Constante Transformador",
+                new Insignia("Pilar Solidario", "https://incentivos.local/insignias/pilar-solidario.png"), 40));
 
         catalogoCategorias.add(colaborador);
         catalogoCategorias.add(sostenedor);

@@ -50,7 +50,7 @@ public class IncentivosClient {
         }
         try {
             restClient.post()
-                    .uri("/donantes/{id}/actividad-donacion", donante.getId())
+                    .uri("/api/donantes/{id}/actividad-donacion", donante.getId())
                     .body(construirRequest(donacion, donante))
                     .retrieve()
                     .toBodilessEntity();
