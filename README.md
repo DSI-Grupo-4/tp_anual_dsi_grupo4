@@ -33,6 +33,7 @@
 │   │   ├── LOGISTICA.drawio.xml
 │   │   └── NOTIFICACIONES.drawio.xml
 │   └── der
+│       ├── donaciones.txt
 │       ├── incentivos.txt
 │       └── logistica.txt
 ├── docker-compose.integration.yml
@@ -95,7 +96,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-29 directories, 51 files
+29 directories, 52 files
 ```
 <!-- TREE_END -->
 
