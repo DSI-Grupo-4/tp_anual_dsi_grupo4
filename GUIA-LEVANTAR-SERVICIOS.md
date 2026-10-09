@@ -4,8 +4,8 @@
 
 - Java 17 o superior.
 - Maven disponible desde la terminal (`mvn -version`).
-- Docker Desktop corriendo (para RabbitMQ, MySQL y n8n).
-- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ) y 5678 (n8n) libres.
+- Docker Desktop corriendo (para RabbitMQ, MySQL, Adminer y n8n).
+- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer) y 5678 (n8n) libres.
 
 Ejecutar los comandos desde la raíz del repositorio:
 
@@ -21,7 +21,7 @@ En PowerShell:
 .\run-servicios.ps1
 ```
 
-El script levanta primero la infraestructura de Docker (RabbitMQ, MySQL y n8n, definida en `docker-compose.integration.yml`), compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios en segundo plano. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`. Requiere Docker Desktop corriendo.
+El script levanta primero la infraestructura de Docker (RabbitMQ, MySQL, Adminer y n8n, definida en `docker-compose.integration.yml`), compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios en segundo plano. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`. Requiere Docker Desktop corriendo.
 
 Si el proyecto ya está compilado y se quiere omitir ese paso:
 
@@ -62,7 +62,7 @@ Para aplicar cambios de código, detener los servicios y volver a compilar e ini
 
 Cerrar la terminal que ejecutó `run-servicios.ps1` no detiene los servicios en segundo plano. Si se iniciaron manualmente en terminales separadas con `spring-boot:run`, usar **Ctrl+C** en cada terminal para solicitar el cierre normal de Spring.
 
-`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, n8n) cuando se detienen los 4 servicios (sin `-Service`). Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
+`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, Adminer, n8n) cuando se detienen los 4 servicios (sin `-Service`). Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
 
 ## Levantar los servicios manualmente
 
@@ -108,7 +108,7 @@ Test-NetConnection localhost -Port 8083
 
 La primera ejecución puede tardar porque Maven necesita descargar dependencias y compilar los módulos.
 
-## Infraestructura (RabbitMQ, MySQL, n8n)
+## Infraestructura (RabbitMQ, MySQL, Adminer, n8n)
 
 `run-servicios.ps1`/`run-servicios.sh` ya la levantan solos. Para manejarla aparte (por ejemplo, para levantar solo la infraestructura sin los servicios Java):
 
@@ -119,6 +119,7 @@ docker compose -f docker-compose.integration.yml down
 
 - n8n (workflow de difusión de insignias de Incentivos): http://localhost:5678
 - RabbitMQ (management UI): http://localhost:15672
-- MySQL (persistencia de Logística): `localhost:3306`, usuario `root`, password `BasededatosTP1`, base `logistica`.
+- Adminer (consola de administración de la base): http://localhost:8090 -- sistema `MySQL`, servidor `mysql`, usuario `root`, password `BasededatosTP1`, base `logistica` o `incentivos`.
+- MySQL: `localhost:3306`, usuario `root`, password `BasededatosTP1`, un esquema por servicio (`logistica`, `incentivos`).
 
-El esquema de Logística (`servicio-logistica/src/main/resources/db/logistica.sql`) se monta en `docker-entrypoint-initdb.d/` y corre solo la primera vez que se crea el volumen de MySQL. Hibernate arranca con `ddl-auto=validate`: no crea ni modifica tablas, solo valida que las entidades coincidan con lo que generó el script.
+Los esquemas de Logística e Incentivos (`servicio-logistica/src/main/resources/db/logistica.sql`, `servicio-incentivos/src/main/resources/db/incentivos.sql`) se montan en `docker-entrypoint-initdb.d/` y corren solo la primera vez que se crea el volumen de MySQL. Hibernate arranca con `ddl-auto=validate`: no crea ni modifica tablas, solo valida que las entidades coincidan con lo que generaron los scripts.

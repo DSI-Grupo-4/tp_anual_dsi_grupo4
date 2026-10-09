@@ -49,9 +49,9 @@ Uso: $0 <comando>
 Comandos:
   build            Compila (mvn package) todos los servicios implementados
   up               Compila si hace falta y levanta todos los servicios + infra (default)
-  down             Detiene todos los servicios y la infra (RabbitMQ, MySQL, n8n)
+  down             Detiene todos los servicios y la infra (RabbitMQ, MySQL, Adminer, n8n)
   status           Muestra el estado de cada servicio y de la infra
-  logs <servicio>  Sigue el log de un servicio (ej: servicio-incentivos, n8n, mysql, rabbitmq)
+  logs <servicio>  Sigue el log de un servicio (ej: servicio-incentivos, n8n, mysql, rabbitmq, adminer)
 EOF
 }
 
@@ -124,7 +124,7 @@ ensure_credentials_env() {
 
 start_infra() {
   ensure_credentials_env
-  echo "==> Levantando infraestructura (RabbitMQ, MySQL, n8n)..."
+  echo "==> Levantando infraestructura (RabbitMQ, MySQL, Adminer, n8n)..."
   docker compose -f "$COMPOSE_FILE" up -d
   # "docker compose up -d" vuelve en cuanto el contenedor arrancó, pero el
   # entrypoint de n8n todavía tiene que importar y publicar el workflow
@@ -140,7 +140,7 @@ start_infra() {
 }
 
 stop_infra() {
-  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
+  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, Adminer, n8n)..."
   docker compose -f "$COMPOSE_FILE" down
 }
 
@@ -188,7 +188,7 @@ status() {
   echo "Infraestructura:"
   local running
   running="$(docker compose -f "$COMPOSE_FILE" ps --status running --format '{{.Service}}' 2>/dev/null)"
-  for infra in rabbitmq mysql n8n; do
+  for infra in rabbitmq mysql adminer n8n; do
     if echo "$running" | grep -qx "$infra"; then
       echo "  [UP]   $infra"
     else
@@ -203,7 +203,7 @@ logs() {
     echo "Uso: $0 logs <servicio>" >&2
     exit 1
   fi
-  if [[ "$name" == "n8n" || "$name" == "mysql" || "$name" == "rabbitmq" ]]; then
+  if [[ "$name" == "n8n" || "$name" == "mysql" || "$name" == "rabbitmq" || "$name" == "adminer" ]]; then
     docker compose -f "$COMPOSE_FILE" logs -f "$name"
   else
     tail -f "$LOG_DIR/$name.log"

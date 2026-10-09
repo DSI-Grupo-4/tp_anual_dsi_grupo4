@@ -34,6 +34,22 @@ services:
       - ./servicio-logistica/src/main/resources/db/logistica.sql:/docker-entrypoint-initdb.d/01-logistica.sql:ro
       - ./servicio-incentivos/src/main/resources/db/incentivos.sql:/docker-entrypoint-initdb.d/02-incentivos.sql:ro
 
+  # Consola de administración de la base (D-012 preveía MySQL Workbench,
+  # pero es una app de escritorio -- no es un buen ciudadano de Docker,
+  # necesitaría X11/VNC. Adminer es la alternativa web estándar, imagen
+  # oficial, un solo contenedor sin configuración adicional).
+  adminer:
+    image: adminer:latest
+    container_name: donatrack-adminer
+    restart: unless-stopped
+    ports:
+      - "8090:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+    depends_on:
+      mysql:
+        condition: service_healthy
+
 volumes:
   rabbitmq-data:
   mysql-data:

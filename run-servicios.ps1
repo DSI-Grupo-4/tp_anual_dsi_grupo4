@@ -31,7 +31,7 @@ if (-not (Test-Path -LiteralPath $credentialsEnv)) {
     New-Item -ItemType File -Path $credentialsEnv -Force | Out-Null
 }
 
-Write-Host "Levantando infraestructura (RabbitMQ, MySQL, n8n)..."
+Write-Host "Levantando infraestructura (RabbitMQ, MySQL, Adminer, n8n)..."
 docker compose -f $composeFile up -d
 if ($LASTEXITCODE -ne 0) {
     throw "No se pudo levantar la infraestructura de Docker. Revisa que Docker Desktop este corriendo."
@@ -95,5 +95,5 @@ Write-Host "  Notificaciones: http://localhost:8082/swagger-ui/index.html"
 Write-Host "  Logística:      http://localhost:8083/swagger-ui/index.html"
 Write-Host ""
 Write-Host ("Logs disponibles en " + $runDirectory)
-Write-Host "n8n: http://localhost:5678  |  RabbitMQ: http://localhost:15672"
+Write-Host "n8n: http://localhost:5678  |  RabbitMQ: http://localhost:15672  |  Adminer: http://localhost:8090"
 Write-Host "Para detener los servicios: .\stop-servicios.ps1"
