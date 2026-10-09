@@ -8,6 +8,9 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrganizacion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
+import java.math.BigDecimal;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -25,7 +28,7 @@ class GestorDonacionesTest {
     }
 
     private Donacion nuevaDonacion(Long id, String subcategoria) {
-        return new Donacion(id, new ItemDonado(null, subcategoria, new Subcategoria(subcategoria), 1, null), 1);
+        return DatosPrueba.donacion(id, DatosPrueba.item(null, subcategoria, DatosPrueba.subcategoria(subcategoria), 1, null), 1);
     }
 
     @Test
@@ -68,14 +71,14 @@ class GestorDonacionesTest {
 
     @Test
     void ejecutarMatchmakingIntersectaAmbosAlgoritmos() {
-        Donacion donacion = new Donacion(1L,
-                new ItemDonado(1L, "Fideos", new Subcategoria("fideos secos"), 100, null), 100);
+        Donacion donacion = DatosPrueba.donacion(1L,
+                DatosPrueba.item(1L, "Fideos", DatosPrueba.subcategoria("fideos secos"), 100, null), 100);
 
         EntidadBeneficiaria conNecesidad = new EntidadBeneficiaria(1L,
                 new PersonaJuridica("Comedor Sonrisas", TipoOrganizacion.ONG, null, null),
                 "Comedor Sonrisas");
         conNecesidad.agregarNecesidad(new NecesidadRecurrente(1L, "Fideos semanales",
-                new Subcategoria("fideos secos"), 100, Periodicidad.SEMANAL));
+                DatosPrueba.subcategoria("fideos secos"), UnidadMedida.UNIDAD, BigDecimal.valueOf(100), Periodicidad.SEMANAL));
 
         EntidadBeneficiaria sinNecesidad = new EntidadBeneficiaria(2L,
                 new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null),

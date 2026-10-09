@@ -81,7 +81,7 @@ public abstract class Mision {
         @Override
         public boolean validarCumplimiento(ProgresoMision progresoMision) {
             ProgresoMision.ProgresoHabilDonador progreso = (ProgresoMision.ProgresoHabilDonador) progresoMision;
-            return progreso.getMejorDonacionRegistrada() >= cantidadBienesRequerida;
+            return progreso.getMejorDonacionRegistrada().compareTo(java.math.BigDecimal.valueOf(cantidadBienesRequerida)) >= 0;
         }
 
         @Override

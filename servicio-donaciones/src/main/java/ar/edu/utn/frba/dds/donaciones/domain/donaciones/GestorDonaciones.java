@@ -22,6 +22,8 @@ public class GestorDonaciones {
     private List<Donacion> donaciones;
     private List<AlgoritmoAsignacion> algoritmos;
     private Long siguienteId = 1L;
+    private Long siguienteSolicitudId = 1L;
+    private final List<SolicitudDonacion> solicitudes = new ArrayList<>();
 
     // Constructor de conveniencia (tests, uso manual sin contexto de Spring).
     public GestorDonaciones() {
@@ -47,6 +49,7 @@ public class GestorDonaciones {
             donacion.setId(siguienteId++);
         }
         donaciones.add(donacion);
+        if (donacion.getDonante() != null) donacion.getDonante().agregarDonacion(donacion);
         return donacion;
     }
 
@@ -59,10 +62,17 @@ public class GestorDonaciones {
     }
 
     public void eliminar(Long id) {
-        donaciones.removeIf(d -> d.getId().equals(id));
+        Donacion donacion = buscarPorId(id);
+        if (donacion.getEstadoActual() != EstadoTrack.EN_DEPOSITO)
+            throw new IllegalStateException("Solo puede eliminarse una donación en depósito");
+        deposito.reemplazarItems(donacion.getItems(), List.of());
+        donaciones.remove(donacion);
+        if (donacion.getDonante() != null) donacion.getDonante().getDonaciones().remove(donacion);
     }
 
     public void registrarSolicitud(SolicitudDonacion solicitud) {
+        if (solicitud.getId() == null) solicitud.setId(siguienteSolicitudId++);
+        solicitudes.add(solicitud);
         solicitud.getItems().forEach(deposito::cargarItem);
     }
 

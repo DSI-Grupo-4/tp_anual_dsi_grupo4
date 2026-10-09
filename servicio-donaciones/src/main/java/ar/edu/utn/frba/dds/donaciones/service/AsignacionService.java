@@ -1,6 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.*;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
@@ -29,13 +29,14 @@ public class AsignacionService {
     public ResultadoMatchmakingDTO obtenerCandidatas(SolicitudAsignacionDTO dto) {
         ItemDonado item = new ItemDonado(
                 null,
-                dto.getDescripcionItem(),
-                new Subcategoria(dto.getSubcategoria()),
-                dto.getCantidad(),
-                null
+                dto.getDescripcion(), dto.getCategoria(), dto.getSubcategoria(),
+                dto.getUnidadMedida(), dto.getCantidad(), dto.getFoto(),
+                dto.getFechaVencimiento() == null ? null : new Perecedero(dto.getFechaVencimiento()),
+                dto.getCondicion() == null ? null : new ConEstado(dto.getCondicion()),
+                dto.getPesoKg(), dto.getVolumenM3(), dto.getAlturaM()
         );
 
-        Donacion donacionProxy = new Donacion(null, item, dto.getCantidad());
+        Donacion donacionProxy = new Donacion(null, List.of(item), null);
 
         ResultadoMatchmaking resultado = gestorDonaciones.ejecutarMatchmaking(
                 donacionProxy,
@@ -82,8 +83,8 @@ public class AsignacionService {
                 .filter(n -> !n.satisfecha())
                 .filter(n -> n.getSubcategoria() != null
                         && item.getSubcategoria() != null
-                        && n.getSubcategoria().getNombre()
-                        .equalsIgnoreCase(item.getSubcategoria().getNombre()))
+                        && n.getSubcategoria() == item.getSubcategoria()
+                        && n.getUnidadMedida() == item.getUnidadMedida())
                 .count());
 
         return dto;

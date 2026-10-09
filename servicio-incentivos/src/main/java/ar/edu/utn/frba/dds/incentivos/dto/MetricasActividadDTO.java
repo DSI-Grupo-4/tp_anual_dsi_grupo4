@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.incentivos.dto;
 
 import lombok.Getter;
+import java.math.BigDecimal;
 import lombok.Setter;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class MetricasActividadDTO {
     private int beneficiariosAyudados;
     private int misionesCompletadas;
     private int insigniasObtenidas;
-    private int impactoAcumulado;
+    private BigDecimal impactoAcumulado;
     private Integer posicionRanking;
     private List<EvolucionMensualDTO> evolucionMensual;
 }

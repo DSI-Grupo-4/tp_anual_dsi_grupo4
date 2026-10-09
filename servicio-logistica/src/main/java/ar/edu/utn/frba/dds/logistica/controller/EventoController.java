@@ -53,7 +53,7 @@ public class EventoController {
             )
     })
     @PostMapping("/{id}/marcar-publicado")
-    public void marcarPublicado(@PathVariable java.util.UUID id) {
+    public void marcarPublicado(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por el identificador devuelto por el alta o listado.", example = "00000000-0000-0000-0000-000000000001") @PathVariable java.util.UUID id) {
         EventoLogistico evento = gestorEventos.getEventos().stream()
                 .filter(e -> e.getIdEvento().equals(id))
                 .findFirst()

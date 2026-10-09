@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.incentivos.metricas;
 
 import lombok.Getter;
+import java.math.BigDecimal;
 
 import java.util.List;
 
@@ -14,13 +15,13 @@ public class MetricasActividad {
     private final int beneficiariosAyudados;
     private final int misionesCompletadas;
     private final int insigniasObtenidas;
-    private final int impactoAcumulado;
+    private final BigDecimal impactoAcumulado;
     private final Integer posicionRanking;
     private final List<EvolucionMensual> evolucionMensual;
 
     public MetricasActividad(String donanteNombre, String categoriaActual, Periodo periodo,
                               int solicitudesDonacionHechas, int beneficiariosAyudados,
-                              int misionesCompletadas, int insigniasObtenidas, int impactoAcumulado,
+                              int misionesCompletadas, int insigniasObtenidas, BigDecimal impactoAcumulado,
                               Integer posicionRanking, List<EvolucionMensual> evolucionMensual) {
         this.donanteNombre = donanteNombre;
         this.categoriaActual = categoriaActual;

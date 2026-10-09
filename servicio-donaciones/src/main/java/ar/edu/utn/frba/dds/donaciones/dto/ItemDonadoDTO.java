@@ -1,26 +1,41 @@
 package ar.edu.utn.frba.dds.donaciones.dto;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import io.swagger.v3.oas.annotations.media.Schema;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.*;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.Map;
-
-@Getter
-@Setter
+import java.math.BigDecimal;
+import java.time.LocalDate;
+@Getter @Setter
+@Schema(example = """
+{
+  "descripcion": "Sillas de oficina usadas",
+  "categoria": "MOBILIARIO",
+  "subcategoria": "SILLA",
+  "unidadMedida": "UNIDAD",
+  "cantidad": 3,
+  "condicion": "USADO",
+  "foto": "https://example.org/sillas.jpg",
+  "pesoKg": 15,
+  "volumenM3": 2,
+  "alturaM": 1
+}
+""")
 public class ItemDonadoDTO {
-    @NotBlank(message = "descripcion es obligatoria")
-    private String descripcion;
-    @NotBlank(message = "subcategoria es obligatoria")
-    private String subcategoria;
-    @Positive(message = "cantidad debe ser mayor a 0")
-    private Integer cantidad;
+    @NotBlank private String descripcion;
+    @NotNull private Categoria categoria;
+    @NotNull private Subcategoria subcategoria;
+    @NotNull private UnidadMedida unidadMedida;
+    @NotNull @Positive private BigDecimal cantidad;
     private String foto;
-    private Integer pesoKg;
-    private Integer volumenM3;
-    private Integer alturaM;
-    // Valores de atributos dinámicos de la subcategoría (ej.
-    // "fechaVencimiento" -> "2027-01-01", "estadoUso" -> "USADO").
-    private Map<String, String> valoresAtributos;
+    @Schema(description = "Obligatoria en MOBILIARIO y VESTIMENTA; omitir en ALIMENTOS.")
+    private Condicion condicion;
+    @Schema(description = "Obligatoria para los alimentos del catálogo; omitir en otras categorías.")
+    private LocalDate fechaVencimiento;
+    @Schema(description = "Peso total de este renglón, no por unidad. Obligatorio antes de asignar.")
+    @Positive private Integer pesoKg;
+    @Schema(description = "Volumen total de este renglón, no por unidad. Obligatorio antes de asignar.")
+    @Positive private Integer volumenM3;
+    @Schema(description = "Altura máxima del renglón. Obligatoria antes de asignar.")
+    @Positive private Integer alturaM;
 }

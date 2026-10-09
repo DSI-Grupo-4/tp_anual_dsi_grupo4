@@ -15,6 +15,7 @@ public class PrioridadSubatendidos implements AlgoritmoAsignacion {
             Donacion donacion,
             List<EntidadBeneficiaria> entidades) {
 
+        if (donacion.estaVencida()) return List.of();
         LocalDateTime hace90dias = LocalDateTime.now().minusDays(90);
 
         return entidades.stream()

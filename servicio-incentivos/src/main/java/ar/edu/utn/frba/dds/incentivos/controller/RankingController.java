@@ -22,6 +22,7 @@ public class RankingController {
 
     private final Consultor consultor = Consultor.getInstance();
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener historial", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/historial")
     public List<RankingDTO> obtenerHistorial() {
         return consultor.obtenerHistorialRanking().stream()
@@ -29,11 +30,13 @@ public class RankingController {
                 .toList();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener ranking de mes", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/mes")
-    public RankingDTO obtenerRankingDeMes(@RequestParam("fecha") LocalDate fecha) {
+    public RankingDTO obtenerRankingDeMes(@io.swagger.v3.oas.annotations.Parameter(description = "Fecha de un mes cuyo ranking esté generado.", example = "2026-09-30") @RequestParam("fecha") LocalDate fecha) {
         return convertirADTO(consultor.obtenerRankingDeMes(fecha));
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener ultimo", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/ultimo")
     public List<RankingPosicionDTO> obtenerUltimo() {
         Ranking ranking = consultor.obtenerUltimoRanking();

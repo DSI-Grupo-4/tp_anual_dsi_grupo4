@@ -29,7 +29,8 @@ public class NecesidadService {
         NecesidadRecurrente necesidad = new NecesidadRecurrente(
                 siguienteId++,
                 dto.getDescripcion(),
-                new Subcategoria(dto.getSubcategoria()),
+                dto.getSubcategoria(),
+                dto.getUnidadMedida(),
                 dto.getCantidadRequerida(),
                 dto.getPeriodicidad()
         );
@@ -44,7 +45,8 @@ public class NecesidadService {
         NecesidadExtraordinaria necesidad = new NecesidadExtraordinaria(
                 siguienteId++,
                 dto.getDescripcion(),
-                new Subcategoria(dto.getSubcategoria()),
+                dto.getSubcategoria(),
+                dto.getUnidadMedida(),
                 dto.getCantidadRequerida(),
                 dto.getTipoExtraordinario()
         );
@@ -67,10 +69,10 @@ public class NecesidadService {
 
     public NecesidadDTO actualizarRecurrente(Long entidadId, Long id, NecesidadRecurrenteDTO dto) {
         Necesidad necesidad = buscarDominioPorId(entidadId, id);
+        if (!(necesidad instanceof NecesidadRecurrente) || dto.getPeriodicidad() == null)
+            throw new IllegalArgumentException("Debe editar una necesidad RECURRENTE con periodicidad");
 
-        necesidad.setDescripcion(dto.getDescripcion());
-        necesidad.setSubcategoria(new Subcategoria(dto.getSubcategoria()));
-        necesidad.setCantidadRequerida(dto.getCantidadRequerida());
+        necesidad.actualizar(dto.getDescripcion(), dto.getSubcategoria(), dto.getUnidadMedida(), dto.getCantidadRequerida());
 
         if (necesidad instanceof NecesidadRecurrente recurrente) {
             recurrente.setPeriodicidad(dto.getPeriodicidad());
@@ -81,10 +83,10 @@ public class NecesidadService {
 
     public NecesidadDTO actualizarExtraordinaria(Long entidadId, Long id, NecesidadExtraordinariaDTO dto) {
         Necesidad necesidad = buscarDominioPorId(entidadId, id);
+        if (!(necesidad instanceof NecesidadExtraordinaria) || dto.getTipoExtraordinario() == null)
+            throw new IllegalArgumentException("Debe editar una necesidad EXTRAORDINARIA con tipoExtraordinario");
 
-        necesidad.setDescripcion(dto.getDescripcion());
-        necesidad.setSubcategoria(new Subcategoria(dto.getSubcategoria()));
-        necesidad.setCantidadRequerida(dto.getCantidadRequerida());
+        necesidad.actualizar(dto.getDescripcion(), dto.getSubcategoria(), dto.getUnidadMedida(), dto.getCantidadRequerida());
 
         if (necesidad instanceof NecesidadExtraordinaria extraordinaria) {
             extraordinaria.setTipoExtraordinario(dto.getTipoExtraordinario());
@@ -149,7 +151,8 @@ public class NecesidadService {
 
         dto.setId(necesidad.getId());
         dto.setDescripcion(necesidad.getDescripcion());
-        dto.setSubcategoria(necesidad.getSubcategoria().getNombre());
+        dto.setSubcategoria(necesidad.getSubcategoria());
+        dto.setUnidadMedida(necesidad.getUnidadMedida());
         dto.setCantidadRequerida(necesidad.getCantidadRequerida());
         dto.setCantidadRecibida(necesidad.getCantidadRecibida());
         dto.setSatisfecha(necesidad.satisfecha());

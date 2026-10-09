@@ -1,0 +1,22 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-10-08T22:53:43.074-03:00  INFO 22296 --- [servicio-notificaciones] [           main] e.u.d.n.NotificacionesServiceApplication : Starting NotificacionesServiceApplication v0.0.1-SNAPSHOT using Java 26.0.1 with PID 22296 (A:\Diseño\tp_anual_dsi_grupo4\servicio-notificaciones\target\notificaciones-service-0.0.1-SNAPSHOT.jar started by agust in A:\Diseño\tp_anual_dsi_grupo4)
+2026-10-08T22:53:43.084-03:00  INFO 22296 --- [servicio-notificaciones] [           main] e.u.d.n.NotificacionesServiceApplication : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T22:53:45.011-03:00  INFO 22296 --- [servicio-notificaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18082 (http)
+2026-10-08T22:53:45.032-03:00  INFO 22296 --- [servicio-notificaciones] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T22:53:45.032-03:00  INFO 22296 --- [servicio-notificaciones] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-10-08T22:53:45.159-03:00  INFO 22296 --- [servicio-notificaciones] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-08T22:53:45.161-03:00  INFO 22296 --- [servicio-notificaciones] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1944 ms
+2026-10-08T22:53:47.279-03:00  INFO 22296 --- [servicio-notificaciones] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18082 (http) with context path '/'
+2026-10-08T22:53:47.312-03:00  INFO 22296 --- [servicio-notificaciones] [           main] e.u.d.n.NotificacionesServiceApplication : Started NotificacionesServiceApplication in 5.041 seconds (process running for 5.885)
+2026-10-08T22:56:14.048-03:00  INFO 22296 --- [servicio-notificaciones] [io-18082-exec-5] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-08T22:56:14.049-03:00  INFO 22296 --- [servicio-notificaciones] [io-18082-exec-5] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-08T22:56:14.050-03:00  INFO 22296 --- [servicio-notificaciones] [io-18082-exec-5] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

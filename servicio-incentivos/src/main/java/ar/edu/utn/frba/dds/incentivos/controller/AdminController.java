@@ -15,6 +15,7 @@ public class AdminController {
 
     private final Consultor consultor = Consultor.getInstance();
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas sistema", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/metricas")
     public MetricasSistemaDTO obtenerMetricasSistema() {
         return convertirADTO(consultor.obtenerMetricasSistema());

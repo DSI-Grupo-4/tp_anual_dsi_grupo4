@@ -68,7 +68,7 @@ public class IncentivosClient {
         return new ActividadDonacionRequest(
                 LocalDate.now(),
                 categoriaBienDe(donacion),
-                donacion.getCantidadAsignada() != null ? donacion.getCantidadAsignada() : 0,
+                donacion.getCantidadAsignada(),
                 donacion.getEstadoActual() == EstadoTrack.ENTREGADA,
                 entidad != null ? entidad.getId() : null,
                 entidad != null ? entidad.getEntidad().getRazonSocial() : null,
@@ -78,12 +78,7 @@ public class IncentivosClient {
     }
 
     private String categoriaBienDe(Donacion donacion) {
-        Subcategoria subcategoria = donacion.getItemDonado().getSubcategoria();
-        if (subcategoria == null) {
-            return null;
-        }
-        Categoria categoria = subcategoria.getCategoria();
-        return categoria != null ? categoria.getNombre() : null;
+        return donacion.getCategoria().name();
     }
 
     private String nombreDe(Persona persona) {
@@ -107,7 +102,7 @@ public class IncentivosClient {
     private record ActividadDonacionRequest(
             LocalDate fecha,
             String categoriaNombre,
-            int cantidadBienes,
+            java.math.BigDecimal cantidadBienes,
             boolean donacionExitosa,
             Long beneficiarioId,
             String beneficiarioNombre,

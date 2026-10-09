@@ -55,7 +55,7 @@ public class RutaController {
             )
     })
     @GetMapping("/{id}")
-    public Ruta obtenerRuta(@PathVariable Integer id) {
+    public Ruta obtenerRuta(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         return gestorRutas.buscarPorId(id);
     }
 
@@ -79,7 +79,7 @@ public class RutaController {
     })
     // el chofer informa el comienzo de su recorrido
     @PostMapping("/{id}/iniciar")
-    public Ruta iniciarRuta(@PathVariable Integer id) {
+    public Ruta iniciarRuta(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         Ruta ruta = gestorRutas.buscarPorId(id);
         ruta.iniciarRuta();
         ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->

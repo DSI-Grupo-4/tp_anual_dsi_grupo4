@@ -45,7 +45,27 @@ public class LoteController {
     })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<Entrega> recibirLote(@RequestBody List<DonacionDTO> donaciones) {
+    public List<Entrega> recibirLote(@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = """
+[
+  {
+    "idDonacion": 1,
+    "entidadBeneficiariaAsociadaID": 1,
+    "direccionDestino": {
+      "calle": "Av. San Martin",
+      "numero": "1250",
+      "ciudad": {
+        "nombre": "Cordoba",
+        "provincia": {
+          "nombre": "Cordoba"
+        }
+      }
+    },
+    "pesoKG": 15,
+    "volumenM3": 2,
+    "alturaM": 1
+  }
+]
+"""))) @RequestBody List<DonacionDTO> donaciones) {
         return loteService.recibirLote(donaciones);
     }
 }

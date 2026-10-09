@@ -40,7 +40,7 @@ public class NotificacionController {
 
     @Operation(summary = "Obtiene una notificacion por id")
     @GetMapping("/{id}")
-    public ResponseEntity<NotificacionResponseDTO> obtenerPorId(@PathVariable String id) {
+    public ResponseEntity<NotificacionResponseDTO> obtenerPorId(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por el identificador devuelto por el alta o listado.", example = "00000000-0000-0000-0000-000000000001") @PathVariable String id) {
         return notificacionService.buscarPorId(id)
                 .map(NotificacionResponseDTO::desde)
                 .map(ResponseEntity::ok)

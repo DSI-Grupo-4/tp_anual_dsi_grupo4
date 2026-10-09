@@ -1,54 +1,38 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
-
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
-@Setter
 public class SolicitudDonacion {
-    private String descripcion;
-    private LocalDateTime fechaRegistro;
-    private List<ItemDonado> items;
-    // Opcional a nivel constructor para no romper los tests existentes que
-    // no necesitan donante — DonacionService.crear() lo setea siempre.
-    private Donante donante;
-
+    @Setter private Long id;
+    private final String descripcion;
+    private final LocalDateTime fechaRegistro = LocalDateTime.now();
+    private final List<ItemDonado> items = new ArrayList<>();
+    @Setter private Donante donante;
     public SolicitudDonacion(String descripcion) {
-
+        if (descripcion == null || descripcion.isBlank()) throw new IllegalArgumentException("descripcion es obligatoria");
         this.descripcion = descripcion;
-        this.fechaRegistro = LocalDateTime.now();
-
-        this.items = new ArrayList<>();
     }
-
+    public List<ItemDonado> getItems() { return List.copyOf(items); }
     public void agregarItem(ItemDonado item) {
+        if (item == null) throw new IllegalArgumentException("El item es obligatorio");
         items.add(item);
     }
-
-    /**
-     * Segmenta la carga única en donaciones independientes: cada ItemDonado
-     * ya llega con su propia subcategoría (y, si es perecedero, su propio
-     * valor de fechaVencimiento vía AtributoValor), así que alcanza con
-     * generar una Donacion por ítem para que cada donación resultante
-     * quede asociada a una única subcategoría y que los perecederos con
-     * vencimientos distintos queden en donaciones separadas. No se
-     * fusionan ítems de igual subcategoría entre sí: fusionar
-     * cantidades/fotos de ítems distintos agregaría una regla no pedida
-     * explícitamente.
-     */
     public List<Donacion> segmentar() {
-        return items.stream()
-                .map(item -> {
-                    Donacion donacion = new Donacion(null, item, item.getCantidad());
-                    donacion.setDonante(donante);
-                    return donacion;
-                })
-                .collect(Collectors.toList());
+        List<List<ItemDonado>> grupos = new ArrayList<>();
+        for (ItemDonado item : items) {
+            List<ItemDonado> grupo = grupos.stream().filter(g -> g.get(0).mismaSegmentacion(item))
+                    .findFirst().orElseGet(() -> { List<ItemDonado> nuevo = new ArrayList<>(); grupos.add(nuevo); return nuevo; });
+            grupo.add(item);
+        }
+        return grupos.stream().map(grupo -> {
+            Donacion donacion = new Donacion(null, grupo, this);
+            donacion.setDonante(donante);
+            return donacion;
+        }).toList();
     }
 }

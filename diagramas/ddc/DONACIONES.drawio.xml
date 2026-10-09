@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <mxfile host="app.diagrams.net">
   <diagram name="Página-1" id="arjehjQP-Uj-q5fJlQo_">
     <mxGraphModel dx="-173" dy="-937" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="0" shadow="0">
@@ -17,7 +17,7 @@
         <mxCell id="5" parent="2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ setPreferido(tipoMedio tipo, str valor) : void &lt;b&gt;*1&lt;/b&gt;&lt;div&gt;+ getPreferido() : MedioContacto&lt;/div&gt;&lt;div&gt;+ addMedio(tipoMedio tipo, str valor) : void&lt;/div&gt;&lt;div&gt;+ removeMedio&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(tipoMedio tipo, str valor) : void&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;+ searchMedio&lt;/span&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;(tipoMedio tipo, str valor) : MedioContacto &lt;b&gt;*2&lt;/b&gt;&lt;/span&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="92" width="400" y="78" as="geometry" />
         </mxCell>
-        <mxCell id="6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Referencias:&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;1) Al hacer setPreferido, se hace desde la lista de medios de contacto que tiene la persona.&amp;nbsp;&lt;/div&gt;&lt;div&gt;2) Es necesario cruzar ambos criterios para poder agilizar la busqueda. Este metodo podria ser privado, empleado por setPreferido para identificar el medio indicado.&lt;/div&gt;&lt;div&gt;3) Debatir esta implementacion. Considero que es la mejor manera de acceder de forma rapida al medio de contacto preferido.&lt;/div&gt;&lt;div&gt;4) Las categorias son gestionadas por el deposito. De modo que esta clase es la que se encarga de diseñar y agregar las nuevas categorias/subcategorias. El motivo por el que se hace esto es para poder &quot;construir&quot; los atributos de cada tipo de item sin tener que recompilar todo el codigo.&amp;nbsp;&lt;/div&gt;&lt;div&gt;Esto permite definir y adaptar los atributos por los que se clasifican los items donados cuan especificamente se quiera. Además, no permite la ambiguedad, ya que las categorias se definen una unica vez y luego permanecen en el sistema. &lt;b&gt;IMPLEMENTADO (D-002)&lt;/b&gt;: Deposito.categorias + Subcategoria.atributos: list&amp;lt;AtributoDefinicion&amp;gt;.&lt;/div&gt;&lt;div&gt;5) Cada uno de los atributos en las subcategorías esta compuesto de un type y un valor. De esta forma podemos conocer cual es el tipo de dato que almacena cada uno de ellos. &lt;b&gt;ES SUMAMENTE IMPORTANTE &lt;/b&gt;hacer estas definiciones para cada uno de las herencias para el correcto&amp;nbsp;&lt;/div&gt;&lt;div&gt;funcionamiento de esta feature. &lt;b&gt;IMPLEMENTADO (D-002)&lt;/b&gt;: AtributoDefinicion (nombre+tipo) / AtributoValor (definicion+valor) en ItemDonado.valoresAtributos.&lt;/div&gt;&lt;div&gt;6) Para el caso de las entregas fallidas: el campo infoEntrega se sacó de ItemDonado (no correspondía al ítem sino a la entrega) — ver Entrega.justificacionFallo en el DDC de Logística.&lt;/div&gt;&lt;div&gt;7) Se define una clase abstracta &quot;Archivo&quot; con un metodo read. Para cada de extension de archivo soportado (en principio solo CSV) se hace una herencia en la que se implementa la lectura de datos en esa extension&lt;/div&gt;&lt;div&gt;9) En cuanto a personas fisicas: se modelan todos los atributos que puede tener, pero solo se usan todos para los donantes que son personas fisicas. De esta forma se evita abstraer entre distintos tipos de donantes luego de haberlo hecho con los tipos de personas.&lt;/div&gt;&lt;div&gt;11) Las personas juridicas que son donantes tienen un solo representante. Pero las entidades beneficiarias pueden tener mas de uno. Por eso se define dicho atributo como una lista. En el caso de los donantes solo admitira a un unico miembro. &lt;b&gt;IMPLEMENTADO (D-004)&lt;/b&gt;: PersonaJuridica.representantes siempre lista; la cardinalidad por rol se valida en Donante.agregarRepresentante (máx. 1) y EntidadBeneficiaria.agregarRepresentante (sin límite), no en PersonaJuridica.&lt;/div&gt;&lt;div&gt;12) Como implementar el vencimiento de los alimentos? &lt;b&gt;RESUELTO (D-002)&lt;/b&gt;: es un AtributoValor más (definicion.nombre=&quot;fechaVencimiento&quot;, tipo=FECHA) de la subcategoría correspondiente, no una subclase Perecedero aparte.&lt;/div&gt;&lt;div&gt;13) &lt;b&gt;ELIMINADO (D-003)&lt;/b&gt;: el estado PENDIENTE_CONFIRMACION no está en la Figura 2 oficial de la consigna y se sacó de EstadoTrack. La ventana de candidatas propuestas sin confirmar se maneja con el campo transitorio Donacion.candidatas, no como un estado formal.&lt;/div&gt;&lt;div&gt;14) &lt;b&gt;IMPLEMENTADO (D-006, RF-3/RF-4, port selectivo desde cola-broker)&lt;/b&gt;: LogisticaBroker + RabbitPublicadorEventos + EnvioLogisticaScheduler/EventosLogisticaScheduler. Validado en vivo con RabbitMQ real (2026-10-08): asignar → enviar-pendientes → Logística planifica → evento RUTA_PLANIFICADA → Donacion pasa a LISTA_PARA_ENTREGAR. &lt;b&gt;Hueco de dominio D-007 resuelto (D-008)&lt;/b&gt;: Donacion ya referencia al Donante (donanteId obligatorio). RabbitPublicadorEventos notifica a ambas partes (D-009) cuando tienen MedioContacto resolvible. &lt;b&gt;IMPLEMENTADO (D-013)&lt;/b&gt;: IncentivosClient notifica a Incentivos cuando una Donacion llega a ENTREGADA — requerimiento de Entrega 2 que nunca se había cableado.&lt;/div&gt;&lt;div&gt;15) &lt;b&gt;IMPLEMENTADO (D-014)&lt;/b&gt;: notificación de inactividad de 20 días (InactividadScheduler, paquete scheduler/, cron diario) + GestorDonantes.registrarOActualizarDonante (upsert por email en la importación CSV, antes siempre duplicaba) + NecesidadRecurrente resetea su período (antes quedaba satisfecha para siempre la primera vez).&lt;/div&gt;" vertex="1">
+        <mxCell id="6" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="Referencias:&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;1) Al hacer setPreferido, se hace desde la lista de medios de contacto que tiene la persona.&amp;nbsp;&lt;/div&gt;&lt;div&gt;2) Es necesario cruzar ambos criterios para poder agilizar la busqueda. Este metodo podria ser privado, empleado por setPreferido para identificar el medio indicado.&lt;/div&gt;&lt;div&gt;3) Debatir esta implementacion. Considero que es la mejor manera de acceder de forma rapida al medio de contacto preferido.&lt;/div&gt;&lt;div&gt;4) Categoria y Subcategoria: enums simples. ItemDonado valida categoría, subcategoría, unidad y cantidad.&lt;/div&gt;&lt;div&gt;5) Perecedero y ConEstado son componentes del item. Reemplazan AtributoDefinicion, AtributoValor y TipoDato (D-002 sustituida).&lt;/div&gt;&lt;div&gt;6) Para el caso de las entregas fallidas: el campo infoEntrega se sacó de ItemDonado (no correspondía al ítem sino a la entrega) — ver Entrega.justificacionFallo en el DDC de Logística.&lt;/div&gt;&lt;div&gt;7) Se define una clase abstracta &quot;Archivo&quot; con un metodo read. Para cada de extension de archivo soportado (en principio solo CSV) se hace una herencia en la que se implementa la lectura de datos en esa extension&lt;/div&gt;&lt;div&gt;9) En cuanto a personas fisicas: se modelan todos los atributos que puede tener, pero solo se usan todos para los donantes que son personas fisicas. De esta forma se evita abstraer entre distintos tipos de donantes luego de haberlo hecho con los tipos de personas.&lt;/div&gt;&lt;div&gt;11) Las personas juridicas que son donantes tienen un solo representante. Pero las entidades beneficiarias pueden tener mas de uno. Por eso se define dicho atributo como una lista. En el caso de los donantes solo admitira a un unico miembro. &lt;b&gt;IMPLEMENTADO (D-004)&lt;/b&gt;: PersonaJuridica.representantes siempre lista; la cardinalidad por rol se valida en Donante.agregarRepresentante (máx. 1) y EntidadBeneficiaria.agregarRepresentante (sin límite), no en PersonaJuridica.&lt;/div&gt;&lt;div&gt;12) Alimentos del catálogo con fecha de vencimiento. Segmentación: subcategoría + unidad + condición + vencimiento. Se conservan los renglones y la carga original.&lt;/div&gt;&lt;div&gt;13) &lt;b&gt;ELIMINADO (D-003)&lt;/b&gt;: el estado PENDIENTE_CONFIRMACION no está en la Figura 2 oficial de la consigna y se sacó de EstadoTrack. La ventana de candidatas propuestas sin confirmar se maneja con el campo transitorio Donacion.candidatas, no como un estado formal.&lt;/div&gt;&lt;div&gt;14) &lt;b&gt;IMPLEMENTADO (D-006, RF-3/RF-4, port selectivo desde cola-broker)&lt;/b&gt;: LogisticaBroker + RabbitPublicadorEventos + EnvioLogisticaScheduler/EventosLogisticaScheduler. Validado en vivo con RabbitMQ real (2026-10-08): asignar → enviar-pendientes → Logística planifica → evento RUTA_PLANIFICADA → Donacion pasa a LISTA_PARA_ENTREGAR. &lt;b&gt;Hueco de dominio D-007 resuelto (D-008)&lt;/b&gt;: Donacion ya referencia al Donante (donanteId obligatorio). RabbitPublicadorEventos notifica a ambas partes (D-009) cuando tienen MedioContacto resolvible. &lt;b&gt;IMPLEMENTADO (D-013)&lt;/b&gt;: IncentivosClient notifica a Incentivos cuando una Donacion llega a ENTREGADA — requerimiento de Entrega 2 que nunca se había cableado.&lt;/div&gt;&lt;div&gt;15) &lt;b&gt;IMPLEMENTADO (D-014)&lt;/b&gt;: notificación de inactividad de 20 días (InactividadScheduler, paquete scheduler/, cron diario) + GestorDonantes.registrarOActualizarDonante (upsert por email en la importación CSV, antes siempre duplicaba) + NecesidadRecurrente resetea su período (antes quedaba satisfecha para siempre la primera vez).&lt;/div&gt;" vertex="1">
           <mxGeometry height="400" width="1560" x="7586" y="5368" as="geometry" />
         </mxCell>
         <mxCell id="7" edge="1" parent="1" source="8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.395;entryY=0.998;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" target="5">
@@ -128,57 +128,52 @@
           <mxGeometry height="106" width="298" y="128" as="geometry" />
         </mxCell>
         <mxCell id="38" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Deposito" vertex="1">
-          <mxGeometry height="240" width="230" x="9077" y="6116" as="geometry" />
+          <mxGeometry height="145" width="230" x="9077" y="6116" as="geometry" />
         </mxCell>
         <mxCell id="39" parent="38" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&amp;lt;&amp;lt;singleton&amp;gt;&amp;gt;" vertex="1">
-          <mxGeometry height="25" width="230" y="30" as="geometry" />
+          <mxGeometry height="25" width="230.0" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="40" parent="38" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- items: &amp;lt;list&amp;gt; ItemDonado&lt;div&gt;- categorias &amp;lt;list&amp;gt; Categoria &lt;b&gt;*4&lt;/b&gt; (impl. D-002)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="59" width="230" y="55" as="geometry" />
+        <mxCell id="40" parent="38" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- items: List&amp;lt;ItemDonado&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="230.0" y="51" as="geometry" />
         </mxCell>
         <mxCell id="41" parent="38" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="230" y="114" as="geometry" />
+          <mxGeometry height="10" width="230.0" y="76" as="geometry" />
         </mxCell>
-        <mxCell id="42" parent="38" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ cargarItem(): void&lt;div&gt;+ actualizarItem(): void&lt;/div&gt;&lt;div&gt;&lt;div&gt;+itemsDisponibles(): List&amp;lt;ItemDonado&amp;gt;&lt;/div&gt;&lt;div&gt;+eliminarSinStock(): void&lt;/div&gt;&lt;/div&gt;&lt;div&gt;+agregarCategoria(categoria): void&lt;/div&gt;&lt;div&gt;+buscarSubcategoria(nombre): Optional&amp;lt;Subcategoria&amp;gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="118" width="230" y="122" as="geometry" />
+        <mxCell id="42" parent="38" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ cargarItem(item): void&lt;/div&gt;&lt;div&gt;+ itemsDisponibles(): List&amp;lt;ItemDonado&amp;gt;&lt;/div&gt;&lt;div&gt;+ reemplazarItems(anteriores, nuevos): void&lt;/div&gt;" vertex="1">
+          <mxGeometry height="59" width="230.0" y="86" as="geometry" />
         </mxCell>
         <mxCell id="43" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="ItemDonado" vertex="1">
-          <mxGeometry height="322" width="311" x="9756" y="6326" as="geometry" />
+          <mxGeometry height="273" width="311" x="9756" y="6326" as="geometry" />
         </mxCell>
-        <mxCell id="44" parent="43" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- descripcion: text&lt;div&gt;- foto: str&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- subcategoria: Subcategoria&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- cantidad: int&lt;/div&gt;&lt;div&gt;-alturaM: Int&lt;/div&gt;&lt;div&gt;-pesoKG: Int&lt;/div&gt;&lt;div&gt;-volumenM3: Int&lt;/div&gt;&lt;div&gt;-valoresAtributos: &amp;lt;list&amp;gt; AtributoValor (D-002)&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="178" width="311" y="30" as="geometry" />
+        <mxCell id="44" parent="43" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- id: Long&lt;/div&gt;&lt;div&gt;- descripcion: String; foto: String&lt;/div&gt;&lt;div&gt;- categoria: Categoria; subcategoria: Subcategoria&lt;/div&gt;&lt;div&gt;- unidadMedida: UnidadMedida; cantidad: BigDecimal&lt;/div&gt;&lt;div&gt;- perecedero: Perecedero [0..1]&lt;/div&gt;&lt;div&gt;- conEstado: ConEstado [0..1]&lt;/div&gt;&lt;div&gt;- pesoKg, volumenM3, alturaM: Integer&lt;/div&gt;" vertex="1">
+          <mxGeometry height="127" width="311.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="45" parent="43" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="10" width="311" y="208" as="geometry" />
+          <mxGeometry height="10" width="311.0" y="153" as="geometry" />
         </mxCell>
-        <mxCell id="46" parent="43" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ descontar(cantidadADescontar): void&lt;div&gt;+ sinStock(): Boolean&lt;/div&gt;&lt;div&gt;+ tieneStock(cantidadSolicitada): Boolean&lt;/div&gt;&lt;div&gt;+ agregarValorAtributo(valor: AtributoValor): void&lt;/div&gt;" vertex="1">
-          <mxGeometry height="104" width="311" y="218" as="geometry" />
+        <mxCell id="46" parent="43" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- validar(...): void&lt;/div&gt;&lt;div&gt;- validarDimension(...): void&lt;/div&gt;&lt;div&gt;+ mismaSegmentacion(otro): boolean&lt;/div&gt;&lt;div&gt;+ condicion(): Condicion&lt;/div&gt;&lt;div&gt;+ vencimiento(): LocalDate&lt;/div&gt;&lt;div&gt;+ estaVencido(): boolean&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="311.0" y="163" as="geometry" />
         </mxCell>
-        <mxCell id="47" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="&lt;span style=&quot;text-align: left;&quot;&gt;EstadoTrack&lt;/span&gt;" vertex="1">
-          <mxGeometry height="172" width="220" x="9765" y="6720" as="geometry" />
+        <mxCell id="47" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="EstadoTrack" vertex="1">
+          <mxGeometry height="112" width="220" x="9765" y="6720" as="geometry" />
         </mxCell>
-        <mxCell id="48" parent="47" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;" vertex="1">
-          <mxGeometry height="25" width="220" y="29" as="geometry" />
+        <mxCell id="48" parent="47" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="" vertex="1">
+          <mxGeometry height="10" width="220.0" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="49" parent="47" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&lt;div&gt;+ EN_DEPOSITO&lt;/div&gt;&lt;div&gt;+ ASIGNACION_REALIZADA&lt;/div&gt;&lt;div&gt;+ LISTA_PARA_ENTREGAR&lt;/div&gt;&lt;div&gt;+ EN_TRASLADO&lt;/div&gt;&lt;div&gt;+ ENTREGADA&lt;/div&gt;&lt;div&gt;+ ENTREGA_FALLIDA&lt;/div&gt;&lt;div&gt;+ VENCIDA&lt;/div&gt;" vertex="1">
-          <mxGeometry height="118" width="220" y="54" as="geometry" />
+        <mxCell id="49" parent="47" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&lt;div&gt;&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;EN_DEPOSITO, ASIGNACION_REALIZADA&lt;/div&gt;&lt;div&gt;LISTA_PARA_ENTREGAR, EN_TRASLADO&lt;/div&gt;&lt;div&gt;ENTREGADA, ENTREGA_FALLIDA, VENCIDA&lt;/div&gt;" vertex="1">
+          <mxGeometry height="76" width="220.0" y="36" as="geometry" />
         </mxCell>
-        <mxCell id="50" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="&lt;span style=&quot;text-align: left;&quot;&gt;Subcategoria (D-002: no abstracta)&lt;/span&gt;" vertex="1">
-          <mxGeometry height="185" width="330" x="9130" y="6616" as="geometry" />
+        <mxCell id="50" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Subcategoria" vertex="1">
+          <mxGeometry height="156" width="330" x="9130" y="6616" as="geometry" />
         </mxCell>
-        <mxCell id="51" parent="50" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- nombre : String&lt;br&gt;- unidadMedida : UnidadMedida&lt;br&gt;- categoria : Categoria&lt;br&gt;- atributos : &amp;lt;list&amp;gt; AtributoDefinicion (D-002)" vertex="1">
-          <mxGeometry height="102" width="330" y="30" as="geometry" />
+        <mxCell id="51" parent="50" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;SILLA, MESA, BANCO, COLCHON&lt;/div&gt;&lt;div&gt;FIDEOS_SECOS, ARROZ, LEGUMBRES_SECAS&lt;/div&gt;&lt;div&gt;ACEITE_VEGETAL, TOMATE, FRUTA&lt;/div&gt;&lt;div&gt;CAMPERA, REMERA, PANTALON&lt;/div&gt;&lt;div&gt;ROPA_INFANTIL, FRAZADA&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="330.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="52" parent="50" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="330" y="132" as="geometry" />
+          <mxGeometry height="10" width="330.0" y="136" as="geometry" />
         </mxCell>
-        <mxCell id="53" parent="50" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ agregarAtributo(atributo: AtributoDefinicion) : void" vertex="1">
-          <mxGeometry height="32" width="330" y="140" as="geometry" />
-        </mxCell>
-        <mxCell id="54" edge="1" parent="1" source="50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.488;entryY=0.979;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=none;endFill=0;" target="166">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="9205.58" y="6560.896" as="targetPoint" />
-          </mxGeometry>
+        <mxCell id="53" parent="50" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="10" width="330.0" y="146" as="geometry" />
         </mxCell>
         <mxCell id="55" edge="1" parent="1" source="44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="50">
           <mxGeometry relative="1" as="geometry">
@@ -198,16 +193,16 @@
           <mxGeometry height="56" width="140" y="54" as="geometry" />
         </mxCell>
         <mxCell id="63" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="&amp;lt;&amp;lt;Abstract&amp;gt;&amp;gt; Necesidad" vertex="1">
-          <mxGeometry height="212" width="251" x="8027" y="6601" as="geometry" />
+          <mxGeometry height="205" width="251" x="8027" y="6601" as="geometry" />
         </mxCell>
-        <mxCell id="64" parent="63" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- descripcion: String&lt;div&gt;- cantidadRequerida&lt;/div&gt;&lt;div&gt;- cantidadRecibida&lt;/div&gt;&lt;div&gt;- subcategoria&lt;/div&gt;&lt;div&gt;- beneficiarioAsociado: EntidadBeneficiaria&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="132" width="251" y="30" as="geometry" />
+        <mxCell id="64" parent="63" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- id: Long; descripcion: String&lt;/div&gt;&lt;div&gt;- subcategoria: Subcategoria&lt;/div&gt;&lt;div&gt;- unidadMedida: UnidadMedida&lt;/div&gt;&lt;div&gt;- cantidadRequerida: BigDecimal&lt;/div&gt;&lt;div&gt;- cantidadRecibida: BigDecimal&lt;/div&gt;&lt;div&gt;- entidadBeneficiaria: EntidadBeneficiaria&lt;/div&gt;" vertex="1">
+          <mxGeometry height="110" width="251.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="65" parent="63" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="251" y="162" as="geometry" />
+          <mxGeometry height="10" width="251.0" y="136" as="geometry" />
         </mxCell>
-        <mxCell id="66" parent="63" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+satisfecha() :bool&lt;div&gt;+recibir(cantidad)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="42" width="251" y="170" as="geometry" />
+        <mxCell id="66" parent="63" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ actualizar(descripcion, subcategoria, unidad, cantidad): void&lt;/div&gt;&lt;div&gt;+ satisfecha(): boolean&lt;/div&gt;&lt;div&gt;+ recibir(cantidad: BigDecimal): void&lt;/div&gt;" vertex="1">
+          <mxGeometry height="59" width="251.0" y="146" as="geometry" />
         </mxCell>
         <mxCell id="67" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="&lt;span style=&quot;text-align: left;&quot;&gt;Periodicidad&lt;/span&gt;" vertex="1">
           <mxGeometry height="140" width="140" x="7494" y="6892" as="geometry" />
@@ -311,17 +306,17 @@
             <mxPoint x="8406" y="6646" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="90" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="&lt;div&gt;SolicitudDonacion&lt;/div&gt;" vertex="1">
-          <mxGeometry height="128" width="197" x="8598" y="6116" as="geometry" />
+        <mxCell id="90" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="SolicitudDonacion" vertex="1">
+          <mxGeometry height="171" width="197" x="8598" y="6116" as="geometry" />
         </mxCell>
-        <mxCell id="91" parent="90" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;-descripcion&lt;/div&gt;&lt;div&gt;-fechaRegistro&lt;/div&gt;&lt;div&gt;- items: &amp;lt;list&amp;gt; Item&lt;/div&gt;&lt;div&gt;- donante: Donante &lt;b&gt;(D-008)&lt;/b&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="50" width="197" y="30" as="geometry" />
+        <mxCell id="91" parent="90" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- id: Long&lt;/div&gt;&lt;div&gt;- descripcion: String&lt;/div&gt;&lt;div&gt;- fechaRegistro: LocalDateTime&lt;/div&gt;&lt;div&gt;- donante: Donante&lt;/div&gt;&lt;div&gt;- items: List&amp;lt;ItemDonado&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="93" width="197.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="92" parent="90" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="197" y="80" as="geometry" />
+          <mxGeometry height="10" width="197.0" y="119" as="geometry" />
         </mxCell>
-        <mxCell id="93" parent="90" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+agregarItem(item)&lt;div&gt;+segmentar(): &amp;lt;list&amp;gt; Donacion&lt;/div&gt;" vertex="1">
-          <mxGeometry height="40" width="197" y="88" as="geometry" />
+        <mxCell id="93" parent="90" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ agregarItem(item): void&lt;/div&gt;&lt;div&gt;+ segmentar(): List&amp;lt;Donacion&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="42" width="197.0" y="129" as="geometry" />
         </mxCell>
         <mxCell id="94" edge="1" parent="1" source="69" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="98">
           <mxGeometry relative="1" as="geometry">
@@ -329,28 +324,28 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="95" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="NecesidadRecurrente" vertex="1">
-          <mxGeometry height="164" width="220" x="7729" y="6886" as="geometry" />
+          <mxGeometry height="137" width="220" x="7729" y="6886" as="geometry" />
         </mxCell>
-        <mxCell id="96" parent="95" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- Periodicidad&lt;/div&gt;&lt;div&gt;- inicioPeriodoActual: Fecha (D-014)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="50" width="220" y="30" as="geometry" />
+        <mxCell id="96" parent="95" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- periodicidad: Periodicidad&lt;/div&gt;&lt;div&gt;- inicioPeriodoActual: LocalDate&lt;/div&gt;" vertex="1">
+          <mxGeometry height="42" width="220.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="97" parent="95" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="220" y="80" as="geometry" />
+          <mxGeometry height="10" width="220.0" y="68" as="geometry" />
         </mxCell>
-        <mxCell id="98" parent="95" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+satisfecha() : bool (override, D-014)&lt;div&gt;+recibir(cantidad) (override, D-014)&lt;/div&gt;&lt;div&gt;&lt;i&gt;Ambos reinician cantidadRecibida al vencer el período -- antes una necesidad recurrente satisfecha una vez quedaba satisfecha para siempre.&lt;/i&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="82" width="220" y="88" as="geometry" />
+        <mxCell id="98" parent="95" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ recibir(cantidad: BigDecimal): void&lt;/div&gt;&lt;div&gt;+ satisfecha(): boolean&lt;/div&gt;&lt;div&gt;- avanzarPeriodoSiCorresponde(): void&lt;/div&gt;" vertex="1">
+          <mxGeometry height="59" width="220.0" y="78" as="geometry" />
         </mxCell>
-        <mxCell id="99" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="NecesidadExtraordinario" vertex="1">
-          <mxGeometry height="134" width="160" x="7918" y="6888" as="geometry" />
+        <mxCell id="99" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="NecesidadExtraordinaria" vertex="1">
+          <mxGeometry height="86" width="160" x="7918" y="6888" as="geometry" />
         </mxCell>
-        <mxCell id="100" parent="99" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- TipoExtraordinario&lt;/div&gt;" vertex="1">
-          <mxGeometry height="34" width="160" y="30" as="geometry" />
+        <mxCell id="100" parent="99" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- tipoExtraordinario: TipoExtraordinario&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="160.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="101" parent="99" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="160" y="64" as="geometry" />
+          <mxGeometry height="10" width="160.0" y="51" as="geometry" />
         </mxCell>
-        <mxCell id="102" parent="99" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+satisfecha() : bool&lt;div&gt;+recibir(cantidad)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="62" width="160" y="72" as="geometry" />
+        <mxCell id="102" parent="99" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ setTipoExtraordinario(tipo): void&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="160.0" y="61" as="geometry" />
         </mxCell>
         <mxCell id="103" edge="1" parent="1" source="99" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.413;exitY=0.007;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.275;entryY=0.996;entryDx=0;entryDy=0;entryPerimeter=0;" target="66">
           <mxGeometry relative="1" as="geometry">
@@ -372,19 +367,19 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="106" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=40;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e51400;fontColor=#ffffff;strokeColor=#B20000;" value="GestorDonaciones" vertex="1">
-          <mxGeometry height="510" width="410" x="8307" y="7159" as="geometry" />
+          <mxGeometry height="230" width="410" x="8307" y="7159" as="geometry" />
         </mxCell>
         <mxCell id="107" parent="106" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&amp;lt;&amp;lt;singleton&amp;gt;&amp;gt; (Spring @Component)" vertex="1">
-          <mxGeometry height="25" width="410" y="40" as="geometry" />
+          <mxGeometry height="25" width="410.0" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="108" parent="106" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="- deposito: Deposito&lt;div&gt;- donaciones: &amp;lt;list&amp;gt; Donacion&lt;/div&gt;&lt;div&gt;- algoritmos: &amp;lt;list&amp;gt; AlgoritmoAsignacion&lt;/div&gt;&lt;div&gt;- siguienteId: Long&lt;/div&gt;" vertex="1">
-          <mxGeometry height="98" width="410" y="65" as="geometry" />
+        <mxCell id="108" parent="106" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;- deposito: Deposito&lt;/div&gt;&lt;div&gt;- solicitudes: List&amp;lt;SolicitudDonacion&amp;gt;&lt;/div&gt;&lt;div&gt;- donaciones: List&amp;lt;Donacion&amp;gt;&lt;/div&gt;&lt;div&gt;- algoritmos: List&amp;lt;AlgoritmoAsignacion&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="76" width="410.0" y="51" as="geometry" />
         </mxCell>
         <mxCell id="109" parent="106" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="50" width="410" y="163" as="geometry" />
+          <mxGeometry height="10" width="410.0" y="127" as="geometry" />
         </mxCell>
-        <mxCell id="110" parent="106" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;registrarSolicitud(solicitud): void&lt;/div&gt;&lt;div&gt;agregarAlgoritmo(algoritmo): void &lt;i&gt;(sin uso real en ejecutarMatchmaking, ver nota)&lt;/i&gt;&lt;/div&gt;&lt;div&gt;ejecutarMatchmaking(donacion, entidades): ResultadoMatchmaking&lt;/div&gt;&lt;div&gt;&lt;b&gt;registrarDonacion(donacion): Donacion&lt;/b&gt; (Etapa 2)&lt;/div&gt;&lt;div&gt;&lt;b&gt;buscarPorId(id): Donacion&lt;/b&gt; (Etapa 2)&lt;/div&gt;&lt;div&gt;&lt;b&gt;eliminar(id): void&lt;/b&gt; (Etapa 2)&lt;/div&gt;&lt;div&gt;&lt;i&gt;ELIMINADOS (scan de calidad, hallazgo bajo): registrarNecesidad, registrarEntidad, asignarDonacion, confirmarAsignacion — sin ningún caller real. confirmarAsignacion ahora vive en DonacionService (capa de aplicación, no se modela acá).&lt;/i&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;IMPLEMENTADO (D-006, RF-4): la integración con Logística NO se agregó como métodos de este Gestor — vive en LogisticaBroker + EnvioLogisticaScheduler/EventosLogisticaScheduler (paquetes integracion/ y scheduler/), que usan DonacionService.obtenerPendientes(page,size) ya existente. Ver EventoLogisticoDTO abajo.&lt;/i&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="290" width="410" y="213" as="geometry" />
+        <mxCell id="110" parent="106" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;+ registrarSolicitud(solicitud): void&lt;/div&gt;&lt;div&gt;+ registrarDonacion(donacion): Donacion&lt;/div&gt;&lt;div&gt;+ buscarPorId(id): Donacion&lt;/div&gt;&lt;div&gt;+ eliminar(id): void&lt;/div&gt;&lt;div&gt;+ ejecutarMatchmaking(donacion, entidades): ResultadoMatchmaking&lt;/div&gt;" vertex="1">
+          <mxGeometry height="93" width="410.0" y="137" as="geometry" />
         </mxCell>
         <mxCell id="111" parent="1" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;" value="Debe existir al menos un MedioContacto de type Email para cada Persona" vertex="1">
           <mxGeometry height="100" width="170" x="7296" y="6016" as="geometry" />
@@ -475,16 +470,16 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="137" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="Donacion" vertex="1">
-          <mxGeometry height="400" width="260" x="8139" y="7582" as="geometry" />
+          <mxGeometry height="375" width="260" x="8139" y="7582" as="geometry" />
         </mxCell>
-        <mxCell id="138" parent="137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- id: Long&lt;/div&gt;&lt;div&gt;- cantidadAsignada: Integer&lt;/div&gt;&lt;div&gt;- necesidadAsignada: Necesidad&lt;/div&gt;&lt;div&gt;- itemDonado: ItemDonado&lt;/div&gt;&lt;div&gt;- fechaCreacion: Fecha&lt;/div&gt;&lt;div&gt;- estadoActual: EstadoTrack&lt;/div&gt;&lt;div&gt;- historialEstados: &amp;lt;list&amp;gt; CambioEstado&lt;/div&gt;&lt;div&gt;- entidadBeneficiaria: EntidadBeneficiaria&lt;/div&gt;&lt;div&gt;- candidatas: &amp;lt;list&amp;gt; EntidadBeneficiaria&lt;/div&gt;&lt;div&gt;- donante: Donante &lt;b&gt;(D-008, resuelve D-007)&lt;/b&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="180" width="245" y="30" as="geometry" />
+        <mxCell id="138" parent="137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- id: Long&lt;/div&gt;&lt;div&gt;- items: List&amp;lt;ItemDonado&amp;gt;&lt;/div&gt;&lt;div&gt;- solicitudOrigen: SolicitudDonacion&lt;/div&gt;&lt;div&gt;- donante: Donante&lt;/div&gt;&lt;div&gt;- necesidadAsignada: Necesidad [0..1]&lt;/div&gt;&lt;div&gt;- entidadBeneficiaria: EntidadBeneficiaria [0..1]&lt;/div&gt;&lt;div&gt;- fechaCreacion: LocalDateTime&lt;/div&gt;&lt;div&gt;- estadoActual: EstadoTrack&lt;/div&gt;&lt;div&gt;- historialEstados: List&amp;lt;CambioEstado&amp;gt;&lt;/div&gt;&lt;div&gt;- candidatas: List&amp;lt;EntidadBeneficiaria&amp;gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="178" width="260.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="139" parent="137" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="10" width="245" y="210" as="geometry" />
+          <mxGeometry height="10" width="260.0" y="204" as="geometry" />
         </mxCell>
-        <mxCell id="140" parent="137" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="+&lt;span style=&quot;background-color: transparent;&quot;&gt;Donacion(id, itemDonado, cantidadAsignada)&lt;/span&gt;&lt;div&gt;Donacion(id, itemDonado, cantidadAsignada, necesidad, entidad)&lt;/div&gt;&lt;div&gt;cambiarEstado(nuevoEstado, justificacion): void&lt;/div&gt;&lt;div&gt;estaAsignada(): boolean&lt;/div&gt;" vertex="1">
-          <mxGeometry height="110" width="245" y="220" as="geometry" />
+        <mxCell id="140" parent="137" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;" value="&lt;div&gt;+ reemplazarItems(nuevos): void&lt;/div&gt;&lt;div&gt;- validarItems(items): void&lt;/div&gt;&lt;div&gt;+ getCantidadAsignada(): BigDecimal&lt;/div&gt;&lt;div&gt;+ getCategoria(): Categoria&lt;/div&gt;&lt;div&gt;+ getSubcategoria(): Subcategoria&lt;/div&gt;&lt;div&gt;+ getUnidadMedida(): UnidadMedida&lt;/div&gt;&lt;div&gt;+ getPesoKg(), getVolumenM3(), getAlturaM(): Integer&lt;/div&gt;&lt;div&gt;+ cambiarEstado(estado, justificacion): void&lt;/div&gt;&lt;div&gt;+ estaAsignada(), estaVencida(): boolean&lt;/div&gt;" vertex="1">
+          <mxGeometry height="161" width="260.0" y="214" as="geometry" />
         </mxCell>
         <mxCell id="141" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#f0a30a;fontColor=#000000;strokeColor=#BD7000;" value="&lt;font style=&quot;color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;lt;&amp;lt;Interface&amp;gt;&amp;gt;&lt;/font&gt;&lt;font color=&quot;#121212&quot;&gt;&amp;nbsp;&lt;/font&gt;AlgoritmoAsignacion" vertex="1">
           <mxGeometry height="100" width="236" x="7871" y="7292" as="geometry" />
@@ -537,73 +532,61 @@
             <mxPoint x="8356.992" y="6296.7" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="190" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="AtributoDefinicion (D-002)" vertex="1">
-          <mxGeometry height="122" width="230" x="8884" y="6829" as="geometry" />
+        <mxCell id="190" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Perecedero" vertex="1">
+          <mxGeometry height="103" width="230" x="8884" y="6829" as="geometry" />
         </mxCell>
-        <mxCell id="191" parent="190" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- nombre: String&lt;div&gt;- tipo: TipoDato&lt;/div&gt;&lt;div&gt;- obligatorio: bool&lt;/div&gt;" vertex="1">
-          <mxGeometry height="56" width="230" y="30" as="geometry" />
+        <mxCell id="191" parent="190" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- fechaVencimiento: LocalDate&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="230.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="192" parent="190" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="230" y="86" as="geometry" />
+          <mxGeometry height="10" width="230.0" y="51" as="geometry" />
         </mxCell>
-        <mxCell id="193" parent="190" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&amp;nbsp;" vertex="1">
-          <mxGeometry height="28" width="230" y="94" as="geometry" />
+        <mxCell id="193" parent="190" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ getFechaVencimiento(): LocalDate&lt;/div&gt;&lt;div&gt;+ estaVencido(): boolean&lt;/div&gt;" vertex="1">
+          <mxGeometry height="42" width="230.0" y="61" as="geometry" />
         </mxCell>
-        <mxCell id="194" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="TipoDato" vertex="1">
-          <mxGeometry height="130" width="140" x="8934" y="6981" as="geometry" />
+        <mxCell id="194" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Condicion" vertex="1">
+          <mxGeometry height="95" width="140" x="8934" y="6981" as="geometry" />
         </mxCell>
-        <mxCell id="195" parent="194" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;" vertex="1">
-          <mxGeometry height="25" width="140" y="29" as="geometry" />
+        <mxCell id="195" parent="194" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="" vertex="1">
+          <mxGeometry height="10" width="140.0" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="196" parent="194" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="+ TEXTO&lt;div&gt;+ NUMERO&lt;/div&gt;&lt;div&gt;+ FECHA&lt;/div&gt;&lt;div&gt;+ BOOLEANO&lt;/div&gt;" vertex="1">
-          <mxGeometry height="76" width="140" y="54" as="geometry" />
+        <mxCell id="196" parent="194" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&lt;div&gt;&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;NUEVO&lt;/div&gt;&lt;div&gt;USADO&lt;/div&gt;" vertex="1">
+          <mxGeometry height="59" width="140.0" y="36" as="geometry" />
         </mxCell>
-        <mxCell id="197" edge="1" parent="1" source="190" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.478;exitY=1;exitDx=0;exitDy=0;" target="194">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="199" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="ConEstado" vertex="1">
+          <mxGeometry height="76" width="230" x="9190" y="6829" as="geometry" />
         </mxCell>
-        <mxCell id="198" edge="1" parent="1" source="51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=none;endFill=0;dashed=1;dashPattern=8 8;" target="191">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="199" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="AtributoValor (D-002)" vertex="1">
-          <mxGeometry height="88" width="230" x="9190" y="6829" as="geometry" />
-        </mxCell>
-        <mxCell id="200" parent="199" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- definicion: AtributoDefinicion&lt;div&gt;- valor: String&lt;/div&gt;" vertex="1">
-          <mxGeometry height="52" width="230" y="30" as="geometry" />
-        </mxCell>
-        <mxCell id="201" edge="1" parent="1" source="199" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="190">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="202" edge="1" parent="1" source="44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="199">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="200" parent="199" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- condicion: Condicion&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="230.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="165" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="Categoria" vertex="1">
-          <mxGeometry height="115" width="252" x="9101" y="6396" as="geometry" />
+          <mxGeometry height="102" width="252" x="9101" y="6396" as="geometry" />
         </mxCell>
-        <mxCell id="166" parent="165" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="- nombre: String&lt;div&gt;-subcategorias:&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&amp;lt;list&amp;gt; Subcategoria&lt;/span&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="86" width="252" y="29" as="geometry" />
+        <mxCell id="166" parent="165" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;" value="&lt;div&gt;&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;ALIMENTOS&lt;/div&gt;&lt;div&gt;MOBILIARIO&lt;/div&gt;&lt;div&gt;VESTIMENTA&lt;/div&gt;" vertex="1">
+          <mxGeometry height="76" width="252.0" y="26" as="geometry" />
         </mxCell>
-        <mxCell id="167" parent="1" style="text;whiteSpace=wrap;" value="Servicio de Donaciones - Gestión de Personas Donantes y Donaciones:&#xa;● Operaciones CRUD3 sobre las donaciones.&#xa;● Operaciones CRUD sobre las personas donantes (jurídicas y humanas).&#xa;● Cambios de estado de una donación, garantizando trazabilidad y auditoría.&#xa;&#xa;Servicio de Donaciones - Gestión de Entidades Beneficiarias y Necesidades:&#xa;● Operaciones CRUD sobre las entidades beneficiarias.&#xa;● Operaciones CRUD sobre las necesidades materiales (recurrentes y extraordinarias)&#xa;● Obtención del ranking generado por los algoritmos de asignación y selección de entidad beneficiariafinal.&#xa;● Ejecución a demanda de los algoritmos de asignación de necesidades." vertex="1">
+        <mxCell id="167" parent="1" style="text;whiteSpace=wrap;" value="Servicio de Donaciones - Gestión de Personas Donantes y Donaciones:&#10;● Operaciones CRUD3 sobre las donaciones.&#10;● Operaciones CRUD sobre las personas donantes (jurídicas y humanas).&#10;● Cambios de estado de una donación, garantizando trazabilidad y auditoría.&#10;&#10;Servicio de Donaciones - Gestión de Entidades Beneficiarias y Necesidades:&#10;● Operaciones CRUD sobre las entidades beneficiarias.&#10;● Operaciones CRUD sobre las necesidades materiales (recurrentes y extraordinarias)&#10;● Obtención del ranking generado por los algoritmos de asignación y selección de entidad beneficiariafinal.&#10;● Ejecución a demanda de los algoritmos de asignación de necesidades." vertex="1">
           <mxGeometry height="123" width="714.85" x="7537.15" y="5726.54" as="geometry" />
         </mxCell>
         <mxCell id="168" parent="1" style="text;whiteSpace=wrap;html=1;" value="&amp;nbsp;" vertex="1">
           <mxGeometry height="36" width="31" x="7275.235294117647" y="5706.294117647059" as="geometry" />
         </mxCell>
-        <mxCell id="185" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="CambioEstado (D-003, reemplaza a Timestamp)" vertex="1">
-          <mxGeometry height="122" width="220" x="9990" y="6760" as="geometry" />
+        <mxCell id="185" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=top;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#008a00;fontColor=#ffffff;strokeColor=#005700;" value="CambioEstado" vertex="1">
+          <mxGeometry height="105" width="220" x="9990" y="6760" as="geometry" />
         </mxCell>
-        <mxCell id="186" parent="185" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="- estadoNuevo: EstadoTrack&lt;div&gt;- fechaCambio: Fecha&lt;/div&gt;&lt;div&gt;- justificacion: str&lt;/div&gt;" vertex="1">
-          <mxGeometry height="56" width="220" y="30" as="geometry" />
+        <mxCell id="186" parent="185" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;- estadoNuevo: EstadoTrack&lt;/div&gt;&lt;div&gt;- fechaCambio: LocalDateTime&lt;/div&gt;&lt;div&gt;- justificacion: String&lt;/div&gt;" vertex="1">
+          <mxGeometry height="59" width="220.0" y="26" as="geometry" />
         </mxCell>
         <mxCell id="187" parent="185" style="line;strokeWidth=1;fillColor=none;align=left;verticalAlign=middle;spacingTop=-1;spacingLeft=3;spacingRight=3;rotatable=0;labelPosition=right;points=[];portConstraint=eastwest;strokeColor=inherit;" value="" vertex="1">
-          <mxGeometry height="8" width="220" y="86" as="geometry" />
+          <mxGeometry height="10" width="220.0" y="85" as="geometry" />
         </mxCell>
-        <mxCell id="188" parent="185" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="+ CambioEstado(estadoNuevo, justificacion)" vertex="1">
-          <mxGeometry height="28" width="220" y="94" as="geometry" />
+        <mxCell id="188" parent="185" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry height="10" width="220.0" y="95" as="geometry" />
         </mxCell>
         <mxCell id="189" edge="1" parent="1" source="49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="186">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="175" edge="1" parent="1" source="44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="138">
+        <mxCell id="175" edge="1" parent="1" source="137" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="43" value="items 1..*">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="8871" y="6376" />
@@ -674,6 +657,36 @@
         </mxCell>
         <mxCell id="218" parent="217" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ registrarActividadDonacion(donacion): void&lt;/div&gt;&lt;div&gt;&lt;i&gt;Llamada REST sincrona (no es la cola hacia Notificaciones, esa asincronía es específica de ese servicio) a POST /donantes/{id}/actividad-donacion. Se dispara desde DonacionService.cambiarEstado() cuando nuevoEstado=ENTREGADA.&lt;/i&gt;&lt;/div&gt;&lt;div&gt;&lt;i&gt;Resiliente: si Incentivos no responde, loguea advertencia y no interrumpe el cambio de estado (mismo principio que LogisticaBroker).&lt;/i&gt;&lt;/div&gt;" vertex="1">
           <mxGeometry height="130" width="320" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-ConEstado-metodos" parent="199" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;whiteSpace=wrap;html=1;" value="&lt;div&gt;+ getCondicion(): Condicion&lt;/div&gt;" vertex="1">
+          <mxGeometry height="25" width="230.0" y="51" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-43-165" parent="1" edge="1" source="43" target="165" value="categoria 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-43-190" parent="1" edge="1" source="43" target="190" value="0..1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;startArrow=diamond;startFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-43-199" parent="1" edge="1" source="43" target="199" value="0..1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;startArrow=diamond;startFill=1;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-199-194" parent="1" edge="1" source="199" target="194" value="condicion 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-137-90" parent="1" edge="1" source="137" target="90" value="solicitudOrigen 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-unidad" parent="1" style="swimlane;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=29;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;whiteSpace=wrap;fillColor=#6a00ff;fontColor=#ffffff;strokeColor=#3700CC;" value="UnidadMedida" vertex="1">
+          <mxGeometry height="100" width="140" x="8934.0" y="7126.0" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-unidad-datos" parent="refactor-unidad" vertex="1" value="&lt;div&gt;&amp;lt;&amp;lt;enum&amp;gt;&amp;gt;&lt;/div&gt;&lt;div&gt;UNIDAD, KILOGRAMO, CAJA&lt;/div&gt;&lt;div&gt;PAQUETE, LITRO&lt;/div&gt;" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;spacingLeft=4;whiteSpace=wrap;html=1;">
+          <mxGeometry y="26" height="74" width="140" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-item-unidad" parent="1" edge="1" source="43" target="refactor-unidad" value="unidadMedida 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="refactor-necesidad-unidad" parent="1" edge="1" source="63" target="refactor-unidad" value="unidadMedida 1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=open;endFill=0;">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

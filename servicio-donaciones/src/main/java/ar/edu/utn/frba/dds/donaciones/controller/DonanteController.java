@@ -23,30 +23,35 @@ public class DonanteController {
         this.donanteService = donanteService;
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener todos", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping
     public List<DonanteDTO> obtenerTodos() {
         return donanteService.obtenerTodos();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener por id", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}")
-    public DonanteDTO obtenerPorId(@PathVariable Long id) {
+    public DonanteDTO obtenerPorId(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         return donanteService.buscarPorId(id);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Crear humano", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/humanos")
     @ResponseStatus(HttpStatus.CREATED)
     public DonanteDTO crearHumano(@Valid @RequestBody PersonaHumanaDTO dto) {
         return donanteService.crearDonanteHumano(dto);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Crear juridico", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/juridicos")
     @ResponseStatus(HttpStatus.CREATED)
     public DonanteDTO crearJuridico(@Valid @RequestBody PersonaJuridicaDTO dto) {
         return donanteService.crearDonanteJuridico(dto);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Actualizar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PutMapping("/{id}")
-    public DonanteDTO actualizar(@PathVariable Long id, @RequestBody DonanteDTO dto) {
+    public DonanteDTO actualizar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id, @RequestBody DonanteDTO dto) {
         // PUT reemplaza el estado completo: el cliente debe mandar todos los
         // campos que quiere conservar (semántica estándar de PUT). El tipo
         // (humano/jurídico) NO lo decide el body — es inmutable y se
@@ -56,15 +61,17 @@ public class DonanteController {
         return donanteService.actualizar(id, dto);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         donanteService.eliminar(id);
     }
 
-    @PostMapping("/importar")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Importar", description = "Seleccionar el archivo CSV de ejemplo en src/data. La importación puede emitir notificaciones y requiere RabbitMQ.")
+    @PostMapping(value = "/importar", consumes = "multipart/form-data")
     public List<DonanteDTO> importar(
-            @RequestParam MultipartFile archivo) {
+            @io.swagger.v3.oas.annotations.Parameter(description = "Seleccionar CSV UTF-8; ejemplo incluido en servicio-donaciones/src/data.") @RequestParam MultipartFile archivo) {
 
         return donanteService.importarCSV(archivo);
     }

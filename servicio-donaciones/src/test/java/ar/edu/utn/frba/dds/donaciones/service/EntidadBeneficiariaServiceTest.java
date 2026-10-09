@@ -11,6 +11,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -56,8 +57,8 @@ class EntidadBeneficiariaServiceTest {
         EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
         EntidadBeneficiaria entidadDominio = entidadBeneficiariaService.buscarEntidad(entidad.getId());
 
-        ItemDonado item = new ItemDonado(1L, "Fideos", new Subcategoria("fideos secos"), 100, null);
-        Donacion donacionActiva = new Donacion(1L, item, 100);
+        ItemDonado item = DatosPrueba.item(1L, "Fideos", DatosPrueba.subcategoria("fideos secos"), 100, null);
+        Donacion donacionActiva = DatosPrueba.donacion(1L, item, 100);
         donacionActiva.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
         donacionActiva.setEntidadBeneficiaria(entidadDominio);
 
@@ -88,8 +89,8 @@ class EntidadBeneficiariaServiceTest {
         EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
         EntidadBeneficiaria entidadDominio = entidadBeneficiariaService.buscarEntidad(entidad.getId());
 
-        ItemDonado item = new ItemDonado(1L, "Fideos", new Subcategoria("fideos secos"), 100, null);
-        Donacion donacionEntregada = new Donacion(1L, item, 100);
+        ItemDonado item = DatosPrueba.item(1L, "Fideos", DatosPrueba.subcategoria("fideos secos"), 100, null);
+        Donacion donacionEntregada = DatosPrueba.donacion(1L, item, 100);
         donacionEntregada.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
         donacionEntregada.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
         donacionEntregada.cambiarEstado(EstadoTrack.EN_TRASLADO, null);

@@ -41,10 +41,11 @@ public class IncentivosController {
     private final Consultor consultor = Consultor.getInstance();
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}/metricas")
     public MetricasActividadDTO obtenerMetricas(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "HISTORICO") String periodo) {
+            @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.Parameter(description = "HISTORICO, MENSUAL, TRIMESTRAL, SEMESTRAL o ANUAL.", example = "HISTORICO") @RequestParam(defaultValue = "HISTORICO") String periodo) {
 
         Donante donante = gestorDonante.obtenerDonante(id);
         Periodo periodoSolicitado = Periodo.valueOf(periodo.toUpperCase());
@@ -52,8 +53,9 @@ public class IncentivosController {
         return convertirADTO(metricas);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener misiones disponibles", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}/misiones")
-    public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@PathVariable Long id) {
+    public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         Donante donante = gestorDonante.obtenerDonante(id);
         List<ProgresoCategoria> categoriasObtenidas = donante.getProgresoAsociado().getCategoriasObtenidas();
         String categoriaActual = categoriaActualDe(donante);
@@ -70,19 +72,23 @@ public class IncentivosController {
                 .toList();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}/insignias")
-    public List<InsigniaDTO> obtenerInsignias(@PathVariable Long id) {
+    public List<InsigniaDTO> obtenerInsignias(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         Donante donante = gestorDonante.obtenerDonante(id);
         return consultor.obtenerInsignias(donante).stream()
                 .map(this::convertirADTO)
                 .toList();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Registrar actividad donacion", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/{id}/actividad-donacion")
     public ResponseEntity<ProgresoInsigniaDTO> registrarActividadDonacion(
-            @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
             @RequestBody DatosDonacionDTO dto) {
 
+        if (dto.getFecha() == null || dto.getCantidadBienes() == null || dto.getCantidadBienes().signum() <= 0)
+            throw new IllegalArgumentException("fecha y cantidadBienes positiva son obligatorias");
         Donante donante = gestorDonante.obtenerDonante(id, dto.getDonanteNombre());
         donante.actualizarContactoSiFalta(dto.getDonanteMedioContacto(), dto.getDonanteContacto());
         DatosDonacion datosDonacion = convertirADominio(dto);
@@ -94,10 +100,11 @@ public class IncentivosController {
         return ResponseEntity.ok(convertirADTO(obtenida));
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Cambiar visibilidad insignia", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PatchMapping("/{id}/insignias/{insigniaNombre}/visibilidad")
     public ResponseEntity<Void> cambiarVisibilidadInsignia(
-            @PathVariable Long id,
-            @PathVariable String insigniaNombre,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Usar una insignia ya obtenida por el donante.", example = "Racha Colaboradora") @PathVariable String insigniaNombre,
             @RequestBody VisibilidadInsigniaDTO dto) {
 
         Donante donante = gestorDonante.obtenerDonante(id);

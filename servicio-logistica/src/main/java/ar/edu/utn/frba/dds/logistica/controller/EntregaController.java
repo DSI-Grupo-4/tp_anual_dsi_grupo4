@@ -34,7 +34,7 @@ public class EntregaController {
             )
     })
     @GetMapping("/{id}/estado")
-    public EntregaDTO obtenerEstado(@PathVariable Integer id) {
+    public EntregaDTO obtenerEstado(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         var entrega = entregaRepository.buscarPorId(id);
         return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());
     }
@@ -58,7 +58,7 @@ public class EntregaController {
             )
     })
     @PostMapping("/{id}/reingresar")
-    public EntregaDTO reingresar(@PathVariable Integer id) {
+    public EntregaDTO reingresar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         var entrega = entregaRepository.buscarPorId(id);
         entrega.reingresarADeposito();
         return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());

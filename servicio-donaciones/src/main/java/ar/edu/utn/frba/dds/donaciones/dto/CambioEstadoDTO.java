@@ -1,12 +1,20 @@
 package ar.edu.utn.frba.dds.donaciones.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Schema(example = """
+{
+  "nuevoEstado": "LISTA_PARA_ENTREGAR",
+  "justificacion": "Ruta planificada para la entrega"
+}
+""")
 public class CambioEstadoDTO {
+    @jakarta.validation.constraints.NotNull
     private EstadoTrack nuevoEstado;
     private String justificacion;
     // Opcional: cuando el cambio de estado viene de un evento externo

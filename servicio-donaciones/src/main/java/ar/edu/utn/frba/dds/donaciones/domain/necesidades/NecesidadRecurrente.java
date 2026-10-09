@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.donaciones.domain.necesidades;
 
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
 import lombok.Getter;
+import java.math.BigDecimal;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -20,16 +22,26 @@ public class NecesidadRecurrente extends Necesidad {
             Long id,
             String descripcion,
             Subcategoria subcategoria,
-            Integer cantidadRequerida,
+            UnidadMedida unidadMedida,
+            BigDecimal cantidadRequerida,
             Periodicidad periodicidad) {
 
-        super(id, descripcion, subcategoria, cantidadRequerida);
-        this.periodicidad = periodicidad;
+        super(id, descripcion, subcategoria, unidadMedida, cantidadRequerida);
+        setPeriodicidad(periodicidad);
         this.inicioPeriodoActual = LocalDate.now();
     }
 
+    public void setPeriodicidad(Periodicidad periodicidad) {
+        if (periodicidad == null) throw new IllegalArgumentException("periodicidad es obligatoria");
+        this.periodicidad = periodicidad;
+    }
     @Override
-    public void recibir(Integer cantidad) {
+    public BigDecimal getCantidadRecibida() {
+        avanzarPeriodoSiCorresponde();
+        return super.getCantidadRecibida();
+    }
+    @Override
+    public void recibir(BigDecimal cantidad) {
         avanzarPeriodoSiCorresponde();
         super.recibir(cantidad);
     }
@@ -44,7 +56,7 @@ public class NecesidadRecurrente extends Necesidad {
         LocalDate hoy = LocalDate.now();
         while (!hoy.isBefore(finDePeriodoDesde(inicioPeriodoActual))) {
             inicioPeriodoActual = finDePeriodoDesde(inicioPeriodoActual);
-            setCantidadRecibida(0);
+            cantidadRecibida = BigDecimal.ZERO;
         }
     }
 

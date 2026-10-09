@@ -6,6 +6,9 @@ import ar.edu.utn.frba.dds.donaciones.dto.NecesidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadRecurrenteDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -41,8 +44,9 @@ class NecesidadServiceTest {
 
         NecesidadRecurrenteDTO dto = new NecesidadRecurrenteDTO();
         dto.setDescripcion("Fideos semanales");
-        dto.setSubcategoria("fideos secos");
-        dto.setCantidadRequerida(100);
+        dto.setSubcategoria(DatosPrueba.subcategoria("fideos secos"));
+        dto.setUnidadMedida(UnidadMedida.UNIDAD);
+        dto.setCantidadRequerida(BigDecimal.valueOf(100));
         dto.setPeriodicidad(Periodicidad.SEMANAL);
         dto.setEntidadBeneficiariaId(entidadId);
 
@@ -70,8 +74,9 @@ class NecesidadServiceTest {
         NecesidadDTO necesidad = crearNecesidadParaEntidad(1L);
         NecesidadRecurrenteDTO cambios = new NecesidadRecurrenteDTO();
         cambios.setDescripcion("Cambiado");
-        cambios.setSubcategoria("fideos secos");
-        cambios.setCantidadRequerida(50);
+        cambios.setSubcategoria(DatosPrueba.subcategoria("fideos secos"));
+        cambios.setUnidadMedida(UnidadMedida.UNIDAD);
+        cambios.setCantidadRequerida(BigDecimal.valueOf(50));
         cambios.setPeriodicidad(Periodicidad.MENSUAL);
 
         assertThatThrownBy(() -> necesidadService.actualizarRecurrente(999L, necesidad.getId(), cambios))

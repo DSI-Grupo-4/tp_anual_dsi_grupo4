@@ -1,0 +1,179 @@
+{
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\PersonaHumanaDTO.java": {
+    "nombre": "Ana",
+    "apellido": "Perez",
+    "edad": 30,
+    "documento": "30123456",
+    "genero": "FEMENINO"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\PersonaJuridicaDTO.java": {
+    "razonSocial": "Comedor Sonrisas",
+    "tipo": "ONG",
+    "rubro": "Asistencia alimentaria"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\EntidadBeneficiariaDTO.java": {
+    "personaJuridica": {
+      "razonSocial": "Comedor Sonrisas",
+      "tipo": "ONG",
+      "rubro": "Asistencia alimentaria"
+    },
+    "descripcion": "Comedor comunitario",
+    "direccion": {
+      "calle": "Av. San Martin",
+      "numero": "1250",
+      "ciudad": {
+        "nombre": "Cordoba",
+        "provincia": {
+          "nombre": "Cordoba"
+        }
+      }
+    }
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\DonanteDTO.java": {
+    "tipo": "HUMANA",
+    "nombre": "Ana",
+    "apellido": "Perez",
+    "edad": 30,
+    "documento": "30123456",
+    "genero": "FEMENINO"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\ItemDonadoDTO.java": {
+    "descripcion": "Sillas de oficina usadas",
+    "categoria": "MOBILIARIO",
+    "subcategoria": "SILLA",
+    "unidadMedida": "UNIDAD",
+    "cantidad": 3,
+    "condicion": "USADO",
+    "foto": "https://example.org/sillas.jpg",
+    "pesoKg": 15,
+    "volumenM3": 2,
+    "alturaM": 1
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\CargaDonacionDTO.java": {
+    "donanteId": 1,
+    "descripcion": "Muebles y alimentos para donar",
+    "items": [
+      {
+        "descripcion": "Sillas de oficina usadas",
+        "categoria": "MOBILIARIO",
+        "subcategoria": "SILLA",
+        "unidadMedida": "UNIDAD",
+        "cantidad": 3,
+        "condicion": "USADO",
+        "foto": "https://example.org/sillas.jpg",
+        "pesoKg": 15,
+        "volumenM3": 2,
+        "alturaM": 1
+      },
+      {
+        "descripcion": "Arroz a granel",
+        "categoria": "ALIMENTOS",
+        "subcategoria": "ARROZ",
+        "unidadMedida": "KILOGRAMO",
+        "cantidad": 2.5,
+        "fechaVencimiento": "2030-12-31",
+        "pesoKg": 3,
+        "volumenM3": 1,
+        "alturaM": 1
+      }
+    ]
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\ActualizarDonacionDTO.java": {
+    "items": [
+      {
+        "descripcion": "Sillas de oficina usadas",
+        "categoria": "MOBILIARIO",
+        "subcategoria": "SILLA",
+        "unidadMedida": "UNIDAD",
+        "cantidad": 3,
+        "condicion": "USADO",
+        "foto": "https://example.org/sillas.jpg",
+        "pesoKg": 15,
+        "volumenM3": 2,
+        "alturaM": 1
+      }
+    ]
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\NecesidadExtraordinariaDTO.java": {
+    "descripcion": "Se necesitan sillas",
+    "subcategoria": "SILLA",
+    "unidadMedida": "UNIDAD",
+    "cantidadRequerida": 3,
+    "tipoExtraordinario": "INUNDACION"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\NecesidadRecurrenteDTO.java": {
+    "descripcion": "Arroz para el comedor",
+    "subcategoria": "ARROZ",
+    "unidadMedida": "KILOGRAMO",
+    "cantidadRequerida": 10.5,
+    "periodicidad": "SEMANAL"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\NecesidadDTO.java": {
+    "tipo": "EXTRAORDINARIA",
+    "descripcion": "Se necesitan sillas",
+    "subcategoria": "SILLA",
+    "unidadMedida": "UNIDAD",
+    "cantidadRequerida": 3,
+    "tipoExtraordinario": "INUNDACION"
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\SolicitudAsignacionDTO.java": {
+    "descripcion": "Sillas de oficina usadas",
+    "categoria": "MOBILIARIO",
+    "subcategoria": "SILLA",
+    "unidadMedida": "UNIDAD",
+    "cantidad": 3,
+    "condicion": "USADO",
+    "foto": "https://example.org/sillas.jpg",
+    "pesoKg": 15,
+    "volumenM3": 2,
+    "alturaM": 1
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\AsignarEntidadDTO.java": {
+    "entidadId": 1
+  },
+  "servicio-donaciones\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\donaciones\\dto\\CambioEstadoDTO.java": {
+    "nuevoEstado": "LISTA_PARA_ENTREGAR",
+    "justificacion": "Ruta planificada para la entrega"
+  },
+  "servicio-incentivos\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\incentivos\\dto\\DatosDonacionDTO.java": {
+    "fecha": "2026-10-08",
+    "categoriaNombre": "ALIMENTOS",
+    "cantidadBienes": 2.5,
+    "donacionExitosa": true,
+    "beneficiarioId": 1,
+    "beneficiarioNombre": "Comedor Sonrisas",
+    "donanteNombre": "Ana Perez"
+  },
+  "servicio-incentivos\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\incentivos\\dto\\VisibilidadInsigniaDTO.java": {
+    "visible": true
+  },
+  "servicio-logistica\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\logistica\\dto\\DonacionDTO.java": {
+    "idDonacion": 1,
+    "entidadBeneficiariaAsociadaID": 1,
+    "direccionDestino": {
+      "calle": "Av. San Martin",
+      "numero": "1250",
+      "ciudad": {
+        "nombre": "Cordoba",
+        "provincia": {
+          "nombre": "Cordoba"
+        }
+      }
+    },
+    "pesoKG": 15,
+    "volumenM3": 2,
+    "alturaM": 1
+  },
+  "servicio-logistica\\src\\main\\java\\ar\\edu\\utn\\frba\\dds\\logistica\\domain\\rutas\\FotoEntrega.java": {
+    "url": "https://example.org/entrega.jpg",
+    "fecha": "2026-10-08"
+  },
+  "servicio-notificaciones\\src\\main\\java\\ar\\edu\\utn\\donatrack\\notificaciones\\dto\\NotificacionRequestDTO.java": {
+    "mensaje": "Tu donacion fue asignada al Comedor Sonrisas",
+    "medio": "EMAIL",
+    "contacto": "pruebas@example.org",
+    "servicioOrigen": "DONACIONES",
+    "tipoEvento": "ASIGNACION_REALIZADA",
+    "eventoId": "swagger-prueba-001"
+  }
+}

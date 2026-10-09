@@ -1,0 +1,2077 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:18080",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Necesidades",
+      "description": "Necesidades materiales (recurrentes y extraordinarias) de una entidad beneficiaria"
+    },
+    {
+      "name": "Donantes",
+      "description": "Alta, edición e importación masiva por CSV de personas donantes (humanas o jurídicas)"
+    },
+    {
+      "name": "Entidades beneficiarias",
+      "description": "Gestión de entidades beneficiarias registradas"
+    },
+    {
+      "name": "Donaciones",
+      "description": "Alta por carga múltiple, segmentación, estados y matchmaking de donaciones"
+    },
+    {
+      "name": "Asignaciones",
+      "description": "Ejecución a demanda de los algoritmos de asignación sobre un ítem hipotético"
+    }
+  ],
+  "paths": {
+    "/api/entidades/{id}": {
+      "get": {
+        "tags": [
+          "Entidades beneficiarias"
+        ],
+        "summary": "Obtener por id",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerPorId",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Entidades beneficiarias"
+        ],
+        "summary": "Actualizar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "actualizar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Entidades beneficiarias"
+        ],
+        "summary": "Eliminar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "eliminar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/entidades/{entidadId}/necesidades/{necesidadId}": {
+      "put": {
+        "tags": [
+          "Necesidades"
+        ],
+        "summary": "Actualizar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "actualizar_1",
+        "parameters": [
+          {
+            "name": "entidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "necesidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NecesidadDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/NecesidadDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Necesidades"
+        ],
+        "summary": "Eliminar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "eliminar_1",
+        "parameters": [
+          {
+            "name": "entidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "necesidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/donantes/{id}": {
+      "get": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Obtener por id",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerPorId_1",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonanteDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Actualizar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "actualizar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DonanteDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonanteDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Eliminar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "eliminar_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/donaciones/{id}": {
+      "get": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Obtener por id",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerPorId_2",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonacionDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Actualizar",
+        "description": "Reemplaza todos los items de una donación EN_DEPOSITO. Deben conservar una única clave de segmentación; conserva origen e historial.",
+        "operationId": "actualizar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActualizarDonacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonacionDTO"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Eliminar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "eliminar_3",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        }
+      }
+    },
+    "/api/logistica/enviar-pendientes": {
+      "post": {
+        "tags": [
+          "logistica-integracion-controller"
+        ],
+        "summary": "Enviar pendientes",
+        "description": "Requiere Logística levantada y donaciones asignadas con dirección y dimensiones completas.",
+        "operationId": "enviarPendientes",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/logistica/consumir-eventos": {
+      "post": {
+        "tags": [
+          "logistica-integracion-controller"
+        ],
+        "summary": "Consumir eventos",
+        "description": "Requiere Logística levantada; aplica sus eventos pendientes a las donaciones.",
+        "operationId": "consumirEventos",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/entidades": {
+      "get": {
+        "tags": [
+          "Entidades beneficiarias"
+        ],
+        "summary": "Obtener todas",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerTodas",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Entidades beneficiarias"
+        ],
+        "summary": "Crear",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "crear",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entidades/{entidadId}/necesidades/recurrentes": {
+      "post": {
+        "tags": [
+          "Necesidades"
+        ],
+        "summary": "Crear recurrente",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "crearRecurrente",
+        "parameters": [
+          {
+            "name": "entidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NecesidadRecurrenteDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/NecesidadDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entidades/{entidadId}/necesidades/extraordinarias": {
+      "post": {
+        "tags": [
+          "Necesidades"
+        ],
+        "summary": "Crear extraordinaria",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "crearExtraordinaria",
+        "parameters": [
+          {
+            "name": "entidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NecesidadExtraordinariaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/NecesidadDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donantes/juridicos": {
+      "post": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Crear juridico",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "crearJuridico",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonaJuridicaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonanteDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donantes/importar": {
+      "post": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Importar",
+        "description": "Seleccionar el archivo CSV de ejemplo en src/data. La importación puede emitir notificaciones y requiere RabbitMQ.",
+        "operationId": "importar",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "archivo": {
+                    "type": "string",
+                    "format": "binary",
+                    "description": "Seleccionar CSV UTF-8; ejemplo incluido en servicio-donaciones/src/data."
+                  }
+                },
+                "required": [
+                  "archivo"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonanteDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donantes/humanos": {
+      "post": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Crear humano",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "crearHumano",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PersonaHumanaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonanteDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones": {
+      "get": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Obtener todas",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerTodas_1",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonacionDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Crear",
+        "description": "Crear antes un donante. Valida toda la carga y agrupa por subcategoría, unidad, condición y vencimiento.",
+        "operationId": "crear_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CargaDonacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonacionDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones/{id}/asignar": {
+      "post": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Asignar",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "asignar",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AsignarEntidadDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonacionDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/asignaciones/candidatas": {
+      "post": {
+        "tags": [
+          "Asignaciones"
+        ],
+        "summary": "Obtener candidatas",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerCandidatas",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SolicitudAsignacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultadoMatchmakingDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones/{id}/estado": {
+      "patch": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Cambiar estado",
+        "description": "Ejemplo posterior a asignar: LISTA_PARA_ENTREGAR. Luego EN_TRASLADO y ENTREGADA. ENTREGA_FALLIDA requiere justificación.",
+        "operationId": "cambiarEstado",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CambioEstadoDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DonacionDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ping": {
+      "get": {
+        "tags": [
+          "servicio-donaciones-controller"
+        ],
+        "summary": "Ping",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "ping",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/entidades/{entidadId}/necesidades": {
+      "get": {
+        "tags": [
+          "Necesidades"
+        ],
+        "summary": "Obtener por entidad",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerPorEntidad",
+        "parameters": [
+          {
+            "name": "entidadId",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NecesidadDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donantes": {
+      "get": {
+        "tags": [
+          "Donantes"
+        ],
+        "summary": "Obtener todos",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerTodos",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonanteDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones/{id}/historial": {
+      "get": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Historial",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "historial",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeStampDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones/{id}/candidatas": {
+      "get": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Candidatas",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "candidatas",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EntidadBeneficiariaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/donaciones/pendientes": {
+      "get": {
+        "tags": [
+          "Donaciones"
+        ],
+        "summary": "Obtener pendientes",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerPendientes",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Página comenzando en cero.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 0
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Cantidad por página (1 a 100).",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 100
+            },
+            "example": 20
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DonacionPendienteDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CiudadDTO": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "provincia": {
+            "$ref": "#/components/schemas/ProvinciaDTO"
+          }
+        }
+      },
+      "DireccionDTO": {
+        "type": "object",
+        "properties": {
+          "calle": {
+            "type": "string"
+          },
+          "numero": {
+            "type": "string"
+          },
+          "ciudad": {
+            "$ref": "#/components/schemas/CiudadDTO"
+          }
+        }
+      },
+      "EntidadBeneficiariaDTO": {
+        "type": "object",
+        "example": {
+          "personaJuridica": {
+            "razonSocial": "Comedor Sonrisas",
+            "tipo": "ONG",
+            "rubro": "Asistencia alimentaria"
+          },
+          "descripcion": "Comedor comunitario",
+          "direccion": {
+            "calle": "Av. San Martin",
+            "numero": "1250",
+            "ciudad": {
+              "nombre": "Cordoba",
+              "provincia": {
+                "nombre": "Cordoba"
+              }
+            }
+          }
+        },
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "personaJuridica": {
+            "$ref": "#/components/schemas/PersonaJuridicaDTO"
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "direccion": {
+            "$ref": "#/components/schemas/DireccionDTO"
+          }
+        },
+        "required": [
+          "descripcion",
+          "personaJuridica"
+        ]
+      },
+      "PersonaJuridicaDTO": {
+        "type": "object",
+        "example": {
+          "razonSocial": "Comedor Sonrisas",
+          "tipo": "ONG",
+          "rubro": "Asistencia alimentaria"
+        },
+        "properties": {
+          "razonSocial": {
+            "type": "string",
+            "minLength": 1
+          },
+          "tipo": {
+            "type": "string",
+            "enum": [
+              "GUBERNAMENTAL",
+              "ONG",
+              "EMPRESA",
+              "INSTITUCION"
+            ]
+          },
+          "rubro": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "razonSocial",
+          "tipo"
+        ]
+      },
+      "ProvinciaDTO": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "NecesidadDTO": {
+        "type": "object",
+        "example": {
+          "tipo": "EXTRAORDINARIA",
+          "descripcion": "Se necesitan sillas",
+          "subcategoria": "SILLA",
+          "unidadMedida": "UNIDAD",
+          "cantidadRequerida": 3,
+          "tipoExtraordinario": "INUNDACION"
+        },
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "cantidadRequerida": {
+            "type": "number"
+          },
+          "cantidadRecibida": {
+            "type": "number"
+          },
+          "satisfecha": {
+            "type": "boolean"
+          },
+          "entidadBeneficiariaId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Se toma de entidadId en la URL",
+            "readOnly": true
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "DIARIA",
+              "SEMANAL",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          },
+          "tipoExtraordinario": {
+            "type": "string",
+            "enum": [
+              "INUNDACION",
+              "SISMO",
+              "OLA_POLAR"
+            ]
+          }
+        },
+        "required": [
+          "unidadMedida"
+        ]
+      },
+      "DonanteDTO": {
+        "type": "object",
+        "example": {
+          "tipo": "HUMANA",
+          "nombre": "Ana",
+          "apellido": "Perez",
+          "edad": 30,
+          "documento": "30123456",
+          "genero": "FEMENINO"
+        },
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "readOnly": true
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "apellido": {
+            "type": "string"
+          },
+          "edad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "genero": {
+            "type": "string",
+            "enum": [
+              "MASCULINO",
+              "FEMENINO",
+              "X"
+            ]
+          },
+          "documento": {
+            "type": "string"
+          },
+          "razonSocial": {
+            "type": "string"
+          },
+          "tipoOrganizacion": {
+            "type": "string",
+            "enum": [
+              "GUBERNAMENTAL",
+              "ONG",
+              "EMPRESA",
+              "INSTITUCION"
+            ]
+          },
+          "rubro": {
+            "type": "string"
+          }
+        }
+      },
+      "ActualizarDonacionDTO": {
+        "type": "object",
+        "example": {
+          "items": [
+            {
+              "descripcion": "Sillas de oficina usadas",
+              "categoria": "MOBILIARIO",
+              "subcategoria": "SILLA",
+              "unidadMedida": "UNIDAD",
+              "cantidad": 3,
+              "condicion": "USADO",
+              "foto": "https://example.org/sillas.jpg",
+              "pesoKg": 15,
+              "volumenM3": 2,
+              "alturaM": 1
+            }
+          ]
+        },
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDonadoDTO"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ItemDonadoDTO": {
+        "type": "object",
+        "example": {
+          "descripcion": "Sillas de oficina usadas",
+          "categoria": "MOBILIARIO",
+          "subcategoria": "SILLA",
+          "unidadMedida": "UNIDAD",
+          "cantidad": 3,
+          "condicion": "USADO",
+          "foto": "https://example.org/sillas.jpg",
+          "pesoKg": 15,
+          "volumenM3": 2,
+          "alturaM": 1
+        },
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "ALIMENTOS",
+              "MOBILIARIO",
+              "VESTIMENTA"
+            ]
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "cantidad": {
+            "type": "number"
+          },
+          "foto": {
+            "type": "string"
+          },
+          "condicion": {
+            "type": "string",
+            "description": "Obligatoria en MOBILIARIO y VESTIMENTA; omitir en ALIMENTOS.",
+            "enum": [
+              "NUEVO",
+              "USADO"
+            ]
+          },
+          "fechaVencimiento": {
+            "type": "string",
+            "format": "date",
+            "description": "Obligatoria para los alimentos del catálogo; omitir en otras categorías."
+          },
+          "pesoKg": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Peso total de este renglón, no por unidad. Obligatorio antes de asignar."
+          },
+          "volumenM3": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Volumen total de este renglón, no por unidad. Obligatorio antes de asignar."
+          },
+          "alturaM": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Altura máxima del renglón. Obligatoria antes de asignar."
+          }
+        },
+        "required": [
+          "cantidad",
+          "categoria",
+          "descripcion",
+          "subcategoria",
+          "unidadMedida"
+        ]
+      },
+      "DonacionDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "donanteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "descripcionItem": {
+            "type": "string"
+          },
+          "cantidadAsignada": {
+            "type": "number"
+          },
+          "solicitudOrigenId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "ALIMENTOS",
+              "MOBILIARIO",
+              "VESTIMENTA"
+            ]
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDonadoDTO"
+            }
+          },
+          "estadoActual": {
+            "type": "string",
+            "enum": [
+              "EN_DEPOSITO",
+              "ASIGNACION_REALIZADA",
+              "LISTA_PARA_ENTREGAR",
+              "EN_TRASLADO",
+              "ENTREGADA",
+              "ENTREGA_FALLIDA",
+              "VENCIDA"
+            ]
+          },
+          "entidadBeneficiariaId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "necesidadId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "pesoKg": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "volumenM3": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alturaM": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "NecesidadRecurrenteDTO": {
+        "type": "object",
+        "example": {
+          "descripcion": "Arroz para el comedor",
+          "subcategoria": "ARROZ",
+          "unidadMedida": "KILOGRAMO",
+          "cantidadRequerida": 10.5,
+          "periodicidad": "SEMANAL"
+        },
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "cantidadRequerida": {
+            "type": "number"
+          },
+          "entidadBeneficiariaId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Se toma de entidadId en la URL",
+            "readOnly": true
+          },
+          "periodicidad": {
+            "type": "string",
+            "enum": [
+              "DIARIA",
+              "SEMANAL",
+              "MENSUAL",
+              "ANUAL"
+            ]
+          }
+        },
+        "required": [
+          "cantidadRequerida",
+          "descripcion",
+          "periodicidad",
+          "subcategoria",
+          "unidadMedida"
+        ]
+      },
+      "NecesidadExtraordinariaDTO": {
+        "type": "object",
+        "example": {
+          "descripcion": "Se necesitan sillas",
+          "subcategoria": "SILLA",
+          "unidadMedida": "UNIDAD",
+          "cantidadRequerida": 3,
+          "tipoExtraordinario": "INUNDACION"
+        },
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "cantidadRequerida": {
+            "type": "number"
+          },
+          "entidadBeneficiariaId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Se toma de entidadId en la URL",
+            "readOnly": true
+          },
+          "tipoExtraordinario": {
+            "type": "string",
+            "enum": [
+              "INUNDACION",
+              "SISMO",
+              "OLA_POLAR"
+            ]
+          }
+        },
+        "required": [
+          "cantidadRequerida",
+          "descripcion",
+          "subcategoria",
+          "tipoExtraordinario",
+          "unidadMedida"
+        ]
+      },
+      "PersonaHumanaDTO": {
+        "type": "object",
+        "example": {
+          "nombre": "Ana",
+          "apellido": "Perez",
+          "edad": 30,
+          "documento": "30123456",
+          "genero": "FEMENINO"
+        },
+        "properties": {
+          "nombre": {
+            "type": "string",
+            "minLength": 1
+          },
+          "apellido": {
+            "type": "string",
+            "minLength": 1
+          },
+          "edad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "documento": {
+            "type": "string",
+            "minLength": 1
+          },
+          "genero": {
+            "type": "string",
+            "enum": [
+              "MASCULINO",
+              "FEMENINO",
+              "X"
+            ]
+          }
+        },
+        "required": [
+          "apellido",
+          "documento",
+          "nombre"
+        ]
+      },
+      "CargaDonacionDTO": {
+        "type": "object",
+        "example": {
+          "donanteId": 1,
+          "descripcion": "Muebles y alimentos para donar",
+          "items": [
+            {
+              "descripcion": "Sillas de oficina usadas",
+              "categoria": "MOBILIARIO",
+              "subcategoria": "SILLA",
+              "unidadMedida": "UNIDAD",
+              "cantidad": 3,
+              "condicion": "USADO",
+              "foto": "https://example.org/sillas.jpg",
+              "pesoKg": 15,
+              "volumenM3": 2,
+              "alturaM": 1
+            },
+            {
+              "descripcion": "Arroz a granel",
+              "categoria": "ALIMENTOS",
+              "subcategoria": "ARROZ",
+              "unidadMedida": "KILOGRAMO",
+              "cantidad": 2.5,
+              "fechaVencimiento": "2030-12-31",
+              "pesoKg": 3,
+              "volumenM3": 1,
+              "alturaM": 1
+            }
+          ]
+        },
+        "properties": {
+          "donanteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemDonadoDTO"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "descripcion",
+          "donanteId",
+          "items"
+        ]
+      },
+      "AsignarEntidadDTO": {
+        "type": "object",
+        "example": {
+          "entidadId": 1
+        },
+        "properties": {
+          "entidadId": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "required": [
+          "entidadId"
+        ]
+      },
+      "SolicitudAsignacionDTO": {
+        "type": "object",
+        "example": {
+          "descripcion": "Sillas de oficina usadas",
+          "categoria": "MOBILIARIO",
+          "subcategoria": "SILLA",
+          "unidadMedida": "UNIDAD",
+          "cantidad": 3,
+          "condicion": "USADO",
+          "foto": "https://example.org/sillas.jpg",
+          "pesoKg": 15,
+          "volumenM3": 2,
+          "alturaM": 1
+        },
+        "properties": {
+          "descripcion": {
+            "type": "string",
+            "minLength": 1
+          },
+          "categoria": {
+            "type": "string",
+            "enum": [
+              "ALIMENTOS",
+              "MOBILIARIO",
+              "VESTIMENTA"
+            ]
+          },
+          "subcategoria": {
+            "type": "string",
+            "enum": [
+              "SILLA",
+              "MESA",
+              "BANCO",
+              "COLCHON",
+              "FIDEOS_SECOS",
+              "ARROZ",
+              "LEGUMBRES_SECAS",
+              "ACEITE_VEGETAL",
+              "TOMATE",
+              "FRUTA",
+              "CAMPERA",
+              "REMERA",
+              "PANTALON",
+              "ROPA_INFANTIL",
+              "FRAZADA"
+            ]
+          },
+          "unidadMedida": {
+            "type": "string",
+            "enum": [
+              "UNIDAD",
+              "KILOGRAMO",
+              "CAJA",
+              "PAQUETE",
+              "LITRO"
+            ]
+          },
+          "cantidad": {
+            "type": "number"
+          },
+          "foto": {
+            "type": "string"
+          },
+          "condicion": {
+            "type": "string",
+            "description": "Obligatoria en MOBILIARIO y VESTIMENTA; omitir en ALIMENTOS.",
+            "enum": [
+              "NUEVO",
+              "USADO"
+            ]
+          },
+          "fechaVencimiento": {
+            "type": "string",
+            "format": "date",
+            "description": "Obligatoria para los alimentos del catálogo; omitir en otras categorías."
+          },
+          "pesoKg": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Peso total de este renglón, no por unidad. Obligatorio antes de asignar."
+          },
+          "volumenM3": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Volumen total de este renglón, no por unidad. Obligatorio antes de asignar."
+          },
+          "alturaM": {
+            "type": "integer",
+            "format": "int32",
+            "description": "Altura máxima del renglón. Obligatoria antes de asignar."
+          }
+        },
+        "required": [
+          "cantidad",
+          "categoria",
+          "descripcion",
+          "subcategoria",
+          "unidadMedida"
+        ]
+      },
+      "EntidadCandidataDTO": {
+        "type": "object",
+        "properties": {
+          "entidadBeneficiariaId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "razonSocial": {
+            "type": "string"
+          },
+          "descripcion": {
+            "type": "string"
+          },
+          "puntaje": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "ResultadoMatchmakingDTO": {
+        "type": "object",
+        "properties": {
+          "porCompatibilidad": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntidadCandidataDTO"
+            }
+          },
+          "porSubatencion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntidadCandidataDTO"
+            }
+          },
+          "interseccion": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EntidadCandidataDTO"
+            }
+          }
+        }
+      },
+      "CambioEstadoDTO": {
+        "type": "object",
+        "example": {
+          "nuevoEstado": "LISTA_PARA_ENTREGAR",
+          "justificacion": "Ruta planificada para la entrega"
+        },
+        "properties": {
+          "nuevoEstado": {
+            "type": "string",
+            "enum": [
+              "EN_DEPOSITO",
+              "ASIGNACION_REALIZADA",
+              "LISTA_PARA_ENTREGAR",
+              "EN_TRASLADO",
+              "ENTREGADA",
+              "ENTREGA_FALLIDA",
+              "VENCIDA"
+            ]
+          },
+          "justificacion": {
+            "type": "string"
+          },
+          "origenEvento": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "nuevoEstado"
+        ]
+      },
+      "TimeStampDTO": {
+        "type": "object",
+        "properties": {
+          "estado": {
+            "type": "string",
+            "enum": [
+              "EN_DEPOSITO",
+              "ASIGNACION_REALIZADA",
+              "LISTA_PARA_ENTREGAR",
+              "EN_TRASLADO",
+              "ENTREGADA",
+              "ENTREGA_FALLIDA",
+              "VENCIDA"
+            ]
+          },
+          "fecha": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "justificacion": {
+            "type": "string"
+          }
+        }
+      },
+      "DonacionPendienteDTO": {
+        "type": "object",
+        "properties": {
+          "idDonacion": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "entidadBeneficiariaAsociadaID": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "direccionDestino": {
+            "$ref": "#/components/schemas/DireccionDTO"
+          },
+          "pesoKG": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "volumenM3": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "alturaM": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  }
+}

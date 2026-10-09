@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.incentivos.progreso;
 import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
 import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
 import lombok.Getter;
+import java.math.BigDecimal;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -40,9 +41,9 @@ public abstract class ProgresoMision {
         // Por defecto las misiones no tienen vencimiento; sólo la Racha lo redefine.
     }
 
-    public abstract int obtenerProgresoActual();
+    public abstract BigDecimal obtenerProgresoActual();
 
-    public abstract int distanciaRestante();
+    public abstract BigDecimal distanciaRestante();
 
     @Getter
     public static class ProgresoRacha extends ProgresoMision {
@@ -86,14 +87,14 @@ public abstract class ProgresoMision {
         }
 
         @Override
-        public int obtenerProgresoActual() {
-            return mesesConsecutivosActuales;
+        public BigDecimal obtenerProgresoActual() {
+            return BigDecimal.valueOf(mesesConsecutivosActuales);
         }
 
         @Override
-        public int distanciaRestante() {
+        public BigDecimal distanciaRestante() {
             Mision.Racha racha = (Mision.Racha) getMisionAsociada();
-            return Math.max(0, racha.getMesesRequeridos() - mesesConsecutivosActuales);
+            return BigDecimal.valueOf(Math.max(0, racha.getMesesRequeridos() - mesesConsecutivosActuales));
         }
     }
 
@@ -114,40 +115,40 @@ public abstract class ProgresoMision {
         }
 
         @Override
-        public int obtenerProgresoActual() {
-            return categoriasCubiertas.size();
+        public BigDecimal obtenerProgresoActual() {
+            return BigDecimal.valueOf(categoriasCubiertas.size());
         }
 
         @Override
-        public int distanciaRestante() {
+        public BigDecimal distanciaRestante() {
             Mision.Completitud completitud = (Mision.Completitud) getMisionAsociada();
-            return Math.max(0, completitud.getCategoriasRequeridas() - categoriasCubiertas.size());
+            return BigDecimal.valueOf(Math.max(0, completitud.getCategoriasRequeridas() - categoriasCubiertas.size()));
         }
     }
 
     @Getter
     public static class ProgresoHabilDonador extends ProgresoMision {
-        private int mejorDonacionRegistrada;
+        private BigDecimal mejorDonacionRegistrada;
 
         public ProgresoHabilDonador(Mision misionAsociada) {
             super(misionAsociada);
-            this.mejorDonacionRegistrada = 0;
+            this.mejorDonacionRegistrada = BigDecimal.ZERO;
         }
 
         @Override
         public void actualizarProgresoMision(DatosDonacion datosDonacion) {
-            mejorDonacionRegistrada = Math.max(mejorDonacionRegistrada, datosDonacion.getCantidadBienes());
+            mejorDonacionRegistrada = mejorDonacionRegistrada.max(datosDonacion.getCantidadBienes());
         }
 
         @Override
-        public int obtenerProgresoActual() {
+        public BigDecimal obtenerProgresoActual() {
             return mejorDonacionRegistrada;
         }
 
         @Override
-        public int distanciaRestante() {
+        public BigDecimal distanciaRestante() {
             Mision.HabilDonador habilDonador = (Mision.HabilDonador) getMisionAsociada();
-            return Math.max(0, habilDonador.getCantidadBienesRequerida() - mejorDonacionRegistrada);
+            return BigDecimal.valueOf(habilDonador.getCantidadBienesRequerida()).subtract(mejorDonacionRegistrada).max(BigDecimal.ZERO);
         }
     }
 
@@ -168,14 +169,14 @@ public abstract class ProgresoMision {
         }
 
         @Override
-        public int obtenerProgresoActual() {
-            return donacionesExitosasActuales;
+        public BigDecimal obtenerProgresoActual() {
+            return BigDecimal.valueOf(donacionesExitosasActuales);
         }
 
         @Override
-        public int distanciaRestante() {
+        public BigDecimal distanciaRestante() {
             Mision.DonacionesExitosas donacionesExitosas = (Mision.DonacionesExitosas) getMisionAsociada();
-            return Math.max(0, donacionesExitosas.getDonacionesRequeridas() - donacionesExitosasActuales);
+            return BigDecimal.valueOf(Math.max(0, donacionesExitosas.getDonacionesRequeridas() - donacionesExitosasActuales));
         }
     }
 }

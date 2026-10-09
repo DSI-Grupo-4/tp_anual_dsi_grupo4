@@ -18,6 +18,7 @@ public class AsignacionController {
         this.asignacionService = asignacionService;
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener candidatas", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/candidatas")
     public ResultadoMatchmakingDTO obtenerCandidatas(
             @Valid @RequestBody SolicitudAsignacionDTO dto) {

@@ -1,9 +1,5 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.AtributoDefinicion;
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.AtributoValor;
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.TipoDato;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.CambioEstado;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
@@ -28,7 +24,8 @@ import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.*;
+import ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO;
 
 @Service
 public class DonacionService {
@@ -54,7 +51,6 @@ public class DonacionService {
      */
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
         Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
-        donante.registrarActividad();
 
         SolicitudDonacion solicitud = new SolicitudDonacion(dto.getDescripcion());
         solicitud.setDonante(donante);
@@ -63,39 +59,38 @@ public class DonacionService {
             solicitud.agregarItem(convertirItemDominio(itemDto));
         }
 
-        return solicitud.segmentar().stream()
+        List<Donacion> segmentadas = solicitud.segmentar();
+        gestorDonaciones.registrarSolicitud(solicitud);
+        donante.registrarActividad();
+        return segmentadas.stream()
                 .map(gestorDonaciones::registrarDonacion)
                 .map(this::convertirADTO)
                 .toList();
     }
 
     private ItemDonado convertirItemDominio(ItemDonadoDTO dto) {
-        Subcategoria subcategoria = gestorDonaciones.getDeposito()
-                .buscarSubcategoria(dto.getSubcategoria())
-                .orElseGet(() -> new Subcategoria(dto.getSubcategoria()));
+        if (dto == null) throw new IllegalArgumentException("El item es obligatorio");
+        return new ItemDonado(null, dto.getDescripcion(), dto.getCategoria(), dto.getSubcategoria(),
+                dto.getUnidadMedida(), dto.getCantidad(), dto.getFoto(),
+                dto.getFechaVencimiento() == null ? null : new Perecedero(dto.getFechaVencimiento()),
+                dto.getCondicion() == null ? null : new ConEstado(dto.getCondicion()),
+                dto.getPesoKg(), dto.getVolumenM3(), dto.getAlturaM());
+    }
 
-        ItemDonado item = new ItemDonado(
-                null,
-                dto.getDescripcion(),
-                subcategoria,
-                dto.getCantidad(),
-                dto.getFoto()
-        );
-        item.setPesoKg(dto.getPesoKg());
-        item.setVolumenM3(dto.getVolumenM3());
-        item.setAlturaM(dto.getAlturaM());
-
-        if (dto.getValoresAtributos() != null) {
-            for (Map.Entry<String, String> valor : dto.getValoresAtributos().entrySet()) {
-                AtributoDefinicion definicion = subcategoria.getAtributos().stream()
-                        .filter(a -> a.getNombre().equalsIgnoreCase(valor.getKey()))
-                        .findFirst()
-                        .orElseGet(() -> new AtributoDefinicion(valor.getKey(), TipoDato.TEXTO, false));
-                item.agregarValorAtributo(new AtributoValor(definicion, valor.getValue()));
-            }
-        }
-
-        return item;
+    private ItemDonadoDTO convertirItemADTO(ItemDonado item) {
+        ItemDonadoDTO dto = new ItemDonadoDTO();
+        dto.setDescripcion(item.getDescripcion());
+        dto.setCategoria(item.getCategoria());
+        dto.setSubcategoria(item.getSubcategoria());
+        dto.setUnidadMedida(item.getUnidadMedida());
+        dto.setCantidad(item.getCantidad());
+        dto.setFoto(item.getFoto());
+        dto.setCondicion(item.condicion());
+        dto.setFechaVencimiento(item.vencimiento());
+        dto.setPesoKg(item.getPesoKg());
+        dto.setVolumenM3(item.getVolumenM3());
+        dto.setAlturaM(item.getAlturaM());
+        return dto;
     }
 
     public List<DonacionDTO> obtenerTodas() {
@@ -110,22 +105,13 @@ public class DonacionService {
         gestorDonaciones.eliminar(id);
     }
 
-    /**
-     * A diferencia de la versión anterior (que delegaba a crear() y perdía
-     * el historial de estados), esto muta la donación existente: solo
-     * cantidad/descripción/dimensiones del ítem. Estado, entidad y necesidad
-     * cambian por sus propios endpoints (/estado, /asignar).
-     */
-    public DonacionDTO actualizar(Long id, DonacionDTO dto) {
+    /** Reemplazo validado y atómico del grupo; conserva identidad, origen e historial. */
+    public DonacionDTO actualizar(Long id, ActualizarDonacionDTO dto) {
         Donacion donacion = obtenerDominioPorId(id);
-        donacion.setCantidadAsignada(dto.getCantidadAsignada());
-
-        ItemDonado item = donacion.getItemDonado();
-        item.setDescripcion(dto.getDescripcionItem());
-        item.setPesoKg(dto.getPesoKg());
-        item.setVolumenM3(dto.getVolumenM3());
-        item.setAlturaM(dto.getAlturaM());
-
+        List<ItemDonado> nuevos = dto.getItems().stream().map(this::convertirItemDominio).toList();
+        List<ItemDonado> anteriores = donacion.getItems();
+        donacion.reemplazarItems(nuevos);
+        gestorDonaciones.getDeposito().reemplazarItems(anteriores, nuevos);
         return convertirADTO(donacion);
     }
 
@@ -161,6 +147,8 @@ public class DonacionService {
      */
     public DonacionDTO confirmarAsignacion(Long id, EntidadBeneficiaria entidad) {
         Donacion donacion = obtenerDominioPorId(id);
+        if (donacion.getPesoKg() == null || donacion.getVolumenM3() == null || donacion.getAlturaM() == null)
+            throw new IllegalArgumentException("Complete pesoKg, volumenM3 y alturaM de todos los items antes de asignar");
         donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
         donacion.setEntidadBeneficiaria(entidad);
 
@@ -212,12 +200,9 @@ public class DonacionService {
         dto.setDireccionDestino(
                 convertirDireccionADTO(donacion.getEntidadBeneficiaria().getDireccion()));
 
-        ItemDonado item = donacion.getItemDonado();
-        if (item != null) {
-            dto.setPesoKG(item.getPesoKg());
-            dto.setVolumenM3(item.getVolumenM3());
-            dto.setAlturaM(item.getAlturaM());
-        }
+        dto.setPesoKG(donacion.getPesoKg());
+        dto.setVolumenM3(donacion.getVolumenM3());
+        dto.setAlturaM(donacion.getAlturaM());
         return dto;
     }
 
@@ -256,7 +241,12 @@ public class DonacionService {
         if (donacion.getDonante() != null) {
             dto.setDonanteId(donacion.getDonante().getId());
         }
-        dto.setDescripcionItem(donacion.getItemDonado().getDescripcion());
+        dto.setDescripcionItem(donacion.getItems().stream().map(ItemDonado::getDescripcion).collect(java.util.stream.Collectors.joining("; ")));
+        dto.setItems(donacion.getItems().stream().map(this::convertirItemADTO).toList());
+        dto.setCategoria(donacion.getCategoria());
+        dto.setSubcategoria(donacion.getSubcategoria());
+        dto.setUnidadMedida(donacion.getUnidadMedida());
+        dto.setSolicitudOrigenId(donacion.getSolicitudOrigen() == null ? null : donacion.getSolicitudOrigen().getId());
         dto.setCantidadAsignada(donacion.getCantidadAsignada());
         dto.setEstadoActual(donacion.getEstadoActual());
 
@@ -267,10 +257,9 @@ public class DonacionService {
             dto.setNecesidadId(donacion.getNecesidadAsignada().getId());
         }
 
-        ItemDonado item = donacion.getItemDonado();
-        dto.setPesoKg(item.getPesoKg());
-        dto.setVolumenM3(item.getVolumenM3());
-        dto.setAlturaM(item.getAlturaM());
+        dto.setPesoKg(donacion.getPesoKg());
+        dto.setVolumenM3(donacion.getVolumenM3());
+        dto.setAlturaM(donacion.getAlturaM());
 
         return dto;
     }

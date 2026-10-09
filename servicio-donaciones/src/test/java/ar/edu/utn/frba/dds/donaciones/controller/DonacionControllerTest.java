@@ -10,6 +10,8 @@ import ar.edu.utn.frba.dds.donaciones.service.MatchmakingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,7 +44,7 @@ class DonacionControllerTest {
     private EntidadBeneficiariaService entidadBeneficiariaService;
 
     private MockMvc mockMvc;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
 
     @BeforeEach
     void setUp() {
@@ -58,8 +60,9 @@ class DonacionControllerTest {
         carga.setDescripcion("Mudanza oficina");
         ItemDonadoDTO item = new ItemDonadoDTO();
         item.setDescripcion("Sillas");
-        item.setSubcategoria("sillas");
-        item.setCantidad(6);
+        item.setSubcategoria(DatosPrueba.subcategoria("sillas"));
+        DatosPrueba.completar(item);
+        item.setCantidad(BigDecimal.valueOf(6));
         carga.setItems(List.of(item));
 
         DonacionDTO dto1 = new DonacionDTO();
@@ -79,15 +82,14 @@ class DonacionControllerTest {
 
     @Test
     void putDonacionesDelegaEnActualizarSinRecrearLaDonacion() throws Exception {
-        DonacionDTO cambios = new DonacionDTO();
-        cambios.setDescripcionItem("Sillas renombradas");
-        cambios.setCantidadAsignada(6);
+        ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO cambios = new ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO();
+        cambios.setItems(List.of(DatosPrueba.dto("Sillas renombradas", ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria.SILLA, 6)));
 
         DonacionDTO actualizado = new DonacionDTO();
         actualizado.setId(1L);
         actualizado.setDescripcionItem("Sillas renombradas");
 
-        when(donacionService.actualizar(eq(1L), any(DonacionDTO.class))).thenReturn(actualizado);
+        when(donacionService.actualizar(eq(1L), any(ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO.class))).thenReturn(actualizado);
 
         mockMvc.perform(put("/api/donaciones/1")
                         .contentType("application/json")

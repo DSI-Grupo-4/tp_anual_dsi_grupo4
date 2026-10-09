@@ -1,18 +1,21 @@
 package ar.edu.utn.frba.dds.donaciones.dto;
-
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
-
-@Getter
-@Setter
-public class SolicitudAsignacionDTO {
-    @NotBlank(message = "descripcionItem es obligatoria")
-    private String descripcionItem;
-    @NotBlank(message = "subcategoria es obligatoria")
-    private String subcategoria;
-    @Positive(message = "cantidad debe ser mayor a 0")
-    private Integer cantidad;
-    private String algoritmo;
+/** Usa el mismo contrato y validaciones que la carga de un item. */
+@Getter @Setter
+@Schema(example = """
+{
+  "descripcion": "Sillas de oficina usadas",
+  "categoria": "MOBILIARIO",
+  "subcategoria": "SILLA",
+  "unidadMedida": "UNIDAD",
+  "cantidad": 3,
+  "condicion": "USADO",
+  "foto": "https://example.org/sillas.jpg",
+  "pesoKg": 15,
+  "volumenM3": 2,
+  "alturaM": 1
 }
+""")
+public class SolicitudAsignacionDTO extends ItemDonadoDTO { }

@@ -1,0 +1,64 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-10-08T22:53:44.259-03:00  INFO 8928 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Starting ServicioLogisticaApplication v1.0-SNAPSHOT using Java 26.0.1 with PID 8928 (A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica\target\servicio-logistica-1.0-SNAPSHOT.jar started by agust in A:\Diseño\tp_anual_dsi_grupo4)
+2026-10-08T22:53:44.263-03:00  INFO 8928 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T22:53:46.600-03:00  INFO 8928 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18083 (http)
+2026-10-08T22:53:46.630-03:00  INFO 8928 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T22:53:46.631-03:00  INFO 8928 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-10-08T22:53:46.818-03:00  INFO 8928 --- [servicio-logistica] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-08T22:53:46.820-03:00  INFO 8928 --- [servicio-logistica] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2463 ms
+2026-10-08T22:53:47.012-03:00  WARN 8928 --- [servicio-logistica] [           main] ConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'camionController' defined in URL [jar:nested:/A:/Diseño/tp_anual_dsi_grupo4/servicio-logistica/target/servicio-logistica-1.0-SNAPSHOT.jar/!BOOT-INF/classes/!/ar/edu/utn/frba/dds/logistica/controller/CamionController.class]: Unexpected exception during bean creation
+2026-10-08T22:53:47.018-03:00  INFO 8928 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardService   : Stopping service [Tomcat]
+2026-10-08T22:53:47.108-03:00  INFO 8928 --- [servicio-logistica] [           main] .s.b.a.l.ConditionEvaluationReportLogger : 
+
+Error starting ApplicationContext. To display the condition evaluation report re-run your application with 'debug' enabled.
+2026-10-08T22:53:47.174-03:00 ERROR 8928 --- [servicio-logistica] [           main] o.s.boot.SpringApplication               : Application run failed
+
+org.springframework.beans.factory.BeanCreationException: Error creating bean with name 'camionController' defined in URL [jar:nested:/A:/Diseño/tp_anual_dsi_grupo4/servicio-logistica/target/servicio-logistica-1.0-SNAPSHOT.jar/!BOOT-INF/classes/!/ar/edu/utn/frba/dds/logistica/controller/CamionController.class]: Unexpected exception during bean creation
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:542) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.lambda$doGetBean$0(AbstractBeanFactory.java:339) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.getSingleton(DefaultSingletonBeanRegistry.java:373) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.doGetBean(AbstractBeanFactory.java:337) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractBeanFactory.getBean(AbstractBeanFactory.java:202) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.instantiateSingleton(DefaultListableBeanFactory.java:1222) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingleton(DefaultListableBeanFactory.java:1188) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.DefaultListableBeanFactory.preInstantiateSingletons(DefaultListableBeanFactory.java:1123) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.context.support.AbstractApplicationContext.finishBeanFactoryInitialization(AbstractApplicationContext.java:987) ~[spring-context-6.2.10.jar!/:6.2.10]
+	at org.springframework.context.support.AbstractApplicationContext.refresh(AbstractApplicationContext.java:627) ~[spring-context-6.2.10.jar!/:6.2.10]
+	at org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext.refresh(ServletWebServerApplicationContext.java:146) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at org.springframework.boot.SpringApplication.refresh(SpringApplication.java:752) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at org.springframework.boot.SpringApplication.refreshContext(SpringApplication.java:439) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:318) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1361) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at org.springframework.boot.SpringApplication.run(SpringApplication.java:1350) ~[spring-boot-3.5.5.jar!/:3.5.5]
+	at ar.edu.utn.frba.dds.logistica.ServicioLogisticaApplication.main(ServicioLogisticaApplication.java:12) ~[!/:1.0-SNAPSHOT]
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[na:na]
+	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[na:na]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:102) ~[servicio-logistica-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at org.springframework.boot.loader.launch.Launcher.launch(Launcher.java:64) ~[servicio-logistica-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+	at org.springframework.boot.loader.launch.JarLauncher.main(JarLauncher.java:40) ~[servicio-logistica-1.0-SNAPSHOT.jar:1.0-SNAPSHOT]
+Caused by: java.lang.annotation.AnnotationFormatError: Duplicate annotation interface io.swagger.v3.oas.annotations.Operation in class ar.edu.utn.frba.dds.logistica.controller.CamionController
+	at java.base/sun.reflect.annotation.AnnotationParser.parseAnnotations2(AnnotationParser.java:120) ~[na:na]
+	at java.base/sun.reflect.annotation.AnnotationParser.parseAnnotations(AnnotationParser.java:67) ~[na:na]
+	at java.base/java.lang.reflect.Executable.declaredAnnotations(Executable.java:672) ~[na:na]
+	at java.base/java.lang.reflect.Executable.declaredAnnotations(Executable.java:670) ~[na:na]
+	at java.base/java.lang.reflect.Executable.getAnnotation(Executable.java:638) ~[na:na]
+	at java.base/java.lang.reflect.Method.getAnnotation(Method.java:778) ~[na:na]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.lambda$checkLookupMethods$0(AutowiredAnnotationBeanPostProcessor.java:477) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.util.ReflectionUtils.doWithLocalMethods(ReflectionUtils.java:323) ~[spring-core-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.checkLookupMethods(AutowiredAnnotationBeanPostProcessor.java:476) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.determineCandidateConstructors(AutowiredAnnotationBeanPostProcessor.java:368) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.determineConstructorsFromBeanPostProcessors(AbstractAutowireCapableBeanFactory.java:1334) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBeanInstance(AbstractAutowireCapableBeanFactory.java:1229) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.doCreateBean(AbstractAutowireCapableBeanFactory.java:569) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.createBean(AbstractAutowireCapableBeanFactory.java:529) ~[spring-beans-6.2.10.jar!/:6.2.10]
+	... 21 common frames omitted
+

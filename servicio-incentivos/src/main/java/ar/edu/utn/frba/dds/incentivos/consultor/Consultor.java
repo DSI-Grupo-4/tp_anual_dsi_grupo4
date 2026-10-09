@@ -86,9 +86,9 @@ public class Consultor {
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
-        int impactoAcumulado = donacionesEnPeriodo.stream()
-                .mapToInt(DatosDonacion::getCantidadBienes)
-                .sum();
+        java.math.BigDecimal impactoAcumulado = donacionesEnPeriodo.stream()
+                .map(DatosDonacion::getCantidadBienes)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
         int misionesCompletadas = (int) donante.getProgresoAsociado().getCategoriasObtenidas().stream()
                 .flatMap(categoria -> categoria.getMisiones().stream())
@@ -131,7 +131,7 @@ public class Consultor {
                 .map(entry -> new EvolucionMensual(
                         entry.getKey(),
                         entry.getValue().size(),
-                        entry.getValue().stream().mapToInt(DatosDonacion::getCantidadBienes).sum()))
+                        entry.getValue().stream().map(DatosDonacion::getCantidadBienes).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)))
                 .toList();
     }
 

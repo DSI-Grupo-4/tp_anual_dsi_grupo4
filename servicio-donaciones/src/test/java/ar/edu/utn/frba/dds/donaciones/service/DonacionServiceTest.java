@@ -19,6 +19,8 @@ import ar.edu.utn.frba.dds.donaciones.dto.ItemDonadoDTO;
 import ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
+import java.math.BigDecimal;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -59,7 +61,6 @@ class DonacionServiceTest {
     @Test
     void crearSegmentaLaCargaEnUnaDonacionPorItem() {
         when(gestorDonantes.buscarPorId(1L)).thenReturn(new Donante(1L, null));
-        when(gestorDonaciones.getDeposito()).thenReturn(new Deposito());
         when(gestorDonaciones.registrarDonacion(any(Donacion.class)))
                 .thenAnswer(invocation -> {
                     Donacion donacion = invocation.getArgument(0);
@@ -75,13 +76,15 @@ class DonacionServiceTest {
 
         ItemDonadoDTO sillas = new ItemDonadoDTO();
         sillas.setDescripcion("Sillas de oficina");
-        sillas.setSubcategoria("sillas");
-        sillas.setCantidad(6);
+        sillas.setSubcategoria(DatosPrueba.subcategoria("sillas"));
+        DatosPrueba.completar(sillas);
+        sillas.setCantidad(BigDecimal.valueOf(6));
 
         ItemDonadoDTO mesa = new ItemDonadoDTO();
         mesa.setDescripcion("Mesa rectangular");
-        mesa.setSubcategoria("mesas");
-        mesa.setCantidad(1);
+        mesa.setSubcategoria(DatosPrueba.subcategoria("mesas"));
+        DatosPrueba.completar(mesa);
+        mesa.setCantidad(BigDecimal.valueOf(1));
 
         carga.setItems(List.of(sillas, mesa));
 
@@ -95,18 +98,18 @@ class DonacionServiceTest {
 
     @Test
     void actualizarMutaLaDonacionExistenteSinTocarSuHistorial() {
-        ItemDonado item = new ItemDonado(1L, "Frazadas", new Subcategoria("frazadas"), 10, null);
-        Donacion existente = new Donacion(1L, item, 10);
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
         when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
 
-        DonacionDTO cambios = new DonacionDTO();
-        cambios.setDescripcionItem("Frazadas de invierno");
-        cambios.setCantidadAsignada(20);
+        ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO cambios = new ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO();
+        cambios.setItems(List.of(DatosPrueba.dto("Frazadas de invierno", Subcategoria.FRAZADA, 20)));
+        when(gestorDonaciones.getDeposito()).thenReturn(new Deposito());
 
         DonacionDTO actualizado = donacionService.actualizar(1L, cambios);
 
         assertThat(actualizado.getDescripcionItem()).isEqualTo("Frazadas de invierno");
-        assertThat(actualizado.getCantidadAsignada()).isEqualTo(20);
+        assertThat(actualizado.getCantidadAsignada()).isEqualTo(BigDecimal.valueOf(20));
         // Regresión del bug de PUT: no debe perder el historial de estados.
         assertThat(existente.getHistorialEstados()).hasSize(1);
     }
@@ -120,8 +123,8 @@ class DonacionServiceTest {
 
     @Test
     void cambiarEstadoPublicaElEventoParaElFuturoConsumoDeNotificaciones() {
-        ItemDonado item = new ItemDonado(1L, "Frazadas", new Subcategoria("frazadas"), 10, null);
-        Donacion existente = new Donacion(1L, item, 10);
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
         when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
 
         CambioEstadoDTO dto = new CambioEstadoDTO();
@@ -135,8 +138,8 @@ class DonacionServiceTest {
 
     @Test
     void cambiarEstadoAEntregadaNotificaLaActividadDeDonacionAIncentivos() {
-        ItemDonado item = new ItemDonado(1L, "Frazadas", new Subcategoria("frazadas"), 10, null);
-        Donacion existente = new Donacion(1L, item, 10);
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
         existente.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
         existente.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
         existente.cambiarEstado(EstadoTrack.EN_TRASLADO, null);
@@ -155,8 +158,8 @@ class DonacionServiceTest {
         // Regresión del hallazgo alto: antes esto lo hacía MatchmakingService
         // mutando el dominio directo, sin pasar por acá — el evento nunca
         // se disparaba para este camino, a diferencia de cambiarEstado().
-        ItemDonado item = new ItemDonado(1L, "Frazadas", new Subcategoria("frazadas"), 10, null);
-        Donacion existente = new Donacion(1L, item, 10);
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
         when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
 
         EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,

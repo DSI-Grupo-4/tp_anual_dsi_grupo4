@@ -1,0 +1,49 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ---------------< ar.edu.utn.frba.dds:servicio-logistica >---------------
+[INFO] Building servicio-logistica 1.0-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.5.5:run (default-cli) > test-compile @ servicio-logistica >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ servicio-logistica ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.0:compile (default-compile) @ servicio-logistica ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ servicio-logistica ---
+[INFO] skip non existing resourceDirectory A:\Dise�o\tp_anual_dsi_grupo4\servicio-logistica\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.14.0:testCompile (default-testCompile) @ servicio-logistica ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< spring-boot:3.5.5:run (default-cli) < test-compile @ servicio-logistica <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot:3.5.5:run (default-cli) @ servicio-logistica ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.5)
+
+2026-10-08T23:03:15.161-03:00  INFO 22024 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Starting ServicioLogisticaApplication using Java 26.0.1 with PID 22024 (A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica\target\classes started by agust in A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica)
+2026-10-08T23:03:15.163-03:00  INFO 22024 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : No active profile set, falling back to 1 default profile: "default"
+2026-10-08T23:03:16.535-03:00  INFO 22024 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8083 (http)
+2026-10-08T23:03:16.548-03:00  INFO 22024 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-08T23:03:16.548-03:00  INFO 22024 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-10-08T23:03:16.612-03:00  INFO 22024 --- [servicio-logistica] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-08T23:03:16.613-03:00  INFO 22024 --- [servicio-logistica] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1396 ms
+2026-10-08T23:03:17.303-03:00  INFO 22024 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8083 (http) with context path '/'
+2026-10-08T23:03:17.316-03:00  INFO 22024 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Started ServicioLogisticaApplication in 2.53 seconds (process running for 2.83)
+2026-10-08T23:03:19.616-03:00  INFO 22024 --- [servicio-logistica] [nio-8083-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-08T23:03:19.617-03:00  INFO 22024 --- [servicio-logistica] [nio-8083-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-08T23:03:19.618-03:00  INFO 22024 --- [servicio-logistica] [nio-8083-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms

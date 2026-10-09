@@ -43,7 +43,7 @@ public class ParadaController {
             )
     })
     @PostMapping("/confirmar")
-    public void confirmarRecepcion(@PathVariable Integer idRuta, @PathVariable Integer idParada,
+    public void confirmarRecepcion(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                    @RequestBody FotoEntrega foto) {
         Parada parada = buscarParada(idRuta, idParada);
         parada.confirmarRecepcion(foto);
@@ -69,8 +69,8 @@ public class ParadaController {
             )
     })
     @PostMapping("/no-recibida")
-    public void marcarNoRecibida(@PathVariable Integer idRuta, @PathVariable Integer idParada,
-                                 @RequestBody String justificacion) {
+    public void marcarNoRecibida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
+                                 @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Nadie respondió en el domicilio"))) @RequestBody String justificacion) {
         Parada parada = buscarParada(idRuta, idParada);
         parada.marcarNoRecibida(justificacion);
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_NO_RECIBIDA, e));

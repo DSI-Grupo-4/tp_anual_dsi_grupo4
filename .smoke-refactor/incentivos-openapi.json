@@ -1,0 +1,587 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "OpenAPI definition",
+    "version": "v0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:18081",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {
+    "/donantes/{id}/actividad-donacion": {
+      "post": {
+        "tags": [
+          "incentivos-controller"
+        ],
+        "summary": "Registrar actividad donacion",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "registrarActividadDonacion",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DatosDonacionDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgresoInsigniaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/donantes/{id}/insignias/{insigniaNombre}/visibilidad": {
+      "patch": {
+        "tags": [
+          "incentivos-controller"
+        ],
+        "summary": "Cambiar visibilidad insignia",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "cambiarVisibilidadInsignia",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "insigniaNombre",
+            "in": "path",
+            "description": "Usar una insignia ya obtenida por el donante.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "Racha Colaboradora"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisibilidadInsigniaDTO"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ranking/ultimo": {
+      "get": {
+        "tags": [
+          "ranking-controller"
+        ],
+        "summary": "Obtener ultimo",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerUltimo",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RankingPosicionDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ranking/mes": {
+      "get": {
+        "tags": [
+          "ranking-controller"
+        ],
+        "summary": "Obtener ranking de mes",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerRankingDeMes",
+        "parameters": [
+          {
+            "name": "fecha",
+            "in": "query",
+            "description": "Fecha de un mes cuyo ranking esté generado.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            },
+            "example": "2026-09-30"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RankingDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ranking/historial": {
+      "get": {
+        "tags": [
+          "ranking-controller"
+        ],
+        "summary": "Obtener historial",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerHistorial",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RankingDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/donantes/{id}/misiones": {
+      "get": {
+        "tags": [
+          "incentivos-controller"
+        ],
+        "summary": "Obtener misiones disponibles",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerMisionesDisponibles",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MisionDisponibleDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/donantes/{id}/metricas": {
+      "get": {
+        "tags": [
+          "incentivos-controller"
+        ],
+        "summary": "Obtener metricas",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerMetricas",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          },
+          {
+            "name": "periodo",
+            "in": "query",
+            "description": "HISTORICO, MENSUAL, TRIMESTRAL, SEMESTRAL o ANUAL.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "HISTORICO"
+            },
+            "example": "HISTORICO"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricasActividadDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/donantes/{id}/insignias": {
+      "get": {
+        "tags": [
+          "incentivos-controller"
+        ],
+        "summary": "Obtener insignias",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerInsignias",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Reemplazar por un ID existente devuelto por el alta o listado.",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InsigniaDTO"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/metricas": {
+      "get": {
+        "tags": [
+          "admin-controller"
+        ],
+        "summary": "Obtener metricas sistema",
+        "description": "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.",
+        "operationId": "obtenerMetricasSistema",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricasSistemaDTO"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DatosDonacionDTO": {
+        "type": "object",
+        "example": {
+          "fecha": "2026-10-08",
+          "categoriaNombre": "ALIMENTOS",
+          "cantidadBienes": 2.5,
+          "donacionExitosa": true,
+          "beneficiarioId": 1,
+          "beneficiarioNombre": "Comedor Sonrisas",
+          "donanteNombre": "Ana Perez"
+        },
+        "properties": {
+          "fecha": {
+            "type": "string",
+            "format": "date"
+          },
+          "categoriaNombre": {
+            "type": "string"
+          },
+          "cantidadBienes": {
+            "type": "number"
+          },
+          "donacionExitosa": {
+            "type": "boolean"
+          },
+          "beneficiarioId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "beneficiarioNombre": {
+            "type": "string"
+          },
+          "donanteNombre": {
+            "type": "string"
+          },
+          "donanteMedioContacto": {
+            "type": "string"
+          },
+          "donanteContacto": {
+            "type": "string"
+          }
+        }
+      },
+      "ProgresoInsigniaDTO": {
+        "type": "object",
+        "properties": {
+          "insigniaNombre": {
+            "type": "string"
+          },
+          "imagenUrl": {
+            "type": "string"
+          },
+          "fechaObtencion": {
+            "type": "string",
+            "format": "date"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "VisibilidadInsigniaDTO": {
+        "type": "object",
+        "example": {
+          "visible": true
+        },
+        "properties": {
+          "visible": {
+            "type": "boolean"
+          }
+        }
+      },
+      "RankingPosicionDTO": {
+        "type": "object",
+        "properties": {
+          "puesto": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "donanteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cantidadMisiones": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "mes": {
+            "type": "string"
+          }
+        }
+      },
+      "ActividadMensualDonanteDTO": {
+        "type": "object",
+        "properties": {
+          "donanteId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "cantidad": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "puesto": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "RankingDTO": {
+        "type": "object",
+        "properties": {
+          "fechaEmision": {
+            "type": "string",
+            "format": "date"
+          },
+          "topDonantes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActividadMensualDonanteDTO"
+            }
+          }
+        }
+      },
+      "MisionDisponibleDTO": {
+        "type": "object",
+        "properties": {
+          "nombreMision": {
+            "type": "string"
+          },
+          "categoriaNombre": {
+            "type": "string"
+          },
+          "insigniaNombre": {
+            "type": "string"
+          },
+          "progresoActual": {
+            "type": "number"
+          },
+          "distanciaRestante": {
+            "type": "number"
+          },
+          "completada": {
+            "type": "boolean"
+          },
+          "activa": {
+            "type": "boolean"
+          }
+        }
+      },
+      "EvolucionMensualDTO": {
+        "type": "object",
+        "properties": {
+          "mes": {
+            "type": "string"
+          },
+          "solicitudes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "impacto": {
+            "type": "number"
+          }
+        }
+      },
+      "MetricasActividadDTO": {
+        "type": "object",
+        "properties": {
+          "donanteNombre": {
+            "type": "string"
+          },
+          "categoriaActual": {
+            "type": "string"
+          },
+          "periodo": {
+            "type": "string"
+          },
+          "solicitudesDonacionHechas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "beneficiariosAyudados": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "misionesCompletadas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "insigniasObtenidas": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "impactoAcumulado": {
+            "type": "number"
+          },
+          "posicionRanking": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "evolucionMensual": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvolucionMensualDTO"
+            }
+          }
+        }
+      },
+      "InsigniaDTO": {
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "imagenUrl": {
+            "type": "string"
+          }
+        }
+      },
+      "MetricasSistemaDTO": {
+        "type": "object",
+        "properties": {
+          "donantesActivos": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "solicitudesDonacionTotales": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "misionesCompletadasTotales": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "insigniasOtorgadasTotales": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "evolucionMensual": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EvolucionMensualDTO"
+            }
+          }
+        }
+      }
+    }
+  }
+}

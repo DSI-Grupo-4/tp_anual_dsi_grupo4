@@ -1,5 +1,6 @@
 package ar.edu.utn.donatrack.notificaciones.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import ar.edu.utn.donatrack.notificaciones.enums.MedioComunicacion;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,16 @@ import jakarta.validation.constraints.NotNull;
  * Datos minimos que cualquier otro servicio debe enviar para solicitar el
  * envio de una notificacion.
  */
+@Schema(example = """
+{
+  "mensaje": "Tu donacion fue asignada al Comedor Sonrisas",
+  "medio": "EMAIL",
+  "contacto": "pruebas@example.org",
+  "servicioOrigen": "DONACIONES",
+  "tipoEvento": "ASIGNACION_REALIZADA",
+  "eventoId": "swagger-prueba-001"
+}
+""")
 public class NotificacionRequestDTO {
 
     @NotBlank(message = "El mensaje no puede estar vacio")

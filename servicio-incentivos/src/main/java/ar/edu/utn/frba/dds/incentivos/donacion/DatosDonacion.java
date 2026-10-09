@@ -2,6 +2,7 @@ package ar.edu.utn.frba.dds.incentivos.donacion;
 
 import ar.edu.utn.frba.dds.incentivos.consultor.Beneficiario;
 import lombok.Getter;
+import java.math.BigDecimal;
 import lombok.Setter;
 
 import java.time.LocalDate;
@@ -17,12 +18,14 @@ public class DatosDonacion {
     // rango del donante, un concepto distinto. Solo se usa para la misión
     // "Completitud" (variedad de categorías donadas).
     private String categoriaBien;
-    private int cantidadBienes;
+    private BigDecimal cantidadBienes;
     private boolean donacionExitosa;
     private Beneficiario beneficiario;
 
-    public DatosDonacion(LocalDate fecha, String categoriaBien, int cantidadBienes,
+    public DatosDonacion(LocalDate fecha, String categoriaBien, BigDecimal cantidadBienes,
                           boolean donacionExitosa, Beneficiario beneficiario) {
+        if (fecha == null || cantidadBienes == null || cantidadBienes.signum() <= 0)
+            throw new IllegalArgumentException("fecha y cantidadBienes positiva son obligatorias");
         this.fecha = fecha;
         this.categoriaBien = categoriaBien;
         this.cantidadBienes = cantidadBienes;

@@ -26,11 +26,13 @@ public class LogisticaIntegracionController {
         this.eventosLogisticaScheduler = eventosLogisticaScheduler;
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Enviar pendientes", description = "Requiere Logística levantada y donaciones asignadas con dirección y dimensiones completas.")
     @PostMapping("/enviar-pendientes")
     public void enviarPendientes() {
         envioLogisticaScheduler.enviarPendientesALogistica();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Consumir eventos", description = "Requiere Logística levantada; aplica sus eventos pendientes a las donaciones.")
     @PostMapping("/consumir-eventos")
     public void consumirEventos() {
         eventosLogisticaScheduler.consumirEventos();
