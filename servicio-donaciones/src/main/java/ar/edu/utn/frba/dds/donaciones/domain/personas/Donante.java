@@ -42,7 +42,7 @@ public class Donante {
         if (notificadoPorInactividad || ultimaActividad == null) {
             return false;
         }
-        return !ultimaActividad.isAfter(LocalDate.now().minusDays(dias));
+        return ultimaActividad.isBefore(LocalDate.now().minusDays(dias));
     }
 
     public void marcarNotificadoPorInactividad() {

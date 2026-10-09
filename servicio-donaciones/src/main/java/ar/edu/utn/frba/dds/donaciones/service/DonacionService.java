@@ -34,6 +34,7 @@ public class DonacionService {
     private final GestorDonantes gestorDonantes;
     private final PublicadorEventosPort publicadorEventos;
     private final IncentivosClient incentivosClient;
+    private final java.util.Set<String> eventosAplicados = new java.util.HashSet<>();
 
     public DonacionService(GestorDonaciones gestorDonaciones, GestorDonantes gestorDonantes,
                             PublicadorEventosPort publicadorEventos, IncentivosClient incentivosClient) {
@@ -64,6 +65,7 @@ public class DonacionService {
         donante.registrarActividad();
         return segmentadas.stream()
                 .map(gestorDonaciones::registrarDonacion)
+                .peek(incentivosClient::registrarActividadDonacion)
                 .map(this::convertirADTO)
                 .toList();
     }
@@ -115,9 +117,11 @@ public class DonacionService {
         return convertirADTO(donacion);
     }
 
-    public DonacionDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
+    public synchronized DonacionDTO cambiarEstado(Long id, CambioEstadoDTO dto) {
         Donacion donacion = obtenerDominioPorId(id);
-        donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
+        if (dto.getEventoId() != null && eventosAplicados.contains(dto.getEventoId())) return convertirADTO(donacion);
+        boolean repetido = dto.getEventoId() != null && donacion.getEstadoActual() == dto.getNuevoEstado();
+        if (!repetido) donacion.cambiarEstado(dto.getNuevoEstado(), dto.getJustificacion());
 
         // La necesidad se descuenta recién cuando la entrega se confirma de
         // verdad (ENTREGADA), no cuando se asigna (ver confirmarAsignacion)
@@ -126,7 +130,7 @@ public class DonacionService {
         // de asignar, así que una entrega que después fallaba en el
         // traslado dejaba una Necesidad acreditada con bienes que nunca
         // llegaron, sin forma de revertirlo.
-        if (dto.getNuevoEstado() == EstadoTrack.ENTREGADA && donacion.getNecesidadAsignada() != null) {
+        if (!repetido && dto.getNuevoEstado() == EstadoTrack.ENTREGADA && donacion.getNecesidadAsignada() != null) {
             donacion.getNecesidadAsignada().recibir(donacion.getCantidadAsignada());
         }
 
@@ -137,15 +141,13 @@ public class DonacionService {
         // de Logística (ver EventosLogisticaScheduler) publique el tipoEvento
         // real en vez del genérico, sin abrir un segundo camino de publicación.
         String tipoEvento = dto.getOrigenEvento() != null ? dto.getOrigenEvento() : "CAMBIO_ESTADO_DONACION";
-        publicadorEventos.publicar(tipoEvento, donacion);
+        publicadorEventos.publicar(tipoEvento, donacion, dto);
 
-        // Integración con Incentivos: una donación entregada es la señal de
-        // "actividad de donación" más confiable que tenemos (sabemos con
-        // certeza categoría, cantidad y que fue exitosa) -- dispara el
-        // cálculo de progreso de misiones del donante.
+        // Actualiza la actividad ya registrada en el alta; donacionId evita contarla dos veces.
         if (dto.getNuevoEstado() == EstadoTrack.ENTREGADA) {
             incentivosClient.registrarActividadDonacion(donacion);
         }
+        if (dto.getEventoId() != null) eventosAplicados.add(dto.getEventoId());
         return resultado;
     }
 
@@ -184,7 +186,7 @@ public class DonacionService {
                 .ifPresent(donacion::setNecesidadAsignada);
 
         DonacionDTO resultado = convertirADTO(donacion);
-        publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);
+        publicadorEventos.publicar("DONACION_ASIGNADA", donacion);
         return resultado;
     }
 

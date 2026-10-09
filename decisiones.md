@@ -297,3 +297,12 @@
 - **Decisión tomada:** `GestorDonante` gana `buscarDonante(Long id)`, que tira `NoSuchElementException` (ya mapeado a 404 en el `GlobalExceptionHandler`) si el donante nunca tuvo actividad. Los 3 `GET` y el `PATCH` pasan a usar `buscarDonante`; el `POST /actividad-donacion` sigue usando `obtenerDonante(id, nombre)` sin cambios -- es el único lugar donde crear-si-no-existe es el comportamiento correcto.
 - **Validado en vivo:** `GET /api/donantes/999999/misiones` → 404 `"No existe el donante 999999 en Incentivos"`. `POST /api/donantes/1/actividad-donacion` → 200, completa "Racha Colaborador" en el acto (primer mes de racha). `GET /api/donantes/1/misiones` después → 200 con progreso real. 10/10 tests de Incentivos en verde (3 nuevos). Suite completa en verde.
 - **Definida por:** usuario (encontró el bug probando el endpoint) + agente (confirmó que afectaba a 4 endpoints, no solo el que se probó, y acotó el fix para no tocar el único lugar donde la alta perezosa es correcta)
+
+
+## D-017 — Notificaciones con pendientes durables y disparadores completos
+
+Los adaptadores de Donaciones e Incentivos guardan solicitudes en archivos locales y publican en segundo plano con confirmación de RabbitMQ y verificación de enrutamiento. Se conserva la cola asíncrona y el consumidor Strategy. Notificaciones almacena historial y claves idempotentes entre reinicios. Se agrega una BandejaNotificaciones técnica por productor; no es entidad de dominio.
+
+Las entidades conservan contactos; el alta dispara bienvenida por correo, los avisos logísticos incorporan datos del comprobante y seguimiento, y los fallos se notifican a administradores configurados. Los eventos logísticos no se confirman tras errores. Incentivos registra altas y entregas por donacionId sin duplicar cantidades. Se expone un registro explícito de interacción del usuario y se corrige el umbral de inactividad.
+
+Entrega incorpora fechaHoraEntrega y seguimientoUrl; DatosDonacion incorpora donacionId. El detalle y los pasos de prueba están en NOTIFICACIONES.md. El seguimiento es un esquema interno de paradas actualizado; no hay GPS ni mapa geográfico porque el modelo no tiene coordenadas y no se autoriza compartir direcciones con un proveedor externo. La persistencia relacional y la atomicidad completa entre estado de dominio y pendientes siguen fuera de este cambio.

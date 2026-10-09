@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @Setter
 public class DatosDonacion {
 
+    private Long donacionId;
     private LocalDate fecha;
     // Nombre de la categoría de bienes donados (Alimentos/Mobiliario/Vestimenta,
     // tal como la modela el Servicio de Donaciones) -- no confundir con

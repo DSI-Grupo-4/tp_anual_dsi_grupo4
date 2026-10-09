@@ -10,4 +10,7 @@ package ar.edu.utn.frba.dds.donaciones.integracion;
  */
 public interface PublicadorEventosPort {
     void publicar(String tipoEvento, Object payload);
+    default void publicar(String tipoEvento, Object payload, ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO contexto) {
+        publicar(tipoEvento, payload);
+    }
 }

@@ -137,3 +137,6 @@ Para detener los servicios:
 ```
 
 El diseño acordado y sus cambios están detallados en `decisiones.md`, D-016. El diagrama actualizado está en `diagramas/SERVICIOS.json` y el draw.io nativo en `diagramas/ddc/DONACIONES.drawio.xml`.
+
+
+Para configurar RabbitMQ, destinatarios administradores y probar avisos desde Swagger, consultar [NOTIFICACIONES.md](NOTIFICACIONES.md). Incluye disparadores, reintentos, cambios de clases y limitaciones de persistencia y seguimiento.

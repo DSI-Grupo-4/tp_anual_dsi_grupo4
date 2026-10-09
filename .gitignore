@@ -3,5 +3,8 @@ target/
 *.iml
 .pids/
 logs/
-# instalado por donatrack-agent-toolkit — no versionar
+# instalado por donatrack-agent-toolkit â€” no versionar
 .claude/skills
+
+# Bandejas locales de integración e historial de notificaciones
+.datos/

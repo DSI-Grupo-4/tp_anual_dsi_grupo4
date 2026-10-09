@@ -62,6 +62,13 @@ public class DonanteController {
         return donanteService.actualizar(id, dto);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Registrar interacción", description = "Invocar al iniciar sesión o realizar una interacción del usuario. Reinicia el plazo de inactividad; no enviar automáticamente por tareas del servidor.")
+    @PostMapping("/{id}/interacciones")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registrarInteraccion(@PathVariable Long id) {
+        donanteService.registrarInteraccion(id);
+    }
+
     @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

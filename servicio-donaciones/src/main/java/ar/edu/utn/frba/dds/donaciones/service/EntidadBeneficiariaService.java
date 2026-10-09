@@ -59,6 +59,7 @@ public class EntidadBeneficiariaService {
                         null
                 );
 
+        personaJuridica.setMediosContacto(ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.validar(personaJuridicaDTO.getMediosContacto()));
         EntidadBeneficiaria entidad =
                 new EntidadBeneficiaria(
                         siguienteId++,
@@ -133,6 +134,7 @@ public class EntidadBeneficiariaService {
                 entidad.getEntidad().getRubro()
         );
 
+        personaDTO.setMediosContacto(ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.desde(entidad.getEntidad()));
         dto.setPersonaJuridica(personaDTO);
         dto.setDescripcion(entidad.getDescripcion());
         dto.setId(entidad.getId());
@@ -190,6 +192,8 @@ public class EntidadBeneficiariaService {
         EntidadBeneficiaria entidad =
                 buscarEntidad(id);
 
+        var contactos = ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.validar(dto.getPersonaJuridica().getMediosContacto());
+        entidad.getEntidad().setMediosContacto(contactos);
         entidad.setDescripcion(
                 dto.getDescripcion()
         );

@@ -19,6 +19,12 @@ import java.util.List;
 public class DonanteService {
 
     private final GestorDonantes gestorDonantes;
+    private ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort publicador;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarPublicador(ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort publicador) { this.publicador = publicador; }
+    private void bienvenida(Donante donante) {
+        if (publicador != null) publicador.publicar("BIENVENIDA_DONANTE", donante);
+    }
 
     public DonanteService(GestorDonantes gestorDonantes) {
         this.gestorDonantes = gestorDonantes;
@@ -68,6 +74,7 @@ public class DonanteService {
         );
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
+        bienvenida(donante);
         return convertirADTO(donante);
     }
 
@@ -89,6 +96,7 @@ public class DonanteService {
 
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
+        bienvenida(donante);
 
         return convertirADTO(donante);
     }
@@ -161,6 +169,7 @@ public class DonanteService {
                 dto.getGenero()
         );
 
+        donante.registrarActividad();
         return convertirADTO(donante);
     }
 
@@ -187,7 +196,12 @@ public class DonanteService {
                 dto.getRubro()
         );
 
+        donante.registrarActividad();
         return convertirADTO(donante);
+    }
+
+    public void registrarInteraccion(Long id) {
+        gestorDonantes.buscarPorId(id).registrarActividad();
     }
 
     /**
@@ -199,21 +213,7 @@ public class DonanteService {
      */
     private List<ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto> validarContactos(
             List<ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO> contactos) {
-        if (contactos == null || contactos.isEmpty()) throw new IllegalArgumentException("Debe incluir un EMAIL y un medio preferido");
-        var resultado = contactos.stream().map(c -> {
-            if (c == null || c.getTipo() == null || c.getValor() == null || c.getValor().isBlank() || c.getEsPreferido() == null)
-                throw new IllegalArgumentException("Cada contacto requiere tipo, valor y esPreferido");
-            String valor = c.getValor().trim();
-            if (c.getTipo() == ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL &&
-                    !valor.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
-                throw new IllegalArgumentException("El EMAIL debe ser válido");
-            return new ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto(c.getTipo(), valor, c.getEsPreferido());
-        }).toList();
-        if (resultado.stream().noneMatch(c -> c.getTipo() == ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL))
-            throw new IllegalArgumentException("El EMAIL es obligatorio");
-        if (resultado.stream().filter(c -> Boolean.TRUE.equals(c.esPreferido())).count() != 1)
-            throw new IllegalArgumentException("Debe elegir exactamente un medio de contacto preferido");
-        return resultado;
+        return ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.validar(contactos);
     }
 
     public ImportacionDonantesDTO importarCSV(MultipartFile archivo) {
@@ -227,7 +227,10 @@ public class DonanteService {
 
             gestorDonantes.agregarImportador(importador);
 
-            int cantidadImportados = gestorDonantes.importarDonantes(importador.getNombre()).size();
+            var existentes = gestorDonantes.getDonantesRegistrados().stream().map(Donante::getId).collect(java.util.stream.Collectors.toSet());
+            var importados = gestorDonantes.importarDonantes(importador.getNombre());
+            importados.stream().filter(d -> !existentes.contains(d.getId())).distinct().forEach(this::bienvenida);
+            int cantidadImportados = importados.size();
 
             return new ImportacionDonantesDTO(cantidadImportados);
 

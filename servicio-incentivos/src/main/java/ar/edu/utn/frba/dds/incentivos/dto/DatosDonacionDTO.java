@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @Setter
 @Schema(example = """
 {
+  "donacionId": 1,
   "fecha": "2026-10-08",
   "categoriaNombre": "ALIMENTOS",
   "cantidadBienes": 2.5,
@@ -25,6 +26,9 @@ import java.time.LocalDate;
 }
 """)
 public class DatosDonacionDTO {
+    @Schema(description = "ID de la donación en Donaciones. Reenviar el mismo ID al confirmar la entrega; usar otro ID para una donación nueva.")
+    @Positive
+    private Long donacionId;
     @NotNull(message = "fecha es obligatoria")
     private LocalDate fecha;
     // Categoría del bien donado (Alimentos/Mobiliario/Vestimenta, tal como la

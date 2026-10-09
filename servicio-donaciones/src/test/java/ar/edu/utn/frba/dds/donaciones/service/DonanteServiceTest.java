@@ -175,4 +175,20 @@ class DonanteServiceTest {
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(gestor.getDonantesRegistrados()).isEmpty();
     }
+    @Test
+    void bienvenidaSoloAlAltaYLaInteraccionReiniciaInactividad() {
+        var gestor = new GestorDonantes(); var servicio = new DonanteService(gestor);
+        var publicador = org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort.class);
+        servicio.configurarPublicador(publicador);
+        var dto = new PersonaHumanaDTO(); dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
+        servicio.crearDonanteHumano(dto);
+        var donante = gestor.buscarPorId(1L);
+        org.mockito.Mockito.verify(publicador).publicar("BIENVENIDA_DONANTE", donante);
+        donante.setUltimaActividad(java.time.LocalDate.now().minusDays(20));
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+        donante.setUltimaActividad(java.time.LocalDate.now().minusDays(21));
+        assertThat(donante.debeNotificarsePorInactividad(20)).isTrue();
+        servicio.registrarInteraccion(1L);
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+    }
 }

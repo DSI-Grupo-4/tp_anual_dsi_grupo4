@@ -45,6 +45,10 @@ class EntidadBeneficiariaServiceTest {
     private EntidadBeneficiariaDTO crearEntidad(Long id, String razonSocial) {
         EntidadBeneficiariaDTO dto = new EntidadBeneficiariaDTO();
         PersonaJuridicaDTO persona = new PersonaJuridicaDTO();
+        var contacto = new ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO();
+        contacto.setTipo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL);
+        contacto.setValor("entidad@example.org"); contacto.setEsPreferido(true);
+        persona.setMediosContacto(java.util.List.of(contacto));
         persona.setRazonSocial(razonSocial);
         persona.setTipo(TipoOrganizacion.ONG);
         dto.setPersonaJuridica(persona);
@@ -101,5 +105,13 @@ class EntidadBeneficiariaServiceTest {
 
         assertThatCode(() -> entidadBeneficiariaService.eliminar(entidad.getId()))
                 .doesNotThrowAnyException();
+    }
+    @Test
+    void contactosDeEntidadSeConservanYSePuedenActualizar() {
+        var entidad=crearEntidad(null,"Comedor");
+        assertThat(entidad.getPersonaJuridica().getMediosContacto()).hasSize(1);
+        entidad.getPersonaJuridica().getMediosContacto().get(0).setValor("nuevo@example.org");
+        entidadBeneficiariaService.actualizar(entidad.getId(),entidad);
+        assertThat(entidadBeneficiariaService.buscarEntidad(entidad.getId()).getEntidad().medioPreferido().orElseThrow().getValor()).isEqualTo("nuevo@example.org");
     }
 }

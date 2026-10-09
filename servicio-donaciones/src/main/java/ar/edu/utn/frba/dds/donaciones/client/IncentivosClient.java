@@ -20,16 +20,7 @@ import org.springframework.web.client.RestClient;
 import java.time.LocalDate;
 import java.util.Optional;
 
-/**
- * Integración síncrona Donaciones -> Incentivos: avisa cuando una donación
- * llegó a ENTREGADA para que impacte en el cálculo de progreso de misiones
- * del donante. No es parte de la cola de mensajes hacia Notificaciones (esa
- * asincronía es un requerimiento específico para ese servicio) -- es una
- * llamada REST directa, igual que Donaciones -> Logística.
- *
- * Si Incentivos no responde, se loguea y se continúa: esto nunca debe
- * bloquear el cambio de estado de la donación en Donaciones.
- */
+/** Guarda actividad de alta/entrega en disco y reintenta REST en segundo plano. */
 @Component
 public class IncentivosClient {
 
@@ -38,7 +29,9 @@ public class IncentivosClient {
     private final RestClient restClient;
 
     public IncentivosClient(@Value("${incentivos.base-url:http://localhost:8081}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+        var transporte = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        transporte.setConnectTimeout(3000); transporte.setReadTimeout(5000);
+        this.restClient = RestClient.builder().requestFactory(transporte).baseUrl(baseUrl).build();
     }
 
     public void registrarActividadDonacion(Donacion donacion) {
@@ -48,16 +41,33 @@ public class IncentivosClient {
                     donacion.getId());
             return;
         }
+        ActividadDonacionRequest solicitud = construirRequest(donacion, donante);
+        String nombre = String.format("%020d-%d.json", donacion.getId(), solicitud.donacionExitosa() ? 1 : 0);
         try {
-            restClient.post()
-                    .uri("/api/donantes/{id}/actividad-donacion", donante.getId())
-                    .body(construirRequest(donacion, donante))
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (RuntimeException error) {
-            logger.warn("No se pudo registrar la actividad de donación del donante {} en Incentivos: {}",
-                    donante.getId(), error.getMessage());
-        }
+            java.nio.file.Files.createDirectories(pendientes);
+            java.nio.file.Path temporal = java.nio.file.Files.createTempFile(pendientes, "actividad-", ".tmp");
+            mapper.writeValue(temporal.toFile(), java.util.Map.of("donanteId", donante.getId(), "solicitud", solicitud));
+            java.nio.file.Files.move(temporal, pendientes.resolve(nombre), java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo guardar la actividad pendiente de Incentivos", e); }
+    }
+
+    @org.springframework.beans.factory.annotation.Value("${incentivos.pendientes-dir:.datos/donaciones/incentivos-pendientes}")
+    private java.nio.file.Path pendientes = java.nio.file.Path.of(".datos/donaciones/incentivos-pendientes");
+    private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
+
+    @org.springframework.scheduling.annotation.Scheduled(fixedDelayString = "${incentivos.reintento-ms:5000}")
+    public synchronized void enviarPendientes() {
+        if (!java.nio.file.Files.exists(pendientes)) return;
+        try (var archivos = java.nio.file.Files.list(pendientes)) {
+            for (var archivo : archivos.filter(p -> p.toString().endsWith(".json")).sorted().toList()) {
+                try {
+                    var datos = mapper.readTree(archivo.toFile());
+                    restClient.post().uri("/api/donantes/{id}/actividad-donacion", datos.get("donanteId").asLong())
+                        .body(datos.get("solicitud")).retrieve().toBodilessEntity();
+                    java.nio.file.Files.delete(archivo);
+                } catch (Exception e) { logger.warn("Actividad pendiente de Incentivos {}: {}", archivo.getFileName(), e.getMessage()); break; }
+            }
+        } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo leer la bandeja de Incentivos", e); }
     }
 
     private ActividadDonacionRequest construirRequest(Donacion donacion, Donante donante) {
@@ -66,7 +76,8 @@ public class IncentivosClient {
         EntidadBeneficiaria entidad = donacion.getEntidadBeneficiaria();
 
         return new ActividadDonacionRequest(
-                LocalDate.now(),
+                donacion.getId(),
+                donacion.getSolicitudOrigen() != null ? donacion.getSolicitudOrigen().getFechaRegistro().toLocalDate() : LocalDate.now(),
                 categoriaBienDe(donacion),
                 donacion.getCantidadAsignada(),
                 donacion.getEstadoActual() == EstadoTrack.ENTREGADA,
@@ -100,6 +111,7 @@ public class IncentivosClient {
     }
 
     private record ActividadDonacionRequest(
+            Long donacionId,
             LocalDate fecha,
             String categoriaNombre,
             java.math.BigDecimal cantidadBienes,

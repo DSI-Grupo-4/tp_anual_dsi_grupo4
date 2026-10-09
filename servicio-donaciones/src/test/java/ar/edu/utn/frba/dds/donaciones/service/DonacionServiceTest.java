@@ -134,7 +134,7 @@ class DonacionServiceTest {
 
         donacionService.cambiarEstado(1L, dto);
 
-        verify(publicadorEventos).publicar(eq("CAMBIO_ESTADO_DONACION"), any());
+        verify(publicadorEventos).publicar(eq("CAMBIO_ESTADO_DONACION"), any(), any());
         verify(incentivosClient, never()).registrarActividadDonacion(any());
     }
 
@@ -174,7 +174,7 @@ class DonacionServiceTest {
         assertThat(resultado.getEstadoActual()).isEqualTo(EstadoTrack.ASIGNACION_REALIZADA);
         assertThat(resultado.getEntidadBeneficiariaId()).isEqualTo(1L);
         assertThat(existente.getEntidadBeneficiaria()).isEqualTo(entidad);
-        verify(publicadorEventos).publicar(eq("CAMBIO_ESTADO_DONACION"), any());
+        verify(publicadorEventos).publicar(eq("DONACION_ASIGNADA"), any());
     }
 
     @Test
@@ -310,5 +310,20 @@ class DonacionServiceTest {
         // sub-atendidos), pero no se vincula a una necesidad ya cubierta.
         assertThat(existente.getNecesidadAsignada()).isNull();
         assertThat(yaSatisfecha.getCantidadRecibida()).isEqualTo(BigDecimal.valueOf(2));
+    }
+    @Test
+    void reintentarEntregaDespuesDeFalloNoRepiteTransicionNiActividad() {
+        var donacion = DatosPrueba.donacion(1L, DatosPrueba.item(1L, "Silla", DatosPrueba.subcategoria("silla"), 1, null), 1);
+        donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
+        donacion.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
+        donacion.cambiarEstado(EstadoTrack.EN_TRASLADO, null);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(donacion);
+        var dto = new CambioEstadoDTO(); dto.setNuevoEstado(EstadoTrack.ENTREGADA);dto.setEventoId("evento-estable");
+        org.mockito.Mockito.doThrow(new IllegalStateException("fallo de disco")).doNothing()
+            .when(publicadorEventos).publicar(any(), any(), any());
+        assertThatThrownBy(() -> donacionService.cambiarEstado(1L,dto)).isInstanceOf(IllegalStateException.class);
+        donacionService.cambiarEstado(1L,dto);donacionService.cambiarEstado(1L,dto);
+        assertThat(donacion.getHistorialEstados()).hasSize(5);
+        verify(incentivosClient, org.mockito.Mockito.times(1)).registrarActividadDonacion(donacion);
     }
 }

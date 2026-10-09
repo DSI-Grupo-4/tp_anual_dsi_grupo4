@@ -23,10 +23,10 @@ public class NotificacionesClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificacionesClient.class);
 
-    private final RabbitTemplate rabbitTemplate;
+    private final ar.edu.utn.frba.dds.incentivos.config.BandejaNotificaciones bandeja;
 
-    public NotificacionesClient(RabbitTemplate rabbitTemplate) {
-        this.rabbitTemplate = rabbitTemplate;
+    public NotificacionesClient(ar.edu.utn.frba.dds.incentivos.config.BandejaNotificaciones bandeja) {
+        this.bandeja = bandeja;
     }
 
     /**
@@ -45,10 +45,7 @@ public class NotificacionesClient {
         NotificacionRequest request = new NotificacionRequest(
                 mensaje, medio, contacto, "incentivos", tipoEvento, UUID.randomUUID().toString());
 
-        rabbitTemplate.convertAndSend(
-                RabbitNotificacionesConfig.EXCHANGE,
-                RabbitNotificacionesConfig.ROUTING_KEY,
-                request);
+        bandeja.guardar(request);
     }
 
     private record NotificacionRequest(String mensaje, String medio, String contacto, String servicioOrigen,

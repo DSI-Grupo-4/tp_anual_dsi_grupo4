@@ -15,9 +15,7 @@ public class Donante {
 
     private final Long id;
     private String nombre;
-    // Lo manda Donaciones en cada actividad-donacion (medio/contacto
-    // preferido de la Persona) -- se completa la primera vez que llega y
-    // no se vuelve a pisar (ver actualizarContactoSiFalta).
+    // Se sincroniza el contacto preferido con cada actividad recibida desde Donaciones.
     private String medioContactoPreferido;
     private String contactoPreferido;
     private int solicitudesDonacionHechas;
@@ -40,13 +38,23 @@ public class Donante {
     }
 
     public void actualizarContactoSiFalta(String medio, String contacto) {
-        if (this.contactoPreferido == null && medio != null && contacto != null && !contacto.isBlank()) {
+        if (medio != null && contacto != null && !contacto.isBlank()) {
             this.medioContactoPreferido = medio;
             this.contactoPreferido = contacto;
         }
     }
 
-    public ProgresoInsignia registrarActividadDonacion(DatosDonacion datosDonacion) {
+    public synchronized ProgresoInsignia registrarActividadDonacion(DatosDonacion datosDonacion) {
+        DatosDonacion previa = datosDonacion.getDonacionId() == null ? null : historialDonaciones.stream()
+            .filter(d -> datosDonacion.getDonacionId().equals(d.getDonacionId())).findFirst().orElse(null);
+        if (previa != null) {
+            if (!datosDonacion.isDonacionExitosa() || previa.isDonacionExitosa()) return null;
+            previa.setDonacionExitosa(true);
+            previa.setBeneficiario(datosDonacion.getBeneficiario());
+            if (previa.getBeneficiario() != null && !beneficiariosAyudados.contains(previa.getBeneficiario())) beneficiariosAyudados.add(previa.getBeneficiario());
+            return progresoAsociado.getMisionActual() instanceof ar.edu.utn.frba.dds.incentivos.progreso.ProgresoMision.ProgresoDonacionesExitosas
+                ? progresoAsociado.actualizarProgreso(datosDonacion) : null;
+        }
         solicitudesDonacionHechas++;
         historialDonaciones.add(datosDonacion);
 

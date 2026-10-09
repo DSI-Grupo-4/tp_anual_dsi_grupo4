@@ -128,8 +128,9 @@ public class IncentivosController {
                 ? consultor.obtenerOCrearBeneficiario(dto.getBeneficiarioId(), dto.getBeneficiarioNombre())
                 : null;
 
-        return new DatosDonacion(dto.getFecha(), dto.getCategoriaNombre(), dto.getCantidadBienes(),
-                dto.isDonacionExitosa(), beneficiario);
+        DatosDonacion datos = new DatosDonacion(dto.getFecha(), dto.getCategoriaNombre(), dto.getCantidadBienes(), dto.isDonacionExitosa(), beneficiario);
+        datos.setDonacionId(dto.getDonacionId());
+        return datos;
     }
 
     private MetricasActividadDTO convertirADTO(MetricasActividad metricas) {

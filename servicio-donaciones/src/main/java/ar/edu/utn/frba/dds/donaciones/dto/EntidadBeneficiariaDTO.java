@@ -14,7 +14,8 @@ import lombok.Setter;
   "personaJuridica": {
     "razonSocial": "Comedor Sonrisas",
     "tipo": "ONG",
-    "rubro": "Asistencia alimentaria"
+    "rubro": "Asistencia alimentaria",
+    "mediosContacto": [{"tipo": "EMAIL", "valor": "comedor@example.org", "esPreferido": true}]
   },
   "descripcion": "Comedor comunitario",
   "direccion": {

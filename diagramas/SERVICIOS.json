@@ -2848,8 +2848,8 @@
           "id": "EVFRbedAR_kx25eqgbKM-38",
           "type": "node",
           "parent": "EVFRbedAR_kx25eqgbKM-37",
-          "label": "-idEntrega: Int\n-idDonacionAsociada: Int\n-estadoEntrega: EstadoEntrega\n-fechaEntrega: Fecha\n-fotoEntrega: Foto\n-camionEntrega: Camion\n-direccion:Direccion\n-pesoKG: Int\n-volumenM3: Int\n-alturaM: Int",
-          "html": "<div>-idEntrega: Int</div><div>-idDonacionAsociada: Int</div><div>-estadoEntrega: EstadoEntrega</div><div>-fechaEntrega: Fecha</div><div>-fotoEntrega: Foto</div><div><font style=\"color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">-camionEntrega: Camion</font></div><div><font style=\"color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">-direccion:Direccion</font></div><div><div>-pesoKG: Int</div><div>-volumenM3: Int</div><div>-alturaM: Int</div><br></div>"
+          "label": "-idEntrega: Int\n-idDonacionAsociada: Int\n-estadoEntrega: EstadoEntrega\n-fechaEntrega: Fecha\n-fotoEntrega: Foto\n-camionEntrega: Camion\n-direccion:Direccion\n-pesoKG: Int\n-volumenM3: Int\n-alturaM: Int\n-fechaHoraEntrega: LocalDateTime\n-seguimientoUrl: String",
+          "html": "<div>-idEntrega: Int</div><div>-idDonacionAsociada: Int</div><div>-estadoEntrega: EstadoEntrega</div><div>-fechaEntrega: Fecha</div><div>-fotoEntrega: Foto</div><div><font style=\"color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">-camionEntrega: Camion</font></div><div><font style=\"color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));\">-direccion:Direccion</font></div><div><div>-pesoKG: Int</div><div>-volumenM3: Int</div><div>-alturaM: Int</div><br></div><div>-fechaHoraEntrega: LocalDateTime</div><div>-seguimientoUrl: String</div>"
         },
         {
           "id": "EVFRbedAR_kx25eqgbKM-39",
@@ -5322,6 +5322,18 @@
           "type": "node",
           "parent": "1",
           "label": "Propuesta de persistencia del modelo. El código actual conserva donaciones, solicitudes y necesidades en memoria; este DER no implica tablas JPA implementadas. Los items originales son inmutables y una edición crea un grupo nuevo."
+        },
+        {
+          "id": "tJryBX9KeSdku1uEYBFi-969-fecha-hora",
+          "parent": "tJryBX9KeSdku1uEYBFi-969",
+          "type": "node",
+          "label": "fecha_hora_entrega : TIMESTAMP (NULL)"
+        },
+        {
+          "id": "tJryBX9KeSdku1uEYBFi-969-seguimiento",
+          "parent": "tJryBX9KeSdku1uEYBFi-969",
+          "type": "node",
+          "label": "seguimiento_url : VARCHAR (NULL)"
         }
       ]
     },

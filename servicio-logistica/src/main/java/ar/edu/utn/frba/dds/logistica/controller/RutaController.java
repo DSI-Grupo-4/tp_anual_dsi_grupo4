@@ -19,6 +19,8 @@ public class RutaController {
 
     private final GestorRutas gestorRutas;
     private final GestorEventos gestorEventos;
+    @org.springframework.beans.factory.annotation.Value("${logistica.public-base-url:http://localhost:8083}")
+    private String publicBaseUrl;
 
     public RutaController(GestorRutas gestorRutas, GestorEventos gestorEventos) {
         this.gestorRutas = gestorRutas;
@@ -83,7 +85,28 @@ public class RutaController {
         Ruta ruta = gestorRutas.buscarPorId(id);
         ruta.iniciarRuta();
         ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->
+            e.setSeguimientoUrl(publicBaseUrl + "/api/rutas/" + id + "/seguimiento")));
+        ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->
                 gestorEventos.crearEvento(TipoEvento.RUTA_INICIADA, e)));
         return ruta;
+    }
+    @Operation(summary = "Seguimiento de ruta", description = "Esquema interno de paradas y estados actualizados cada 15 segundos, sin GPS.")
+    @GetMapping(value = "/{id}/seguimiento", produces = "text/html;charset=UTF-8")
+    public String seguimiento(@PathVariable Integer id) {
+        Ruta ruta = gestorRutas.buscarPorId(id);
+        StringBuilder html = new StringBuilder("<!doctype html><html lang='es'><meta charset='utf-8'><meta http-equiv='refresh' content='15'><title>Seguimiento DonaTrack</title><style>body{font:18px system-ui;max-width:800px;margin:40px auto}li{padding:20px;border-left:5px solid #297a62;list-style:none;background:#eef8f3;margin-bottom:12px}</style><body><h1>Seguimiento de ruta " + id + "</h1>");
+        html.append("<p>Estado: ").append(ruta.getEstadoRuta()).append(". Camión: ").append(escapar(ruta.getCamionAsociado().getPatente())).append("</p><p>Estados actualizados cada 15 segundos. Esquema de paradas sin GPS.</p><ol>");
+        ruta.getParadas().forEach(p -> {
+            html.append("<li>");
+            p.getEntregas().forEach(e -> {
+                html.append("<p>Donación ").append(e.getIdDonacionAsociada()).append(": ").append(e.getEstadoEntrega()).append("</p>");
+                if (e.getDireccionDestino() != null) html.append("<p>").append(escapar(e.getDireccionDestino().getCalle() + " " + e.getDireccionDestino().getNumero())).append("</p>");
+            });
+            html.append("</li>");
+        });
+        return html.append("</ol></body></html>").toString();
+    }
+    private String escapar(String texto) {
+        return texto == null ? "" : texto.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
 }

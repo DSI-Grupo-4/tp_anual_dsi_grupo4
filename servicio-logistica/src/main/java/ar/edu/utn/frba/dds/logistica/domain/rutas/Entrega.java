@@ -14,6 +14,8 @@ public class Entrega {
     private Direccion direccionDestino;             // NUEVO: idem, sin consultar a Donaciones
     private EstadoEntrega estadoEntrega;
     private LocalDate fecha;
+    private java.time.LocalDateTime fechaHoraEntrega;
+    private String seguimientoUrl;
     private FotoEntrega fotoEntrega;
     private Camion camionEntrega;
     private Integer pesoKG;
@@ -50,6 +52,7 @@ public class Entrega {
 
     public void confirmarEntrega(FotoEntrega foto) {
         this.fotoEntrega = foto;
+        this.fechaHoraEntrega = java.time.LocalDateTime.now();
         cambiarEstado(EstadoEntrega.ENTREGADA);
     }
 

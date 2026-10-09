@@ -23,4 +23,12 @@ public class CambioEstadoDTO {
     // ENTREGA_CONFIRMADA, etc.) en vez del genérico CAMBIO_ESTADO_DONACION
     // que se usa para cambios manuales (ej. PUT /api/donaciones/{id}/estado).
     private String origenEvento;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private String eventoId;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private String seguimientoUrl;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private java.time.LocalDateTime fechaHoraEntrega;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY)
+    private String patenteCamion;
 }

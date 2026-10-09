@@ -32,11 +32,11 @@ public class EventosLogisticaScheduler {
         for (EventoLogisticoDTO evento : logisticaBroker.obtenerEventosNoPublicados()) {
             try {
                 aplicarEvento(evento);
+                logisticaBroker.marcarPublicado(evento.getIdEvento());
             } catch (Exception e) {
                 logger.warn("No se pudo aplicar el evento {} ({}) a la donación asociada: {}",
                         evento.getIdEvento(), evento.getTipoEvento(), e.getMessage());
             }
-            logisticaBroker.marcarPublicado(evento.getIdEvento());
         }
     }
 
@@ -78,6 +78,11 @@ public class EventosLogisticaScheduler {
         CambioEstadoDTO dto = new CambioEstadoDTO();
         dto.setNuevoEstado(nuevoEstado);
         dto.setOrigenEvento(evento.getTipoEvento());
+        dto.setEventoId(evento.getIdEvento().toString());
+        dto.setSeguimientoUrl(evento.getEntregaAsociada().getSeguimientoUrl());
+        dto.setFechaHoraEntrega(evento.getEntregaAsociada().getFechaHoraEntrega());
+        var camion = evento.getEntregaAsociada().getCamionEntrega();
+        if (camion != null) dto.setPatenteCamion(camion.path("patente").asText());
         if (nuevoEstado == EstadoTrack.ENTREGA_FALLIDA) {
             String justificacion = evento.getEntregaAsociada().getJustificacionFallo();
             // cambiarEstado exige justificación no vacía para ENTREGA_FALLIDA

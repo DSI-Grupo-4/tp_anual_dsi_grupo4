@@ -9,8 +9,8 @@ import java.util.UUID;
 
 /**
  * Representa una notificacion a enviar a un destinatario por un medio de
- * comunicacion determinado. En esta entrega no hay persistencia externa: las
- * instancias quedan registradas en memoria para trazabilidad.
+ * comunicacion determinado. NotificacionService guarda cada instancia
+ * completada en el historial local durable para trazabilidad y deduplicación.
  */
 public class Notificacion {
 
