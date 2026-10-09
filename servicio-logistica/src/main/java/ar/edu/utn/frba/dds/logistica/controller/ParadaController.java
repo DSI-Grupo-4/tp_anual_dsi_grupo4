@@ -45,9 +45,11 @@ public class ParadaController {
     @PostMapping("/confirmar")
     public void confirmarRecepcion(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                    @RequestBody FotoEntrega foto) {
-        Parada parada = buscarParada(idRuta, idParada);
+        Ruta ruta = gestorRutas.buscarPorId(idRuta);
+        Parada parada = buscarParada(ruta, idParada);
         parada.confirmarRecepcion(foto);
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_CONFIRMADA, e));
+        liberarCamionSiCorresponde(ruta);
     }
 
     @Operation(
@@ -71,16 +73,55 @@ public class ParadaController {
     @PostMapping("/no-recibida")
     public void marcarNoRecibida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Nadie respondió en el domicilio"))) @RequestBody String justificacion) {
-        Parada parada = buscarParada(idRuta, idParada);
+        Ruta ruta = gestorRutas.buscarPorId(idRuta);
+        Parada parada = buscarParada(ruta, idParada);
         parada.marcarNoRecibida(justificacion);
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_NO_RECIBIDA, e));
+        liberarCamionSiCorresponde(ruta);
     }
 
-    private Parada buscarParada(Integer idRuta, Integer idParada) {
+    @Operation(
+            summary = "Reportar un incidente logístico en una parada",
+            description = "Para cuando la entrega no se pudo concretar por un motivo distinto a que la entidad no la haya recibido (vencimiento de los bienes antes de llegar, incidente logístico en el camino, etc.). Lo reporta el chofer o una persona administradora."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Incidente registrado correctamente"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "No se encontró la ruta o la parada indicada"
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "El motivo proporcionado no es válido"
+            )
+    })
+    @PostMapping("/incidente")
+    public void marcarFallida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
+                              @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Los bienes vencieron antes de llegar a destino"))) @RequestBody String motivo) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
+        Parada parada = buscarParada(ruta, idParada);
+        parada.marcarFallida(motivo);
+        parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_FALLIDA, e));
+        liberarCamionSiCorresponde(ruta);
+    }
+
+    private Parada buscarParada(Ruta ruta, Integer idParada) {
         return ruta.getParadas().stream()
                 .filter(p -> p.getIdParada().equals(idParada))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("No existe la parada con id: " + idParada));
+    }
+
+    // El camión queda ASIGNADO desde que se planifica su ruta (ver Ruta);
+    // recién vuelve a estar DISPONIBLE cuando no queda nada pendiente de
+    // resolver en ninguna de sus paradas -- antes finalizarRuta() nunca se
+    // llamaba y el camión quedaba comprometido para siempre tras su primera ruta.
+    private void liberarCamionSiCorresponde(Ruta ruta) {
+        if (Boolean.TRUE.equals(ruta.completoTodasLasEntregas())) {
+            ruta.finalizarRuta();
+        }
     }
 }

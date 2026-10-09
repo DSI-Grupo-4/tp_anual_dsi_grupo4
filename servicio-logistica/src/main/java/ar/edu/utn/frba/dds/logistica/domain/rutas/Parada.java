@@ -31,4 +31,8 @@ public class Parada {
         }
         entregas.forEach(entrega -> entrega.marcarNoRecibida(justificacion));
     }
+
+    public void marcarFallida(String motivo) {
+        entregas.forEach(entrega -> entrega.marcarFallida(motivo));
+    }
 }

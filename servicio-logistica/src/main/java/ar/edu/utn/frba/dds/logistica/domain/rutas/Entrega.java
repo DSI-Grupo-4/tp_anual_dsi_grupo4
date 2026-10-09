@@ -59,16 +59,31 @@ public class Entrega {
     }
 
     /**
-     * La persona administradora revisó una entrega NO_RECIBIDA y decidió que
-     * la donación vuelve al depósito para replanificarse -- la deja
-     * disponible para que el próximo PlanificadorService.planificarRutasDelDia()
-     * la vuelva a tomar (filtra por EstadoEntrega.PENDIENTE).
+     * El chofer o una persona administradora reporta que la entrega no se
+     * pudo concretar por un motivo distinto a que la entidad no la haya
+     * recibido -- vencimiento de los bienes antes de llegar, incidente
+     * logístico en el camino, etc. (ejemplos textuales del enunciado).
+     */
+    public void marcarFallida(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new IllegalArgumentException("El motivo de la entrega fallida es obligatorio");
+        }
+        this.justificacionFallo = motivo;
+        cambiarEstado(EstadoEntrega.FALLIDA);
+    }
+
+    /**
+     * La persona administradora revisó una entrega NO_RECIBIDA/FALLIDA y
+     * determinó que se puede reintentar -- "se dejará constancia del estado
+     * correspondiente" (texto del enunciado): queda en REPLANIFICABLE, que
+     * EntregaRepository.obtenerPendientes() trata igual que PENDIENTE para
+     * la próxima corrida de PlanificadorService.planificarRutasDelDia().
      */
     public void reingresarADeposito() {
-        if (estadoEntrega != EstadoEntrega.NO_RECIBIDA) {
+        if (estadoEntrega != EstadoEntrega.NO_RECIBIDA && estadoEntrega != EstadoEntrega.FALLIDA) {
             throw new IllegalStateException(
                     "La entrega " + idEntrega + " no puede reingresar al depósito estando en estado " + estadoEntrega);
         }
-        cambiarEstado(EstadoEntrega.PENDIENTE);
+        cambiarEstado(EstadoEntrega.REPLANIFICABLE);
     }
 }

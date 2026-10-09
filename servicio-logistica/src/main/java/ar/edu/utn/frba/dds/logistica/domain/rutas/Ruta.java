@@ -24,6 +24,13 @@ public class Ruta {
         this.fecha = fecha;
         this.paradas = paradas;
         this.estadoRuta = EstadoRuta.PLANIFICADA;
+        // Único punto de creación de una Ruta (interno vía PlanificacionPropia
+        // o externo vía el callback) -- el camión queda comprometido con esta
+        // ruta apenas se planifica, no recién cuando el chofer la inicia.
+        // Antes quedaba DISPONIBLE hasta iniciarRuta(), lo que permitía
+        // planificarlo dos veces en paralelo si se corría la planificación
+        // más de una vez antes de que saliera a la calle.
+        this.camionAsociado.cambiarEstado(EstadoCamion.ASIGNADO);
     }
 
     public void iniciarRuta() {
@@ -43,9 +50,18 @@ public class Ruta {
         this.camionAsociado.cambiarEstado(EstadoCamion.DISPONIBLE);
     }
 
+    /**
+     * true cuando el chofer ya pasó por todas las paradas y cada entrega
+     * llegó a una resolución -- entregada, o fallida por cualquier motivo
+     * (no es "se entregaron todas", es "no queda nada pendiente de
+     * resolver"). El camión queda libre para la próxima planificación
+     * independientemente de si hubo entregas fallidas.
+     */
     public Boolean completoTodasLasEntregas() {
         return paradas.stream()
                 .flatMap(p -> p.getEntregas().stream())
-                .allMatch(e -> e.getEstadoEntrega() == EstadoEntrega.ENTREGADA);
+                .allMatch(e -> e.getEstadoEntrega() == EstadoEntrega.ENTREGADA
+                        || e.getEstadoEntrega() == EstadoEntrega.NO_RECIBIDA
+                        || e.getEstadoEntrega() == EstadoEntrega.FALLIDA);
     }
 }

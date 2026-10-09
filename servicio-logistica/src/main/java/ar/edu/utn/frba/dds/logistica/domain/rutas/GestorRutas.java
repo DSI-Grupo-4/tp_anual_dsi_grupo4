@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -19,6 +20,19 @@ public class GestorRutas {
         List<Ruta> nuevasRutas = estrategia.planificar(entregasPendientes, camionesDisponibles, choferesDisponibles, siguienteId);
         rutas.addAll(nuevasRutas);
         return nuevasRutas;
+    }
+
+    /**
+     * Registra una ruta que vino armada de afuera (callback de un
+     * componente externo de planificación, ver PlanificadorService) en vez
+     * de calcularla con la estrategia in-process -- mismo id autoincremental
+     * y misma lista real que planificar(), para que buscarPorId/getRutas
+     * no tengan que distinguir el origen.
+     */
+    public Ruta registrarRutaExterna(Camion camion, Chofer chofer, List<Parada> paradas) {
+        Ruta ruta = new Ruta(rutas.size() + 1, camion, chofer, LocalDate.now().plusDays(1), paradas);
+        rutas.add(ruta);
+        return ruta;
     }
 
     public List<Ruta> getRutas() {

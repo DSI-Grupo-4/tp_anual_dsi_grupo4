@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.controller;
 
+import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.dto.EntregaDTO;
 import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +10,9 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/entregas")
 public class EntregaController {
@@ -17,6 +21,23 @@ public class EntregaController {
 
     public EntregaController(EntregaRepository entregaRepository) {
         this.entregaRepository = entregaRepository;
+    }
+
+    @Operation(
+            summary = "Obtener todas las entregas",
+            description = "Lista las entregas registradas (lo que llegó vía POST /api/lotes), opcionalmente filtradas por fecha de recepción."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Entregas obtenidas correctamente"
+            )
+    })
+    @GetMapping
+    public List<Entrega> obtenerTodas(
+            @io.swagger.v3.oas.annotations.Parameter(description = "Filtra por fecha de recepción del lote (yyyy-MM-dd). Opcional.", example = "2026-10-09")
+            @RequestParam(required = false) LocalDate fecha) {
+        return fecha != null ? entregaRepository.obtenerPorFecha(fecha) : entregaRepository.obtenerTodas();
     }
 
     @Operation(
@@ -40,13 +61,13 @@ public class EntregaController {
     }
 
     @Operation(
-            summary = "Reingresar una entrega NO_RECIBIDA al depósito",
-            description = "La persona administradora revisó el caso y decide que la donación vuelve al depósito: la entrega pasa a PENDIENTE para que la próxima planificación la vuelva a tomar."
+            summary = "Reingresar una entrega NO_RECIBIDA o FALLIDA al depósito",
+            description = "La persona administradora revisó el caso y determinó que se puede reintentar: la entrega pasa a REPLANIFICABLE, que la próxima planificación toma igual que una PENDIENTE."
     )
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Entrega reingresada correctamente, queda en estado PENDIENTE"
+                    description = "Entrega reingresada correctamente, queda en estado REPLANIFICABLE"
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -54,7 +75,7 @@ public class EntregaController {
             ),
             @ApiResponse(
                     responseCode = "409",
-                    description = "La entrega no está en estado NO_RECIBIDA"
+                    description = "La entrega no está en estado NO_RECIBIDA ni FALLIDA"
             )
     })
     @PostMapping("/{id}/reingresar")
