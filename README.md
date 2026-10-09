@@ -28,14 +28,16 @@
 ├── diagramas
 │   ├── SERVICIOS.json
 │   ├── ddc
-│   │   ├── DONACIONES.drawio.xml
-│   │   ├── INCENTIVOS.drawio.xml
-│   │   ├── LOGISTICA.drawio.xml
-│   │   └── NOTIFICACIONES.drawio.xml
+│   │   ├── donaciones.puml
+│   │   ├── img
+│   │   ├── incentivos.puml
+│   │   ├── logistica.puml
+│   │   └── notificaciones.puml
 │   └── der
 │       ├── donaciones.txt
 │       ├── incentivos.txt
-│       └── logistica.txt
+│       ├── logistica.txt
+│       └── pdf
 ├── docker-compose.integration.yml
 ├── mockups
 │   ├── administrador
@@ -96,7 +98,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-29 directories, 52 files
+31 directories, 52 files
 ```
 <!-- TREE_END -->
 
