@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.*;
 import java.util.*;
+import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -43,7 +44,12 @@ public class Donacion {
     private EstadoTrack estadoActual;
     private List<CambioEstado> historialEstados;
     private EntidadBeneficiaria entidadBeneficiaria;
-    private List<EntidadBeneficiaria> candidatas;
+    // Resultado de la última corrida de matchmaking (cron nocturno o GET
+    // /{id}/candidatas a demanda) -- null significa "todavía no se corrió".
+    // Las 3 listas se conservan tal cual, sin colapsar, porque la elección
+    // de la entidad final debe poder hacerse "a partir del resultado de
+    // ejecución de los algoritmos" (ambas corridas si no hubo intersección).
+    private ResultadoMatchmaking resultadoMatchmaking;
     // Quién hizo la donación — antes no se registraba en ningún lado.
     private Donante donante;
 
@@ -55,7 +61,6 @@ public class Donacion {
         this.fechaCreacion = LocalDateTime.now();
         this.estadoActual = EstadoTrack.EN_DEPOSITO;
         this.historialEstados = new ArrayList<>();
-        this.candidatas = new ArrayList<>();
         this.historialEstados.add(new CambioEstado(EstadoTrack.EN_DEPOSITO, "Donación recibida en depósito"));
     }
     private static void validarItems(List<ItemDonado> items) {
@@ -109,5 +114,16 @@ public class Donacion {
 
     public boolean estaAsignada() {
         return necesidadAsignada != null;
+    }
+
+    /** Unión sin duplicados de las 3 listas del último matchmaking corrido; vacía si todavía no se corrió. */
+    public List<EntidadBeneficiaria> candidatasPropuestas() {
+        if (resultadoMatchmaking == null) return List.of();
+        return Stream.of(resultadoMatchmaking.getPorCompatibilidad(),
+                        resultadoMatchmaking.getPorSubatencion(),
+                        resultadoMatchmaking.getInterseccion())
+                .flatMap(List::stream)
+                .distinct()
+                .toList();
     }
 }

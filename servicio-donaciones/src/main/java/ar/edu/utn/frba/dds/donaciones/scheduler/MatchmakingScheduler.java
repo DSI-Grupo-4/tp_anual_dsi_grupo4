@@ -1,8 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.scheduler;
 
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import ar.edu.utn.frba.dds.donaciones.service.MatchmakingService;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,9 +27,8 @@ public class MatchmakingScheduler {
         List<Donacion> enDeposito = donacionService.obtenerDonacionesEnDeposito();
 
         for (Donacion donacion : enDeposito) {
-            List<EntidadBeneficiaria> candidatas =
-                    matchmakingService.ejecutarMatchmaking(donacion);
-            donacion.setCandidatas(candidatas);
+            ResultadoMatchmaking resultado = matchmakingService.ejecutarMatchmaking(donacion);
+            donacion.setResultadoMatchmaking(resultado);
         }
     }
 }

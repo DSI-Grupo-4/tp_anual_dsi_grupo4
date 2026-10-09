@@ -6,6 +6,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
@@ -28,6 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
@@ -165,6 +167,7 @@ class DonacionServiceTest {
         EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,
                 new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null),
                 "Escuela");
+        existente.setResultadoMatchmaking(new ResultadoMatchmaking(List.of(entidad), List.of(), List.of()));
 
         DonacionDTO resultado = donacionService.confirmarAsignacion(1L, entidad);
 
@@ -172,5 +175,90 @@ class DonacionServiceTest {
         assertThat(resultado.getEntidadBeneficiariaId()).isEqualTo(1L);
         assertThat(existente.getEntidadBeneficiaria()).isEqualTo(entidad);
         verify(publicadorEventos).publicar(eq("CAMBIO_ESTADO_DONACION"), any());
+    }
+
+    @Test
+    void confirmarAsignacionRechazaSiTodaviaNoSeCorrioElMatchmaking() {
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,
+                new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null),
+                "Escuela");
+
+        assertThatThrownBy(() -> donacionService.confirmarAsignacion(1L, entidad))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("candidatas");
+    }
+
+    @Test
+    void confirmarAsignacionRechazaUnaEntidadQueLosAlgoritmosNoPropusieron() {
+        ItemDonado item = DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 10);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        EntidadBeneficiaria propuesta = new EntidadBeneficiaria(1L,
+                new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null), "Escuela");
+        EntidadBeneficiaria otraNoPropuesta = new EntidadBeneficiaria(2L,
+                new PersonaJuridica("Comedor Escobar Sonrisas", TipoOrganizacion.ONG, null, null), "Comedor");
+        existente.setResultadoMatchmaking(new ResultadoMatchmaking(List.of(propuesta), List.of(), List.of()));
+
+        assertThatThrownBy(() -> donacionService.confirmarAsignacion(1L, otraNoPropuesta))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("no fue propuesta");
+    }
+
+    @Test
+    void confirmarAsignacionVinculaYDescuentaContraUnaNecesidadPendienteDeLaMismaSubcategoria() {
+        // Regresión del hallazgo más grave de la auditoría: Necesidad.recibir()
+        // no tenía un solo caller real -- ninguna donación llegaba jamás a
+        // satisfacer una necesidad, sin importar cuántas se asignaran.
+        ItemDonado item = DatosPrueba.item(1L, "Sillas de oficina", Subcategoria.SILLA, 6, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 6);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,
+                new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null), "Escuela");
+        ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad necesidad =
+                new ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadExtraordinaria(
+                        1L, "30 sillas por la inundación", Subcategoria.SILLA,
+                        ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida.UNIDAD,
+                        BigDecimal.valueOf(30),
+                        ar.edu.utn.frba.dds.donaciones.domain.necesidades.TipoExtraordinario.INUNDACION);
+        entidad.agregarNecesidad(necesidad);
+        existente.setResultadoMatchmaking(new ResultadoMatchmaking(List.of(entidad), List.of(), List.of()));
+
+        donacionService.confirmarAsignacion(1L, entidad);
+
+        assertThat(existente.getNecesidadAsignada()).isEqualTo(necesidad);
+        assertThat(necesidad.getCantidadRecibida()).isEqualTo(BigDecimal.valueOf(6));
+        assertThat(necesidad.satisfecha()).isFalse();
+    }
+
+    @Test
+    void confirmarAsignacionIgnoraUnaNecesidadYaSatisfechaDeLaMismaSubcategoria() {
+        ItemDonado item = DatosPrueba.item(1L, "Sillas de oficina", Subcategoria.SILLA, 6, null);
+        Donacion existente = DatosPrueba.donacion(1L, item, 6);
+        when(gestorDonaciones.buscarPorId(1L)).thenReturn(existente);
+
+        EntidadBeneficiaria entidad = new EntidadBeneficiaria(1L,
+                new PersonaJuridica("Escuela Rural 10", TipoOrganizacion.GUBERNAMENTAL, null, null), "Escuela");
+        ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad yaSatisfecha =
+                new ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadExtraordinaria(
+                        1L, "2 sillas ya cubiertas", Subcategoria.SILLA,
+                        ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida.UNIDAD,
+                        BigDecimal.valueOf(2),
+                        ar.edu.utn.frba.dds.donaciones.domain.necesidades.TipoExtraordinario.INUNDACION);
+        yaSatisfecha.recibir(BigDecimal.valueOf(2));
+        entidad.agregarNecesidad(yaSatisfecha);
+        existente.setResultadoMatchmaking(new ResultadoMatchmaking(List.of(entidad), List.of(), List.of()));
+
+        donacionService.confirmarAsignacion(1L, entidad);
+
+        // La entidad igual se asigna (p.ej. propuesta por Prioridad a
+        // sub-atendidos), pero no se vincula a una necesidad ya cubierta.
+        assertThat(existente.getNecesidadAsignada()).isNull();
+        assertThat(yaSatisfecha.getCantidadRecibida()).isEqualTo(BigDecimal.valueOf(2));
     }
 }

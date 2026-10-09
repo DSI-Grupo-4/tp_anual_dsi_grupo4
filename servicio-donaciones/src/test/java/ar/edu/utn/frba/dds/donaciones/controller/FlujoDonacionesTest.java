@@ -53,6 +53,8 @@ class FlujoDonacionesTest {
         mvc.perform(post("/api/asignaciones/candidatas").contentType("application/json").content(ejemplo(SolicitudAsignacionDTO.class).toString()))
                 .andExpect(status().isOk()).andExpect(jsonPath("$.porCompatibilidad[0].entidadBeneficiariaId").value(1));
         mvc.perform(put("/api/donaciones/1").contentType("application/json").content(ejemplo(ActualizarDonacionDTO.class).toString())).andExpect(status().isOk());
+        mvc.perform(get("/api/donaciones/1/candidatas")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.porCompatibilidad[0].entidadBeneficiariaId").value(1));
         mvc.perform(post("/api/donaciones/1/asignar").contentType("application/json").content(ejemplo(AsignarEntidadDTO.class).toString())).andExpect(status().isOk());
         mvc.perform(patch("/api/donaciones/1/estado").contentType("application/json").content(ejemplo(CambioEstadoDTO.class).toString())).andExpect(status().isOk());
         mvc.perform(put("/api/donaciones/1").contentType("application/json").content(ejemplo(ActualizarDonacionDTO.class).toString())).andExpect(status().isConflict());

@@ -3,11 +3,7 @@ package ar.edu.utn.frba.dds.donaciones.service;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
-import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Stream;
 
 @Service
 public class MatchmakingService {
@@ -22,21 +18,10 @@ public class MatchmakingService {
         this.gestorDonaciones = gestorDonaciones;
     }
 
-    public List<EntidadBeneficiaria> ejecutarMatchmaking(Donacion donacion) {
-        ResultadoMatchmaking resultado = gestorDonaciones.ejecutarMatchmaking(
+    public ResultadoMatchmaking ejecutarMatchmaking(Donacion donacion) {
+        return gestorDonaciones.ejecutarMatchmaking(
                 donacion,
                 entidadBeneficiariaService.obtenerEntidadesDominio()
         );
-
-        if (!resultado.getInterseccion().isEmpty()) {
-            return resultado.getInterseccion();
-        }
-
-        return Stream.concat(
-                        resultado.getPorCompatibilidad().stream(),
-                        resultado.getPorSubatencion().stream())
-                .distinct()
-                .limit(10)
-                .toList();
     }
 }

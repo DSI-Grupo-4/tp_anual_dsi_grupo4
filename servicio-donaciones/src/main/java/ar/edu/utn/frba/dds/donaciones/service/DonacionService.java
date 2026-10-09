@@ -144,13 +144,35 @@ public class DonacionService {
      * mutando el dominio directo, sin pasar por acá — por eso el evento
      * hacia Notificaciones nunca se disparaba en este camino, a diferencia
      * de cambiarEstado(). Unificado en un solo lugar.
+     *
+     * La entidad elegida tiene que salir del resultado de los algoritmos
+     * (GET /{id}/candidatas), no puede ser cualquiera -- si todavía no se
+     * corrió matchmaking, 409; si la entidad no apareció en ninguna de las
+     * 3 listas, 400. Si además la entidad tiene una necesidad pendiente de
+     * la misma subcategoría/unidad, se vincula y se descuenta la cantidad
+     * contra ella -- sin esto ninguna Necesidad llegaba jamás a
+     * satisfecha(), sin importar cuántas donaciones se le asignaran.
      */
     public DonacionDTO confirmarAsignacion(Long id, EntidadBeneficiaria entidad) {
         Donacion donacion = obtenerDominioPorId(id);
         if (donacion.getPesoKg() == null || donacion.getVolumenM3() == null || donacion.getAlturaM() == null)
             throw new IllegalArgumentException("Complete pesoKg, volumenM3 y alturaM de todos los items antes de asignar");
+        if (donacion.getResultadoMatchmaking() == null)
+            throw new IllegalStateException("Ejecute el matchmaking de esta donación (GET /api/donaciones/" + id + "/candidatas) antes de asignarla");
+        if (!donacion.candidatasPropuestas().contains(entidad))
+            throw new IllegalArgumentException("La entidad " + entidad.getId() + " no fue propuesta por los algoritmos de asignación para esta donación");
+
         donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
         donacion.setEntidadBeneficiaria(entidad);
+
+        entidad.necesidadesPendientes().stream()
+                .filter(n -> n.getSubcategoria() == donacion.getSubcategoria()
+                        && n.getUnidadMedida() == donacion.getUnidadMedida())
+                .findFirst()
+                .ifPresent(necesidad -> {
+                    donacion.setNecesidadAsignada(necesidad);
+                    necesidad.recibir(donacion.getCantidadAsignada());
+                });
 
         DonacionDTO resultado = convertirADTO(donacion);
         publicadorEventos.publicar("CAMBIO_ESTADO_DONACION", donacion);

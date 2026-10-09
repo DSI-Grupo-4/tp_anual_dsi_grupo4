@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.AsignarEntidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO;
@@ -8,7 +9,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
-import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ResultadoMatchmakingDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import ar.edu.utn.frba.dds.donaciones.service.EntidadBeneficiariaService;
@@ -92,18 +93,17 @@ public class DonacionController {
         return donacionService.obtenerHistorial(id);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Candidatas", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Candidatas", description = "Ejecuta a demanda los algoritmos de Compatibilidad Semántica y Prioridad a sub-atendidos sobre esta donación y guarda el resultado (las 3 listas, sin colapsar) como el matchmaking vigente para /asignar. Usar antes de asignar: /asignar solo acepta una entidad que haya aparecido en alguna de estas 3 listas.")
     @GetMapping("/{id}/candidatas")
-    public List<EntidadBeneficiariaDTO> candidatas(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
+    public ResultadoMatchmakingDTO candidatas(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         Donacion donacion = donacionService.obtenerDominioPorId(id);
-        List<EntidadBeneficiaria> candidatas = matchmakingService.ejecutarMatchmaking(donacion);
-        donacion.setCandidatas(candidatas);
-        return candidatas.stream()
-                .map(entidadBeneficiariaService::convertirADTO)
-                .toList();
+        ResultadoMatchmaking resultado = matchmakingService.ejecutarMatchmaking(donacion);
+        donacion.setResultadoMatchmaking(resultado);
+        return entidadBeneficiariaService.convertirResultadoADTO(
+                resultado, donacion.getSubcategoria(), donacion.getUnidadMedida());
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Asignar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Asignar", description = "Confirma la entidad final. Requiere haber corrido antes GET /{id}/candidatas: 409 si todavía no se ejecutó el matchmaking, 400 si la entidad no apareció en ninguna de sus 3 listas. Si la entidad tiene una necesidad pendiente de la misma subcategoría y unidad, se vincula y se descuenta la cantidad contra ella automáticamente.")
     @PostMapping("/{id}/asignar")
     public DonacionDTO asignar(
             @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,

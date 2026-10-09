@@ -1,8 +1,11 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
 import ar.edu.utn.frba.dds.donaciones.domain.lugares.Ciudad;
 import ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion;
 import ar.edu.utn.frba.dds.donaciones.domain.lugares.Provincia;
@@ -12,8 +15,10 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.EntidadCandidataDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ResultadoMatchmakingDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -212,4 +217,44 @@ public class EntidadBeneficiariaService {
         public List<EntidadBeneficiaria> obtenerEntidadesDominio() {
            return entidades;
         }
+
+    /**
+     * Conversor único de un ResultadoMatchmaking a su DTO -- usado tanto por
+     * el matchmaking real (DonacionController, sobre una Donacion existente)
+     * como por la exploración a demanda con un ítem hipotético
+     * (AsignacionService), para que ambos caminos calculen el puntaje de
+     * la misma forma y no diverjan entre sí.
+     */
+    public ResultadoMatchmakingDTO convertirResultadoADTO(
+            ResultadoMatchmaking resultado, Subcategoria subcategoria, UnidadMedida unidadMedida) {
+
+        ResultadoMatchmakingDTO dto = new ResultadoMatchmakingDTO();
+        dto.setPorCompatibilidad(convertirCandidatas(resultado.getPorCompatibilidad(), subcategoria, unidadMedida));
+        dto.setPorSubatencion(convertirCandidatas(resultado.getPorSubatencion(), subcategoria, unidadMedida));
+        dto.setInterseccion(convertirCandidatas(resultado.getInterseccion(), subcategoria, unidadMedida));
+        return dto;
+    }
+
+    private List<EntidadCandidataDTO> convertirCandidatas(
+            List<EntidadBeneficiaria> entidades, Subcategoria subcategoria, UnidadMedida unidadMedida) {
+
+        return entidades.stream()
+                .map(entidad -> convertirACandidataDTO(entidad, subcategoria, unidadMedida))
+                .toList();
+    }
+
+    private EntidadCandidataDTO convertirACandidataDTO(
+            EntidadBeneficiaria entidad, Subcategoria subcategoria, UnidadMedida unidadMedida) {
+
+        EntidadCandidataDTO dto = new EntidadCandidataDTO();
+        dto.setEntidadBeneficiariaId(entidad.getId());
+        dto.setDescripcion(entidad.getDescripcion());
+        if (entidad.getEntidad() != null) {
+            dto.setRazonSocial(entidad.getEntidad().getRazonSocial());
+        }
+        dto.setPuntaje((int) entidad.necesidadesPendientes().stream()
+                .filter(n -> n.getSubcategoria() == subcategoria && n.getUnidadMedida() == unidadMedida)
+                .count());
+        return dto;
+    }
 }

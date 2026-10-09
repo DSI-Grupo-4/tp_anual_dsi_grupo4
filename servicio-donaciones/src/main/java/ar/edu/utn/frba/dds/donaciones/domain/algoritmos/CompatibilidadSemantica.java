@@ -10,7 +10,7 @@ public class CompatibilidadSemantica implements AlgoritmoAsignacion {
                 .sorted(Comparator.comparingInt(e -> -puntaje(e, donacion))).limit(10).toList();
     }
     private int puntaje(EntidadBeneficiaria entidad, Donacion donacion) {
-        return (int) entidad.getNecesidades().stream().filter(n -> !n.satisfecha())
+        return (int) entidad.necesidadesPendientes().stream()
                 .filter(n -> n.getSubcategoria() == donacion.getSubcategoria()
                         && n.getUnidadMedida() == donacion.getUnidadMedida()).count();
     }
