@@ -1,22 +1,36 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
+import ar.edu.utn.frba.dds.logistica.domain.rutas.Camion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Ciudad;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Direccion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
+import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoCamion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Provincia;
 import ar.edu.utn.frba.dds.logistica.dto.DonacionDTO;
+import ar.edu.utn.frba.dds.logistica.repository.CamionRepository;
 import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+// Se prueba contra H2 en memoria con el esquema generado por Hibernate (create-drop);
+// no necesita MySQL levantado.
+@DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+@Import(LoteService.class)
 class LoteServiceTest {
 
-    private final EntregaRepository entregaRepository = new EntregaRepository();
-    private final LoteService loteService = new LoteService(entregaRepository);
+    @Autowired
+    private EntregaRepository entregaRepository;
+    @Autowired
+    private CamionRepository camionRepository;
+    @Autowired
+    private LoteService loteService;
 
     private DonacionDTO donacion(Integer idDonacion) {
         return donacion(idDonacion, 10);
@@ -63,8 +77,8 @@ class LoteServiceTest {
     @Test
     void recibirLoteIgnoraUnaDonacionCuyaEntregaYaEstaEnCurso() {
         List<Entrega> primero = loteService.recibirLote(List.of(donacion(1, 10)));
-        primero.get(0).asignarARuta(new ar.edu.utn.frba.dds.logistica.domain.rutas.Camion(
-                1, "AA123BB", 10, 2, 500, ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoCamion.ASIGNADO));
+        Camion camion = camionRepository.save(new Camion(null, "AA123BB", 10, 2, 500, EstadoCamion.ASIGNADO));
+        primero.get(0).asignarARuta(camion);
 
         List<Entrega> segundoEnvio = loteService.recibirLote(List.of(donacion(1, 20)));
 

@@ -42,4 +42,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
     }
+
+    // patente/dni repetidos, referencias inválidas, etc. -- antes (en memoria) no podían ocurrir
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleIntegridad(org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "El dato viola una restricción de la base (valor duplicado o referencia inválida)"));
+    }
 }

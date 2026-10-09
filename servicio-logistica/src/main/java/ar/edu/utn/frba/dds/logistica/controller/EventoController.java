@@ -52,12 +52,10 @@ public class EventoController {
                     description = "No se encontró un evento con el ID indicado"
             )
     })
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/marcar-publicado")
     public void marcarPublicado(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por el identificador devuelto por el alta o listado.", example = "00000000-0000-0000-0000-000000000001") @PathVariable java.util.UUID id) {
-        EventoLogistico evento = gestorEventos.getEventos().stream()
-                .filter(e -> e.getIdEvento().equals(id))
-                .findFirst()
-                .orElseThrow(() -> new NoSuchElementException("No existe el evento con id: " + id));
+        EventoLogistico evento = gestorEventos.buscarPorId(id);
         evento.marcarPublicado();
     }
 }

@@ -42,9 +42,10 @@ public class ParadaController {
                     description = "Los datos de la recepción son inválidos"
             )
     })
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/confirmar")
     public void confirmarRecepcion(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
-                                   @RequestBody FotoEntrega foto) {
+                                   @jakarta.validation.Valid @RequestBody FotoEntrega foto) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
         parada.confirmarRecepcion(foto);
@@ -70,6 +71,7 @@ public class ParadaController {
                     description = "La justificación proporcionada no es válida"
             )
     })
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/no-recibida")
     public void marcarNoRecibida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Nadie respondió en el domicilio"))) @RequestBody String justificacion) {
@@ -98,6 +100,7 @@ public class ParadaController {
                     description = "El motivo proporcionado no es válido"
             )
     })
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/incidente")
     public void marcarFallida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                               @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Los bienes vencieron antes de llegar a destino"))) @RequestBody String motivo) {
