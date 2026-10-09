@@ -16,6 +16,7 @@
 ```text
 .
 ├── Dockerfile
+├── GUIA-LEVANTAR-SERVICIOS.md
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -59,6 +60,7 @@
 │   └── entrega4-requerimientos.md
 ├── decisiones.md
 ├── diagramas
+│   ├── SERVICIOS.json
 │   └── ddc
 │       ├── DONACIONES.drawio.xml
 │       ├── INCENTIVOS.drawio.xml
@@ -92,6 +94,8 @@
 │   └── principal.png
 ├── pom.xml
 ├── render.yaml
+├── run-servicios.ps1
+├── run-servicios.sh
 ├── servicio-donaciones
 │   ├── pom.xml
 │   └── src
@@ -105,7 +109,8 @@
 │   ├── docker-compose.yml
 │   ├── pom.xml
 │   ├── src
-│   │   └── main
+│   │   ├── main
+│   │   └── test
 │   └── workflows
 │       └── servicio-incentivos-difusion.json
 ├── servicio-logistica
@@ -113,13 +118,14 @@
 │   └── src
 │       ├── main
 │       └── test
-└── servicio-notificaciones
-    ├── pom.xml
-    └── src
-        ├── main
-        └── test
+├── servicio-notificaciones
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       └── test
+└── stop-servicios.ps1
 
-54 directories, 50 files
+55 directories, 55 files
 ```
 <!-- TREE_END -->
 
