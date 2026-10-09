@@ -3,26 +3,88 @@
 // Las referencias a otros servicios (Logistica, Incentivos) NO llevan FK: no hay
 // ninguna en este esquema porque Donaciones no guarda IDs de ellos.
 
-Enum tipo_persona { HUMANA JURIDICA }
-Enum genero { MASCULINO FEMENINO X }
-Enum tipo_organizacion { GUBERNAMENTAL ONG EMPRESA INSTITUCION }
-Enum tipo_contacto { EMAIL TELEFONO WHATSAPP }
-Enum tipo_necesidad { RECURRENTE EXTRAORDINARIA }
-Enum periodicidad { DIARIA SEMANAL MENSUAL ANUAL }
-Enum tipo_extraordinario { INUNDACION SISMO OLA_POLAR }
-Enum categoria { ALIMENTOS MOBILIARIO VESTIMENTA }
+Enum tipo_persona {
+  HUMANA
+  JURIDICA
+}
+Enum genero {
+  MASCULINO
+  FEMENINO
+  X
+}
+Enum tipo_organizacion {
+  GUBERNAMENTAL
+  ONG
+  EMPRESA
+  INSTITUCION
+}
+Enum tipo_contacto {
+  EMAIL
+  TELEFONO
+  WHATSAPP
+}
+Enum tipo_necesidad {
+  RECURRENTE
+  EXTRAORDINARIA
+}
+Enum periodicidad {
+  DIARIA
+  SEMANAL
+  MENSUAL
+  ANUAL
+}
+Enum tipo_extraordinario {
+  INUNDACION
+  SISMO
+  OLA_POLAR
+}
+Enum categoria {
+  ALIMENTOS
+  MOBILIARIO
+  VESTIMENTA
+}
 Enum subcategoria {
-  SILLA MESA BANCO COLCHON
-  FIDEOS_SECOS ARROZ LEGUMBRES_SECAS ACEITE_VEGETAL TOMATE FRUTA
-  CAMPERA REMERA PANTALON ROPA_INFANTIL FRAZADA
+  SILLA
+  MESA
+  BANCO
+  COLCHON
+  FIDEOS_SECOS
+  ARROZ
+  LEGUMBRES_SECAS
+  ACEITE_VEGETAL
+  TOMATE
+  FRUTA
+  CAMPERA
+  REMERA
+  PANTALON
+  ROPA_INFANTIL
+  FRAZADA
 }
-Enum unidad_medida { UNIDAD KILOGRAMO CAJA PAQUETE LITRO }
-Enum condicion { NUEVO USADO }
+Enum unidad_medida {
+  UNIDAD
+  KILOGRAMO
+  CAJA
+  PAQUETE
+  LITRO
+}
+Enum condicion {
+  NUEVO
+  USADO
+}
 Enum estado_track {
-  EN_DEPOSITO ASIGNACION_REALIZADA LISTA_PARA_ENTREGAR EN_TRASLADO
-  ENTREGADA ENTREGA_FALLIDA VENCIDA
+  EN_DEPOSITO
+  ASIGNACION_REALIZADA
+  LISTA_PARA_ENTREGAR
+  EN_TRASLADO
+  ENTREGADA
+  ENTREGA_FALLIDA
+  VENCIDA
 }
-Enum lista_matchmaking { COMPATIBILIDAD SUBATENCION INTERSECCION }
+Enum lista_matchmaking {
+  COMPATIBILIDAD
+  SUBATENCION
+  INTERSECCION
+}
 
 // ---------------- Personas (herencia JOINED) ----------------
 Table persona {

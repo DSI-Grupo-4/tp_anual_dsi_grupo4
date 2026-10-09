@@ -1,0 +1,412 @@
+@startuml ModeloDominioDonaciones
+
+title Servicio de Donaciones - Modelo de dominio
+
+top to bottom direction
+skinparam classAttributeIconSize 0
+
+' ===== PERSONAS =====
+
+abstract class Persona {
+
+* mediosContacto: List<MedioContacto>
+
+- agregarMedio(medio: MedioContacto)
+- eliminarMedio(medio: MedioContacto)
+- medioPreferido(): Optional<MedioContacto>
+  }
+
+class PersonaHumana {
+
+* nombre: String
+* apellido: String
+* edad: Integer
+* documento: String
+* genero: Genero
+
+- nombreCompleto(): String
+  }
+
+class PersonaJuridica {
+
+* razonSocial: String
+* tipo: TipoOrganizacion
+* rubro: String
+* representantes: List<PersonaHumana>
+
+- agregarRepresentante(representante: PersonaHumana)
+- nombreRepresentante(): String
+  }
+
+class MedioContacto {
+
+* tipo: TipoContacto
+* valor: String
+* esPreferido: Boolean
+
+- marcarComoPreferido()
+- desmarcarPreferido()
+- esPreferido(): Boolean
+  }
+
+class Donante {
+
+* id: Long
+* ultimaActividad: LocalDate
+* notificadoPorInactividad: boolean
+
+- registrarActividad()
+- debeNotificarsePorInactividad(dias: int): boolean
+- marcarNotificadoPorInactividad()
+- agregarDonacion(donacion: Donacion)
+- cantidadDonaciones(): Integer
+- realizoDonaciones(): boolean
+- agregarRepresentante(representante: PersonaHumana)
+  }
+
+class EntidadBeneficiaria {
+
+* id: Long
+* descripcion: String
+
+- agregarNecesidad(necesidad: Necesidad)
+- registrarAyuda(donacion: Donacion)
+- cantidadAyudasRecibidas(): Integer
+- necesidadesPendientes(): List<Necesidad>
+- agregarRepresentante(representante: PersonaHumana)
+  }
+
+enum Genero {
+MASCULINO
+FEMENINO
+X
+}
+
+enum TipoContacto {
+EMAIL
+TELEFONO
+WHATSAPP
+}
+
+enum TipoOrganizacion {
+GUBERNAMENTAL
+ONG
+EMPRESA
+INSTITUCION
+}
+
+Persona <|-- PersonaHumana
+Persona <|-- PersonaJuridica
+Persona "1" *-- "1..*" MedioContacto
+PersonaJuridica "1" o-- "*" PersonaHumana : representantes
+Donante "1" --> "1" Persona
+EntidadBeneficiaria "1" --> "1" PersonaJuridica : entidad
+MedioContacto --> TipoContacto
+PersonaHumana --> Genero
+PersonaJuridica --> TipoOrganizacion
+
+' ===== LUGARES =====
+
+class Direccion {
+
+* calle: String
+* numero: String
+  }
+
+class Ciudad {
+
+* nombre: String
+  }
+
+class Provincia {
+
+* nombre: String
+  }
+
+Direccion --> Ciudad
+Ciudad --> Provincia
+EntidadBeneficiaria --> Direccion
+
+' ===== CATEGORIAS =====
+
+enum Categoria {
+ALIMENTOS
+MOBILIARIO
+VESTIMENTA
+}
+
+enum Subcategoria {
+SILLA
+MESA
+BANCO
+COLCHON
+FIDEOS_SECOS
+ARROZ
+TOMATE
+FRUTA
+CAMPERA
+REMERA
+PANTALON
+...
+}
+
+enum UnidadMedida {
+UNIDAD
+KILOGRAMO
+CAJA
+PAQUETE
+LITRO
+}
+
+enum Condicion {
+NUEVO
+USADO
+}
+
+class Perecedero <<final>> {
+
+* fechaVencimiento: LocalDate
+
+- estaVencido(): boolean
+  }
+
+class ConEstado <<final>> {
+
+* condicion: Condicion
+  }
+
+ConEstado --> Condicion
+
+' ===== DONACIONES =====
+
+class SolicitudDonacion {
+
+* id: Long
+* descripcion: String
+* fechaRegistro: LocalDateTime
+
+- agregarItem(item: ItemDonado)
+- segmentar(): List<Donacion>
+  }
+
+class ItemDonado {
+
+* id: Long
+* descripcion: String
+* foto: String
+* cantidad: BigDecimal
+* pesoKg: Integer
+* volumenM3: Integer
+* alturaM: Integer
+
+- mismaSegmentacion(item: ItemDonado): boolean
+- condicion(): Condicion
+- vencimiento(): LocalDate
+- estaVencido(): boolean
+  }
+
+class Donacion {
+
+* id: Long
+* fechaCreacion: LocalDateTime
+* estadoActual: EstadoTrack
+* TRANSICIONES_VALIDAS: Map
+
+- reemplazarItems(items: List<ItemDonado>)
+- cambiarEstado(estado: EstadoTrack, justificacion: String)
+- estaVencida(): boolean
+- estaAsignada(): boolean
+- candidatasPropuestas(): List<EntidadBeneficiaria>
+  }
+
+class CambioEstado {
+
+* estadoNuevo: EstadoTrack
+* fechaCambio: LocalDateTime
+* justificacion: String
+  }
+
+enum EstadoTrack {
+EN_DEPOSITO
+ASIGNACION_REALIZADA
+LISTA_PARA_ENTREGAR
+EN_TRASLADO
+ENTREGADA
+ENTREGA_FALLIDA
+VENCIDA
+}
+
+class ResultadoMatchmaking {
+
+* porCompatibilidad: List<EntidadBeneficiaria>
+* porSubatencion: List<EntidadBeneficiaria>
+* interseccion: List<EntidadBeneficiaria>
+  }
+
+class EstadoInvalidoException <<exception>>
+
+SolicitudDonacion "1" *-- "1..*" ItemDonado
+SolicitudDonacion --> Donante
+SolicitudDonacion ..> Donacion : segmentar() crea
+
+Donacion "1" *-- "1..*" ItemDonado : items
+Donacion --> SolicitudDonacion : solicitudOrigen
+Donacion "1" *-- "*" CambioEstado : historialEstados
+Donacion --> EstadoTrack
+Donacion --> Donante
+Donacion --> EntidadBeneficiaria : entidadBeneficiaria
+Donacion --> Necesidad : necesidadAsignada
+Donacion --> ResultadoMatchmaking
+Donacion ..> EstadoInvalidoException : lanza
+
+Donante "1" o-- "*" Donacion
+EntidadBeneficiaria "1" o-- "*" Donacion : donacionesRecibidas
+CambioEstado --> EstadoTrack
+ResultadoMatchmaking o-- EntidadBeneficiaria
+
+ItemDonado --> Categoria
+ItemDonado --> Subcategoria
+ItemDonado --> UnidadMedida
+ItemDonado "1" --> "0..1" Perecedero
+ItemDonado "1" --> "0..1" ConEstado
+
+' ===== NECESIDADES =====
+
+abstract class Necesidad {
+
+* id: Long
+* descripcion: String
+* cantidadRequerida: BigDecimal
+
+# cantidadRecibida: BigDecimal
+
+* actualizar(...)
+* satisfecha(): boolean
+* recibir(cantidad: BigDecimal)
+  }
+
+class NecesidadExtraordinaria {
+
+* tipoExtraordinario: TipoExtraordinario
+  }
+
+class NecesidadRecurrente {
+
+* periodicidad: Periodicidad
+* inicioPeriodoActual: LocalDate
+
+- recibir(cantidad: BigDecimal)
+- satisfecha(): boolean
+
+* avanzarPeriodoSiCorresponde()
+* finDePeriodoDesde(fecha: LocalDate): LocalDate
+  }
+
+enum Periodicidad {
+DIARIA
+SEMANAL
+MENSUAL
+ANUAL
+}
+
+enum TipoExtraordinario {
+INUNDACION
+SISMO
+OLA_POLAR
+}
+
+Necesidad <|-- NecesidadExtraordinaria
+Necesidad <|-- NecesidadRecurrente
+Necesidad --> Subcategoria
+Necesidad --> UnidadMedida
+Necesidad --> EntidadBeneficiaria
+EntidadBeneficiaria "1" *-- "*" Necesidad
+NecesidadRecurrente --> Periodicidad
+NecesidadExtraordinaria --> TipoExtraordinario
+
+' ===== ASIGNACION (STRATEGY) =====
+
+interface AlgoritmoAsignacion {
+
+* ejecutarAlgoritmo(donacion: Donacion, entidades: List<EntidadBeneficiaria>): List<EntidadBeneficiaria>
+  }
+
+class CompatibilidadSemantica {
+
+* puntaje(entidad: EntidadBeneficiaria, donacion: Donacion): int
+  }
+
+class PrioridadSubatendidos {
+
+* donacionesEntregadasEnTrimestre(entidad: EntidadBeneficiaria, fecha: LocalDateTime): long
+  }
+
+AlgoritmoAsignacion <|.. CompatibilidadSemantica
+AlgoritmoAsignacion <|.. PrioridadSubatendidos
+
+' ===== GESTORES =====
+
+class Deposito {
+
+* items: List<ItemDonado>
+
+- cargarItem(item: ItemDonado)
+- itemsDisponibles(): List<ItemDonado>
+- reemplazarItems(listaAnterior: List, listaNueva: List)
+  }
+
+class GestorDonaciones {
+
+* siguienteId: Long
+* siguienteSolicitudId: Long
+
+- registrarDonacion(donacion: Donacion): Donacion
+- buscarPorId(id: Long): Donacion
+- eliminar(id: Long)
+- registrarSolicitud(solicitud: SolicitudDonacion)
+- agregarAlgoritmo(algoritmo: AlgoritmoAsignacion)
+- ejecutarMatchmaking(donacion: Donacion, entidades: List<EntidadBeneficiaria>): ResultadoMatchmaking
+  }
+
+class GestorDonantes {
+
+* siguienteId: Long
+* donantesPorEmail: Map
+
+- registrarDonante(persona: Persona): Donante
+- buscarPorId(id: Long): Donante
+- eliminar(id: Long)
+- agregarImportador(importador: Importador)
+- importarDonantes(nombreImportador: String): List<Donante>
+- actualizarContactos(donante: Donante, medios: List<MedioContacto>)
+  }
+
+abstract class Importador {
+
+# nombre: String
+
+# personasImportadas: List<Persona>
+
+* importar(entrada: InputStream)*
+  }
+
+class ImportadorCSV {
+
+* importar(entrada: InputStream)
+
+- crearPersona(datos: String[]): Persona
+  }
+
+GestorDonaciones --> Deposito
+GestorDonaciones "1" o-- "*" Donacion
+GestorDonaciones "1" o-- "*" SolicitudDonacion
+GestorDonaciones "1" o-- "*" AlgoritmoAsignacion
+GestorDonaciones ..> ResultadoMatchmaking : crea
+
+Deposito "1" o-- "*" ItemDonado
+GestorDonantes "1" o-- "*" Donante
+GestorDonantes "1" o-- "*" Importador
+Importador <|-- ImportadorCSV
+Importador o-- Persona
+
+@enduml
