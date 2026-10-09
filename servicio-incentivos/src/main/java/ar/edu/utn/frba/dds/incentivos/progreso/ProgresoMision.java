@@ -2,7 +2,23 @@ package ar.edu.utn.frba.dds.incentivos.progreso;
 
 import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
 import ar.edu.utn.frba.dds.incentivos.misiones.Mision;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 import java.time.LocalDate;
@@ -11,13 +27,42 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
+@Entity
+@Table(name = "progreso_mision")
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class ProgresoMision {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_progreso_mision")
+    private Integer idProgresoMision;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_progreso_categoria", nullable = false)
+    private ProgresoCategoria progresoCategoriaAsociado;
+
+    // Posición en ProgresoCategoria.misiones -- asignada por
+    // asignarProgresoCategoria(), llamado desde el constructor de
+    // ProgresoCategoria.
+    @Column(name = "orden", nullable = false)
+    private Integer orden;
+
+    @ManyToOne(optional = false, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "id_mision", nullable = false)
     private Mision misionAsociada;
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id_progreso_insignia", unique = true)
     private ProgresoInsignia insigniaObtenida;
 
     protected ProgresoMision(Mision misionAsociada) {
         this.misionAsociada = misionAsociada;
+    }
+
+    void asignarProgresoCategoria(ProgresoCategoria progresoCategoria, int orden) {
+        this.progresoCategoriaAsociado = progresoCategoria;
+        this.orden = orden;
     }
 
     public ProgresoInsignia completarMision() {
@@ -46,8 +91,14 @@ public abstract class ProgresoMision {
     public abstract BigDecimal distanciaRestante();
 
     @Getter
+    @jakarta.persistence.Entity
+    @jakarta.persistence.Table(name = "progreso_racha")
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
     public static class ProgresoRacha extends ProgresoMision {
+        @Column(name = "meses_consecutivos_actuales", nullable = false)
         private int mesesConsecutivosActuales;
+
+        @Column(name = "ultima_donacion_registrada")
         private LocalDate ultimaDonacionRegistrada;
 
         public ProgresoRacha(Mision misionAsociada) {
@@ -99,12 +150,18 @@ public abstract class ProgresoMision {
     }
 
     @Getter
+    @jakarta.persistence.Entity
+    @jakarta.persistence.Table(name = "progreso_completitud")
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
     public static class ProgresoCompletitud extends ProgresoMision {
-        private final Set<String> categoriasCubiertas;
+        @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
+        @CollectionTable(name = "progreso_completitud_categoria_cubierta",
+                joinColumns = @JoinColumn(name = "id_progreso_mision"))
+        @Column(name = "categoria_bien", nullable = false, length = 50)
+        private Set<String> categoriasCubiertas = new HashSet<>();
 
         public ProgresoCompletitud(Mision misionAsociada) {
             super(misionAsociada);
-            this.categoriasCubiertas = new HashSet<>();
         }
 
         @Override
@@ -127,7 +184,11 @@ public abstract class ProgresoMision {
     }
 
     @Getter
+    @jakarta.persistence.Entity
+    @jakarta.persistence.Table(name = "progreso_habil_donador")
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
     public static class ProgresoHabilDonador extends ProgresoMision {
+        @Column(name = "mejor_donacion_registrada", nullable = false, precision = 12, scale = 3)
         private BigDecimal mejorDonacionRegistrada;
 
         public ProgresoHabilDonador(Mision misionAsociada) {
@@ -153,7 +214,11 @@ public abstract class ProgresoMision {
     }
 
     @Getter
+    @jakarta.persistence.Entity
+    @jakarta.persistence.Table(name = "progreso_donaciones_exitosas")
+    @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
     public static class ProgresoDonacionesExitosas extends ProgresoMision {
+        @Column(name = "donaciones_exitosas_actuales", nullable = false)
         private int donacionesExitosasActuales;
 
         public ProgresoDonacionesExitosas(Mision misionAsociada) {

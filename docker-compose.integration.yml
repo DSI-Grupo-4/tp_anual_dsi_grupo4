@@ -32,6 +32,7 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./servicio-logistica/src/main/resources/db/logistica.sql:/docker-entrypoint-initdb.d/01-logistica.sql:ro
+      - ./servicio-incentivos/src/main/resources/db/incentivos.sql:/docker-entrypoint-initdb.d/02-incentivos.sql:ro
 
 volumes:
   rabbitmq-data:

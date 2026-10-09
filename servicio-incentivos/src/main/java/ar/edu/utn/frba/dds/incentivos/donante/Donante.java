@@ -5,30 +5,67 @@ import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
 import ar.edu.utn.frba.dds.incentivos.misiones.GestorMisiones;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoAsociado;
 import ar.edu.utn.frba.dds.incentivos.progreso.ProgresoInsignia;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
+@Entity
+@Table(name = "donante")
 public class Donante {
 
-    private final Long id;
+    // Viene de Donaciones (Donante.id): sin @GeneratedValue, Incentivos no
+    // da de alta donantes, solo los conoce por su primera actividad.
+    @Id
+    @Column(name = "id_donante")
+    private Long id;
+
+    @Column(name = "nombre", length = 100)
     private String nombre;
+
     // Se sincroniza el contacto preferido con cada actividad recibida desde Donaciones.
+    @Column(name = "medio_contacto_preferido", length = 20)
     private String medioContactoPreferido;
+
+    @Column(name = "contacto_preferido", length = 150)
     private String contactoPreferido;
+
+    @Column(name = "solicitudes_donacion_hechas", nullable = false)
     private int solicitudesDonacionHechas;
-    private List<Beneficiario> beneficiariosAyudados;
+
+    @ManyToMany(cascade = CascadeType.MERGE, fetch = jakarta.persistence.FetchType.EAGER)
+    @JoinTable(name = "donante_beneficiario",
+            joinColumns = @JoinColumn(name = "id_donante"),
+            inverseJoinColumns = @JoinColumn(name = "id_beneficiario"))
+    private Set<Beneficiario> beneficiariosAyudados = new HashSet<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "id_progreso_asociado", nullable = false, unique = true)
     private ProgresoAsociado progresoAsociado;
-    private List<DatosDonacion> historialDonaciones;
+
+    @OneToMany(mappedBy = "donante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = jakarta.persistence.FetchType.EAGER)
+    private List<DatosDonacion> historialDonaciones = new ArrayList<>();
 
     public Donante(Long id) {
         this.id = id;
         this.solicitudesDonacionHechas = 0;
-        this.beneficiariosAyudados = new ArrayList<>();
         this.progresoAsociado = new ProgresoAsociado(GestorMisiones.getInstance());
-        this.historialDonaciones = new ArrayList<>();
     }
 
     public void actualizarNombreSiFalta(String nombre) {
@@ -56,6 +93,7 @@ public class Donante {
                 ? progresoAsociado.actualizarProgreso(datosDonacion) : null;
         }
         solicitudesDonacionHechas++;
+        datosDonacion.setDonante(this);
         historialDonaciones.add(datosDonacion);
 
         Beneficiario beneficiario = datosDonacion.getBeneficiario();

@@ -9,6 +9,7 @@ public class GestorMisiones {
     private static GestorMisiones instancia;
 
     private final List<Categoria> catalogoCategorias;
+    private ar.edu.utn.frba.dds.incentivos.repository.CategoriaRepository categoriaRepository;
 
     private GestorMisiones() {
         this.catalogoCategorias = new ArrayList<>();
@@ -72,12 +73,13 @@ public class GestorMisiones {
         transformador.agregarMision(new Mision.DonacionesExitosas("Constante Transformador",
                 new Insignia("Pilar Solidario", "https://incentivos.local/insignias/pilar-solidario.png"), 40));
 
-        catalogoCategorias.add(colaborador);
-        catalogoCategorias.add(sostenedor);
-        catalogoCategorias.add(transformador);
+        agregarCategoria(colaborador);
+        agregarCategoria(sostenedor);
+        agregarCategoria(transformador);
     }
 
     public void agregarCategoria(Categoria categoria) {
+        categoria.setOrden(catalogoCategorias.size());
         catalogoCategorias.add(categoria);
     }
 
@@ -93,5 +95,27 @@ public class GestorMisiones {
         return catalogoCategorias.stream()
                 .filter(categoria -> categoria.getNombre().equalsIgnoreCase(nombre))
                 .findFirst();
+    }
+
+    /**
+     * Inyectado al boot por PersistenciaConfigurer (GestorMisiones es un
+     * singleton manual, no un bean de Spring -- mismo patrón que
+     * WebhookN8nConfigurer/NotificacionesConfigurer). Si la tabla está vacía
+     * (primer arranque), persiste el catálogo que sembrarCatalogo() ya armó
+     * en memoria. Si ya hay datos, descarta ese catálogo en memoria y carga
+     * el real de la base -- no se resiembra ni se duplica en cada reinicio.
+     */
+    public synchronized void configurarPersistencia(
+            ar.edu.utn.frba.dds.incentivos.repository.CategoriaRepository categoriaRepository) {
+        this.categoriaRepository = categoriaRepository;
+        List<Categoria> existentes = categoriaRepository.findAllByOrderByOrdenAsc();
+        if (existentes.isEmpty()) {
+            for (Categoria categoria : catalogoCategorias) {
+                categoriaRepository.save(categoria);
+            }
+        } else {
+            catalogoCategorias.clear();
+            catalogoCategorias.addAll(existentes);
+        }
     }
 }

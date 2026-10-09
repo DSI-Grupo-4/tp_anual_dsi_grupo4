@@ -191,10 +191,12 @@ public class Consultor {
 
     public void marcarInsigniaVisible(Donante donante, String insigniaNombre) {
         buscarProgresoInsignia(donante, insigniaNombre).marcarVisible();
+        donantes.guardar(donante);
     }
 
     public void ocultarInsignia(Donante donante, String insigniaNombre) {
         buscarProgresoInsignia(donante, insigniaNombre).ocultarInsignia();
+        donantes.guardar(donante);
     }
 
     private ProgresoInsignia buscarProgresoInsignia(Donante donante, String insigniaNombre) {
@@ -223,6 +225,7 @@ public class Consultor {
         int categoriasAntes = donante.getProgresoAsociado().getCategoriasObtenidas().size();
 
         ProgresoInsignia obtenida = donante.registrarActividadDonacion(datosDonacion);
+        donantes.guardar(donante);
 
         if (obtenida != null) {
             rankings.registrarMisionCompletada(donante);

@@ -73,6 +73,7 @@ Table donante_beneficiario {
 // DatosDonacion = Donante.historialDonaciones
 Table datos_donacion {
   id_datos_donacion int [pk, increment]
+  donacion_id bigint [note: 'DatosDonacion.donacionId: id de la donación en Donaciones, evita duplicar cantidades si reenvía el mismo evento']
   id_donante bigint [not null]
   fecha date [not null]
   categoria_bien varchar(50) [note: 'DatosDonacion.categoriaBien (Alimentos/Mobiliario/Vestimenta)']
