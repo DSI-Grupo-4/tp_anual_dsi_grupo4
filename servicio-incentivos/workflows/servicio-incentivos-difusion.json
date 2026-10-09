@@ -282,7 +282,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://discord.com/api/webhooks/1516879794157912256/V-JBNLt4XHsvgwtHMKCcWXSl3bjP_C36xowRT0SBkoIpvzDH6FmO5HRZDZftvSUuUoR-",
+        "url": "https://discord.com/api/webhooks/1558035077475340299/MliIemYbk348pcaFg1vbHxiuDvfAZ9jeYF7QDoHA_av5-xHHId3A0yeqq1KyWISbA1WB",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({ embeds: [ Object.assign({ title: $json.titulo, description: $json.descripcion }, $json.imageUrl ? { image: { url: $json.imageUrl } } : {}) ] }) }}",
