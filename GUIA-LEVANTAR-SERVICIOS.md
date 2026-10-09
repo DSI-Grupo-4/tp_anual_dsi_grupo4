@@ -121,4 +121,4 @@ docker compose -f docker-compose.integration.yml down
 - RabbitMQ (management UI): http://localhost:15672
 - MySQL (persistencia de Logística): `localhost:3306`, usuario `root`, password `BasededatosTP1`, base `logistica`.
 
-Logística todavía no tiene un script de esquema (`logistica.sql`) -- hasta que exista el DER, `run-servicios.ps1`/`.sh` arrancan Logística con `spring.jpa.hibernate.ddl-auto=update`, que crea las tablas solo a partir de las entidades JPA.
+El esquema de Logística (`servicio-logistica/src/main/resources/db/logistica.sql`) se monta en `docker-entrypoint-initdb.d/` y corre solo la primera vez que se crea el volumen de MySQL. Hibernate arranca con `ddl-auto=validate`: no crea ni modifica tablas, solo valida que las entidades coincidan con lo que generó el script.

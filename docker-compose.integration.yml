@@ -31,6 +31,7 @@ services:
       retries: 10
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./servicio-logistica/src/main/resources/db/logistica.sql:/docker-entrypoint-initdb.d/01-logistica.sql:ro
 
 volumes:
   rabbitmq-data:

@@ -1,0 +1,205 @@
+// ================= Catálogo (GestorMisiones.catalogoCategorias) =================
+
+Table categoria {
+  id_categoria int [pk, increment]
+  nombre varchar(50) [not null, unique, note: 'Categoria.nombre']
+  orden int [not null, unique, note: 'posición en la lista catalogoCategorias']
+}
+
+Table insignia {
+  id_insignia int [pk, increment]
+  nombre varchar(100) [not null, unique, note: 'Insignia.nombre (Consultor busca por nombre)']
+  imagen_url varchar(500) [not null]
+}
+
+// Mision (abstract) -> herencia JOINED: tabla base + una tabla por subclase
+Table mision {
+  id_mision int [pk, increment]
+  id_categoria int [not null, note: 'Categoria.misiones']
+  orden int [not null, note: 'posición en Categoria.misiones']
+  nombre_mision varchar(100) [not null, unique]
+  id_insignia int [not null, unique, note: 'Mision.insigniaAsociada']
+
+  indexes {
+    (id_categoria, orden) [unique]
+  }
+}
+
+Table mision_racha {
+  id_mision int [pk]
+  meses_requeridos int [not null]
+}
+
+Table mision_completitud {
+  id_mision int [pk]
+  categorias_requeridas int [not null]
+}
+
+Table mision_habil_donador {
+  id_mision int [pk]
+  cantidad_bienes_requerida int [not null]
+}
+
+Table mision_donaciones_exitosas {
+  id_mision int [pk]
+  donaciones_requeridas int [not null]
+}
+
+// ================= Donante y su actividad =================
+
+Table beneficiario {
+  id_beneficiario bigint [pk, note: 'Beneficiario.id: viene de Donaciones, sin AUTO_INCREMENT ni FK entre servicios']
+  nombre varchar(150)
+}
+
+Table donante {
+  id_donante bigint [pk, note: 'Donante.id: viene de Donaciones, sin AUTO_INCREMENT ni FK entre servicios']
+  nombre varchar(100)
+  medio_contacto_preferido varchar(20)
+  contacto_preferido varchar(150)
+  solicitudes_donacion_hechas int [not null, default: 0]
+  id_progreso_asociado int [not null, unique, note: 'Donante.progresoAsociado']
+}
+
+Table donante_beneficiario {
+  id_donante bigint [not null]
+  id_beneficiario bigint [not null]
+
+  indexes {
+    (id_donante, id_beneficiario) [pk]
+  }
+}
+
+// DatosDonacion = Donante.historialDonaciones
+Table datos_donacion {
+  id_datos_donacion int [pk, increment]
+  id_donante bigint [not null]
+  fecha date [not null]
+  categoria_bien varchar(50) [note: 'DatosDonacion.categoriaBien (Alimentos/Mobiliario/Vestimenta)']
+  cantidad_bienes decimal(12,3) [not null]
+  donacion_exitosa boolean [not null]
+  id_beneficiario bigint
+
+  indexes {
+    (id_donante, fecha)
+  }
+}
+
+// ================= Progreso =================
+
+Table progreso_asociado {
+  id_progreso_asociado int [pk, increment]
+  indice_mision_actual int [not null, default: 0]
+  id_progreso_mision_actual int [note: 'ProgresoAsociado.misionActual; null si no hay misión actual. Referencia circular, por eso es nullable']
+}
+
+Table progreso_categoria {
+  id_progreso_categoria int [pk, increment]
+  id_progreso_asociado int [not null, note: 'ProgresoAsociado.categoriasObtenidas']
+  orden int [not null, note: 'posición en categoriasObtenidas']
+  nombre varchar(50) [not null, note: 'ProgresoCategoria.nombre']
+
+  indexes {
+    (id_progreso_asociado, orden) [unique]
+  }
+}
+
+Table progreso_insignia {
+  id_progreso_insignia int [pk, increment]
+  id_insignia int [not null, note: 'ProgresoInsignia.insigniaAsociada']
+  fecha_obtencion date [not null]
+  visible boolean [not null, default: true]
+}
+
+// ProgresoMision (abstract) -> herencia JOINED
+Table progreso_mision {
+  id_progreso_mision int [pk, increment]
+  id_progreso_categoria int [not null, note: 'ProgresoCategoria.misiones']
+  orden int [not null, note: 'posición en ProgresoCategoria.misiones']
+  id_mision int [not null, note: 'ProgresoMision.misionAsociada']
+  id_progreso_insignia int [unique, note: 'ProgresoMision.insigniaObtenida; null hasta completar la misión']
+
+  indexes {
+    (id_progreso_categoria, orden) [unique]
+  }
+}
+
+Table progreso_racha {
+  id_progreso_mision int [pk]
+  meses_consecutivos_actuales int [not null, default: 0]
+  ultima_donacion_registrada date
+}
+
+Table progreso_completitud {
+  id_progreso_mision int [pk]
+}
+
+Table progreso_completitud_categoria_cubierta {
+  id_progreso_mision int [not null, note: 'ProgresoCompletitud.categoriasCubiertas (Set<String>)']
+  categoria_bien varchar(50) [not null]
+
+  indexes {
+    (id_progreso_mision, categoria_bien) [pk]
+  }
+}
+
+Table progreso_habil_donador {
+  id_progreso_mision int [pk]
+  mejor_donacion_registrada decimal(12,3) [not null, default: 0]
+}
+
+Table progreso_donaciones_exitosas {
+  id_progreso_mision int [pk]
+  donaciones_exitosas_actuales int [not null, default: 0]
+}
+
+// ================= Ranking (HistorialRanking) =================
+
+Table ranking {
+  id_ranking int [pk, increment]
+  fecha_emision date [not null]
+}
+
+// ActividadMensualDonante: id_ranking NULL = contador del mes en curso
+// (HistorialRanking.donantesMisionesMensuales); con valor = Ranking.topDonantes
+Table actividad_mensual_donante {
+  id_actividad_mensual_donante int [pk, increment]
+  id_donante bigint [not null]
+  cantidad int [not null, default: 0]
+  id_ranking int
+  posicion int [note: 'posición en Ranking.topDonantes (1..3)']
+
+  indexes {
+    (id_ranking, posicion) [unique]
+  }
+}
+
+// ================= Referencias =================
+
+Ref: mision.id_categoria > categoria.id_categoria
+Ref: mision.id_insignia - insignia.id_insignia
+Ref: mision_racha.id_mision - mision.id_mision [delete: cascade]
+Ref: mision_completitud.id_mision - mision.id_mision [delete: cascade]
+Ref: mision_habil_donador.id_mision - mision.id_mision [delete: cascade]
+Ref: mision_donaciones_exitosas.id_mision - mision.id_mision [delete: cascade]
+
+Ref: donante.id_progreso_asociado - progreso_asociado.id_progreso_asociado
+Ref: donante_beneficiario.id_donante > donante.id_donante
+Ref: donante_beneficiario.id_beneficiario > beneficiario.id_beneficiario
+Ref: datos_donacion.id_donante > donante.id_donante
+Ref: datos_donacion.id_beneficiario > beneficiario.id_beneficiario
+
+Ref: progreso_asociado.id_progreso_mision_actual > progreso_mision.id_progreso_mision
+Ref: progreso_categoria.id_progreso_asociado > progreso_asociado.id_progreso_asociado
+Ref: progreso_insignia.id_insignia > insignia.id_insignia
+Ref: progreso_mision.id_progreso_categoria > progreso_categoria.id_progreso_categoria
+Ref: progreso_mision.id_mision > mision.id_mision
+Ref: progreso_mision.id_progreso_insignia - progreso_insignia.id_progreso_insignia
+Ref: progreso_racha.id_progreso_mision - progreso_mision.id_progreso_mision [delete: cascade]
+Ref: progreso_completitud.id_progreso_mision - progreso_mision.id_progreso_mision [delete: cascade]
+Ref: progreso_completitud_categoria_cubierta.id_progreso_mision > progreso_completitud.id_progreso_mision [delete: cascade]
+Ref: progreso_habil_donador.id_progreso_mision - progreso_mision.id_progreso_mision [delete: cascade]
+Ref: progreso_donaciones_exitosas.id_progreso_mision - progreso_mision.id_progreso_mision [delete: cascade]
+
+Ref: actividad_mensual_donante.id_donante > donante.id_donante
+Ref: actividad_mensual_donante.id_ranking > ranking.id_ranking [delete: cascade]

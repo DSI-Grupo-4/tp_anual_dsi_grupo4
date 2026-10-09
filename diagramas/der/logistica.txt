@@ -1,0 +1,173 @@
+// =====================================================================
+// DonaTrack - Servicio de Logística - DER físico (MySQL 8)
+// Pegar en https://dbdiagram.io  (Import > DBML) para graficarlo.
+// =====================================================================
+
+Project donatrack_logistica {
+  database_type: 'MySQL'
+  Note: '''
+    Servicio de Logística. Un único MySQL con un esquema por servicio: este es el esquema `logistica`.
+    Las columnas marcadas como "ref. lógica" apuntan a entidades de OTRO servicio (Donaciones)
+    y por eso NO tienen FK ni Ref: Logística no invoca a Donaciones, solo guarda el id.
+  '''
+}
+
+// ---------------------------------------------------------------------
+// Enums (se mapean con @Enumerated(EnumType.STRING))
+// ---------------------------------------------------------------------
+
+Enum logistica.estado_camion {
+  DISPONIBLE
+  ASIGNADO
+  EN_RUTA
+  FUERA_DE_SERVICIO
+}
+
+Enum logistica.estado_ruta {
+  PLANIFICADA
+  INICIADA
+  FINALIZADA
+  CANCELADA
+}
+
+Enum logistica.estado_entrega {
+  PENDIENTE
+  ASIGNADA_A_RUTA
+  EN_TRASLADO
+  ENTREGADA
+  NO_RECIBIDA
+  FALLIDA
+  REPLANIFICABLE
+}
+
+Enum logistica.tipo_evento {
+  RUTA_PLANIFICADA
+  RUTA_INICIADA
+  ENTREGA_EN_TRASLADO
+  ENTREGA_CONFIRMADA
+  ENTREGA_NO_RECIBIDA
+  ENTREGA_FALLIDA
+  ENTREGA_REPLANIFICADA
+}
+
+// ---------------------------------------------------------------------
+// Flota
+// ---------------------------------------------------------------------
+
+Table logistica.camion {
+  id_camion            int [pk, increment]
+  patente              varchar(10) [not null, unique]
+  capacidad_volumen_m3 int [not null, note: 'm3']
+  altura_m             int [not null, note: 'metros']
+  capacidad_carga_kg   int [not null, note: 'kg']
+  estado_camion        logistica.estado_camion [not null, default: 'DISPONIBLE']
+
+  indexes {
+    estado_camion
+  }
+}
+
+Table logistica.chofer {
+  id_chofer  int [pk, increment]
+  nombre     varchar(100) [not null]
+  dni        int [not null, unique]
+  habilitado boolean [not null, default: true]
+}
+
+// ---------------------------------------------------------------------
+// Planificación
+// ---------------------------------------------------------------------
+
+Table logistica.ruta {
+  id_ruta     int [pk, increment]
+  id_camion   int [not null]
+  id_chofer   int [null, note: 'Opcional: una ruta puede quedar sin chofer asignado']
+  fecha       date [not null, note: 'Dia en que se realiza el reparto']
+  estado_ruta logistica.estado_ruta [not null, default: 'PLANIFICADA']
+
+  indexes {
+    (fecha, estado_ruta)
+  }
+}
+
+Table logistica.parada {
+  id_parada                int [pk, increment]
+  id_ruta                  int [not null]
+  numero_parada            int [not null, note: 'Posicion dentro de la ruta (1..n): define el orden de visita y es el idParada que usan los endpoints']
+  id_entidad_beneficiaria  int [not null, note: 'ref. logica -> servicio Donaciones (EntidadBeneficiaria)']
+  direccion_calle          varchar(120) [not null]
+  direccion_numero         varchar(10)  [not null]
+  direccion_ciudad         varchar(80)  [not null]
+  direccion_provincia      varchar(80)  [not null]
+
+  indexes {
+    (id_ruta, numero_parada) [unique]
+  }
+
+  Note: 'Una parada agrupa todas las entregas de una misma entidad beneficiaria dentro de una ruta. La direccion es un value object embebido (@Embeddable).'
+}
+
+// ---------------------------------------------------------------------
+// Entregas y trazabilidad
+// ---------------------------------------------------------------------
+
+Table logistica.entrega {
+  id_entrega                      int [pk, increment]
+  id_donacion_asociada            int [not null, unique, note: 'ref. logica -> servicio Donaciones (Donacion). UNIQUE = idempotencia del lote']
+  id_entidad_beneficiaria_asociada int [not null, note: 'ref. logica -> servicio Donaciones (EntidadBeneficiaria)']
+  direccion_destino_calle         varchar(120) [not null]
+  direccion_destino_numero        varchar(10)  [not null]
+  direccion_destino_ciudad        varchar(80)  [not null]
+  direccion_destino_provincia     varchar(80)  [not null]
+  estado_entrega                  logistica.estado_entrega [not null, default: 'PENDIENTE']
+  fecha                           date [not null]
+  fecha_hora_entrega              datetime [null, note: 'Se completa al confirmar la entrega (ENTREGADA)']
+  seguimiento_url                 varchar(500) [null, note: 'Se completa al iniciar la ruta (RUTA_INICIADA); URL interna, no geolocalización']
+  peso_kg                         int [not null]
+  volumen_m3                      int [not null]
+  altura_m                        int [not null]
+  justificacion_fallo             varchar(500) [null, note: 'Obligatoria cuando estado = NO_RECIBIDA o FALLIDA']
+  id_parada                       int [null, note: 'Null hasta que la entrega se asigna a una ruta']
+  id_camion                       int [null, note: 'Camion que realizo/realiza la entrega (denormalizado a proposito: queda registrado quien entrego)']
+
+  indexes {
+    estado_entrega
+    fecha
+  }
+}
+
+Table logistica.foto_entrega {
+  id_foto    int [pk, increment]
+  id_entrega int [not null]
+  url        varchar(500) [not null]
+  fecha      date [not null]
+
+  Note: 'La entidad beneficiaria carga fotos de la donacion recibida (el enunciado habla en plural).'
+}
+
+Table logistica.evento_logistico {
+  id_evento        char(36) [pk, note: 'UUID']
+  tipo_evento      logistica.tipo_evento [not null]
+  publicado        boolean [not null, default: false, note: 'Donaciones consulta los no publicados por GET y los marca como publicados']
+  id_entrega       int [not null]
+  fecha_generacion datetime [not null]
+
+  indexes {
+    (publicado, fecha_generacion)
+  }
+
+  Note: 'Bandeja de eventos de Logistica. Tambien funciona como historial de auditoria de cada entrega.'
+}
+
+// ---------------------------------------------------------------------
+// Relaciones (todas dentro del esquema logistica)
+// ---------------------------------------------------------------------
+
+Ref: logistica.ruta.id_camion > logistica.camion.id_camion
+Ref: logistica.ruta.id_chofer > logistica.chofer.id_chofer
+Ref: logistica.parada.id_ruta > logistica.ruta.id_ruta [delete: cascade]
+Ref: logistica.entrega.id_parada > logistica.parada.id_parada
+Ref: logistica.entrega.id_camion > logistica.camion.id_camion
+Ref: logistica.foto_entrega.id_entrega > logistica.entrega.id_entrega [delete: cascade]
+Ref: logistica.evento_logistico.id_entrega > logistica.entrega.id_entrega
+

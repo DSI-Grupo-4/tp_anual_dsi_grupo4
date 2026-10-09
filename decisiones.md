@@ -339,6 +339,18 @@
 - **Pendiente, no resuelto en este punto:** sigue sin existir `logistica.sql` -- la solución actual (`ddl-auto=update`) es un atajo documentado para poder correr el proyecto ya, no la decisión final de esquema (esa sigue diferida a cuando exista el DER, sin cambios respecto a lo ya fijado).
 - **Definida por:** usuario (pidió el compose único, exigió evaluar riesgos antes de tocar nada, y pidió explícitamente que los scripts de run/stop se encarguen del compose) + agente (evaluó el impacto en el tooling existente antes de elegir `include:` sobre mover/duplicar, y encontró en vivo tanto el problema de timing de n8n como el bug del propio fix)
 
+## [D-027] Logística: DER real (dbdiagram.io) y esquema `logistica.sql` definitivo
+- **Fecha:** 2026-10-09
+- **Servicio(s) afectado(s):** Logística
+- **Contexto:** el usuario entregó `diagramas/der/logistica.txt` y `diagramas/der/incentivos.txt` (DBML, dbdiagram.io) -- el DER que D-012 tenía diferido hasta que existiera. Antes de usarlo se verificó integralmente contra el esquema real que Hibernate venía generando con `ddl-auto=update` (D-026): coincidía casi exactamente, con 3 diferencias encontradas por comparación directa (`SHOW CREATE TABLE` vs el DBML, no por inspección visual): (1) al DER le faltaban `fecha_hora_entrega`/`seguimiento_url` en `entrega` -- código correcto, DER desactualizado; (2) ningún índice secundario del DER (`camion.estado_camion`, `ruta.(fecha,estado_ruta)`, `entrega.estado_entrega`, `entrega.fecha`, `evento_logistico.(publicado,fecha_generacion)`) existía en la base real -- Hibernate con `update` no los crea solo porque el DER los liste, hacen falta `@Table(indexes=...)` explícitos; (3) faltaba la restricción `UNIQUE(id_ruta, numero_parada)` en `parada` que el DER exige.
+- **Decisión tomada:**
+  1. DER actualizado con las 2 columnas que le faltaban.
+  2. `@Table(indexes = {...})` agregado a `Camion`, `Ruta`, `Entrega`, `EventoLogistico`; `@Table(uniqueConstraints = {...})` agregado a `Parada`.
+  3. `servicio-logistica/src/main/resources/db/logistica.sql`: esquema físico completo escrito a mano a partir del DER ya corregido (7 tablas, con los índices y la unique constraint). Se monta en `/docker-entrypoint-initdb.d/` del contenedor de MySQL (`docker-compose.integration.yml`) -- corre una sola vez, cuando el volumen se crea de cero.
+  4. `spring.jpa.hibernate.ddl-auto` pasa de `update` a `validate`: Hibernate ya no crea ni modifica el esquema, solo valida que las entidades coincidan con lo que generó el script. Se sacó el `JPA_DDL_AUTO=update` que los scripts de D-026 le pasaban a Logística -- ya no hace falta.
+- **Validado en vivo**: volumen de MySQL recreado desde cero, confirmado que el script corre (`docker logs` muestra `running /docker-entrypoint-initdb.d/01-logistica.sql`) y crea las 7 tablas con los índices/constraint nuevos (`SHOW INDEX FROM parada` confirma `uk_parada_ruta_numero`). Logística arranca con `ddl-auto=validate` sin errores (las entidades coinciden exactamente con el script) y persiste un camión real de punta a punta. Suite completa: 88 (Donaciones) + 15 (Incentivos) + 20 (Logística) + 3 (Notificaciones, 1 skip esperado) en verde.
+- **Definida por:** usuario (entregó el DER, pidió verificarlo íntegramente contra lo ya integrado antes de avanzar) + agente (encontró las 3 diferencias por comparación directa de esquemas, no asumió que el DER y el código ya coincidían)
+
 
 ## D-017 — Notificaciones con pendientes durables y disparadores completos
 

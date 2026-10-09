@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -30,7 +31,10 @@ import java.util.List;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
 @Entity
-@Table(name = "entrega")
+@Table(name = "entrega", indexes = {
+        @Index(name = "idx_entrega_estado_entrega", columnList = "estado_entrega"),
+        @Index(name = "idx_entrega_fecha", columnList = "fecha")
+})
 public class Entrega {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

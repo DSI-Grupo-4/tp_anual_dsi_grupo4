@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
 @Entity
-@Table(name = "parada")
+@Table(name = "parada", uniqueConstraints = {
+        @UniqueConstraint(name = "uk_parada_ruta_numero", columnNames = {"id_ruta", "numero_parada"})
+})
 public class Parada {
     // Id propio de la base (único global). Es el que usan los endpoints /api/rutas/{idRuta}/paradas/{idParada}.
     @Id

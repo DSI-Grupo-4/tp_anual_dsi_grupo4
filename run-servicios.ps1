@@ -74,16 +74,9 @@ foreach ($service in $services) {
     $stdoutPath = Join-Path $runDirectory ($service.Name + ".out.log")
     $stderrPath = Join-Path $runDirectory ($service.Name + ".err.log")
 
-    $mvnArgs = @("-f", $pomPath, "spring-boot:run")
-    if ($service.Module -eq "servicio-logistica") {
-        # Hasta que exista el DER y un logistica.sql con el esquema real,
-        # Hibernate crea las tablas solo contra el MySQL del compose (D-026).
-        $mvnArgs += "-Dspring-boot.run.jvmArguments=-Dspring.jpa.hibernate.ddl-auto=update"
-    }
-
     $process = Start-Process `
         -FilePath $mavenCommand.Source `
-        -ArgumentList $mvnArgs `
+        -ArgumentList @("-f", $pomPath, "spring-boot:run") `
         -WorkingDirectory $repoRoot `
         -RedirectStandardOutput $stdoutPath `
         -RedirectStandardError $stderrPath `

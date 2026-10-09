@@ -8,6 +8,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -26,7 +27,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
 @Entity
-@Table(name = "ruta")
+@Table(name = "ruta", indexes = {
+        @Index(name = "idx_ruta_fecha_estado_ruta", columnList = "fecha, estado_ruta")
+})
 public class Ruta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

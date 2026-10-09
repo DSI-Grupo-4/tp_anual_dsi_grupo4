@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,7 +22,9 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
 @Entity
-@Table(name = "evento_logistico")
+@Table(name = "evento_logistico", indexes = {
+        @Index(name = "idx_evento_logistico_publicado_fecha", columnList = "publicado, fecha_generacion")
+})
 public class EventoLogistico {
     // CHAR(36): sin esto Hibernate guarda el UUID como BINARY(16) en MySQL
     @Id

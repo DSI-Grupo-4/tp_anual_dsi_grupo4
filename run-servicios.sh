@@ -96,14 +96,7 @@ start_java_service() {
   fi
 
   echo "==> Iniciando $name en el puerto $port..."
-  # Logística: hasta que exista el DER y un logistica.sql con el esquema
-  # real, Hibernate crea las tablas solo contra el MySQL de
-  # docker-compose.integration.yml (ver D-026).
-  if [[ "$name" == "servicio-logistica" ]]; then
-    JPA_DDL_AUTO="${JPA_DDL_AUTO:-update}" nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
-  else
-    nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
-  fi
+  nohup java -jar "$jar" --server.port="$port" > "$LOG_DIR/$name.log" 2>&1 &
   echo $! > "$pid_file"
 }
 
