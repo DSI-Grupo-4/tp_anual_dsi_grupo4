@@ -13,7 +13,11 @@ import lombok.Setter;
 {
   "razonSocial": "Comedor Sonrisas",
   "tipo": "ONG",
-  "rubro": "Asistencia alimentaria"
+  "rubro": "Asistencia alimentaria",
+  "mediosContacto": [
+    {"tipo": "EMAIL", "valor": "ana@example.org", "esPreferido": true},
+    {"tipo": "WHATSAPP", "valor": "+5493515551234", "esPreferido": false}
+  ]
 }
 """)
 public class PersonaJuridicaDTO {
@@ -22,4 +26,6 @@ public class PersonaJuridicaDTO {
     @NotNull(message = "tipo es obligatorio")
     private TipoOrganizacion tipo;
     private String rubro;
+    @jakarta.validation.Valid
+    private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;
 }

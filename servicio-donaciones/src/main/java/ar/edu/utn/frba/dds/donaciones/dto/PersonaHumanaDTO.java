@@ -14,7 +14,11 @@ import lombok.Setter;
   "apellido": "Perez",
   "edad": 30,
   "documento": "30123456",
-  "genero": "FEMENINO"
+  "genero": "FEMENINO",
+  "mediosContacto": [
+    {"tipo": "EMAIL", "valor": "ana@example.org", "esPreferido": true},
+    {"tipo": "WHATSAPP", "valor": "+5493515551234", "esPreferido": false}
+  ]
 }
 """)
 public class PersonaHumanaDTO {
@@ -26,4 +30,6 @@ public class PersonaHumanaDTO {
     @NotBlank(message = "documento es obligatorio")
     private String documento;
     private Genero genero;
+    @jakarta.validation.Valid
+    private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;
 }

@@ -52,7 +52,7 @@ public class DonanteController {
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Actualizar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PutMapping("/{id}")
-    public DonanteDTO actualizar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id, @RequestBody DonanteDTO dto) {
+    public DonanteDTO actualizar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id, @Valid @RequestBody DonanteDTO dto) {
         // PUT reemplaza el estado completo: el cliente debe mandar todos los
         // campos que quiere conservar (semántica estándar de PUT). El tipo
         // (humano/jurídico) NO lo decide el body — es inmutable y se

@@ -35,16 +35,18 @@
 
  :: Spring Boot ::                (v3.5.5)
 
-2026-10-08T23:03:15.176-03:00  INFO 4304 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : Starting ServicioIncentivosApplication using Java 26.0.1 with PID 4304 (A:\Diseño\tp_anual_dsi_grupo4\servicio-incentivos\target\classes started by agust in A:\Diseño\tp_anual_dsi_grupo4\servicio-incentivos)
-2026-10-08T23:03:15.179-03:00  INFO 4304 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : No active profile set, falling back to 1 default profile: "default"
-2026-10-08T23:03:16.621-03:00  INFO 4304 --- [servicio-incentivos] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
-2026-10-08T23:03:16.638-03:00  INFO 4304 --- [servicio-incentivos] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-08T23:03:16.639-03:00  INFO 4304 --- [servicio-incentivos] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
-2026-10-08T23:03:16.722-03:00  INFO 4304 --- [servicio-incentivos] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-08T23:03:16.723-03:00  INFO 4304 --- [servicio-incentivos] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1484 ms
-2026-10-08T23:03:17.598-03:00  INFO 4304 --- [servicio-incentivos] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path '/'
-2026-10-08T23:03:17.607-03:00  INFO 4304 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : Started ServicioIncentivosApplication in 2.81 seconds (process running for 3.121)
-2026-10-08T23:03:47.187-03:00  INFO 4304 --- [servicio-incentivos] [nio-8081-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-08T23:03:47.189-03:00  INFO 4304 --- [servicio-incentivos] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-08T23:03:47.190-03:00  INFO 4304 --- [servicio-incentivos] [nio-8081-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
-2026-10-08T23:03:47.739-03:00  INFO 4304 --- [servicio-incentivos] [nio-8081-exec-9] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 268 ms
+2026-10-09T03:17:36.489-03:00  INFO 26824 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : Starting ServicioIncentivosApplication using Java 26.0.1 with PID 26824 (A:\Diseño\tp_anual_dsi_grupo4\servicio-incentivos\target\classes started by agust in A:\Diseño\tp_anual_dsi_grupo4\servicio-incentivos)
+2026-10-09T03:17:36.492-03:00  INFO 26824 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : No active profile set, falling back to 1 default profile: "default"
+2026-10-09T03:17:37.607-03:00  INFO 26824 --- [servicio-incentivos] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8081 (http)
+2026-10-09T03:17:37.619-03:00  INFO 26824 --- [servicio-incentivos] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T03:17:37.619-03:00  INFO 26824 --- [servicio-incentivos] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-10-09T03:17:37.670-03:00  INFO 26824 --- [servicio-incentivos] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-09T03:17:37.671-03:00  INFO 26824 --- [servicio-incentivos] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1130 ms
+2026-10-09T03:17:38.333-03:00  INFO 26824 --- [servicio-incentivos] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8081 (http) with context path '/'
+2026-10-09T03:17:38.341-03:00  INFO 26824 --- [servicio-incentivos] [           main] .e.u.f.d.i.ServicioIncentivosApplication : Started ServicioIncentivosApplication in 2.283 seconds (process running for 2.636)
+2026-10-09T03:17:48.926-03:00  INFO 26824 --- [servicio-incentivos] [nio-8081-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-09T03:17:48.927-03:00  INFO 26824 --- [servicio-incentivos] [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-09T03:17:48.928-03:00  INFO 26824 --- [servicio-incentivos] [nio-8081-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-10-09T03:17:49.948-03:00  INFO 26824 --- [servicio-incentivos] [nio-8081-exec-8] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 677 ms
+2026-10-09T03:30:49.106-03:00  INFO 26824 --- [servicio-incentivos] [nio-8081-exec-5] a.e.u.f.d.i.consultor.Consultor          : Webhook n8n no configurado, se omite la publicación de la insignia Primer Paso
+2026-10-09T03:30:49.106-03:00  WARN 26824 --- [servicio-incentivos] [nio-8081-exec-5] a.e.u.f.d.i.client.NotificacionesClient  : No se pudo notificar el evento 'MISION_COMPLETADA': el donante no tiene medio/contacto configurado.

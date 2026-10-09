@@ -46,6 +46,13 @@ public class DonanteService {
             dto.setRubro(juridica.getRubro());
         }
 
+        dto.setMediosContacto(donante.getPersona().getMediosContacto().stream().map(m -> {
+            ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO contacto = new ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO();
+            contacto.setTipo(m.getTipo());
+            contacto.setValor(m.getValor());
+            contacto.setEsPreferido(m.esPreferido());
+            return contacto;
+        }).toList());
         dto.setId(donante.getId());
         return dto;
     }
@@ -59,6 +66,7 @@ public class DonanteService {
                 dto.getDocumento(),
                 dto.getGenero()
         );
+        persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
         return convertirADTO(donante);
     }
@@ -79,6 +87,7 @@ public class DonanteService {
                         null
                 );
 
+        persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
 
         return convertirADTO(donante);
@@ -104,6 +113,7 @@ public class DonanteService {
 
         if (donante.getPersona() instanceof PersonaHumana) {
             PersonaHumanaDTO humanaDTO = new PersonaHumanaDTO();
+            humanaDTO.setMediosContacto(dto.getMediosContacto());
             humanaDTO.setNombre(dto.getNombre());
             humanaDTO.setApellido(dto.getApellido());
             humanaDTO.setEdad(dto.getEdad());
@@ -113,6 +123,7 @@ public class DonanteService {
         }
 
         PersonaJuridicaDTO juridicaDTO = new PersonaJuridicaDTO();
+        juridicaDTO.setMediosContacto(dto.getMediosContacto());
         juridicaDTO.setRazonSocial(dto.getRazonSocial());
         juridicaDTO.setTipo(dto.getTipoOrganizacion());
         juridicaDTO.setRubro(dto.getRubro());
@@ -127,6 +138,8 @@ public class DonanteService {
 
         PersonaHumana persona =
                 (PersonaHumana) donante.getPersona();
+        var contactos = validarContactos(dto.getMediosContacto());
+        gestorDonantes.actualizarContactos(donante, contactos);
 
         persona.setNombre(
                 dto.getNombre()
@@ -159,6 +172,8 @@ public class DonanteService {
 
         PersonaJuridica persona =
                 (PersonaJuridica) donante.getPersona();
+        var contactos = validarContactos(dto.getMediosContacto());
+        gestorDonantes.actualizarContactos(donante, contactos);
 
         persona.setRazonSocial(
                 dto.getRazonSocial()
@@ -182,6 +197,25 @@ public class DonanteService {
      * tiene que ver con el trabajo real del alta. Quien necesite el detalle
      * ya puede pedirlo por GET /api/donantes.
      */
+    private List<ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto> validarContactos(
+            List<ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO> contactos) {
+        if (contactos == null || contactos.isEmpty()) throw new IllegalArgumentException("Debe incluir un EMAIL y un medio preferido");
+        var resultado = contactos.stream().map(c -> {
+            if (c == null || c.getTipo() == null || c.getValor() == null || c.getValor().isBlank() || c.getEsPreferido() == null)
+                throw new IllegalArgumentException("Cada contacto requiere tipo, valor y esPreferido");
+            String valor = c.getValor().trim();
+            if (c.getTipo() == ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL &&
+                    !valor.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))
+                throw new IllegalArgumentException("El EMAIL debe ser válido");
+            return new ar.edu.utn.frba.dds.donaciones.domain.personas.MedioContacto(c.getTipo(), valor, c.getEsPreferido());
+        }).toList();
+        if (resultado.stream().noneMatch(c -> c.getTipo() == ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL))
+            throw new IllegalArgumentException("El EMAIL es obligatorio");
+        if (resultado.stream().filter(c -> Boolean.TRUE.equals(c.esPreferido())).count() != 1)
+            throw new IllegalArgumentException("Debe elegir exactamente un medio de contacto preferido");
+        return resultado;
+    }
+
     public ImportacionDonantesDTO importarCSV(MultipartFile archivo) {
 
         try {

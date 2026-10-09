@@ -17,7 +17,7 @@ public class ImportadorCSV extends Importador {
         personasImportadas = new ArrayList<>();
 
         try (CSVReader csvReader =
-                     new CSVReader(new InputStreamReader(inputStream))) {
+                     new CSVReader(new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
 
             csvReader.readNext();
 
@@ -33,17 +33,19 @@ public class ImportadorCSV extends Importador {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            personasImportadas.clear();
+            throw new IllegalArgumentException("CSV inválido: " + e.getMessage(), e);
         }
     }
 
     private Persona crearPersona(String[] datos) {
-        if (datos.length < 6) return null;
+        if (datos.length < 6) throw new IllegalArgumentException("Cada fila requiere seis columnas");
 
         String tipo = datos[0];
         String documento = datos[2];
         String nombreCompleto = datos[3];
-        String email = datos[4];
+        String email = datos[4].trim();
+        if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new IllegalArgumentException("EMAIL obligatorio o inválido: " + email);
         String telefono = datos[5];
 
         Persona persona;
@@ -59,7 +61,7 @@ public class ImportadorCSV extends Importador {
         }
 
         persona.agregarMedio(new MedioContacto(TipoContacto.EMAIL, email, true));
-        persona.agregarMedio(new MedioContacto(TipoContacto.TELEFONO, telefono, false));
+        if (!telefono.isBlank()) persona.agregarMedio(new MedioContacto(TipoContacto.TELEFONO, telefono.trim(), false));
 
         return persona;
     }

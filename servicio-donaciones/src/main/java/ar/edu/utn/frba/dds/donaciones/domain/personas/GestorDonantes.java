@@ -49,6 +49,7 @@ public class GestorDonantes {
     }
 
     public void agregarImportador(Importador importador) {
+        importadores.removeIf(i -> i.getNombre().equals(importador.getNombre()));
         importadores.add(importador);
     }
 
@@ -84,6 +85,12 @@ public class GestorDonantes {
         return registrarDonante(persona);
     }
 
+    public void actualizarContactos(Donante donante, List<MedioContacto> contactos) {
+        donantesPorEmail.remove(claveEmail(emailDe(donante.getPersona())), donante);
+        donante.getPersona().setMediosContacto(new ArrayList<>(contactos));
+        indexarEmail(donante);
+    }
+
     private Optional<Donante> buscarPorEmail(String email) {
         return Optional.ofNullable(donantesPorEmail.get(claveEmail(email)));
     }
@@ -96,7 +103,7 @@ public class GestorDonantes {
     }
 
     private String claveEmail(String email) {
-        return email == null ? null : email.toLowerCase();
+        return email == null ? null : email.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     private String emailDe(Persona persona) {

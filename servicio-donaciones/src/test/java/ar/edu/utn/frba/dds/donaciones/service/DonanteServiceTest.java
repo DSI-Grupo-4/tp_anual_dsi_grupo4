@@ -36,6 +36,7 @@ class DonanteServiceTest {
     @Test
     void crearDonanteHumanoDelegaElAltaEnGestorDonantes() {
         PersonaHumanaDTO dto = new PersonaHumanaDTO();
+        dto.setMediosContacto(contactos());
         dto.setNombre("Ana");
         dto.setApellido("Perez");
         dto.setDocumento("12345678");
@@ -78,6 +79,7 @@ class DonanteServiceTest {
         when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
 
         PersonaHumanaDTO cambios = new PersonaHumanaDTO();
+        cambios.setMediosContacto(contactos());
         cambios.setNombre("Ana");
         cambios.setApellido("Perez");
         cambios.setEdad(31); // cumplió años
@@ -101,6 +103,7 @@ class DonanteServiceTest {
         when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
 
         DonanteDTO cambios = new DonanteDTO();
+        cambios.setMediosContacto(contactos());
         cambios.setTipo("HUMANA"); // mentira: el donante real es jurídico
         cambios.setRazonSocial("Arcos Plateados SA (renombrada)");
         cambios.setTipoOrganizacion(TipoOrganizacion.EMPRESA);
@@ -119,6 +122,7 @@ class DonanteServiceTest {
         when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
 
         DonanteDTO cambios = new DonanteDTO();
+        cambios.setMediosContacto(contactos());
         cambios.setTipo("JURIDICA"); // mentira: el donante real es humano
         cambios.setNombre("Ana Actualizada");
         cambios.setApellido("Perez");
@@ -130,5 +134,45 @@ class DonanteServiceTest {
 
         assertThat(resultado.getTipo()).isEqualTo("HUMANA");
         assertThat(resultado.getNombre()).isEqualTo("Ana Actualizada");
+    }
+    private java.util.List<ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO> contactos() {
+        var c = new ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO();
+        c.setTipo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL);
+        c.setValor("ana@example.org"); c.setEsPreferido(true);
+        return java.util.List.of(c);
+    }
+
+    @Test
+    void csvExponeContactosYPermiteCambiarPreferido() {
+        var gestor = new GestorDonantes();
+        var servicio = new DonanteService(gestor);
+        String csv = "tipo,id,documento,nombre,email,telefono\nHUMANA,1,123,Ana Perez,ana@example.org,3515551234\n";
+        servicio.importarCSV(new org.springframework.mock.web.MockMultipartFile("archivo", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        var dto = servicio.buscarPorId(1L);
+        assertThat(dto.getMediosContacto()).hasSize(2);
+        assertThat(dto.getMediosContacto().get(0).getValor()).isEqualTo("ana@example.org");
+        dto.getMediosContacto().get(0).setEsPreferido(false);
+        dto.getMediosContacto().get(1).setEsPreferido(true);
+        var actualizado = servicio.actualizar(1L, dto);
+        assertThat(actualizado.getMediosContacto().get(1).getEsPreferido()).isTrue();
+        assertThat(gestor.buscarPorId(1L).getPersona().medioPreferido().orElseThrow().getTipo())
+            .isEqualTo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.TELEFONO);
+        dto.getMediosContacto().get(0).setEsPreferido(true);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.actualizar(1L, dto)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(gestor.buscarPorId(1L).getPersona().medioPreferido().orElseThrow().getTipo())
+            .isEqualTo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.TELEFONO);
+    }
+
+    @Test
+    void rechazaAltaSinEmailYCsvInvalidoSinAltasParciales() {
+        var gestor = new GestorDonantes();
+        var servicio = new DonanteService(gestor);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.crearDonanteHumano(new PersonaHumanaDTO()))
+            .isInstanceOf(IllegalArgumentException.class);
+        String csv = "tipo,id,documento,nombre,email,telefono\nHUMANA,1,123,Ana Perez,ana@example.org,351\nHUMANA,2,456,Juan Perez,,351\n";
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.importarCSV(
+            new org.springframework.mock.web.MockMultipartFile("archivo", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8))))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThat(gestor.getDonantesRegistrados()).isEmpty();
     }
 }

@@ -15,7 +15,11 @@ import lombok.Setter;
   "apellido": "Perez",
   "edad": 30,
   "documento": "30123456",
-  "genero": "FEMENINO"
+  "genero": "FEMENINO",
+  "mediosContacto": [
+    {"tipo": "EMAIL", "valor": "ana@example.org", "esPreferido": true},
+    {"tipo": "WHATSAPP", "valor": "+5493515551234", "esPreferido": false}
+  ]
 }
 """)
 public class DonanteDTO {
@@ -32,4 +36,6 @@ public class DonanteDTO {
     private String razonSocial;
     private TipoOrganizacion tipoOrganizacion;
     private String rubro;
+    @jakarta.validation.Valid
+    private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;
 }
