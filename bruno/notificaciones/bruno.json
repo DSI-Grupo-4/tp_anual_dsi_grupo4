@@ -1,9 +1,0 @@
-{
-  "version": "1",
-  "name": "DonaTrack - Notificaciones",
-  "type": "collection",
-  "ignore": [
-    "node_modules",
-    ".git"
-  ]
-}
