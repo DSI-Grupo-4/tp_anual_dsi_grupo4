@@ -3,7 +3,9 @@ package ar.edu.utn.frba.dds.donaciones.domain.personas;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -13,6 +15,13 @@ public class GestorDonantes {
     private List<Importador> importadores = new ArrayList<>();
     private Long siguienteId = 1L;
 
+    // Índice por email (lowercase) -- buscarPorEmail() escaneaba toda la
+    // lista por cada donante a registrar; con un CSV de 20000 filas eso es
+    // ~20000 * n/2 comparaciones (O(n²)), el cuello de botella real de la
+    // importación masiva (confirmado en vivo: ~16s tanto antes como después
+    // de recortar la respuesta del endpoint, que no tocaba este costo).
+    private final Map<String, Donante> donantesPorEmail = new HashMap<>();
+
     public List<Donante> getDonantesRegistrados() {
         return donantesRegistrados;
     }
@@ -20,6 +29,7 @@ public class GestorDonantes {
     public Donante registrarDonante(Persona persona) {
         Donante donante = new Donante(siguienteId++, persona);
         donantesRegistrados.add(donante);
+        indexarEmail(donante);
         return donante;
     }
 
@@ -31,6 +41,10 @@ public class GestorDonantes {
     }
 
     public void eliminar(Long id) {
+        donantesRegistrados.stream()
+                .filter(d -> d.getId().equals(id))
+                .findFirst()
+                .ifPresent(d -> donantesPorEmail.remove(claveEmail(emailDe(d.getPersona()))));
         donantesRegistrados.removeIf(d -> d.getId().equals(id));
     }
 
@@ -61,6 +75,7 @@ public class GestorDonantes {
         if (email != null) {
             Optional<Donante> existente = buscarPorEmail(email);
             if (existente.isPresent()) {
+                // Mismo email -> misma clave en el índice, no hace falta reindexar.
                 existente.get().setPersona(persona);
                 existente.get().registrarActividad();
                 return existente.get();
@@ -70,9 +85,18 @@ public class GestorDonantes {
     }
 
     private Optional<Donante> buscarPorEmail(String email) {
-        return donantesRegistrados.stream()
-                .filter(d -> email.equalsIgnoreCase(emailDe(d.getPersona())))
-                .findFirst();
+        return Optional.ofNullable(donantesPorEmail.get(claveEmail(email)));
+    }
+
+    private void indexarEmail(Donante donante) {
+        String email = emailDe(donante.getPersona());
+        if (email != null) {
+            donantesPorEmail.put(claveEmail(email), donante);
+        }
+    }
+
+    private String claveEmail(String email) {
+        return email == null ? null : email.toLowerCase();
     }
 
     private String emailDe(Persona persona) {

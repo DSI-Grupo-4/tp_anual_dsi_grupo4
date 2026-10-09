@@ -6,6 +6,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.ImportadorCSV;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
 import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ImportacionDonantesDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.springframework.stereotype.Service;
@@ -174,7 +175,14 @@ public class DonanteService {
         return convertirADTO(donante);
     }
 
-    public List<DonanteDTO> importarCSV(MultipartFile archivo) {
+    /**
+     * Devuelve solo la cantidad importada, no el detalle de cada donante --
+     * con archivos grandes (el CSV de ejemplo trae 20000 filas) armar y
+     * serializar esa cantidad de DonanteDTO agregaba una latencia que no
+     * tiene que ver con el trabajo real del alta. Quien necesite el detalle
+     * ya puede pedirlo por GET /api/donantes.
+     */
+    public ImportacionDonantesDTO importarCSV(MultipartFile archivo) {
 
         try {
 
@@ -185,10 +193,9 @@ public class DonanteService {
 
             gestorDonantes.agregarImportador(importador);
 
-            return gestorDonantes.importarDonantes(importador.getNombre())
-                    .stream()
-                    .map(this::convertirADTO)
-                    .toList();
+            int cantidadImportados = gestorDonantes.importarDonantes(importador.getNombre()).size();
+
+            return new ImportacionDonantesDTO(cantidadImportados);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

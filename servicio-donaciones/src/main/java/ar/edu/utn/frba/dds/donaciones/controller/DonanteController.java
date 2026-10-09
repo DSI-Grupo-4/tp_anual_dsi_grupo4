@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ImportacionDonantesDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonanteService;
@@ -68,9 +69,9 @@ public class DonanteController {
         donanteService.eliminar(id);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Importar", description = "Seleccionar el archivo CSV de ejemplo en src/data. La importación puede emitir notificaciones y requiere RabbitMQ.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Importar", description = "Seleccionar el archivo CSV de ejemplo en src/data. Devuelve solo la cantidad importada, no el detalle de cada donante (evita la latencia de serializar miles de registros) -- para consultarlos, usar GET /api/donantes.")
     @PostMapping(value = "/importar", consumes = "multipart/form-data")
-    public List<DonanteDTO> importar(
+    public ImportacionDonantesDTO importar(
             @io.swagger.v3.oas.annotations.Parameter(description = "Seleccionar CSV UTF-8; ejemplo incluido en servicio-donaciones/src/data.") @RequestParam MultipartFile archivo) {
 
         return donanteService.importarCSV(archivo);
