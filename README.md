@@ -20,41 +20,6 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
-├── bruno
-│   ├── donaciones
-│   │   ├── Asignaciones
-│   │   ├── Donaciones
-│   │   ├── Donantes
-│   │   ├── Entidades_beneficiarias
-│   │   ├── Logistica
-│   │   ├── Necesidades
-│   │   ├── bruno.json
-│   │   ├── collection.bru
-│   │   ├── environments
-│   │   └── servicio-donaciones-controller
-│   ├── incentivos
-│   │   ├── Admin
-│   │   ├── Donantes
-│   │   ├── Ranking
-│   │   ├── bruno.json
-│   │   ├── collection.bru
-│   │   └── environments
-│   ├── logistica
-│   │   ├── Camiones
-│   │   ├── Entregas
-│   │   ├── Eventos
-│   │   ├── Lotes
-│   │   ├── Paradas
-│   │   ├── Planificador
-│   │   ├── Rutas
-│   │   ├── bruno.json
-│   │   ├── collection.bru
-│   │   └── environments
-│   └── notificaciones
-│       ├── Notificaciones
-│       ├── bruno.json
-│       ├── collection.bru
-│       └── environments
 ├── consigna
 │   ├── DDS-TP-Anual-2026-CursoK3002 Entrega 4.pdf
 │   └── entrega4-requerimientos.md
@@ -125,7 +90,7 @@
 │       └── test
 └── stop-servicios.ps1
 
-55 directories, 55 files
+28 directories, 47 files
 ```
 <!-- TREE_END -->
 
