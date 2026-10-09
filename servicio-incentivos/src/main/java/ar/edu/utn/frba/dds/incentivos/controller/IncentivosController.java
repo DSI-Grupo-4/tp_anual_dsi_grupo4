@@ -42,22 +42,22 @@ public class IncentivosController {
     private final Consultor consultor = Consultor.getInstance();
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
     @GetMapping("/{id}/metricas")
     public MetricasActividadDTO obtenerMetricas(
             @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.Parameter(description = "HISTORICO, MENSUAL, TRIMESTRAL, SEMESTRAL o ANUAL.", example = "HISTORICO") @RequestParam(defaultValue = "HISTORICO") String periodo) {
 
-        Donante donante = gestorDonante.obtenerDonante(id);
+        Donante donante = gestorDonante.buscarDonante(id);
         Periodo periodoSolicitado = Periodo.valueOf(periodo.toUpperCase());
         MetricasActividad metricas = consultor.obtenerMetricasActividad(donante, periodoSolicitado);
         return convertirADTO(metricas);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener misiones disponibles", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener misiones disponibles", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
     @GetMapping("/{id}/misiones")
     public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
-        Donante donante = gestorDonante.obtenerDonante(id);
+        Donante donante = gestorDonante.buscarDonante(id);
         List<ProgresoCategoria> categoriasObtenidas = donante.getProgresoAsociado().getCategoriasObtenidas();
         String categoriaActual = categoriaActualDe(donante);
         ProgresoMision misionActual = donante.getProgresoAsociado().getMisionActual();
@@ -73,10 +73,10 @@ public class IncentivosController {
                 .toList();
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
     @GetMapping("/{id}/insignias")
     public List<InsigniaDTO> obtenerInsignias(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
-        Donante donante = gestorDonante.obtenerDonante(id);
+        Donante donante = gestorDonante.buscarDonante(id);
         return consultor.obtenerInsignias(donante).stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -99,14 +99,14 @@ public class IncentivosController {
         return ResponseEntity.ok(convertirADTO(obtenida));
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Cambiar visibilidad insignia", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Cambiar visibilidad insignia", description = "404 si el donante todavía no tiene actividad registrada en Incentivos, o si no tiene esa insignia.")
     @PatchMapping("/{id}/insignias/{insigniaNombre}/visibilidad")
     public ResponseEntity<Void> cambiarVisibilidadInsignia(
             @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.Parameter(description = "Usar una insignia ya obtenida por el donante.", example = "Racha Colaboradora") @PathVariable String insigniaNombre,
             @RequestBody VisibilidadInsigniaDTO dto) {
 
-        Donante donante = gestorDonante.obtenerDonante(id);
+        Donante donante = gestorDonante.buscarDonante(id);
         if (dto.isVisible()) {
             consultor.marcarInsigniaVisible(donante, insigniaNombre);
         } else {
