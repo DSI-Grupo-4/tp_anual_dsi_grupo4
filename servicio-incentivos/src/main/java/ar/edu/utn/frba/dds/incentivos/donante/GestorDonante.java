@@ -22,17 +22,11 @@ public class GestorDonante {
     }
 
     public void verificarVigenciaMisiones() {
-        donantes.forEach(Donante::verificarVigenciaMisiones);
+        listarDonantes().forEach(Donante::verificarVigenciaMisiones);
     }
 
-    /**
-     * Alta perezosa: Incentivos no tiene su propio alta de donantes --
-     * Donaciones es quien es dueño de esa identidad, así que el primer
-     * POST /actividad-donacion que llega para un id nuevo es la señal de
-     * que ese donante existe. Usar esto SOLO ahí, nunca en una consulta de
-     * lectura (ver buscarDonante).
-     */
-    public Donante obtenerDonante(Long id) {
+    /** Identidad recibida desde el perfil de Donaciones o su actividad. No agrega donaciones. */
+    public synchronized Donante obtenerDonante(Long id) {
         return donantes.stream()
                 .filter(donante -> donante.getId().equals(id))
                 .findFirst()
@@ -49,21 +43,15 @@ public class GestorDonante {
         return donante;
     }
 
-    /**
-     * Para endpoints de lectura (y la modificación de visibilidad de una
-     * insignia): un id que nunca mandó actividad no debe fabricar un
-     * donante vacío -- antes GET /{id}/metricas, /{id}/misiones,
-     * /{id}/insignias y PATCH .../visibilidad devolvían 200 con progreso
-     * vacío para cualquier id, sin importar si existía.
-     */
-    public Donante buscarDonante(Long id) {
+    /** Busca perfiles conocidos; la recuperación del servicio dueño se hace en el controller. */
+    public synchronized Donante buscarDonante(Long id) {
         return donantes.stream()
                 .filter(donante -> donante.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("No existe el donante " + id + " en Incentivos"));
     }
 
-    public List<Donante> listarDonantes() {
+    public synchronized List<Donante> listarDonantes() {
         return List.copyOf(donantes);
     }
 }

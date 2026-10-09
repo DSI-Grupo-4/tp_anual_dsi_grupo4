@@ -191,4 +191,12 @@ class DonanteServiceTest {
         servicio.registrarInteraccion(1L);
         assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
     }
+    @Test void altaHumanaSincronizaIdentidadEnIncentivosSinDonacion() {
+        var gestor=new GestorDonantes();var servicio=new DonanteService(gestor);
+        var cliente=org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.client.IncentivosClient.class);servicio.configurarIncentivos(cliente);
+        var dto=new PersonaHumanaDTO();dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
+        servicio.crearDonanteHumano(dto);
+        org.mockito.Mockito.verify(cliente).registrarDonante(gestor.buscarPorId(1L));
+        org.mockito.Mockito.verify(cliente,org.mockito.Mockito.never()).registrarActividadDonacion(org.mockito.ArgumentMatchers.any());
+    }
 }

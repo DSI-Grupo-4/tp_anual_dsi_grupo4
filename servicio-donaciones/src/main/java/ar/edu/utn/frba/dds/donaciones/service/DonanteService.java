@@ -19,6 +19,10 @@ import java.util.List;
 public class DonanteService {
 
     private final GestorDonantes gestorDonantes;
+    private ar.edu.utn.frba.dds.donaciones.client.IncentivosClient incentivos;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarIncentivos(ar.edu.utn.frba.dds.donaciones.client.IncentivosClient incentivos) { this.incentivos = incentivos; }
+    private void sincronizarPerfil(Donante donante) { if (incentivos != null) incentivos.registrarDonante(donante); }
     private ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort publicador;
     @org.springframework.beans.factory.annotation.Autowired
     public void configurarPublicador(ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort publicador) { this.publicador = publicador; }
@@ -74,6 +78,7 @@ public class DonanteService {
         );
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
+        sincronizarPerfil(donante);
         bienvenida(donante);
         return convertirADTO(donante);
     }
@@ -96,6 +101,7 @@ public class DonanteService {
 
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
+        sincronizarPerfil(donante);
         bienvenida(donante);
 
         return convertirADTO(donante);
@@ -170,6 +176,7 @@ public class DonanteService {
         );
 
         donante.registrarActividad();
+        sincronizarPerfil(donante);
         return convertirADTO(donante);
     }
 
@@ -197,6 +204,7 @@ public class DonanteService {
         );
 
         donante.registrarActividad();
+        sincronizarPerfil(donante);
         return convertirADTO(donante);
     }
 
@@ -230,6 +238,7 @@ public class DonanteService {
             var existentes = gestorDonantes.getDonantesRegistrados().stream().map(Donante::getId).collect(java.util.stream.Collectors.toSet());
             var importados = gestorDonantes.importarDonantes(importador.getNombre());
             importados.stream().filter(d -> !existentes.contains(d.getId())).distinct().forEach(this::bienvenida);
+            if (incentivos != null) importados.stream().distinct().forEach(incentivos::encolarPerfil);
             int cantidadImportados = importados.size();
 
             return new ImportacionDonantesDTO(cantidadImportados);

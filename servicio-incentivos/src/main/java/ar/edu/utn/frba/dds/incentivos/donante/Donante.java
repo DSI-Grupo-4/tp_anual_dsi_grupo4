@@ -32,7 +32,7 @@ public class Donante {
     }
 
     public void actualizarNombreSiFalta(String nombre) {
-        if (this.nombre == null && nombre != null && !nombre.isBlank()) {
+        if (nombre != null && !nombre.isBlank()) {
             this.nombre = nombre;
         }
     }

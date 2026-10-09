@@ -321,3 +321,8 @@ Los adaptadores de Donaciones e Incentivos guardan solicitudes en archivos local
 Las entidades conservan contactos; el alta dispara bienvenida por correo, los avisos logísticos incorporan datos del comprobante y seguimiento, y los fallos se notifican a administradores configurados. Los eventos logísticos no se confirman tras errores. Incentivos registra altas y entregas por donacionId sin duplicar cantidades. Se expone un registro explícito de interacción del usuario y se corrige el umbral de inactividad.
 
 Entrega incorpora fechaHoraEntrega y seguimientoUrl; DatosDonacion incorpora donacionId. El detalle y los pasos de prueba están en NOTIFICACIONES.md. El seguimiento es un esquema interno de paradas actualizado; no hay GPS ni mapa geográfico porque el modelo no tiene coordenadas y no se autoriza compartir direcciones con un proveedor externo. La persistencia relacional y la atomicidad completa entre estado de dominio y pendientes siguen fuera de este cambio.
+
+
+## D-018 — Identidad de donantes en Incentivos desde el registro
+
+Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente de sus donaciones. Incentivos expone una operación idempotente de perfil que no suma actividad ni concede insignias. Donaciones guarda y reintenta perfiles si el servicio no responde. Para donantes anteriores o tras reiniciar Incentivos, los endpoints consultan la identidad canónica en Donaciones antes de crear el perfil vacío. No se fabrican donaciones ni se crean perfiles para IDs inexistentes. Se reutilizan clases existentes y se conserva el diagrama de dominio.

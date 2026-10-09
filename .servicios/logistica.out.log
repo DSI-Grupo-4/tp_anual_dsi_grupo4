@@ -35,16 +35,16 @@
 
  :: Spring Boot ::                (v3.5.5)
 
-2026-10-09T03:40:13.238-03:00  INFO 12832 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Starting ServicioLogisticaApplication using Java 26.0.1 with PID 12832 (A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica\target\classes started by agust in A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica)
-2026-10-09T03:40:13.241-03:00  INFO 12832 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : No active profile set, falling back to 1 default profile: "default"
-2026-10-09T03:40:14.330-03:00  INFO 12832 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8083 (http)
-2026-10-09T03:40:14.341-03:00  INFO 12832 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
-2026-10-09T03:40:14.341-03:00  INFO 12832 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
-2026-10-09T03:40:14.396-03:00  INFO 12832 --- [servicio-logistica] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
-2026-10-09T03:40:14.397-03:00  INFO 12832 --- [servicio-logistica] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1094 ms
-2026-10-09T03:40:14.970-03:00  INFO 12832 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8083 (http) with context path '/'
-2026-10-09T03:40:14.980-03:00  INFO 12832 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Started ServicioLogisticaApplication in 2.196 seconds (process running for 2.515)
-2026-10-09T03:40:17.364-03:00  INFO 12832 --- [servicio-logistica] [nio-8083-exec-2] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-10-09T03:40:17.365-03:00  INFO 12832 --- [servicio-logistica] [nio-8083-exec-2] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
-2026-10-09T03:40:17.366-03:00  INFO 12832 --- [servicio-logistica] [nio-8083-exec-2] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
-2026-10-09T03:40:25.094-03:00  INFO 12832 --- [servicio-logistica] [nio-8083-exec-5] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 285 ms
+2026-10-09T05:21:47.246-03:00  INFO 27124 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Starting ServicioLogisticaApplication using Java 26.0.1 with PID 27124 (A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica\target\classes started by agust in A:\Diseño\tp_anual_dsi_grupo4\servicio-logistica)
+2026-10-09T05:21:47.248-03:00  INFO 27124 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : No active profile set, falling back to 1 default profile: "default"
+2026-10-09T05:21:48.912-03:00  INFO 27124 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8083 (http)
+2026-10-09T05:21:48.929-03:00  INFO 27124 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-09T05:21:48.931-03:00  INFO 27124 --- [servicio-logistica] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.44]
+2026-10-09T05:21:49.007-03:00  INFO 27124 --- [servicio-logistica] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-09T05:21:49.007-03:00  INFO 27124 --- [servicio-logistica] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 1709 ms
+2026-10-09T05:21:49.772-03:00  INFO 27124 --- [servicio-logistica] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8083 (http) with context path '/'
+2026-10-09T05:21:49.785-03:00  INFO 27124 --- [servicio-logistica] [           main] a.e.u.f.d.l.ServicioLogisticaApplication : Started ServicioLogisticaApplication in 3.035 seconds (process running for 3.381)
+2026-10-09T05:21:52.300-03:00  INFO 27124 --- [servicio-logistica] [nio-8083-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-09T05:21:52.302-03:00  INFO 27124 --- [servicio-logistica] [nio-8083-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-09T05:21:52.302-03:00  INFO 27124 --- [servicio-logistica] [nio-8083-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-10-09T05:21:57.077-03:00  INFO 27124 --- [servicio-logistica] [nio-8083-exec-9] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 332 ms

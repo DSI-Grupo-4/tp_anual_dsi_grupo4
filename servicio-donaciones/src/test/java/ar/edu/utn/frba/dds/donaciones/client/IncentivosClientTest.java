@@ -26,4 +26,23 @@ class IncentivosClientTest {
    try(var archivos=Files.list(dir)){assertThat(archivos.count()).isZero();}
    verify(disponible,times(2)).post();
  }
+ @Test void sincronizaPerfilSinEnviarActividadYReintentaSiElServicioEstaApagado() throws Exception {
+   var client=new IncentivosClient("http://incentivos");ReflectionTestUtils.setField(client,"pendientes",dir);
+   var builder=RestClient.builder().baseUrl("http://incentivos");
+   var server=org.springframework.test.web.client.MockRestServiceServer.bindTo(builder).build();
+   ReflectionTestUtils.setField(client,"restClient",builder.build());
+   var persona=new PersonaHumana("Ana","Perez",30,"123",null);persona.agregarMedio(new MedioContacto(TipoContacto.EMAIL,"ana@example.org",true));
+   var donante=new Donante(1L,persona);
+   server.expect(org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo("http://incentivos/api/donantes/1/perfil"))
+      .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.method(org.springframework.http.HttpMethod.PUT))
+      .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.jsonPath("$.nombre").value("Ana Perez"))
+      .andRespond(org.springframework.test.web.client.response.MockRestResponseCreators.withServerError());
+   server.expect(org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo("http://incentivos/api/donantes/1/perfil"))
+      .andRespond(org.springframework.test.web.client.response.MockRestResponseCreators.withNoContent());
+   client.registrarDonante(donante);
+   try(var archivos=Files.list(dir)){assertThat(archivos.count()).isEqualTo(1);}
+   client.enviarPendientes();
+   try(var archivos=Files.list(dir)){assertThat(archivos.count()).isZero();}
+   server.verify();
+ }
 }

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,23 +42,75 @@ public class IncentivosController {
 
     private final Consultor consultor = Consultor.getInstance();
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
+    private org.springframework.web.client.RestClient donacionesClient;
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
+    @org.springframework.beans.factory.annotation.Value("${donaciones.base-url:http://localhost:8080}")
+    public void configurarDonaciones(String url) {
+        var transporte = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        transporte.setConnectTimeout(3000); transporte.setReadTimeout(5000);
+        donacionesClient = org.springframework.web.client.RestClient.builder().requestFactory(transporte).baseUrl(url).build();
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Sincronizar perfil de donante", description = "Integración desde Donaciones: crea o actualiza identidad y contacto sin sumar donaciones, insignias ni progreso.")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(
+        schema = @io.swagger.v3.oas.annotations.media.Schema(example = """
+        {"nombre":"Ana Perez","medioContactoPreferido":"EMAIL","contactoPreferido":"ana@example.org"}
+        """)))
+    @PutMapping("/{id}/perfil")
+    public org.springframework.http.ResponseEntity<Void> sincronizarPerfil(@PathVariable Long id, @RequestBody java.util.Map<String,String> perfil) {
+        if (id == null || id <= 0 || perfil.get("nombre") == null || perfil.get("nombre").isBlank())
+            throw new IllegalArgumentException("ID positivo y nombre son obligatorios");
+        var medio = perfil.get("medioContactoPreferido"); var contacto = perfil.get("contactoPreferido");
+        if (medio == null || !java.util.Set.of("EMAIL","SMS","WHATSAPP").contains(medio) || contacto == null || contacto.isBlank())
+            throw new IllegalArgumentException("Medio y contacto preferidos son obligatorios");
+        var donante = gestorDonante.obtenerDonante(id,perfil.get("nombre"));
+        donante.actualizarNombreSiFalta(perfil.get("nombre"));
+        donante.actualizarContactoSiFalta(medio,contacto);
+        return org.springframework.http.ResponseEntity.noContent().build();
+    }
+
+    private Donante resolverDonante(Long id) {
+        try { return gestorDonante.buscarDonante(id); }
+        catch (java.util.NoSuchElementException ausente) {
+            if (donacionesClient == null) throw ausente;
+            try {
+                var perfil = donacionesClient.get().uri("/api/donantes/{id}", id).retrieve().body(com.fasterxml.jackson.databind.JsonNode.class);
+                if (perfil == null || !perfil.hasNonNull("id") || perfil.get("id").asLong() != id) throw ausente;
+                String nombre = "JURIDICA".equals(perfil.path("tipo").asText()) ? perfil.path("razonSocial").asText() :
+                    perfil.path("nombre").asText() + " " + perfil.path("apellido").asText();
+                var donante = gestorDonante.obtenerDonante(id,nombre);
+                for (var contacto : perfil.path("mediosContacto")) {
+                    if (contacto.path("esPreferido").asBoolean()) {
+                        String medio = contacto.path("tipo").asText();
+                        donante.actualizarContactoSiFalta("TELEFONO".equals(medio) ? "SMS" : medio, contacto.path("valor").asText());
+                    }
+                }
+                return donante;
+            } catch (org.springframework.web.client.RestClientResponseException e) {
+                if (e.getStatusCode().value() == 404) throw ausente;
+                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"No se pudo consultar el donante en Donaciones",e);
+            } catch (org.springframework.web.client.RestClientException e) {
+                throw new org.springframework.web.server.ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"Donaciones no está disponible para recuperar el perfil",e);
+            }
+        }
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas", description = "Disponible desde el alta del donante en Donaciones, aunque todavía no haya donado. Si falta el perfil, se recupera desde Donaciones; 404 para un ID inexistente.")
     @GetMapping("/{id}/metricas")
     public MetricasActividadDTO obtenerMetricas(
             @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
             @io.swagger.v3.oas.annotations.Parameter(description = "HISTORICO, MENSUAL, TRIMESTRAL, SEMESTRAL o ANUAL.", example = "HISTORICO") @RequestParam(defaultValue = "HISTORICO") String periodo) {
 
-        Donante donante = gestorDonante.buscarDonante(id);
+        Donante donante = resolverDonante(id);
         Periodo periodoSolicitado = Periodo.valueOf(periodo.toUpperCase());
         MetricasActividad metricas = consultor.obtenerMetricasActividad(donante, periodoSolicitado);
         return convertirADTO(metricas);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener misiones disponibles", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener misiones disponibles", description = "Disponible desde el alta del donante en Donaciones, aunque todavía no haya donado. Si falta el perfil, se recupera desde Donaciones; 404 para un ID inexistente.")
     @GetMapping("/{id}/misiones")
     public List<MisionDisponibleDTO> obtenerMisionesDisponibles(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
-        Donante donante = gestorDonante.buscarDonante(id);
+        Donante donante = resolverDonante(id);
         List<ProgresoCategoria> categoriasObtenidas = donante.getProgresoAsociado().getCategoriasObtenidas();
         String categoriaActual = categoriaActualDe(donante);
         ProgresoMision misionActual = donante.getProgresoAsociado().getMisionActual();
@@ -73,10 +126,10 @@ public class IncentivosController {
                 .toList();
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias", description = "404 si el donante todavía no tiene actividad registrada en Incentivos (ver POST .../actividad-donacion).")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias", description = "Disponible desde el alta del donante en Donaciones, aunque todavía no haya donado. Si falta el perfil, se recupera desde Donaciones; 404 para un ID inexistente.")
     @GetMapping("/{id}/insignias")
     public List<InsigniaDTO> obtenerInsignias(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
-        Donante donante = gestorDonante.buscarDonante(id);
+        Donante donante = resolverDonante(id);
         return consultor.obtenerInsignias(donante).stream()
                 .map(this::convertirADTO)
                 .toList();
@@ -106,7 +159,7 @@ public class IncentivosController {
             @io.swagger.v3.oas.annotations.Parameter(description = "Usar una insignia ya obtenida por el donante.", example = "Racha Colaboradora") @PathVariable String insigniaNombre,
             @RequestBody VisibilidadInsigniaDTO dto) {
 
-        Donante donante = gestorDonante.buscarDonante(id);
+        Donante donante = resolverDonante(id);
         if (dto.isVisible()) {
             consultor.marcarInsigniaVisible(donante, insigniaNombre);
         } else {

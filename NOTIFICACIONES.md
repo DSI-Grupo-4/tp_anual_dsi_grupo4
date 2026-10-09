@@ -65,3 +65,14 @@ Los atributos nuevos de Entrega están reflejados en LOGISTICA.drawio.xml y diag
 ## Verificación realizada
 
 119 pruebas aprobadas y una integración RabbitMQ omitida por falta de Docker (120 casos en total). Compilación y empaquetado de los cuatro servicios correctos. Se verificaron el arranque y Swagger de los cuatro servicios, altas de donante y entidad con contactos, asignación, entrega, actualización de necesidades, actividad de Incentivos sin doble conteo y procesamiento/deduplicación de solicitudes por REST. Con RabbitMQ apagado el alta respondió en menos de un segundo y quedaron avisos pendientes. La entrega real productor → RabbitMQ → consumidor no pudo probarse en este entorno.
+
+
+## Perfil de Incentivos disponible desde el alta
+
+El alta manual de un donante en Donaciones ahora sincroniza inmediatamente `PUT /api/donantes/{id}/perfil` de Incentivos. La edición sincroniza nombre y contacto. La importación CSV deja los perfiles en la bandeja para procesarlos en segundo plano. Si Incentivos no responde, el perfil queda en disco y se reintenta cada cinco segundos.
+
+Ya no se necesita registrar una donación para consultar `GET /api/donantes/{id}/misiones`, `/metricas` o `/insignias` en Incentivos: el perfil inicial tiene las misiones, progreso cero y ninguna donación ni insignia obtenida. Si un perfil anterior falta (o Incentivos fue reiniciado), se verifica el ID contra `GET /api/donantes/{id}` de Donaciones y se recupera identidad/contacto. Un ID que no existe en Donaciones mantiene el 404; si Donaciones no responde, la recuperación devuelve 503.
+
+En entornos desplegados configurar `DONACIONES_BASE_URL` en Incentivos y `incentivos.base-url` en Donaciones. En local los valores por defecto son `http://localhost:8080` y `http://localhost:8081`. Se reutilizan `IncentivosClient`, `DonanteService`, `IncentivosController` y las clases de donante existentes: no hay nuevas clases de producción ni cambios en relaciones del diagrama.
+
+Se comprobó con dos instancias reales: alta humana en Donaciones seguida inmediatamente de GET de misiones en Incentivos, con cinco misiones disponibles, cero solicitudes de donación y cero insignias. Las pruebas adicionales cubren sincronización de perfil, reintentos y recuperación de un donante anterior desde Donaciones.

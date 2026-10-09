@@ -34,6 +34,37 @@ public class IncentivosClient {
         this.restClient = RestClient.builder().requestFactory(transporte).baseUrl(baseUrl).build();
     }
 
+    /** Sincroniza identidad y contacto sin contabilizar una donación ni completar misiones. */
+    public void registrarDonante(Donante donante) {
+        encolarPerfil(donante);
+        intentarPerfil(pendientes.resolve(String.format("perfil-%020d.json", donante.getId())));
+    }
+
+    public synchronized void encolarPerfil(Donante donante) {
+        var medio = donante.getPersona().medioPreferido();
+        var perfil = new java.util.LinkedHashMap<String,String>();
+        perfil.put("nombre", nombreDe(donante.getPersona()));
+        perfil.put("medioContactoPreferido", medio.map(m -> mapearMedio(m.getTipo())).orElse(null));
+        perfil.put("contactoPreferido", medio.map(MedioContacto::getValor).orElse(null));
+        try {
+            java.nio.file.Files.createDirectories(pendientes);
+            var temporal = java.nio.file.Files.createTempFile(pendientes, "perfil-", ".tmp");
+            mapper.writeValue(temporal.toFile(), java.util.Map.of("donanteId", donante.getId(), "perfil", perfil));
+            java.nio.file.Files.move(temporal, pendientes.resolve(String.format("perfil-%020d.json", donante.getId())),
+                java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo guardar el perfil pendiente de Incentivos", e); }
+    }
+
+    private synchronized void intentarPerfil(java.nio.file.Path archivo) {
+        if (!java.nio.file.Files.exists(archivo)) return;
+        try {
+            var datos = mapper.readTree(archivo.toFile());
+            restClient.put().uri("/api/donantes/{id}/perfil", datos.get("donanteId").asLong())
+                .body(datos.get("perfil")).retrieve().toBodilessEntity();
+            java.nio.file.Files.delete(archivo);
+        } catch (Exception e) { logger.warn("Perfil pendiente de Incentivos {}: {}", archivo.getFileName(), e.getMessage()); }
+    }
+
     public void registrarActividadDonacion(Donacion donacion) {
         Donante donante = donacion.getDonante();
         if (donante == null) {
@@ -59,7 +90,10 @@ public class IncentivosClient {
     public synchronized void enviarPendientes() {
         if (!java.nio.file.Files.exists(pendientes)) return;
         try (var archivos = java.nio.file.Files.list(pendientes)) {
-            for (var archivo : archivos.filter(p -> p.toString().endsWith(".json")).sorted().toList()) {
+            var lista = archivos.filter(p -> p.toString().endsWith(".json")).sorted().toList();
+            for (var archivo : lista) if (archivo.getFileName().toString().startsWith("perfil-")) intentarPerfil(archivo);
+            for (var archivo : lista) {
+                if (archivo.getFileName().toString().startsWith("perfil-")) continue;
                 try {
                     var datos = mapper.readTree(archivo.toFile());
                     restClient.post().uri("/api/donantes/{id}/actividad-donacion", datos.get("donanteId").asLong())
