@@ -298,6 +298,21 @@
 - **Validado en vivo:** `GET /api/donantes/999999/misiones` → 404 `"No existe el donante 999999 en Incentivos"`. `POST /api/donantes/1/actividad-donacion` → 200, completa "Racha Colaborador" en el acto (primer mes de racha). `GET /api/donantes/1/misiones` después → 200 con progreso real. 10/10 tests de Incentivos en verde (3 nuevos). Suite completa en verde.
 - **Definida por:** usuario (encontró el bug probando el endpoint) + agente (confirmó que afectaba a 4 endpoints, no solo el que se probó, y acotó el fix para no tocar el único lugar donde la alta perezosa es correcta)
 
+## [D-024] Hotfix: insignias no disparaban n8n (3 causas independientes)
+- **Fecha:** 2026-10-09
+- **Servicio(s) afectado(s):** Incentivos
+- **Contexto:** Tras D-023, el usuario reportó un segundo síntoma de pruebas reales: las insignias no disparaban el workflow de n8n. Se encontraron 3 causas independientes, cada una suficiente por sí sola para bloquear el disparo, verificadas una por una levantando el servicio real contra el contenedor de n8n real (no mocks):
+  1. `incentivos.webhook.n8n-url` estaba vacío en `application.properties` -- `Consultor.publicarInsignia()` hacía no-op silencioso ("Webhook n8n no configurado").
+  2. El workflow `servicio-incentivos-difusion.json` tenía `"active": false`, y el entrypoint de `docker-compose.yml` corre `n8n import:workflow` en cada arranque del contenedor -- esto desactiva el workflow existente como parte del import, sin reactivarlo después, sin importar lo que diga el campo `active` del JSON. Confirmado con `docker logs` mostrando `"Deactivating workflow"` en cada restart.
+  3. `Consultor` usa `new RestTemplate()` (no gestionado por Spring, sin el `ObjectMapper` de Spring Boot que registra fechas ISO-8601) para postear `PublicacionInsigniaDTO`. Su campo `fechaObtencion` (`LocalDate`) se serializaba como array `[2026,10,9]` en vez de string -- confirmado capturando el payload real con un servidor HTTP de prueba. El nodo "Validación de formato" del workflow exige `fechaObtencion` como string `YYYY-MM-DD` y rechazaba el payload con 400, incluso con el webhook ya activo.
+- **Decisión tomada:**
+  1. `incentivos.webhook.n8n-url=${INCENTIVOS_WEBHOOK_N8N_URL:http://localhost:5678/webhook/events/insignia-otorgada}`.
+  2. Entrypoint de `docker-compose.yml` corre `n8n publish:workflow --id=servicio-incentivos-difusion` después del import y antes de `n8n start`, para que el workflow quede activo en cada arranque del contenedor (no solo la primera vez).
+  3. `PublicacionInsigniaDTO.fechaObtencion` gana `@JsonFormat(shape = STRING, pattern = "yyyy-MM-dd")` -- fuerza el formato sin depender de qué módulos de Jackson encuentre el `RestTemplate` crudo por classpath scanning.
+- **Validado en vivo:** con las 3 correcciones, una donación real completando una misión dispara el POST al webhook, n8n lo acepta (200, sin el 400 de validación ni el 404 de "webhook no registrado"), y el log de Incentivos no muestra ningún WARN de `Consultor`. Confirmado contra el contenedor n8n real, no un stub.
+- **Hallazgo colateral, no corregido (fuera de alcance de este hotfix):** el nodo "Publicar en Discord" del workflow falla con 404 "Unknown Webhook" -- la URL de Discord embebida en el JSON está vencida o fue borrada del servidor de Discord. No bloquea la respuesta al backend (rama independiente del `Responder 200 OK` dentro del mismo workflow), pero significa que hoy no llega ninguna notificación real a Discord. Requiere que el usuario genere un webhook de Discord nuevo; pendiente de decisión del usuario.
+- **Definida por:** usuario (reportó el síntoma) + agente (rastreó las 3 causas independientes una por una, verificando cada una contra el n8n real antes de pasar a la siguiente, en vez de asumir que la primera corrección alcanzaba)
+
 
 ## D-017 — Notificaciones con pendientes durables y disparadores completos
 

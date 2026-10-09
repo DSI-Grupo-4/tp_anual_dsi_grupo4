@@ -16,6 +16,7 @@ services:
       sh -c "
         mkdir -p /home/node/.n8n/workflows &&
         n8n import:workflow --separate --input=/home/node/.n8n/workflows 2>/dev/null || true &&
+        n8n publish:workflow --id=servicio-incentivos-difusion 2>/dev/null || true &&
         n8n start
       "
 
