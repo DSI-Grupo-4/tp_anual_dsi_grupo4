@@ -1,44 +1,49 @@
 package ar.edu.utn.frba.dds.logistica.repository;
 
+import ar.edu.utn.frba.dds.logistica.domain.rutas.Camion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoEntrega;
-import org.springframework.stereotype.Component;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
-// In-memory por ahora; esto se reemplazará por un repo con persistencia real.
-@Component
-public class EntregaRepository {
+/**
+ * Antes era un Map en memoria. Se conservan los métodos que ya usaban los
+ * services y controllers (guardar, buscarPorId, ...) como default methods,
+ * para no tocar a quienes los invocan.
+ */
+public interface EntregaRepository extends JpaRepository<Entrega, Integer> {
 
-    private final Map<Integer, Entrega> entregas = new LinkedHashMap<>();
-    private final AtomicInteger contadorId = new AtomicInteger(1);
+    Optional<Entrega> findByIdDonacionAsociada(Integer idDonacionAsociada);
 
-    public Entrega guardar(Entrega entrega) {
-        if (entrega.getIdEntrega() == null) {
-            entrega.setIdEntrega(contadorId.getAndIncrement());
-        }
-        entregas.put(entrega.getIdEntrega(), entrega);
-        return entrega;
+    List<Entrega> findByEstadoEntregaInOrderByIdEntrega(Collection<EstadoEntrega> estados);
+
+    List<Entrega> findByFechaOrderByIdEntrega(LocalDate fecha);
+
+    long countByCamionEntregaAndEstadoEntregaIn(Camion camion, Collection<EstadoEntrega> estados);
+
+    boolean existsByCamionEntrega(Camion camion);
+
+    default Entrega guardar(Entrega entrega) {
+        return save(entrega);
     }
 
-    public Entrega buscarPorId(Integer id) {
-        Entrega e = entregas.get(id);
-        if (e == null) throw new NoSuchElementException("No existe la entrega con id: " + id);
-        return e;
+    default Entrega buscarPorId(Integer id) {
+        return findById(id)
+                .orElseThrow(() -> new NoSuchElementException("No existe la entrega con id: " + id));
     }
 
     /**
      * Para que LoteService no cree una Entrega duplicada si Donaciones
      * reenvía la misma donación (ej. porque todavía figuraba "pendiente" de
-     * su lado) -- sin esto, una donación ya entregada podía terminar con
-     * una segunda Entrega en PENDIENTE y volver a planificarse.
+     * su lado). Además, id_donacion_asociada es UNIQUE en la base.
      */
-    public Optional<Entrega> buscarPorDonacion(Integer idDonacionAsociada) {
-        return entregas.values().stream()
-                .filter(e -> e.getIdDonacionAsociada().equals(idDonacionAsociada))
-                .findFirst();
+    default Optional<Entrega> buscarPorDonacion(Integer idDonacionAsociada) {
+        return findByIdDonacionAsociada(idDonacionAsociada);
     }
 
     /**
@@ -47,20 +52,15 @@ public class EntregaRepository {
      * para reintentar (REPLANIFICABLE) -- ambas se tratan igual acá, la
      * diferencia es solo de trazabilidad (ver Entrega.reingresarADeposito).
      */
-    public List<Entrega> obtenerPendientes() {
-        return entregas.values().stream()
-                .filter(e -> e.getEstadoEntrega() == EstadoEntrega.PENDIENTE
-                        || e.getEstadoEntrega() == EstadoEntrega.REPLANIFICABLE)
-                .toList();
+    default List<Entrega> obtenerPendientes() {
+        return findByEstadoEntregaInOrderByIdEntrega(List.of(EstadoEntrega.PENDIENTE, EstadoEntrega.REPLANIFICABLE));
     }
 
-    public List<Entrega> obtenerTodas() {
-        return new ArrayList<>(entregas.values());
+    default List<Entrega> obtenerTodas() {
+        return findAll();
     }
 
-    public List<Entrega> obtenerPorFecha(LocalDate fecha) {
-        return entregas.values().stream()
-                .filter(e -> fecha.equals(e.getFecha()))
-                .toList();
+    default List<Entrega> obtenerPorFecha(LocalDate fecha) {
+        return findByFechaOrderByIdEntrega(fecha);
     }
 }

@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
 import ar.edu.utn.frba.dds.logistica.domain.eventos.TipoEvento;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.*;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Transactional
 public class PlanificadorService {
 
     private static final Set<EstadoEntrega> ASIGNABLES = Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.REPLANIFICABLE);
@@ -66,7 +69,7 @@ public class PlanificadorService {
             Chofer chofer = rutaDTO.getIdChofer() != null ? choferService.buscar(rutaDTO.getIdChofer()) : null;
 
             List<Parada> paradas = new ArrayList<>();
-            int idParada = 1;
+            int numeroParada = 1; // posición dentro de la ruta; el id real lo asigna la base
             for (ParadaPlanificadaDTO paradaDTO : rutaDTO.getParadas()) {
                 List<Entrega> entregas = paradaDTO.getEntregasIds().stream()
                         .map(entregaRepository::buscarPorId)
@@ -79,7 +82,7 @@ public class PlanificadorService {
                     }
                 }
                 Entrega primera = entregas.get(0);
-                Parada parada = new Parada(idParada++, primera.getIdEntidadBeneficiariaAsociada(),
+                Parada parada = new Parada(numeroParada++, primera.getIdEntidadBeneficiariaAsociada(),
                         primera.getDireccionDestino(), entregas);
                 entregas.forEach(e -> e.asignarARuta(camion));
                 paradas.add(parada);

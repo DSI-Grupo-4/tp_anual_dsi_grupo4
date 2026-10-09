@@ -82,6 +82,7 @@ public class EntregaController {
                     description = "La entrega no está en estado NO_RECIBIDA ni FALLIDA"
             )
     })
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/reingresar")
     public EntregaDTO reingresar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         var entrega = entregaRepository.buscarPorId(id);

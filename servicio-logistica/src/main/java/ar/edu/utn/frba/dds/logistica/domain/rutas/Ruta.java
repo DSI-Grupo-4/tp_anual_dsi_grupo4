@@ -1,19 +1,55 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
 @Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
+@Entity
+@Table(name = "ruta")
 public class Ruta {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_ruta")
     private Integer idRuta;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_camion", nullable = false)
     private Camion camionAsociado;
+
+    @ManyToOne
+    @JoinColumn(name = "id_chofer") // opcional: una ruta puede quedar sin chofer asignado
     private Chofer chofer;
+
+    @Column(name = "fecha", nullable = false)
     private LocalDate fecha;
-    private List<Parada> paradas;
+
+    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("numeroParada ASC")
+    private List<Parada> paradas = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_ruta", nullable = false)
     private EstadoRuta estadoRuta;
 
     public Ruta(Integer idRuta, Camion camionAsociado, Chofer chofer,
@@ -22,7 +58,8 @@ public class Ruta {
         this.camionAsociado = camionAsociado;
         this.chofer = chofer;
         this.fecha = fecha;
-        this.paradas = paradas;
+        this.paradas = new ArrayList<>(paradas);
+        this.paradas.forEach(p -> p.setRuta(this));
         this.estadoRuta = EstadoRuta.PLANIFICADA;
         // Único punto de creación de una Ruta (interno vía PlanificacionPropia
         // o externo vía el callback) -- el camión queda comprometido con esta

@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
+import org.springframework.transaction.annotation.Transactional;
+
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoEntrega;
 import ar.edu.utn.frba.dds.logistica.dto.DonacionDTO;
@@ -14,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
+@Transactional
 public class LoteService {
 
     private static final Logger logger = LoggerFactory.getLogger(LoteService.class);

@@ -80,6 +80,7 @@ public class RutaController {
             )
     })
     // el chofer informa el comienzo de su recorrido
+    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/iniciar")
     public Ruta iniciarRuta(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         Ruta ruta = gestorRutas.buscarPorId(id);

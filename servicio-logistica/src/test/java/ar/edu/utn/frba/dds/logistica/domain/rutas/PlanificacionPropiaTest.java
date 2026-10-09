@@ -33,7 +33,7 @@ class PlanificacionPropiaTest {
         Entrega entregaB = entrega(2, 20, 600);
 
         List<Ruta> rutas = estrategia.planificar(
-                List.of(entregaA, entregaB), List.of(unicoCamion), List.of(), 1);
+                List.of(entregaA, entregaB), List.of(unicoCamion), List.of());
 
         // Con un solo camión disponible y sin que entren juntas, una de las dos
         // queda sin planificar en vez de sobrecargar el camión.
@@ -59,7 +59,7 @@ class PlanificacionPropiaTest {
         Entrega entregaB = entrega(2, 20, 600);
 
         List<Ruta> rutas = estrategia.planificar(
-                List.of(entregaA, entregaB), List.of(camion1, camion2), List.of(), 1);
+                List.of(entregaA, entregaB), List.of(camion1, camion2), List.of());
 
         int entregasPlanificadas = rutas.stream()
                 .flatMap(r -> r.getParadas().stream())
@@ -76,7 +76,7 @@ class PlanificacionPropiaTest {
         Entrega entregaB = entrega(2, 20, 300);
 
         List<Ruta> rutas = estrategia.planificar(
-                List.of(entregaA, entregaB), List.of(camion), List.of(), 1);
+                List.of(entregaA, entregaB), List.of(camion), List.of());
 
         assertThat(rutas).hasSize(1);
         assertThat(rutas.get(0).getParadas()).hasSize(2);

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,7 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
 
     @Override
     public List<Ruta> planificar(List<Entrega> entregas, List<Camion> camionesDisponibles,
-                                  List<Chofer> choferesDisponibles, Integer idRutaInicial) {
+                                  List<Chofer> choferesDisponibles) {
         List<Ruta> rutas = new ArrayList<>();
 
         // Agrupamos las entregas por entidad beneficiaria -> cada grupo será una Parada
@@ -33,8 +34,8 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
         int siguienteChoferIdx = 0;
         Chofer choferActual = choferesDisponibles.isEmpty() ? null : choferesDisponibles.get(siguienteChoferIdx++ % choferesDisponibles.size());
         List<Parada> paradasCamionActual = new ArrayList<>();
-        int idRuta = idRutaInicial;
-        int idParada = 1;
+        // Posición de la próxima parada dentro de la ruta en armado (se reinicia con cada ruta).
+        int numeroParada = 1;
         // Carga ya comprometida en camionActual por paradas anteriores -- sin esto,
         // cada parada se validaba contra la capacidad TOTAL del camión en vez de la
         // RESTANTE, y un camión podía terminar sobrecargado por la suma de varias
@@ -56,8 +57,9 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
             while (camionActual != null && !camionActual.puedeCargar(
                     pesoAcumulado + pesoTotal, volumenAcumulado + volumenTotal, Math.max(alturaMaxAcumulada, alturaMax))) {
                 if (!paradasCamionActual.isEmpty()) {
-                    rutas.add(new Ruta(idRuta++, camionActual, choferActual, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
+                    rutas.add(new Ruta(null, camionActual, choferActual, LocalDate.now().plusDays(1), paradasCamionActual));
                     paradasCamionActual = new ArrayList<>();
+                    numeroParada = 1;
                 }
                 camionActual = camiones.hasNext() ? camiones.next() : null;
                 choferActual = choferesDisponibles.isEmpty() ? null
@@ -73,7 +75,7 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
             }
 
             final Camion camionParaEstaParada = camionActual;
-            Parada parada = new Parada(idParada++, grupo.getKey(),
+            Parada parada = new Parada(numeroParada++, grupo.getKey(),
                     entregasDeLaParada.get(0).getDireccionDestino(), entregasDeLaParada);
             entregasDeLaParada.forEach(e -> e.asignarARuta(camionParaEstaParada));
             paradasCamionActual.add(parada);
@@ -83,7 +85,7 @@ public class PlanificacionPropia implements EstrategiaPlanificacion {
         }
 
         if (camionActual != null && !paradasCamionActual.isEmpty()) {
-            rutas.add(new Ruta(idRuta, camionActual, choferActual, java.time.LocalDate.now().plusDays(1), paradasCamionActual));
+            rutas.add(new Ruta(null, camionActual, choferActual, LocalDate.now().plusDays(1), paradasCamionActual));
         }
 
         return rutas;
