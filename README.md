@@ -88,9 +88,10 @@
 │   └── src
 │       ├── main
 │       └── test
-└── stop-servicios.ps1
+├── stop-servicios.ps1
+└── stop-servicios.sh
 
-28 directories, 47 files
+28 directories, 48 files
 ```
 <!-- TREE_END -->
 
