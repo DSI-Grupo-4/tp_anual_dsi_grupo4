@@ -42,15 +42,14 @@ public class ParadaController {
                     description = "Los datos de la recepción son inválidos"
             )
     })
-    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/confirmar")
     public void confirmarRecepcion(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                    @jakarta.validation.Valid @RequestBody FotoEntrega foto) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
         parada.confirmarRecepcion(foto);
+        liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_CONFIRMADA, e));
-        liberarCamionSiCorresponde(ruta);
     }
 
     @Operation(
@@ -71,15 +70,14 @@ public class ParadaController {
                     description = "La justificación proporcionada no es válida"
             )
     })
-    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/no-recibida")
     public void marcarNoRecibida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Nadie respondió en el domicilio"))) @RequestBody String justificacion) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
         parada.marcarNoRecibida(justificacion);
+        liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_NO_RECIBIDA, e));
-        liberarCamionSiCorresponde(ruta);
     }
 
     @Operation(
@@ -100,15 +98,14 @@ public class ParadaController {
                     description = "El motivo proporcionado no es válido"
             )
     })
-    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/incidente")
     public void marcarFallida(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
                               @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Los bienes vencieron antes de llegar a destino"))) @RequestBody String motivo) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
         parada.marcarFallida(motivo);
+        liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
         parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_FALLIDA, e));
-        liberarCamionSiCorresponde(ruta);
     }
 
     private Parada buscarParada(Ruta ruta, Integer idParada) {
@@ -126,5 +123,6 @@ public class ParadaController {
         if (Boolean.TRUE.equals(ruta.completoTodasLasEntregas())) {
             ruta.finalizarRuta();
         }
+        gestorRutas.guardar(ruta); // ruta + camión + entregas (Mongo no cascadea ni hace dirty checking)
     }
 }

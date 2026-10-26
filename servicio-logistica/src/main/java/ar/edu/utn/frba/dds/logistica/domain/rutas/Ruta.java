@@ -1,22 +1,13 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,32 +15,29 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
-@Entity
-@Table(name = "ruta")
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // lo usa el ODM para instanciar al leer
+@Document(collection = "rutas")
 public class Ruta {
+
+    // Id numérico: lo asigna GeneradorIds al guardar si es null.
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_ruta")
     private Integer idRuta;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "id_camion", nullable = false)
+    // Referencia a "camiones" (el estado del camión se actualiza en su propio documento).
+    @DBRef
     private Camion camionAsociado;
 
-    @ManyToOne
-    @JoinColumn(name = "id_chofer") // opcional: una ruta puede quedar sin chofer asignado
+    // Opcional: una ruta puede quedar sin chofer asignado.
+    @DBRef
     private Chofer chofer;
 
-    @Column(name = "fecha", nullable = false)
+    @Indexed
     private LocalDate fecha;
 
-    @OneToMany(mappedBy = "ruta", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("numeroParada ASC")
+    // Paradas embebidas, en orden de visita: la ruta se lee con una sola consulta.
     private List<Parada> paradas = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado_ruta", nullable = false)
+    @Indexed
     private EstadoRuta estadoRuta;
 
     public Ruta(Integer idRuta, Camion camionAsociado, Chofer chofer,

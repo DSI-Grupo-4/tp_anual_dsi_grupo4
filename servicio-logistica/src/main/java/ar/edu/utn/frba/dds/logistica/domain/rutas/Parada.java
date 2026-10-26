@@ -1,68 +1,48 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.AttributeOverride;
-import jakarta.persistence.AttributeOverrides;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.ArrayList;
 import java.util.List;
 
+// Documento EMBEBIDO dentro de Ruta (sin colección propia): una ruta se lee y se escribe con sus paradas.
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // requerido por JPA
-@Entity
-@Table(name = "parada")
+@NoArgsConstructor(access = AccessLevel.PROTECTED) // lo usa el ODM para instanciar al leer
 public class Parada {
-    // Id propio de la base (único global). Es el que usan los endpoints /api/rutas/{idRuta}/paradas/{idParada}.
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_parada")
+
+    // Identifica la parada DENTRO de su ruta (igual a numeroParada): es el que usan los endpoints
+    // /api/rutas/{idRuta}/paradas/{idParada}. Ya no es un id global único.
     private Integer idParada;
 
     // Posición dentro de la ruta (1..n): define el orden de visita.
-    @Column(name = "numero_parada", nullable = false)
     private Integer numeroParada;
 
-    // Referencia lógica al servicio de Donaciones: solo el id, sin FK.
-    @Column(name = "id_entidad_beneficiaria", nullable = false)
+    // Referencia lógica al servicio de Donaciones: solo el id.
     private Integer idEntidadBeneficiariaAsociada;
 
-    @Embedded
-    @AttributeOverrides({
-            @AttributeOverride(name = "calle", column = @Column(name = "direccion_calle", nullable = false, length = 120)),
-            @AttributeOverride(name = "numero", column = @Column(name = "direccion_numero", nullable = false, length = 10)),
-            @AttributeOverride(name = "ciudad.nombre", column = @Column(name = "direccion_ciudad", nullable = false, length = 80)),
-            @AttributeOverride(name = "ciudad.provincia.nombre", column = @Column(name = "direccion_provincia", nullable = false, length = 80))
-    })
     private Direccion direccion;
 
+    // Navegación hacia la ruta contenedora. No se persiste (está embebida en ella).
     @JsonIgnore
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "id_ruta", nullable = false)
+    @Transient
     private Ruta ruta;
 
-    // Lado inverso: la FK vive en entrega.id_parada
-    @OneToMany(mappedBy = "parada")
+    // Referencias a documentos de la colección "entregas": cada entrega conserva su propio estado y
+    // se consulta por separado (pendientes, por fecha, por donación), por eso no se embebe.
+    @DBRef
     private List<Entrega> entregas = new ArrayList<>();
 
     public Parada(Integer numeroParada, Integer idEntidadBeneficiariaAsociada,
                   Direccion direccion, List<Entrega> entregas) {
         this.numeroParada = numeroParada;
+        this.idParada = numeroParada; // la parada es un documento embebido: se identifica por su posición dentro de la ruta
         this.idEntidadBeneficiariaAsociada = idEntidadBeneficiariaAsociada;
         this.direccion = direccion;
         this.entregas = new ArrayList<>(entregas);

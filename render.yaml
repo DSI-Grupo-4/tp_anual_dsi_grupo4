@@ -5,7 +5,7 @@ services:
     dockerfilePath: ./Dockerfile
     dockerContext: .
     plan: free
-    region: oregon          # o la región más cercana que ofrezca Render
+    region: oregon          # la región más cercana que ofrece Render
     healthCheckPath: /api/rutas
     envVars:
       - key: PORT

@@ -28,6 +28,11 @@ public class GestorEventos {
         return eventoRepository.findByPublicadoFalseOrderByFechaGeneracionAsc();
     }
 
+    // Mongo no tiene "dirty checking": después de modificar un evento hay que guardarlo explícitamente.
+    public EventoLogistico guardar(EventoLogistico evento) {
+        return eventoRepository.save(evento);
+    }
+
     public List<EventoLogistico> getEventos() {
         return eventoRepository.findAll();
     }

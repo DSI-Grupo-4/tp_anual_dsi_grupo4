@@ -82,11 +82,11 @@ public class EntregaController {
                     description = "La entrega no está en estado NO_RECIBIDA ni FALLIDA"
             )
     })
-    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/reingresar")
     public EntregaDTO reingresar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         var entrega = entregaRepository.buscarPorId(id);
         entrega.reingresarADeposito();
+        entregaRepository.guardar(entrega); // Mongo no hace dirty checking: se guarda explícitamente
         gestorEventos.crearEvento(TipoEvento.ENTREGA_REPLANIFICADA, entrega);
         return new EntregaDTO(entrega.getIdEntrega(), entrega.getEstadoEntrega());
     }

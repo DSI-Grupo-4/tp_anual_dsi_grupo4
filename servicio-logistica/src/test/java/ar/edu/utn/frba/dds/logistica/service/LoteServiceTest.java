@@ -7,30 +7,55 @@ import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoCamion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Provincia;
 import ar.edu.utn.frba.dds.logistica.dto.DonacionDTO;
-import ar.edu.utn.frba.dds.logistica.repository.CamionRepository;
 import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-// Se prueba contra H2 en memoria con el esquema generado por Hibernate (create-drop);
-// no necesita MySQL levantado.
-@DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
-@Import(LoteService.class)
+// Prueba la lógica de LoteService con un repositorio en memoria (sin MongoDB levantado):
+// los métodos default del repositorio (guardar, buscarPorDonacion, obtenerTodas) corren de verdad
+// y las operaciones de Mongo (save, findAll, findByIdDonacionAsociada) se simulan con un Map.
 class LoteServiceTest {
 
-    @Autowired
+    private Map<Integer, Entrega> almacen;
     private EntregaRepository entregaRepository;
-    @Autowired
-    private CamionRepository camionRepository;
-    @Autowired
     private LoteService loteService;
+
+    @BeforeEach
+    void preparar() {
+        almacen = new LinkedHashMap<>();
+        entregaRepository = mock(EntregaRepository.class, CALLS_REAL_METHODS);
+        int[] ultimoId = {0};
+        when(entregaRepository.save(any(Entrega.class))).thenAnswer(invocacion -> {
+            Entrega entrega = invocacion.getArgument(0);
+            if (entrega.getIdEntrega() == null) {
+                entrega.setIdEntrega(++ultimoId[0]);
+            }
+            almacen.put(entrega.getIdEntrega(), entrega);
+            return entrega;
+        });
+        when(entregaRepository.findByIdDonacionAsociada(anyInt())).thenAnswer(invocacion -> {
+            Integer idDonacion = invocacion.getArgument(0);
+            return almacen.values().stream()
+                    .filter(e -> e.getIdDonacionAsociada().equals(idDonacion))
+                    .findFirst();
+        });
+        when(entregaRepository.findAll()).thenAnswer(invocacion -> new ArrayList<>(almacen.values()));
+        loteService = new LoteService(entregaRepository);
+    }
 
     private DonacionDTO donacion(Integer idDonacion) {
         return donacion(idDonacion, 10);
@@ -67,7 +92,6 @@ class LoteServiceTest {
         // Reasignación legítima: la donación se le había asignado a la
         // entidad 10, falló la entrega, Donaciones la reasignó a la 20.
         loteService.recibirLote(List.of(donacion(1, 10)));
-
         loteService.recibirLote(List.of(donacion(1, 20)));
 
         Entrega entrega = entregaRepository.buscarPorDonacion(1).orElseThrow();
@@ -77,14 +101,14 @@ class LoteServiceTest {
     @Test
     void recibirLoteIgnoraUnaDonacionCuyaEntregaYaEstaEnCurso() {
         List<Entrega> primero = loteService.recibirLote(List.of(donacion(1, 10)));
-        Camion camion = camionRepository.save(new Camion(null, "AA123BB", 10, 2, 500, EstadoCamion.ASIGNADO));
+        Camion camion = new Camion(1, "AA123BB", 10, 2, 500, EstadoCamion.ASIGNADO);
         primero.get(0).asignarARuta(camion);
 
         List<Entrega> segundoEnvio = loteService.recibirLote(List.of(donacion(1, 20)));
 
         assertThat(segundoEnvio).isEmpty();
-        Entrega entrega = entregaRepository.buscarPorDonacion(1).orElseThrow();
-        assertThat(entrega.getIdEntidadBeneficiariaAsociada()).isEqualTo(10); // no se pisó
+        Optional<Entrega> entrega = entregaRepository.buscarPorDonacion(1);
+        assertThat(entrega.orElseThrow().getIdEntidadBeneficiariaAsociada()).isEqualTo(10); // no se pisó
     }
 
     @Test

@@ -78,11 +78,11 @@ public class RutaController {
             )
     })
     // el chofer informa el comienzo de su recorrido
-    @org.springframework.transaction.annotation.Transactional
     @PostMapping("/{id}/iniciar")
     public Ruta iniciarRuta(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer id) {
         Ruta ruta = gestorRutas.buscarPorId(id);
         ruta.iniciarRuta();
+        gestorRutas.guardar(ruta); // ruta + camión + entregas (Mongo no cascadea ni hace dirty checking)
         ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->
                 gestorEventos.crearEvento(TipoEvento.RUTA_INICIADA, e)));
         return ruta;
