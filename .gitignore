@@ -1,8 +1,19 @@
 target/
 .idea/
 *.iml
-logs/
 .pids/
+logs/
+# instalado por donatrack-agent-toolkit — no versionar
+.claude/skills
+
+# Bandejas locales de integración e historial de notificaciones
+.datos/
+
 servicio-incentivos/credentials.env
 .cli-venv/
 __pycache__/
+
+.servicios/
+.smoke-refactor/
+*.log
+*.pid

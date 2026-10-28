@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: servicio-logistica
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon          # o la región más cercana que ofrezca Render
+    healthCheckPath: /api/rutas
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SPRING_PROFILES_ACTIVE
+        value: render

@@ -11,4 +11,7 @@ import lombok.Setter;
 public class EntregaEventoDTO {
     private Integer idDonacionAsociada;
     private String justificacionFallo;
+    private String seguimientoUrl;
+    private java.time.LocalDateTime fechaHoraEntrega;
+    private com.fasterxml.jackson.databind.JsonNode camionEntrega;
 }

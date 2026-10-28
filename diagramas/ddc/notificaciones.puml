@@ -1,0 +1,95 @@
+@startuml ModeloDominioNotificaciones
+
+title Servicio de Notificaciones - Modelo de dominio
+
+top to bottom direction
+skinparam classAttributeIconSize 0
+
+' ===== NOTIFICACION =====
+
+class Notificacion {
+
+* id: String
+* mensaje: String
+* medio: MedioComunicacion
+* contacto: String
+* estado: EstadoNotificacion
+* servicioOrigen: String
+* fechaCreacion: LocalDateTime
+* tipoEvento: String
+* eventoId: String
+
+* marcarCompletada(): void
+}
+
+enum MedioComunicacion {
+WHATSAPP
+EMAIL
+SMS
+}
+
+enum EstadoNotificacion {
+PENDIENTE
+COMPLETADA
+}
+
+Notificacion --> MedioComunicacion
+Notificacion --> EstadoNotificacion
+
+' ===== ESTRATEGIA DE ENVIO =====
+
+' Las implementaciones simulan el envio (quedan registradas por log);
+' la integracion con los proveedores externos reales queda para una
+' entrega futura, sin tocar el resto del servicio (Open/Closed).
+interface Notificador {
+* enviarNotificacion(notificacion: Notificacion): void
+}
+
+class EmailNotificador
+class SmsNotificador
+class WhatsAppNotificador
+
+Notificador <|.. EmailNotificador
+Notificador <|.. SmsNotificador
+Notificador <|.. WhatsAppNotificador
+Notificador ..> Notificacion : envia
+
+class NotificadorFactory {
+* obtenerNotificador(medio: MedioComunicacion): Notificador
+}
+
+NotificadorFactory --> Notificador : resuelve
+NotificadorFactory o-- EmailNotificador
+NotificadorFactory o-- SmsNotificador
+NotificadorFactory o-- WhatsAppNotificador
+
+' ===== SERVICIO =====
+
+class NotificacionService {
+
+* enviarNotificacion(request: NotificacionRequestDTO): Notificacion
+* despachar(notificacion: Notificacion): Notificacion
+* buscarPorId(id: String): Optional<Notificacion>
+* listarTodas(): List<Notificacion>
+}
+
+class EnvioNotificacionException <<exception>>
+
+NotificacionService --> NotificadorFactory
+NotificacionService "1" o-- "*" Notificacion : historial
+NotificacionService ..> EnvioNotificacionException : lanza
+
+' ===== INTEGRACION =====
+
+class NotificacionController <<RestController /api/notificaciones>>
+class NotificacionSolicitadaConsumer <<RabbitMQ listener>>
+class ColaNotificacionesSolicitadas <<RabbitMQ queue>>
+class ColaNotificacionesFallidas <<RabbitMQ DLQ>>
+
+NotificacionController --> NotificacionService
+NotificacionSolicitadaConsumer --> NotificacionService
+
+ColaNotificacionesSolicitadas ..> NotificacionSolicitadaConsumer : consume
+ColaNotificacionesSolicitadas ..> ColaNotificacionesFallidas : reintentos agotados
+
+@enduml

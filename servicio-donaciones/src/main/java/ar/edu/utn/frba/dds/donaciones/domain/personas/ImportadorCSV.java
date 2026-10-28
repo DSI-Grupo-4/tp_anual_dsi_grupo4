@@ -1,7 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
 import com.opencsv.CSVReader;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -15,37 +14,38 @@ public class ImportadorCSV extends Importador {
     @Override
     public void importar(InputStream inputStream) {
 
-        listaDonantes = new ArrayList<>();
+        personasImportadas = new ArrayList<>();
 
         try (CSVReader csvReader =
-                     new CSVReader(new InputStreamReader(inputStream))) {
+                     new CSVReader(new InputStreamReader(inputStream, java.nio.charset.StandardCharsets.UTF_8))) {
 
             csvReader.readNext();
 
             String[] fila;
-            long id = 1L;
 
             while ((fila = csvReader.readNext()) != null) {
 
-                Donante donante = crearDonante(id++, fila);
+                Persona persona = crearPersona(fila);
 
-                if (donante != null) {
-                    listaDonantes.add(donante);
+                if (persona != null) {
+                    personasImportadas.add(persona);
                 }
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            personasImportadas.clear();
+            throw new IllegalArgumentException("CSV inválido: " + e.getMessage(), e);
         }
     }
 
-    private Donante crearDonante(long id, String[] datos) {
-        if (datos.length < 6) return null;
+    private Persona crearPersona(String[] datos) {
+        if (datos.length < 6) throw new IllegalArgumentException("Cada fila requiere seis columnas");
 
         String tipo = datos[0];
         String documento = datos[2];
         String nombreCompleto = datos[3];
-        String email = datos[4];
+        String email = datos[4].trim();
+        if (!email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) throw new IllegalArgumentException("EMAIL obligatorio o inválido: " + email);
         String telefono = datos[5];
 
         Persona persona;
@@ -61,8 +61,8 @@ public class ImportadorCSV extends Importador {
         }
 
         persona.agregarMedio(new MedioContacto(TipoContacto.EMAIL, email, true));
-        persona.agregarMedio(new MedioContacto(TipoContacto.TELEFONO, telefono, false));
+        if (!telefono.isBlank()) persona.agregarMedio(new MedioContacto(TipoContacto.TELEFONO, telefono.trim(), false));
 
-        return new Donante(id, persona);
+        return persona;
     }
 }

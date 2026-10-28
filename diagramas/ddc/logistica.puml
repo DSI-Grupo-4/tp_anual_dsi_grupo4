@@ -1,0 +1,202 @@
+@startuml
+title Servicio de LogÃstica - Modelo del Dominio
+
+top to bottom direction
+skinparam classAttributeIconSize 0
+
+' ===== RUTAS =====
+
+class Ruta {
+- idRuta: Integer
+- fecha: LocalDate
+- estadoRuta: EstadoRuta
++ iniciarRuta(): void
++ finalizarRuta(): void
++ completoTodasLasEntregas(): Boolean
+}
+
+class Parada {
+- idParada: Integer
+- numeroParada: Integer
+- idEntidadBeneficiariaAsociada: Integer
++ confirmarRecepcion(foto: FotoEntrega): void
++ marcarNoRecibida(justificacion: String): void
++ marcarFallida(justificacion: String): void
+}
+
+' ===== ENTREGAS =====
+
+class Entrega {
+- idEntrega: Integer
+- idDonacionAsociada: Integer
+- idEntidadBeneficiariaAsociada: Integer
+- estadoEntrega: EstadoEntrega
+- fecha: LocalDate
+- pesoKG: Integer
+- volumenM3: Integer
+- alturaM: Integer
+- justificacionFallo: String
++ cambiarEstado(estado: EstadoEntrega): void
++ asignarARuta(camion: Camion): void
++ iniciarTraslado(): void
++ confirmarEntrega(foto: FotoEntrega): void
++ marcarNoRecibida(justificacion: String): void
++ marcarFallida(justificacion: String): void
++ reingresarADeposito(): void
+}
+
+class FotoEntrega {
+- idFoto: Integer
+- url: String
+- fecha: LocalDate
+}
+
+' ===== RECURSOS LOGISTICOS =====
+
+class Camion {
+- idCamion: Integer
+- patente: String
+- capacidadVolumenM3: Integer
+- alturaM: Integer
+- capacidadCargaKg: Integer
+- estadoCamion: EstadoCamion
++ cambiarEstado(estado: EstadoCamion): void
++ puedeCargar(peso: int, volumen: int, altura: int): boolean
+}
+
+class Chofer {
+- idChofer: Integer
+- nombre: String
+- dni: Integer
+- habilitado: Boolean
++ estaHabilitado(): boolean
+}
+
+' ===== DIRECCIONES =====
+
+class Direccion <<value object>> {
+- calle: String
+- numero: String
+}
+
+class Ciudad <<value object>> {
+- nombre: String
+}
+
+class Provincia <<value object>> {
+- nombre: String
+}
+
+' ===== EVENTOS LOGISTICOS =====
+
+class EventoLogistico {
+- idEvento: UUID
+- tipoEvento: TipoEvento
+- publicado: boolean
+- fechaGeneracion: LocalDateTime
++ marcarPublicado(): void
+}
+
+' ===== GESTORES =====
+
+class GestorRutas {
+- estrategia: EstrategiaPlanificacion
++ setEstrategia(estrategia: EstrategiaPlanificacion): void
++ planificar(entregas: List<Entrega>, camiones: List<Camion>, choferes: List<Chofer>): List<Ruta>
++ registrarRutaExterna(camion: Camion, chofer: Chofer, paradas: List<Parada>): Ruta
++ getRutas(): List<Ruta>
++ buscarPorId(id: Integer): Ruta
++ donacionesNoEntregadas(): List<Entrega>
+}
+
+class GestorEventos {
++ crearEvento(tipo: TipoEvento, entrega: Entrega): EventoLogistico
++ getEventosNoPublicados(): List<EventoLogistico>
++ getEventos(): List<EventoLogistico>
++ buscarPorId(id: UUID): EventoLogistico
+}
+
+' ===== ESTRATEGIA DE PLANIFICACION =====
+
+interface EstrategiaPlanificacion {
++ planificar(entregas: List<Entrega>, camiones: List<Camion>, choferes: List<Chofer>): List<Ruta>
+}
+
+class PlanificacionPropia {
++ planificar(entregas: List<Entrega>, camiones: List<Camion>, choferes: List<Chofer>): List<Ruta>
+}
+
+' ===== ENUMERACIONES =====
+
+enum EstadoRuta {
+PLANIFICADA
+INICIADA
+FINALIZADA
+CANCELADA
+}
+
+enum EstadoEntrega {
+PENDIENTE
+ASIGNADA_A_RUTA
+EN_TRASLADO
+ENTREGADA
+NO_RECIBIDA
+FALLIDA
+REPLANIFICABLE
+}
+
+enum EstadoCamion {
+DISPONIBLE
+ASIGNADO
+EN_RUTA
+FUERA_DE_SERVICIO
+}
+
+enum TipoEvento {
+RUTA_PLANIFICADA
+RUTA_INICIADA
+ENTREGA_EN_TRASLADO
+ENTREGA_CONFIRMADA
+ENTREGA_NO_RECIBIDA
+ENTREGA_FALLIDA
+ENTREGA_REPLANIFICADA
+}
+
+' ===== RELACIONES ENTRE RUTAS Y ENTREGAS =====
+
+Ruta "1" *-- "1..*" Parada : paradas (ordenadas)
+Parada "1" o-- "1..*" Entrega : entregas
+Entrega "1" *-- "0..*" FotoEntrega : fotos
+
+Ruta "0..*" --> "1" Camion : camionAsociado
+Ruta "0..*" --> "0..1" Chofer : chofer
+Entrega "0..*" --> "0..1" Camion : camionEntrega
+
+' ===== RELACIONES CON DIRECCIONES =====
+
+Parada --> Direccion : direccion
+Entrega --> Direccion : direccionDestino
+
+Direccion *-- Ciudad
+Ciudad *-- Provincia
+
+' ===== RELACIONES CON EVENTOS =====
+
+EventoLogistico "0..*" --> "1" Entrega : entregaAsociada
+
+' ===== RELACIONES CON ESTADOS =====
+
+Ruta --> EstadoRuta
+Entrega --> EstadoEntrega
+Camion --> EstadoCamion
+EventoLogistico --> TipoEvento
+
+' ===== RELACIONES CON ESTRATEGIAS Y GESTORES =====
+
+GestorRutas --> EstrategiaPlanificacion : estrategia
+PlanificacionPropia ..|> EstrategiaPlanificacion
+
+EstrategiaPlanificacion ..> Ruta : crea
+GestorRutas ..> Ruta : gestiona
+GestorEventos ..> EventoLogistico : crea / consulta
+@enduml

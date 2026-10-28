@@ -9,8 +9,8 @@ public class MisionDisponibleDTO {
     private String nombreMision;
     private String categoriaNombre;
     private String insigniaNombre;
-    private int progresoActual;
-    private int distanciaRestante;
+    private java.math.BigDecimal progresoActual;
+    private java.math.BigDecimal distanciaRestante;
     private boolean completada;
     private boolean activa;
 }

@@ -1,0 +1,225 @@
+package ar.edu.utn.frba.dds.donaciones.service;
+
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Donante;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.Genero;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.GestorDonantes;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrganizacion;
+import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
+class DonanteServiceTest {
+
+    @Mock
+    private GestorDonantes gestorDonantes;
+
+    private DonanteService donanteService;
+
+    @BeforeEach
+    void setUp() {
+        donanteService = new DonanteService(gestorDonantes);
+    }
+
+    // Para los tests que necesitan un GestorDonantes real (no mockeado) como
+    // fixture liviano: simula DonanteRepository con una lista en memoria.
+    private static GestorDonantes nuevoGestorDonantesReal() {
+        ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository repo =
+                org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository.class);
+        java.util.List<Donante> guardados = new java.util.ArrayList<>();
+        java.util.concurrent.atomic.AtomicLong siguienteId = new java.util.concurrent.atomic.AtomicLong(1L);
+        lenient().when(repo.save(any())).thenAnswer(inv -> {
+            Donante d = inv.getArgument(0);
+            if (d.getId() == null) d.setId(siguienteId.getAndIncrement());
+            guardados.removeIf(x -> x.getId().equals(d.getId()));
+            guardados.add(d);
+            return d;
+        });
+        lenient().when(repo.findAll()).thenAnswer(inv -> java.util.List.copyOf(guardados));
+        lenient().when(repo.findById(any())).thenAnswer(inv -> {
+            Long id = inv.getArgument(0);
+            return guardados.stream().filter(x -> x.getId().equals(id)).findFirst();
+        });
+        return new GestorDonantes(repo);
+    }
+
+    @Test
+    void crearDonanteHumanoDelegaElAltaEnGestorDonantes() {
+        PersonaHumanaDTO dto = new PersonaHumanaDTO();
+        dto.setMediosContacto(contactos());
+        dto.setNombre("Ana");
+        dto.setApellido("Perez");
+        dto.setDocumento("12345678");
+
+        Donante donanteRegistrado = new Donante(1L,
+                new PersonaHumana("Ana", "Perez", null, "12345678", null));
+        when(gestorDonantes.registrarDonante(any())).thenReturn(donanteRegistrado);
+
+        DonanteDTO resultado = donanteService.crearDonanteHumano(dto);
+
+        assertThat(resultado.getId()).isEqualTo(1L);
+        assertThat(resultado.getNombre()).isEqualTo("Ana");
+        assertThat(resultado.getTipo()).isEqualTo("HUMANA");
+    }
+
+    @Test
+    void eliminarDelegaEnGestorDonantes() {
+        donanteService.eliminar(3L);
+
+        verify(gestorDonantes).eliminar(eq(3L));
+    }
+
+    @Test
+    void convertirADtoExponeEdadYGeneroDeUnaPersonaHumana() {
+        // Regresión del hallazgo medio: DonanteDTO no exponía edad/género,
+        // lo que hacía invisible (y en el PUT, destructivo) este dato.
+        Donante donante = new Donante(1L,
+                new PersonaHumana("Ana", "Perez", 30, "12345678", Genero.FEMENINO));
+
+        DonanteDTO dto = donanteService.convertirADTO(donante);
+
+        assertThat(dto.getEdad()).isEqualTo(30);
+        assertThat(dto.getGenero()).isEqualTo(Genero.FEMENINO);
+    }
+
+    @Test
+    void actualizarHumanoConservaEdadYGeneroCuandoElClienteLosReenvia() {
+        Donante donante = new Donante(1L,
+                new PersonaHumana("Ana", "Perez", 30, "12345678", Genero.FEMENINO));
+        when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
+
+        PersonaHumanaDTO cambios = new PersonaHumanaDTO();
+        cambios.setMediosContacto(contactos());
+        cambios.setNombre("Ana");
+        cambios.setApellido("Perez");
+        cambios.setEdad(31); // cumplió años
+        cambios.setGenero(Genero.FEMENINO);
+        cambios.setDocumento("12345678");
+
+        DonanteDTO resultado = donanteService.actualizarHumano(1L, cambios);
+
+        assertThat(resultado.getEdad()).isEqualTo(31);
+        assertThat(resultado.getGenero()).isEqualTo(Genero.FEMENINO);
+    }
+
+    @Test
+    void actualizarIgnoraElTipoDeclaradoPorElClienteYUsaElRealDeUnaPersonaJuridica() {
+        // Regresión: antes DonanteController decidía la rama según
+        // dto.getTipo() (lo que manda el cliente); acá el donante real es
+        // JURIDICA pero el DTO dice "HUMANA" — antes esto tiraba
+        // ClassCastException (500 sin manejar), confirmado en vivo.
+        Donante donante = new Donante(1L,
+                new PersonaJuridica("Arcos Plateados SA", TipoOrganizacion.EMPRESA, null, null));
+        when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
+
+        DonanteDTO cambios = new DonanteDTO();
+        cambios.setMediosContacto(contactos());
+        cambios.setTipo("HUMANA"); // mentira: el donante real es jurídico
+        cambios.setRazonSocial("Arcos Plateados SA (renombrada)");
+        cambios.setTipoOrganizacion(TipoOrganizacion.EMPRESA);
+
+        // Si el bug siguiera presente, esta línea tiraría ClassCastException.
+        DonanteDTO resultado = donanteService.actualizar(1L, cambios);
+
+        assertThat(resultado.getTipo()).isEqualTo("JURIDICA");
+        assertThat(resultado.getRazonSocial()).isEqualTo("Arcos Plateados SA (renombrada)");
+    }
+
+    @Test
+    void actualizarIgnoraElTipoDeclaradoPorElClienteYUsaElRealDeUnaPersonaHumana() {
+        Donante donante = new Donante(1L,
+                new PersonaHumana("Ana", "Perez", 30, "12345678", Genero.FEMENINO));
+        when(gestorDonantes.buscarPorId(1L)).thenReturn(donante);
+
+        DonanteDTO cambios = new DonanteDTO();
+        cambios.setMediosContacto(contactos());
+        cambios.setTipo("JURIDICA"); // mentira: el donante real es humano
+        cambios.setNombre("Ana Actualizada");
+        cambios.setApellido("Perez");
+        cambios.setEdad(31);
+        cambios.setGenero(Genero.FEMENINO);
+        cambios.setDocumento("12345678");
+
+        DonanteDTO resultado = donanteService.actualizar(1L, cambios);
+
+        assertThat(resultado.getTipo()).isEqualTo("HUMANA");
+        assertThat(resultado.getNombre()).isEqualTo("Ana Actualizada");
+    }
+    private java.util.List<ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO> contactos() {
+        var c = new ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO();
+        c.setTipo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL);
+        c.setValor("ana@example.org"); c.setEsPreferido(true);
+        return java.util.List.of(c);
+    }
+
+    @Test
+    void csvExponeContactosYPermiteCambiarPreferido() {
+        var gestor = nuevoGestorDonantesReal();
+        var servicio = new DonanteService(gestor);
+        String csv = "tipo,id,documento,nombre,email,telefono\nHUMANA,1,123,Ana Perez,ana@example.org,3515551234\n";
+        servicio.importarCSV(new org.springframework.mock.web.MockMultipartFile("archivo", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        var dto = servicio.buscarPorId(1L);
+        assertThat(dto.getMediosContacto()).hasSize(2);
+        assertThat(dto.getMediosContacto().get(0).getValor()).isEqualTo("ana@example.org");
+        dto.getMediosContacto().get(0).setEsPreferido(false);
+        dto.getMediosContacto().get(1).setEsPreferido(true);
+        var actualizado = servicio.actualizar(1L, dto);
+        assertThat(actualizado.getMediosContacto().get(1).getEsPreferido()).isTrue();
+        assertThat(gestor.buscarPorId(1L).getPersona().medioPreferido().orElseThrow().getTipo())
+            .isEqualTo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.TELEFONO);
+        dto.getMediosContacto().get(0).setEsPreferido(true);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.actualizar(1L, dto)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(gestor.buscarPorId(1L).getPersona().medioPreferido().orElseThrow().getTipo())
+            .isEqualTo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.TELEFONO);
+    }
+
+    @Test
+    void rechazaAltaSinEmailYCsvInvalidoSinAltasParciales() {
+        var gestor = nuevoGestorDonantesReal();
+        var servicio = new DonanteService(gestor);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.crearDonanteHumano(new PersonaHumanaDTO()))
+            .isInstanceOf(IllegalArgumentException.class);
+        String csv = "tipo,id,documento,nombre,email,telefono\nHUMANA,1,123,Ana Perez,ana@example.org,351\nHUMANA,2,456,Juan Perez,,351\n";
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> servicio.importarCSV(
+            new org.springframework.mock.web.MockMultipartFile("archivo", csv.getBytes(java.nio.charset.StandardCharsets.UTF_8))))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThat(gestor.getDonantesRegistrados()).isEmpty();
+    }
+    @Test
+    void bienvenidaSoloAlAltaYLaInteraccionReiniciaInactividad() {
+        var gestor = nuevoGestorDonantesReal(); var servicio = new DonanteService(gestor);
+        var publicador = org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.integracion.PublicadorEventosPort.class);
+        servicio.configurarPublicador(publicador);
+        var dto = new PersonaHumanaDTO(); dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
+        servicio.crearDonanteHumano(dto);
+        var donante = gestor.buscarPorId(1L);
+        org.mockito.Mockito.verify(publicador).publicar("BIENVENIDA_DONANTE", donante);
+        donante.setUltimaActividad(java.time.LocalDate.now().minusDays(20));
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+        donante.setUltimaActividad(java.time.LocalDate.now().minusDays(21));
+        assertThat(donante.debeNotificarsePorInactividad(20)).isTrue();
+        servicio.registrarInteraccion(1L);
+        assertThat(donante.debeNotificarsePorInactividad(20)).isFalse();
+    }
+    @Test void altaHumanaSincronizaIdentidadEnIncentivosSinDonacion() {
+        var gestor=nuevoGestorDonantesReal();var servicio=new DonanteService(gestor);
+        var cliente=org.mockito.Mockito.mock(ar.edu.utn.frba.dds.donaciones.client.IncentivosClient.class);servicio.configurarIncentivos(cliente);
+        var dto=new PersonaHumanaDTO();dto.setNombre("Ana");dto.setApellido("Perez");dto.setDocumento("123");dto.setMediosContacto(contactos());
+        servicio.crearDonanteHumano(dto);
+        org.mockito.Mockito.verify(cliente).registrarDonante(gestor.buscarPorId(1L));
+        org.mockito.Mockito.verify(cliente,org.mockito.Mockito.never()).registrarActividadDonacion(org.mockito.ArgumentMatchers.any());
+    }
+}

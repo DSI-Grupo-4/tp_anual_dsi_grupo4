@@ -9,26 +9,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/api/admin")
 public class AdminController {
 
     private final Consultor consultor = Consultor.getInstance();
 
-    @Operation(
-            summary = "Obtener métricas del sistema",
-            description = "Obtiene las métricas generales del sistema, incluyendo donantes activos, solicitudes de donación, misiones completadas, insignias otorgadas y su evolución mensual."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Métricas obtenidas correctamente"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener metricas sistema", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/metricas")
     public MetricasSistemaDTO obtenerMetricasSistema() {
         return convertirADTO(consultor.obtenerMetricasSistema());

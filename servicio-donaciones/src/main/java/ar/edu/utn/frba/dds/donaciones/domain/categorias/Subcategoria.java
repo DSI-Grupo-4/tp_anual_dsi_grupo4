@@ -1,17 +1,5 @@
 package ar.edu.utn.frba.dds.donaciones.domain.categorias;
 
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class Subcategoria {
-    private String nombre;
-
-    public Subcategoria() {
-    }
-
-    public Subcategoria(String nombre) {
-        this.nombre = nombre;
-    }
+public enum Subcategoria {
+    SILLA, MESA, BANCO, COLCHON, FIDEOS_SECOS, ARROZ, LEGUMBRES_SECAS, ACEITE_VEGETAL, TOMATE, FRUTA, CAMPERA, REMERA, PANTALON, ROPA_INFANTIL, FRAZADA
 }

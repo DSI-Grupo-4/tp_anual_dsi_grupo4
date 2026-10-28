@@ -17,12 +17,15 @@ public class NotificacionResponseDTO {
     private EstadoNotificacion estado;
     private String servicioOrigen;
     private String fechaCreacion;
+    private String tipoEvento;
+    private String eventoId;
 
     public NotificacionResponseDTO() {
     }
 
     public NotificacionResponseDTO(String id, String mensaje, MedioComunicacion medio, String contacto,
-                                   EstadoNotificacion estado, String servicioOrigen, String fechaCreacion) {
+                                   EstadoNotificacion estado, String servicioOrigen, String fechaCreacion,
+                                   String tipoEvento, String eventoId) {
         this.id = id;
         this.mensaje = mensaje;
         this.medio = medio;
@@ -30,6 +33,8 @@ public class NotificacionResponseDTO {
         this.estado = estado;
         this.servicioOrigen = servicioOrigen;
         this.fechaCreacion = fechaCreacion;
+        this.tipoEvento = tipoEvento;
+        this.eventoId = eventoId;
     }
 
     public static NotificacionResponseDTO desde(Notificacion notificacion) {
@@ -40,7 +45,9 @@ public class NotificacionResponseDTO {
                 notificacion.getContacto(),
                 notificacion.getEstado(),
                 notificacion.getServicioOrigen(),
-                notificacion.getFechaCreacion()
+                notificacion.getFechaCreacion(),
+                notificacion.getTipoEvento(),
+                notificacion.getEventoId()
         );
     }
 
@@ -70,5 +77,13 @@ public class NotificacionResponseDTO {
 
     public String getFechaCreacion() {
         return fechaCreacion;
+    }
+
+    public String getTipoEvento() {
+        return tipoEvento;
+    }
+
+    public String getEventoId() {
+        return eventoId;
     }
 }

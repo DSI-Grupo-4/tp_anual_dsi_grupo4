@@ -1,6 +1,8 @@
 package ar.edu.utn.frba.dds.incentivos.ranking;
 
 import ar.edu.utn.frba.dds.incentivos.donante.Donante;
+import ar.edu.utn.frba.dds.incentivos.repository.ActividadMensualDonanteRepository;
+import ar.edu.utn.frba.dds.incentivos.repository.RankingRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +20,11 @@ public class HistorialRanking {
     private final List<ActividadMensualDonante> donantesMisionesMensuales;
     private final List<Ranking> rankings;
 
+    // Inyectados al boot por PersistenciaConfigurer -- null en los tests
+    // unitarios que no levantan contexto de Spring (se degrada a memoria).
+    private RankingRepository rankingRepository;
+    private ActividadMensualDonanteRepository actividadMensualDonanteRepository;
+
     private HistorialRanking() {
         this.donantesMisionesMensuales = new ArrayList<>();
         this.rankings = new ArrayList<>();
@@ -30,14 +37,28 @@ public class HistorialRanking {
         return instancia;
     }
 
+    public synchronized void configurarPersistencia(RankingRepository rankingRepository,
+                                                      ActividadMensualDonanteRepository actividadMensualDonanteRepository) {
+        this.rankingRepository = rankingRepository;
+        this.actividadMensualDonanteRepository = actividadMensualDonanteRepository;
+        rankings.clear();
+        rankings.addAll(rankingRepository.findAllByOrderByFechaEmisionAsc());
+        donantesMisionesMensuales.clear();
+        donantesMisionesMensuales.addAll(actividadMensualDonanteRepository.findByRankingIsNull());
+    }
+
     public void generarRanking() {
         List<ActividadMensualDonante> topDonantes = donantesMisionesMensuales.stream()
                 .sorted(Comparator.comparingInt(ActividadMensualDonante::getCantidad).reversed())
                 .limit(TOP_DONANTES)
                 .toList();
 
-        rankings.add(new Ranking(LocalDate.now(), topDonantes));
+        Ranking ranking = new Ranking(LocalDate.now(), topDonantes);
+        rankings.add(ranking);
         donantesMisionesMensuales.clear();
+        if (rankingRepository != null) {
+            rankingRepository.save(ranking);
+        }
     }
 
     public void registrarMisionCompletada(Donante donante) {
@@ -50,6 +71,9 @@ public class HistorialRanking {
                     return nueva;
                 });
         actividad.incrementar();
+        if (actividadMensualDonanteRepository != null) {
+            actividadMensualDonanteRepository.save(actividad);
+        }
     }
 
     public Optional<Integer> obtenerPosicionActual(Donante donante) {

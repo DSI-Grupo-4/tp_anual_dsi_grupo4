@@ -1,19 +1,19 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.dto.DonanteDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ImportacionDonantesDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonanteService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import java.util.List;
 
+@Tag(name = "Donantes", description = "Alta, edición e importación masiva por CSV de personas donantes (humanas o jurídicas)")
 @RestController
 @RequestMapping("/api/donantes")
 public class DonanteController {
@@ -24,149 +24,62 @@ public class DonanteController {
         this.donanteService = donanteService;
     }
 
-    @Operation(
-            summary = "Obtener todos los donantes",
-            description = "Obtiene la lista de todos los donantes registrados en el sistema."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donantes obtenidos correctamente"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener todos", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping
     public List<DonanteDTO> obtenerTodos() {
         return donanteService.obtenerTodos();
     }
 
-    @Operation(
-            summary = "Obtener un donante",
-            description = "Obtiene un donante a partir de su identificador."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donante encontrado"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "No se encontró un donante con el ID indicado"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener por id", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}")
-    public DonanteDTO obtenerPorId(@PathVariable Long id) {
+    public DonanteDTO obtenerPorId(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         return donanteService.buscarPorId(id);
     }
 
-    @Operation(
-            summary = "Crear un donante humano",
-            description = "Registra un nuevo donante correspondiente a una persona humana."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Donante humano creado correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos del donante inválidos"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Crear humano", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/humanos")
     @ResponseStatus(HttpStatus.CREATED)
-    public DonanteDTO crearHumano(@RequestBody PersonaHumanaDTO dto) {
+    public DonanteDTO crearHumano(@Valid @RequestBody PersonaHumanaDTO dto) {
         return donanteService.crearDonanteHumano(dto);
     }
 
-    @Operation(
-            summary = "Crear un donante jurídico",
-            description = "Registra un nuevo donante correspondiente a una persona jurídica."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Donante jurídico creado correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos del donante inválidos"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Crear juridico", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/juridicos")
     @ResponseStatus(HttpStatus.CREATED)
-    public DonanteDTO crearJuridico(@RequestBody PersonaJuridicaDTO dto) {
+    public DonanteDTO crearJuridico(@Valid @RequestBody PersonaJuridicaDTO dto) {
         return donanteService.crearDonanteJuridico(dto);
     }
 
-    @Operation(
-            summary = "Actualizar un donante",
-            description = "Actualiza los datos de un donante existente según su tipo."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donante actualizado correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos del donante inválidos"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donante no encontrado"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Actualizar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PutMapping("/{id}")
-    public DonanteDTO actualizar(@PathVariable Long id, @RequestBody DonanteDTO dto) {
-        if ("HUMANA".equalsIgnoreCase(dto.getTipo())) {
-            PersonaHumanaDTO humanaDTO = new PersonaHumanaDTO();
-            humanaDTO.setNombre(dto.getNombre());
-            humanaDTO.setApellido(dto.getApellido());
-            humanaDTO.setDocumento(dto.getDocumento());
-            return donanteService.actualizarHumano(id, humanaDTO);
-        }
-        PersonaJuridicaDTO juridicaDTO = new PersonaJuridicaDTO();
-        juridicaDTO.setRazonSocial(dto.getRazonSocial());
-        return donanteService.actualizarJuridico(id, juridicaDTO);
+    public DonanteDTO actualizar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id, @Valid @RequestBody DonanteDTO dto) {
+        // PUT reemplaza el estado completo: el cliente debe mandar todos los
+        // campos que quiere conservar (semántica estándar de PUT). El tipo
+        // (humano/jurídico) NO lo decide el body — es inmutable y se
+        // determina en DonanteService a partir del donante real ya guardado;
+        // antes se confiaba en dto.getTipo() y un mismatch tiraba
+        // ClassCastException (500 sin manejar, ver scan de calidad).
+        return donanteService.actualizar(id, dto);
     }
 
-    @Operation(
-            summary = "Eliminar un donante",
-            description = "Elimina un donante utilizando su identificador."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Donante eliminado correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donante no encontrado"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Registrar interacción", description = "Invocar al iniciar sesión o realizar una interacción del usuario. Reinicia el plazo de inactividad; no enviar automáticamente por tareas del servidor.")
+    @PostMapping("/{id}/interacciones")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registrarInteraccion(@PathVariable Long id) {
+        donanteService.registrarInteraccion(id);
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         donanteService.eliminar(id);
     }
 
-    @Operation(
-            summary = "Importar donantes desde un archivo CSV",
-            description = "Importa donantes a partir de un archivo CSV."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donantes importados correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Archivo inválido o formato incorrecto"
-            )
-    })
-    @PostMapping("/importar")
-    public List<DonanteDTO> importar(
-            @RequestParam MultipartFile archivo) {
+    @io.swagger.v3.oas.annotations.Operation(summary = "Importar", description = "Seleccionar el archivo CSV de ejemplo en src/data. Devuelve solo la cantidad importada, no el detalle de cada donante (evita la latencia de serializar miles de registros) -- para consultarlos, usar GET /api/donantes.")
+    @PostMapping(value = "/importar", consumes = "multipart/form-data")
+    public ImportacionDonantesDTO importar(
+            @io.swagger.v3.oas.annotations.Parameter(description = "Seleccionar CSV UTF-8; ejemplo incluido en servicio-donaciones/src/data.") @RequestParam MultipartFile archivo) {
 
         return donanteService.importarCSV(archivo);
     }

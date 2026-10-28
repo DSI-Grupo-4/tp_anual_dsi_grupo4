@@ -15,13 +15,21 @@ public class PrioridadSubatendidos implements AlgoritmoAsignacion {
             Donacion donacion,
             List<EntidadBeneficiaria> entidades) {
 
+        if (donacion.estaVencida()) return List.of();
         LocalDateTime hace90dias = LocalDateTime.now().minusDays(90);
 
         return entidades.stream()
+                .filter(entidad -> tieneNecesidadCompatible(entidad, donacion))
                 .sorted(Comparator.comparingLong(
                         entidad -> donacionesEntregadasEnTrimestre(entidad, hace90dias)))
                 .limit(10)
                 .toList();
+    }
+
+    private boolean tieneNecesidadCompatible(EntidadBeneficiaria entidad, Donacion donacion) {
+        return entidad.necesidadesPendientes().stream()
+                .anyMatch(necesidad -> necesidad.getSubcategoria() == donacion.getSubcategoria()
+                        && necesidad.getUnidadMedida() == donacion.getUnidadMedida());
     }
 
     private long donacionesEntregadasEnTrimestre(

@@ -1,66 +1,54 @@
 package ar.edu.utn.frba.dds.incentivos.client;
 
+import ar.edu.utn.frba.dds.incentivos.config.RabbitNotificacionesConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestClient;
 
+import java.util.UUID;
+
+/**
+ * Publica hacia la cola de Notificaciones vía RabbitMQ. Reemplaza al
+ * RestTemplate síncrono que tenía Consultor, para que la integración con
+ * Notificaciones sea asíncrona.
+ *
+ * Consultor es un singleton manual (no un bean de Spring), así que esta
+ * clase se le inyecta al boot vía NotificacionesClienteConfigurer
+ * (ApplicationRunner), mismo patrón que ya usan WebhookN8nConfigurer y
+ * NotificacionesConfigurer para las URLs.
+ */
 @Component
 public class NotificacionesClient {
 
     private static final Logger logger = LoggerFactory.getLogger(NotificacionesClient.class);
-    private final RestClient restClient;
 
-    public NotificacionesClient(@Value("${notificaciones.base-url}") String baseUrl) {
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+    private final ar.edu.utn.frba.dds.incentivos.config.BandejaNotificaciones bandeja;
+
+    public NotificacionesClient(ar.edu.utn.frba.dds.incentivos.config.BandejaNotificaciones bandeja) {
+        this.bandeja = bandeja;
     }
 
-    public void notificarMisionCompletada(int donanteId, String misionNombre) {
-        notificarMisionCompletada(donanteId, misionNombre, null, null);
-    }
-
-    public void notificarMisionCompletada(int donanteId, String misionNombre, String medio, String contacto) {
-        enviar(
-                "Completaste la mision: " + misionNombre + ".",
-                medioPreferidoODefault(medio),
-                contactoPreferidoODefault(donanteId, contacto)
-        );
-    }
-
-    public void notificarSubidaCategoria(int donanteId, String nuevaCategoria) {
-        notificarSubidaCategoria(donanteId, nuevaCategoria, null, null);
-    }
-
-    public void notificarSubidaCategoria(int donanteId, String nuevaCategoria, String medio, String contacto) {
-        enviar(
-                "Subiste de categoria a: " + nuevaCategoria + ".",
-                medioPreferidoODefault(medio),
-                contactoPreferidoODefault(donanteId, contacto)
-        );
-    }
-
-    private void enviar(String mensaje, String medio, String contacto) {
-        NotificacionRequest payload = new NotificacionRequest(mensaje, medio, contacto, "incentivos");
-        try {
-            restClient.post()
-                    .uri("/api/notificaciones")
-                    .body(payload)
-                    .retrieve()
-                    .toBodilessEntity();
-        } catch (Exception e) {
-            logger.warn("No se pudo solicitar notificacion al servicio de notificaciones: {}", e.getMessage());
+    /**
+     * @param medio    EMAIL | SMS | WHATSAPP, tal como lo espera
+     *                 servicio-notificaciones. Si es null (el Donante no
+     *                 tiene contacto configurado todavía), no se publica
+     *                 nada -- no se inventa un contacto.
+     */
+    public void enviar(String tipoEvento, String mensaje, String medio, String contacto) {
+        if (medio == null || contacto == null || contacto.isBlank()) {
+            logger.warn("No se pudo notificar el evento '{}': el donante no tiene medio/contacto configurado.",
+                    tipoEvento);
+            return;
         }
+
+        NotificacionRequest request = new NotificacionRequest(
+                mensaje, medio, contacto, "incentivos", tipoEvento, UUID.randomUUID().toString());
+
+        bandeja.guardar(request);
     }
 
-    private String medioPreferidoODefault(String medio) {
-        return medio == null || medio.isBlank() ? "EMAIL" : medio;
-    }
-
-    private String contactoPreferidoODefault(int donanteId, String contacto) {
-        return contacto == null || contacto.isBlank() ? "donante" + donanteId + "@donatrack.local" : contacto;
-    }
-
-    private record NotificacionRequest(String mensaje, String medio, String contacto, String servicioOrigen) {
+    private record NotificacionRequest(String mensaje, String medio, String contacto, String servicioOrigen,
+                                        String tipoEvento, String eventoId) {
     }
 }

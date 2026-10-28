@@ -1,25 +1,27 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ResultadoMatchmaking;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.AsignarEntidadDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ActualizarDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.CargaDonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
-import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.ResultadoMatchmakingDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.TimeStampDTO;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import ar.edu.utn.frba.dds.donaciones.service.EntidadBeneficiariaService;
 import ar.edu.utn.frba.dds.donaciones.service.MatchmakingService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
-
 import java.util.List;
 
+@Tag(name = "Donaciones", description = "Alta por carga múltiple, segmentación, estados y matchmaking de donaciones")
 @RestController
 @RequestMapping("/api/donaciones")
 public class DonacionController {
@@ -37,203 +39,77 @@ public class DonacionController {
         this.entidadBeneficiariaService = entidadBeneficiariaService;
     }
 
-    @Operation(
-            summary = "Crear una donación",
-            description = "Registra una nueva donación en el sistema."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "201",
-                    description = "Donación creada correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos de la donación inválidos"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Crear", description = "Crear antes un donante. Valida toda la carga y agrupa por subcategoría, unidad, condición y vencimiento.")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public DonacionDTO crear(@RequestBody DonacionDTO dto) {
+    public List<DonacionDTO> crear(@Valid @RequestBody CargaDonacionDTO dto) {
         return donacionService.crear(dto);
     }
 
-
-    @Operation(
-            summary = "Obtener todas las donaciones",
-            description = "Obtiene todas las donaciones registradas en el sistema."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donaciones obtenidas correctamente"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener todas", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping
     public List<DonacionDTO> obtenerTodas() {
         return donacionService.obtenerTodas();
     }
 
-    @Operation(
-            summary = "Obtener donaciones pendientes",
-            description = "Obtiene las donaciones que se encuentran pendientes de asignación."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donaciones pendientes obtenidas correctamente"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener pendientes", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/pendientes")
     public List<DonacionPendienteDTO> obtenerPendientes(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size) {
+            @io.swagger.v3.oas.annotations.Parameter(description = "Página comenzando en cero.", example = "0") @RequestParam(defaultValue = "0") int page,
+            @io.swagger.v3.oas.annotations.Parameter(description = "Cantidad por página (1 a 100).", example = "20") @RequestParam(defaultValue = "100") int size) {
         return donacionService.obtenerPendientes(page, size);
     }
 
-    @Operation(
-            summary = "Obtener una donación",
-            description = "Obtiene una donación a partir de su identificador."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donación encontrada"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "No se encontró una donación con el ID indicado"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener por id", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}")
-    public DonacionDTO obtenerPorId(@PathVariable Long id) {
+    public DonacionDTO obtenerPorId(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         return donacionService.obtenerPorId(id);
     }
 
-    @Operation(
-            summary = "Actualizar una donación",
-            description = "Actualiza los datos de una donación existente."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Donación actualizada correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donación no encontrada"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Datos de la donación inválidos"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Actualizar", description = "Reemplaza todos los items de una donación EN_DEPOSITO. Deben conservar una única clave de segmentación; conserva origen e historial.")
     @PutMapping("/{id}")
-    public DonacionDTO actualizar(@PathVariable Long id, @RequestBody DonacionDTO dto) {
-        dto.setId(id);
-        return donacionService.crear(dto);
+    public DonacionDTO actualizar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id, @Valid @RequestBody ActualizarDonacionDTO dto) {
+        return donacionService.actualizar(id, dto);
     }
 
-    @Operation(
-            summary = "Eliminar una donación",
-            description = "Elimina una donación utilizando su identificador."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "204",
-                    description = "Donación eliminada correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donación no encontrada"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void eliminar(@PathVariable Long id) {
+    public void eliminar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         donacionService.eliminar(id);
     }
 
-    @Operation(
-            summary = "Cambiar estado de una donación",
-            description = "Modifica el estado actual de una donación."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Estado modificado correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donación no encontrada"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Estado inválido"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Cambiar estado", description = "Ejemplo posterior a asignar: LISTA_PARA_ENTREGAR. Luego EN_TRASLADO y ENTREGADA. ENTREGA_FALLIDA requiere justificación.")
     @PatchMapping("/{id}/estado")
     public DonacionDTO cambiarEstado(
-            @PathVariable Long id,
-            @RequestBody CambioEstadoDTO dto) {
+            @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
+            @Valid @RequestBody CambioEstadoDTO dto) {
         return donacionService.cambiarEstado(id, dto);
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Historial", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/{id}/historial")
-    public List<TimeStampDTO> historial(@PathVariable Long id) {
+    public List<TimeStampDTO> historial(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         return donacionService.obtenerHistorial(id);
     }
 
-    @Operation(
-            summary = "Obtener entidades beneficiarias candidatas",
-            description = "Ejecuta el proceso de matchmaking para determinar las entidades beneficiarias candidatas para una donación."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Candidatas obtenidas correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donación no encontrada"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Candidatas", description = "Ejecuta a demanda los algoritmos de Compatibilidad Semántica y Prioridad a sub-atendidos sobre esta donación y guarda el resultado (las 3 listas, sin colapsar) como el matchmaking vigente para /asignar. Usar antes de asignar: /asignar solo acepta una entidad que haya aparecido en alguna de estas 3 listas.")
     @GetMapping("/{id}/candidatas")
-    public List<EntidadBeneficiariaDTO> candidatas(@PathVariable Long id) {
+    public ResultadoMatchmakingDTO candidatas(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         Donacion donacion = donacionService.obtenerDominioPorId(id);
-        List<EntidadBeneficiaria> candidatas = matchmakingService.ejecutarMatchmaking(donacion);
-        donacion.setCandidatas(candidatas);
-        return candidatas.stream()
-                .map(entidadBeneficiariaService::convertirADTO)
-                .toList();
+        ResultadoMatchmaking resultado = matchmakingService.ejecutarMatchmaking(donacion);
+        donacionService.registrarResultadoMatchmaking(donacion, resultado);
+        return entidadBeneficiariaService.convertirResultadoADTO(
+                resultado, donacion.getSubcategoria(), donacion.getUnidadMedida());
     }
 
-    @Operation(
-            summary = "Asignar una entidad beneficiaria",
-            description = "Confirma la asignación de una entidad beneficiaria a una donación."
-    )
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Entidad asignada correctamente"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Donación o entidad no encontrada"
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "La asignación no es válida"
-            )
-    })
+    @io.swagger.v3.oas.annotations.Operation(summary = "Asignar", description = "Confirma la entidad final. Requiere haber corrido antes GET /{id}/candidatas: 409 si todavía no se ejecutó el matchmaking, 400 si la entidad no apareció en ninguna de sus 3 listas. Si la entidad tiene una necesidad pendiente de la misma subcategoría y unidad, se vincula y se descuenta la cantidad contra ella automáticamente.")
     @PostMapping("/{id}/asignar")
     public DonacionDTO asignar(
-            @PathVariable Long id,
-            @RequestBody AsignarEntidadDTO dto) {
-        Donacion donacion = donacionService.obtenerDominioPorId(id);
+            @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id,
+            @Valid @RequestBody AsignarEntidadDTO dto) {
         EntidadBeneficiaria entidad =
                 entidadBeneficiariaService.buscarEntidad(dto.getEntidadId());
-        matchmakingService.confirmarAsignacion(donacion, entidad);
-        donacionService.enviarALogistica(donacion);
-        return donacionService.obtenerPorId(id);
+        return donacionService.confirmarAsignacion(id, entidad);
     }
 }

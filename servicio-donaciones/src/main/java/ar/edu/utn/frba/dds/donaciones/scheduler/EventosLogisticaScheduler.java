@@ -1,9 +1,9 @@
 package ar.edu.utn.frba.dds.donaciones.scheduler;
 
-import ar.edu.utn.frba.dds.donaciones.client.LogisticaClient;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.dto.CambioEstadoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
+import ar.edu.utn.frba.dds.donaciones.integracion.LogisticaBroker;
 import ar.edu.utn.frba.dds.donaciones.service.DonacionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,24 +19,24 @@ public class EventosLogisticaScheduler {
 
     private static final Logger logger = LoggerFactory.getLogger(EventosLogisticaScheduler.class);
 
-    private final LogisticaClient logisticaClient;
+    private final LogisticaBroker logisticaBroker;
     private final DonacionService donacionService;
 
-    public EventosLogisticaScheduler(LogisticaClient logisticaClient, DonacionService donacionService) {
-        this.logisticaClient = logisticaClient;
+    public EventosLogisticaScheduler(LogisticaBroker logisticaBroker, DonacionService donacionService) {
+        this.logisticaBroker = logisticaBroker;
         this.donacionService = donacionService;
     }
 
     @Scheduled(fixedDelayString = "${logistica.eventos.poll-delay-ms:60000}")
     public void consumirEventos() {
-        for (EventoLogisticoDTO evento : logisticaClient.obtenerEventosNoPublicados()) {
+        for (EventoLogisticoDTO evento : logisticaBroker.obtenerEventosNoPublicados()) {
             try {
                 aplicarEvento(evento);
+                logisticaBroker.marcarPublicado(evento.getIdEvento());
             } catch (Exception e) {
                 logger.warn("No se pudo aplicar el evento {} ({}) a la donación asociada: {}",
                         evento.getIdEvento(), evento.getTipoEvento(), e.getMessage());
             }
-            logisticaClient.marcarPublicado(evento.getIdEvento());
         }
     }
 
@@ -61,6 +61,13 @@ public class EventosLogisticaScheduler {
             case "RUTA_INICIADA" -> EstadoTrack.EN_TRASLADO;
             case "ENTREGA_CONFIRMADA" -> EstadoTrack.ENTREGADA;
             case "ENTREGA_NO_RECIBIDA", "ENTREGA_FALLIDA" -> EstadoTrack.ENTREGA_FALLIDA;
+            // Logística revisó una entrega fallida y la reingresó para
+            // replanificar -- sin este caso, la Donacion quedaba congelada
+            // en ENTREGA_FALLIDA para siempre (su única salida es volver a
+            // EN_DEPOSITO) mientras Logística seguía adelante y la
+            // replanificaba igual, generando un RUTA_PLANIFICADA que
+            // después fallaba en silencio por transición inválida.
+            case "ENTREGA_REPLANIFICADA" -> EstadoTrack.EN_DEPOSITO;
             default -> null;
         };
 
@@ -70,6 +77,12 @@ public class EventosLogisticaScheduler {
 
         CambioEstadoDTO dto = new CambioEstadoDTO();
         dto.setNuevoEstado(nuevoEstado);
+        dto.setOrigenEvento(evento.getTipoEvento());
+        dto.setEventoId(evento.getIdEvento().toString());
+        dto.setSeguimientoUrl(evento.getEntregaAsociada().getSeguimientoUrl());
+        dto.setFechaHoraEntrega(evento.getEntregaAsociada().getFechaHoraEntrega());
+        var camion = evento.getEntregaAsociada().getCamionEntrega();
+        if (camion != null) dto.setPatenteCamion(camion.path("patente").asText());
         if (nuevoEstado == EstadoTrack.ENTREGA_FALLIDA) {
             String justificacion = evento.getEntregaAsociada().getJustificacionFallo();
             // cambiarEstado exige justificación no vacía para ENTREGA_FALLIDA

@@ -1,0 +1,355 @@
+@startuml ModeloDominioIncentivos
+
+title Servicio de Incentivos - Modelo de dominio
+
+top to bottom direction
+skinparam classAttributeIconSize 0
+
+' ===== FACHADA =====
+
+class Consultor <<Singleton / Facade>> {
+
+* webhookN8nUrl: String
+
+- obtenerMetricasActividad(donante: Donante, periodo: Periodo): MetricasActividad
+- obtenerMetricasSistema(): MetricasSistema
+- obtenerMisionesDisponibles(donante: Donante): List<Mision>
+- obtenerInsignias(donante: Donante): List<Insignia>
+- marcarInsigniaVisible(donante: Donante, nombre: String)
+- ocultarInsignia(donante: Donante, nombre: String)
+- obtenerOCrearBeneficiario(id: Long, nombre: String): Beneficiario
+- registrarActividadDonacion(donante: Donante, datos: DatosDonacion): ProgresoInsignia
+- ejecutarVerificacionVigenciaMisiones()
+- ejecutarCierreMensualRanking()
+- obtenerHistorialRanking(): List<Ranking>
+- obtenerRankingDeMes(fecha: LocalDate): Ranking
+- obtenerUltimoRanking(): Ranking
+- publicarInsignia(donante: Donante, insignia: Insignia)
+- notificarMisionCompletada(donante: Donante, progreso: ProgresoInsignia)
+- notificarCambioCategoria(donante: Donante, categoria: String)
+  }
+
+' ===== DONANTE =====
+
+class Donante {
+
+* id: Long
+* nombre: String
+* medioContactoPreferido: String
+* contactoPreferido: String
+* solicitudesDonacionHechas: int
+
+- actualizarNombreSiFalta(nombre: String)
+- actualizarContactoSiFalta(medio: String, contacto: String)
+- registrarActividadDonacion(datos: DatosDonacion): ProgresoInsignia
+- verificarVigenciaMisiones()
+  }
+
+class GestorDonante <<Singleton>> {
+
+* obtenerDonante(id: Long): Donante
+* obtenerDonante(id: Long, nombre: String): Donante
+* buscarDonante(id: Long): Donante
+* listarDonantes(): List<Donante>
+* verificarVigenciaMisiones()
+  }
+
+class Beneficiario {
+
+* id: Long
+* nombre: String
+
+- equals(objeto: Object): boolean
+- hashCode(): int
+  }
+
+class DatosDonacion {
+
+* donacionId: Long
+* fecha: LocalDate
+* categoriaBien: String
+* cantidadBienes: BigDecimal
+* donacionExitosa: boolean
+  }
+
+GestorDonante "1" o-- "*" Donante
+Donante "1" o-- "*" Beneficiario : beneficiariosAyudados
+Donante "1" o-- "*" DatosDonacion : historialDonaciones
+Donante "1" *-- "1" ProgresoAsociado
+DatosDonacion --> Beneficiario
+
+' ===== CATALOGO DE MISIONES =====
+
+class GestorMisiones <<Singleton>> {
+
+* sembrarCatalogo()
+
+- agregarCategoria(categoria: Categoria)
+- siguienteCategoria(indice: int): Categoria
+- cantCategorias(): int
+- buscarCategoriaPorNombre(nombre: String): Optional<Categoria>
+  }
+
+class Categoria {
+
+* nombre: String
+
+- agregarMision(mision: Mision)
+- indexMision(indice: int): Mision
+- cantMisiones(): int
+  }
+
+abstract class Mision {
+
+* nombreMision: String
+
+- validarCumplimiento(progreso: ProgresoMision): boolean
+- crearProgreso(): ProgresoMision
+  }
+
+class Racha {
+
+* mesesRequeridos: int
+  }
+
+class Completitud {
+
+* categoriasRequeridas: int
+  }
+
+class HabilDonador {
+
+* cantidadBienesRequerida: int
+  }
+
+class DonacionesExitosas {
+
+* donacionesRequeridas: int
+  }
+
+class Insignia {
+
+* nombre: String
+* imagenUrl: String
+  }
+
+GestorMisiones "1" o-- "*" Categoria : catalogo
+Categoria "1" o-- "*" Mision : ordenadas
+
+Mision <|-- Racha
+Mision <|-- Completitud
+Mision <|-- HabilDonador
+Mision <|-- DonacionesExitosas
+
+Mision "1" --> "1" Insignia
+
+' ===== PROGRESO =====
+
+class ProgresoAsociado {
+
+* indiceMisionActual: int
+
+- subirCategoria()
+- siguienteMision(): Mision
+- actualizarProgreso(datos: DatosDonacion): ProgresoInsignia
+- verificarVigenciaMisiones()
+
+* iniciarCategoria(categoria: Categoria)
+  }
+
+class ProgresoCategoria {
+
+* nombre: String
+
+- cantMisionesCompletadas(): int
+  }
+
+abstract class ProgresoMision {
+
+* completarMision(): ProgresoInsignia
+* asignarInsignia()
+* actualizarProgresoMision(datos: DatosDonacion)
+* evaluarVigencia(fecha: LocalDate)
+* obtenerProgresoActual(): BigDecimal
+* distanciaRestante(): BigDecimal
+  }
+
+class ProgresoRacha {
+
+* mesesConsecutivosActuales: int
+* ultimaDonacionRegistrada: LocalDate
+
+- evaluarVigencia(fecha: LocalDate)
+  }
+
+class ProgresoCompletitud {
+
+* categoriasCubiertas: Set<String>
+  }
+
+class ProgresoHabilDonador {
+
+* mejorDonacionRegistrada: BigDecimal
+  }
+
+class ProgresoDonacionesExitosas {
+
+* donacionesExitosasActuales: int
+  }
+
+class ProgresoInsignia {
+
+* fechaObtencion: LocalDate
+* visible: boolean
+
+- marcarVisible()
+- ocultarInsignia()
+  }
+
+ProgresoAsociado --> GestorMisiones
+ProgresoAsociado "1" *-- "*" ProgresoCategoria : categoriasObtenidas
+ProgresoAsociado --> ProgresoMision : misionActual
+
+ProgresoCategoria "1" *-- "*" ProgresoMision
+
+ProgresoMision --> Mision : misionAsociada
+ProgresoMision "1" --> "0..1" ProgresoInsignia
+ProgresoInsignia --> Insignia
+
+ProgresoMision <|-- ProgresoRacha
+ProgresoMision <|-- ProgresoCompletitud
+ProgresoMision <|-- ProgresoHabilDonador
+ProgresoMision <|-- ProgresoDonacionesExitosas
+
+Mision ..> ProgresoMision : crearProgreso()
+ProgresoMision ..> DatosDonacion
+
+' ===== RANKING =====
+
+class HistorialRanking <<Singleton>> {
+
+* TOP_DONANTES: int = 3
+
+- generarRanking()
+- registrarMisionCompletada(donante: Donante)
+- obtenerPosicionActual(donante: Donante): Optional<Integer>
+- obtenerHistorial(): List<Ranking>
+- obtenerUltimoRanking(): Ranking
+- obtenerRankingDeMes(fecha: LocalDate): Ranking
+  }
+
+class Ranking {
+
+* fechaEmision: LocalDate
+  }
+
+class ActividadMensualDonante {
+
+* cantidad: int
+
+- incrementar()
+  }
+
+HistorialRanking "1" o-- "*" Ranking
+HistorialRanking "1" o-- "*" ActividadMensualDonante : misionesMensuales
+Ranking "1" o-- "*" ActividadMensualDonante : topDonantes
+ActividadMensualDonante --> Donante
+
+' ===== METRICAS =====
+
+enum Periodo {
+MENSUAL
+TRIMESTRAL
+SEMESTRAL
+ANUAL
+HISTORICO
+---------
+
+* fechaDesde(fecha: LocalDate): LocalDate
+  }
+
+class MetricasActividad {
+
+* donanteNombre: String
+* categoriaActual: String
+* solicitudesDonacionHechas: int
+* beneficiariosAyudados: int
+* misionesCompletadas: int
+* insigniasObtenidas: int
+* impactoAcumulado: BigDecimal
+* posicionRanking: Integer
+  }
+
+class MetricasSistema {
+
+* donantesActivos: int
+* solicitudesDonacionTotales: int
+* misionesCompletadasTotales: int
+* insigniasOtorgadasTotales: int
+  }
+
+class EvolucionMensual {
+
+* mes: YearMonth
+* solicitudes: int
+* impacto: BigDecimal
+  }
+
+MetricasActividad --> Periodo
+MetricasActividad "1" o-- "*" EvolucionMensual
+MetricasSistema "1" o-- "*" EvolucionMensual
+
+' ===== CONSULTOR (RELACIONES) =====
+
+Consultor --> GestorMisiones
+Consultor --> GestorDonante
+Consultor --> HistorialRanking
+
+Consultor "1" o-- "*" Beneficiario
+
+Consultor ..> MetricasActividad : crea
+Consultor ..> MetricasSistema : crea
+
+' ===== INTEGRACION =====
+
+class IncentivosController <<RestController /api/donantes>>
+class RankingController <<RestController /api/ranking>>
+class AdminController <<RestController /api/admin>>
+
+class IncentivosScheduler {
+
+* ejecutarVerificacionVigenciaMisiones()
+* ejecutarCierreMensualRanking()
+  }
+
+class NotificacionesClient {
+
+* enviar(tipoEvento: String, mensaje: String, medio: String, contacto: String)
+  }
+
+class BandejaNotificaciones <<Outbox>> {
+
+* guardar(objeto: Object)
+* publicarPendientes()
+  }
+
+class ColaNotificaciones <<RabbitMQ queue>>
+
+class WorkflowN8n <<external webhook>> {
+publicacion de insignias en redes
+}
+
+IncentivosController --> Consultor
+IncentivosController --> GestorDonante
+
+RankingController --> Consultor
+AdminController --> Consultor
+IncentivosScheduler --> Consultor
+
+Consultor --> NotificacionesClient
+Consultor ..> WorkflowN8n : HTTP webhook (publicarInsignia)
+
+NotificacionesClient --> BandejaNotificaciones
+BandejaNotificaciones ..> ColaNotificaciones : publica
+
+@enduml

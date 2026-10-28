@@ -6,6 +6,13 @@ import ar.edu.utn.frba.dds.logistica.service.LoteService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 @RestController
@@ -18,9 +25,47 @@ public class LoteController {
         this.loteService = loteService;
     }
 
+    @Operation(
+            summary = "Recibir un lote de donaciones",
+            description = "Recibe un lote de donaciones y genera las entregas correspondientes para su posterior planificación logística."
+    )
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Lote recibido correctamente",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = Entrega.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Los datos de las donaciones son inválidos"
+            )
+    })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public List<Entrega> recibirLote(@RequestBody List<DonacionDTO> donaciones) {
+    public List<Entrega> recibirLote(@io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "application/json", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = """
+[
+  {
+    "idDonacion": 1,
+    "entidadBeneficiariaAsociadaID": 1,
+    "direccionDestino": {
+      "calle": "Av. San Martin",
+      "numero": "1250",
+      "ciudad": {
+        "nombre": "Cordoba",
+        "provincia": {
+          "nombre": "Cordoba"
+        }
+      }
+    },
+    "pesoKG": 15,
+    "volumenM3": 2,
+    "alturaM": 1
+  }
+]
+"""))) @RequestBody List<DonacionDTO> donaciones) {
         return loteService.recibirLote(donaciones);
     }
 }

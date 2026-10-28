@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.incentivos.consultor;
 import ar.edu.utn.frba.dds.incentivos.donacion.DatosDonacion;
 import ar.edu.utn.frba.dds.incentivos.donante.Donante;
 import ar.edu.utn.frba.dds.incentivos.donante.GestorDonante;
-import ar.edu.utn.frba.dds.incentivos.dto.NotificacionEventoDTO;
 import ar.edu.utn.frba.dds.incentivos.dto.PublicacionInsigniaDTO;
 import ar.edu.utn.frba.dds.incentivos.metricas.EvolucionMensual;
 import ar.edu.utn.frba.dds.incentivos.metricas.MetricasActividad;
@@ -43,7 +42,11 @@ public class Consultor {
     private final Set<Beneficiario> beneficiarios;
     private final RestTemplate restTemplate;
     private String webhookN8nUrl;
-    private String notificacionesBaseUrl;
+    // Reemplaza a notificacionesBaseUrl + RestTemplate síncrono (integración
+    // ahora asíncrona vía cola con Notificaciones). Se inyecta al boot vía
+    // NotificacionesConfigurer, mismo patrón que webhookN8nUrl con
+    // WebhookN8nConfigurer.
+    private ar.edu.utn.frba.dds.incentivos.client.NotificacionesClient notificacionesClient;
 
     private Consultor() {
         this.misiones = GestorMisiones.getInstance();
@@ -52,7 +55,6 @@ public class Consultor {
         this.beneficiarios = new HashSet<>();
         this.restTemplate = new RestTemplate();
         this.webhookN8nUrl = "";
-        this.notificacionesBaseUrl = "";
     }
 
     public static synchronized Consultor getInstance() {
@@ -66,8 +68,8 @@ public class Consultor {
         this.webhookN8nUrl = webhookN8nUrl;
     }
 
-    public void configurarNotificaciones(String notificacionesBaseUrl) {
-        this.notificacionesBaseUrl = notificacionesBaseUrl;
+    public void configurarNotificacionesClient(ar.edu.utn.frba.dds.incentivos.client.NotificacionesClient notificacionesClient) {
+        this.notificacionesClient = notificacionesClient;
     }
 
     public MetricasActividad obtenerMetricasActividad(Donante donante, Periodo periodo) {
@@ -84,9 +86,9 @@ public class Consultor {
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
-        int impactoAcumulado = donacionesEnPeriodo.stream()
-                .mapToInt(DatosDonacion::getCantidadBienes)
-                .sum();
+        java.math.BigDecimal impactoAcumulado = donacionesEnPeriodo.stream()
+                .map(DatosDonacion::getCantidadBienes)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
 
         int misionesCompletadas = (int) donante.getProgresoAsociado().getCategoriasObtenidas().stream()
                 .flatMap(categoria -> categoria.getMisiones().stream())
@@ -129,7 +131,7 @@ public class Consultor {
                 .map(entry -> new EvolucionMensual(
                         entry.getKey(),
                         entry.getValue().size(),
-                        entry.getValue().stream().mapToInt(DatosDonacion::getCantidadBienes).sum()))
+                        entry.getValue().stream().map(DatosDonacion::getCantidadBienes).reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add)))
                 .toList();
     }
 
@@ -189,10 +191,12 @@ public class Consultor {
 
     public void marcarInsigniaVisible(Donante donante, String insigniaNombre) {
         buscarProgresoInsignia(donante, insigniaNombre).marcarVisible();
+        donantes.guardar(donante);
     }
 
     public void ocultarInsignia(Donante donante, String insigniaNombre) {
         buscarProgresoInsignia(donante, insigniaNombre).ocultarInsignia();
+        donantes.guardar(donante);
     }
 
     private ProgresoInsignia buscarProgresoInsignia(Donante donante, String insigniaNombre) {
@@ -221,6 +225,7 @@ public class Consultor {
         int categoriasAntes = donante.getProgresoAsociado().getCategoriasObtenidas().size();
 
         ProgresoInsignia obtenida = donante.registrarActividadDonacion(datosDonacion);
+        donantes.guardar(donante);
 
         if (obtenida != null) {
             rankings.registrarMisionCompletada(donante);
@@ -288,15 +293,11 @@ public class Consultor {
     }
 
     private void enviarNotificacion(String tipo, Donante donante, String mensaje) {
-        if (notificacionesBaseUrl == null || notificacionesBaseUrl.isBlank()) {
-            log.info("Servicio de notificaciones no configurado, se omite el evento {} del donante {}", tipo, donante.getId());
+        if (notificacionesClient == null) {
+            log.info("NotificacionesClient no configurado todavía, se omite el evento {} del donante {}",
+                    tipo, donante.getId());
             return;
         }
-        NotificacionEventoDTO dto = new NotificacionEventoDTO(tipo, donante.getId(), mensaje, LocalDate.now());
-        try {
-            restTemplate.postForEntity(notificacionesBaseUrl, dto, Void.class);
-        } catch (RuntimeException ex) {
-            log.warn("No se pudo enviar la notificación {} del donante {}: {}", tipo, donante.getId(), ex.getMessage());
-        }
+        notificacionesClient.enviar(tipo, mensaje, donante.getMedioContactoPreferido(), donante.getContactoPreferido());
     }
 }
