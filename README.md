@@ -21,6 +21,7 @@
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
+├── cli.py
 ├── consigna
 │   ├── DDS-TP-Anual-2026-CursoK3002 Entrega 4.pdf
 │   └── entrega4-requerimientos.md
@@ -39,6 +40,7 @@
 │       ├── logistica.txt
 │       └── pdf
 ├── docker-compose.integration.yml
+├── endpoints.md
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -77,14 +79,16 @@
 ├── servicio-incentivos
 │   ├── Makefile
 │   ├── README.md
-│   ├── credentials.env
 │   ├── docker-compose.yml
 │   ├── pom.xml
 │   ├── src
 │   │   ├── main
 │   │   └── test
 │   └── workflows
-│       └── servicio-incentivos-difusion.json
+│       ├── Workflow-Ranking.json
+│       ├── servicio-incentivos-difusion.json
+│       ├── servicio-incentivos.json
+│       └── servicio-insignias.json
 ├── servicio-logistica
 │   ├── pom.xml
 │   └── src
@@ -98,7 +102,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-31 directories, 52 files
+31 directories, 56 files
 ```
 <!-- TREE_END -->
 
