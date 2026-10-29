@@ -5,7 +5,7 @@
 - Java 17 o superior.
 - Maven disponible desde la terminal (`mvn -version`).
 - Docker Desktop corriendo (para RabbitMQ, MySQL, Adminer y n8n).
-- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer) y 5678 (n8n) libres.
+- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer), 5678 (n8n) y 1025/8025 (Mailpit) libres.
 
 Ejecutar los comandos desde la raíz del repositorio:
 
@@ -119,7 +119,10 @@ docker compose -f docker-compose.integration.yml down
 
 - n8n (workflow de difusión de insignias de Incentivos): http://localhost:5678
 - RabbitMQ (management UI): http://localhost:15672
-- Adminer (consola de administración de la base): http://localhost:8090 -- sistema `MySQL`, servidor `mysql`, usuario `root`, password `BasededatosTP1`, base `logistica`, `incentivos` o `donaciones`.
-- MySQL: `localhost:3306`, usuario `root`, password `BasededatosTP1`, un esquema por servicio (`logistica`, `incentivos`, `donaciones`).
+- Adminer (consola de administración de la base): http://localhost:8090 -- sistema `MySQL`, servidor `mysql`, usuario `root`, password `BasededatosTP1`, base `logistica`, `incentivos`, `notificaciones` o `donaciones`.
+- Mailpit (bandeja de prueba de los emails que envía Notificaciones): http://localhost:8025
+- MySQL: `localhost:3306`, usuario `root`, password `BasededatosTP1`, un esquema por servicio (`logistica`, `incentivos`, `notificaciones`, `donaciones`).
 
 Los esquemas de Logística, Incentivos y Donaciones (`servicio-logistica/src/main/resources/db/logistica.sql`, `servicio-incentivos/src/main/resources/db/incentivos.sql`, `servicio-donaciones/src/main/resources/db/donaciones.sql`) se montan en `docker-entrypoint-initdb.d/` y corren solo la primera vez que se crea el volumen de MySQL. Hibernate arranca con `ddl-auto=validate`: no crea ni modifica tablas, solo valida que las entidades coincidan con lo que generaron los scripts.
+
+El de Notificaciones es `servicio-notificaciones/src/main/resources/db/notificaciones.sql`. Si tu volumen de MySQL ya existía antes de que se agregara, ejecutalo una vez a mano desde Adminer (SQL command) o recreá el volumen con `docker compose -f docker-compose.integration.yml down -v` (borra todos los datos).
