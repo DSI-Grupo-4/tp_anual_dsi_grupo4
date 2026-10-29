@@ -40,6 +40,7 @@ public class Consultor {
     private final GestorDonante donantes;
     private final HistorialRanking rankings;
     private final Set<Beneficiario> beneficiarios;
+    private ar.edu.utn.frba.dds.incentivos.repository.BeneficiarioRepository beneficiarioRepository;
     private final RestTemplate restTemplate;
     private String webhookN8nUrl;
     // Reemplaza a notificacionesBaseUrl + RestTemplate síncrono (integración
@@ -70,6 +71,16 @@ public class Consultor {
 
     public void configurarNotificacionesClient(ar.edu.utn.frba.dds.incentivos.client.NotificacionesClient notificacionesClient) {
         this.notificacionesClient = notificacionesClient;
+    }
+
+    // Inyectado al boot por PersistenciaConfigurer -- mismo patrón que
+    // GestorDonante/GestorMisiones/HistorialRanking. Sin esto, el cache de
+    // deduplicación arrancaba vacío en cada reinicio.
+    public synchronized void configurarPersistencia(
+            ar.edu.utn.frba.dds.incentivos.repository.BeneficiarioRepository beneficiarioRepository) {
+        this.beneficiarioRepository = beneficiarioRepository;
+        beneficiarios.clear();
+        beneficiarios.addAll(beneficiarioRepository.findAll());
     }
 
     public MetricasActividad obtenerMetricasActividad(Donante donante, Periodo periodo) {

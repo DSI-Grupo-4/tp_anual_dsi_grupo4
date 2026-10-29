@@ -52,6 +52,7 @@ class GestorDonante <<Singleton>> {
 * buscarDonante(id: Long): Donante
 * listarDonantes(): List<Donante>
 * verificarVigenciaMisiones()
+* guardar(donante: Donante)
   }
 
 class Beneficiario {
@@ -82,12 +83,12 @@ DatosDonacion --> Beneficiario
 
 class GestorMisiones <<Singleton>> {
 
-* sembrarCatalogo()
+- sembrarCatalogo()
 
-- agregarCategoria(categoria: Categoria)
-- siguienteCategoria(indice: int): Categoria
-- cantCategorias(): int
-- buscarCategoriaPorNombre(nombre: String): Optional<Categoria>
+* agregarCategoria(categoria: Categoria)
+* siguienteCategoria(indice: int): Categoria
+* cantCategorias(): int
+* buscarCategoriaPorNombre(nombre: String): Optional<Categoria>
   }
 
 class Categoria {
@@ -322,6 +323,12 @@ class IncentivosScheduler {
 * ejecutarCierreMensualRanking()
   }
 
+' GestorMisiones/GestorDonante/HistorialRanking son singletons manuales (no
+' beans de Spring) -- este ApplicationRunner les inyecta el repositorio
+' correspondiente al bootear. Mismo patrón para Consultor (deduplicación de
+' Beneficiario).
+class PersistenciaConfigurer <<ApplicationRunner>>
+
 class NotificacionesClient {
 
 * enviar(tipoEvento: String, mensaje: String, medio: String, contacto: String)
@@ -345,6 +352,11 @@ IncentivosController --> GestorDonante
 RankingController --> Consultor
 AdminController --> Consultor
 IncentivosScheduler --> Consultor
+
+PersistenciaConfigurer ..> GestorMisiones : inyecta repositorio
+PersistenciaConfigurer ..> GestorDonante : inyecta repositorio
+PersistenciaConfigurer ..> HistorialRanking : inyecta repositorios
+PersistenciaConfigurer ..> Consultor : inyecta repositorio
 
 Consultor --> NotificacionesClient
 Consultor ..> WorkflowN8n : HTTP webhook (publicarInsignia)

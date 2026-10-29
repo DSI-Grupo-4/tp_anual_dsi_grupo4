@@ -58,6 +58,7 @@ public class GestorDonante {
     public Donante obtenerDonante(Long id, String nombre) {
         Donante donante = obtenerDonante(id);
         donante.actualizarNombreSiFalta(nombre);
+        guardar(donante);
         return donante;
     }
 
