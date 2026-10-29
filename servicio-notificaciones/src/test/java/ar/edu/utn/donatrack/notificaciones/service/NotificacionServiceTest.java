@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
 import org.springframework.mail.javamail.JavaMailSender;
+import ar.edu.utn.donatrack.notificaciones.proveedores.TwilioCliente;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -54,7 +55,8 @@ class NotificacionServiceTest {
         when(repo.findAll(any(Sort.class))).thenAnswer(inv -> new ArrayList<>(tabla.values()));
 
         email = spy(new EmailNotificador(mock(JavaMailSender.class), "test@donatrack.local"));
-        var factory = new NotificadorFactory(email, new SmsNotificador(), new WhatsAppNotificador());
+        var twilioApagado = new TwilioCliente("", "", "", "+14155238886");
+        var factory = new NotificadorFactory(email, new SmsNotificador(twilioApagado), new WhatsAppNotificador(twilioApagado));
         servicio = new NotificacionService(factory, repo);
     }
 

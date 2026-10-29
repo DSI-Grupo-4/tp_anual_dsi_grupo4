@@ -58,6 +58,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <!-- Cliente oficial de Twilio para SMS y WhatsApp -->
+        <dependency>
+            <groupId>com.twilio.sdk</groupId>
+            <artifactId>twilio</artifactId>
+            <version>10.9.0</version>
+        </dependency>
         <!-- Documentacion interactiva de la API (Swagger UI) -->
         <dependency>
             <groupId>org.springdoc</groupId>
