@@ -50,7 +50,14 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-
+  # Servidor SMTP de prueba: recibe los emails de Notificaciones y los muestra en una bandeja web
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: donatrack-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP: por acá entra el mail
+      - "8025:8025"   # Bandeja web: http://localhost:8025
 volumes:
   rabbitmq-data:
   mysql-data:

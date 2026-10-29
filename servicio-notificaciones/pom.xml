@@ -53,6 +53,11 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Envío de email por SMTP (JavaMailSender) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
         <!-- Documentacion interactiva de la API (Swagger UI) -->
         <dependency>
             <groupId>org.springdoc</groupId>

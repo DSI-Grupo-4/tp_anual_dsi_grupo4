@@ -13,6 +13,7 @@ import ar.edu.utn.donatrack.notificaciones.strategy.WhatsAppNotificador;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.Sort;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -52,7 +53,7 @@ class NotificacionServiceTest {
                         .findFirst());
         when(repo.findAll(any(Sort.class))).thenAnswer(inv -> new ArrayList<>(tabla.values()));
 
-        email = spy(new EmailNotificador());
+        email = spy(new EmailNotificador(mock(JavaMailSender.class), "test@donatrack.local"));
         var factory = new NotificadorFactory(email, new SmsNotificador(), new WhatsAppNotificador());
         servicio = new NotificacionService(factory, repo);
     }
