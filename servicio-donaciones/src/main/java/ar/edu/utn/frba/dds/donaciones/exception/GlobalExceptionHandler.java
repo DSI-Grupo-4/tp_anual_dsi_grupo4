@@ -38,6 +38,18 @@ public class GlobalExceptionHandler {
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    // Red de seguridad: los chequeos explícitos en los servicios (ver
+    // EntidadBeneficiariaService/GestorDonantes/NecesidadService.eliminar)
+    // ya cubren los casos conocidos de integridad referencial al borrar, pero
+    // si algún caso no contemplado igual llega a la base, que sea un 409
+    // entendible y no un 500 crudo del driver de MySQL.
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleIntegridadReferencial(
+            org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "La operación viola una restricción de integridad de los datos (referencias existentes)"));
+    }
+
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleArchivoDemasiadoGrande(MaxUploadSizeExceededException ex) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)

@@ -80,7 +80,10 @@ class FlujoDonacionesTest {
             return s;
         });
 
-        gestor = new GestorDonaciones(new Deposito(), donacionRepository, solicitudDonacionRepository);
+        ItemDonadoRepository itemDonadoRepository = mock(ItemDonadoRepository.class);
+        when(itemDonadoRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        gestor = new GestorDonaciones(new Deposito(), donacionRepository, solicitudDonacionRepository, itemDonadoRepository);
 
         List<Donante> donantesGuardados = new ArrayList<>();
         AtomicLong siguienteDonanteId = new AtomicLong(1L);
@@ -114,7 +117,8 @@ class FlujoDonacionesTest {
             Long id = inv.getArgument(0);
             return entidadesGuardadas.stream().filter(x -> x.getId().equals(id)).findFirst();
         });
-        EntidadBeneficiariaService entidades = new EntidadBeneficiariaService(entidadBeneficiariaRepository, gestor);
+        EntidadBeneficiariaService entidades = new EntidadBeneficiariaService(
+                entidadBeneficiariaRepository, gestor, mock(DonacionRepository.class));
 
         List<Necesidad> necesidadesGuardadas = new ArrayList<>();
         AtomicLong siguienteNecesidadId = new AtomicLong(1L);
@@ -136,12 +140,10 @@ class FlujoDonacionesTest {
         });
 
         EventoAplicadoRepository eventoAplicadoRepository = mock(EventoAplicadoRepository.class);
-        ItemDonadoRepository itemDonadoRepository = mock(ItemDonadoRepository.class);
-        when(itemDonadoRepository.saveAll(any())).thenAnswer(inv -> inv.getArgument(0));
 
         DonacionService donaciones = new DonacionService(gestor, donantes, mock(PublicadorEventosPort.class),
                 mock(IncentivosClient.class), eventoAplicadoRepository, necesidadRepository, itemDonadoRepository);
-        NecesidadService necesidadService = new NecesidadService(necesidadRepository, entidades);
+        NecesidadService necesidadService = new NecesidadService(necesidadRepository, entidades, donacionRepository);
         mvc = MockMvcBuilders.standaloneSetup(
                 new DonanteController(new DonanteService(donantes)),
                 new EntidadBeneficiariaController(entidades),

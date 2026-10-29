@@ -25,6 +25,8 @@ import lombok.Setter;
 public class DonanteDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Baja lógica -- se ignora si se envía en el body, el estado lo gestiona el servidor (ver DELETE/POST {id}/reactivar)")
+    private Boolean activo;
     private String tipo; // discriminador: "HUMANA" | "JURIDICA"
     // Campos de PersonaHumana
     private String nombre;

@@ -47,10 +47,17 @@ public class EntidadBeneficiariaController {
         return entidadService.actualizar(id, dto);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Baja lógica: la entidad no se borra físicamente. Se eliminan solo las necesidades sin donación asociada ni cantidad recibida; las vinculadas a donaciones se conservan y dejan de estar disponibles para nuevas asignaciones. Las entregas ya en curso siguen su circuito normal.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         entidadService.eliminar(id);
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Reactivar", description = "Única operación de modificación permitida sobre una entidad inactiva (dada de baja lógica con DELETE).")
+    @PatchMapping("/{id}/reactivar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
+        entidadService.reactivar(id);
     }
 }

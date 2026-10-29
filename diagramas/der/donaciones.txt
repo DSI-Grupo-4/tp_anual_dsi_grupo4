@@ -2,6 +2,34 @@
 // Pegar en https://dbdiagram.io/d para ver y exportar el diagrama.
 // Las referencias a otros servicios (Logistica, Incentivos) NO llevan FK: no hay
 // ninguna en este esquema porque Donaciones no guarda IDs de ellos.
+//
+// Entrega 5 -- actualizado contra el esquema físico real (db/donaciones.sql):
+//   - persona_humana/persona_juridica: la PK/FK compartida con persona es la
+//     columna "id" (no "persona_id" como decía esta versión -- el código
+//     JPA y el .sql ya usaban "id"; ver D-030).
+//   - donante.activo / entidad_beneficiaria.activa: baja lógica -- ninguna
+//     de las dos tablas se borra NUNCA físicamente desde la aplicación (ver
+//     GestorDonantes.eliminar(), EntidadBeneficiariaService.eliminar()).
+//     Inactivo/a: no puede iniciar operaciones nuevas ni modificar sus
+//     datos (ni, para la entidad, sus necesidades); reactivar() es la
+//     única modificación permitida. La entidad inactiva además queda
+//     excluida de nuevas asignaciones y del matchmaking.
+//   - Por eso ninguna FK hacia donante o entidad_beneficiaria lleva ON
+//     DELETE SET NULL/CASCADE (se documenta como note, DBML no soporta
+//     "on delete"/"check" en la sintaxis corta de columna): si esas filas
+//     nunca se borran, no hace falta, y si se intentara un borrado físico
+//     real (fuera de la app) MySQL debe rechazarlo (RESTRICT, el default
+//     sin cláusula ON DELETE) en vez de desvincular una donación histórica
+//     o borrar necesidades en cascada. El borrado de una Necesidad
+//     referenciada por donacion.necesidad_asignada_id se bloquea a nivel
+//     aplicación en CUALQUIER estado de la donación (ver NecesidadService.eliminar()).
+//   - candidata_matchmaking.entidad_beneficiaria_id sigue con ON DELETE
+//     CASCADE: es un snapshot descartable del último matchmaking corrido,
+//     no historial (en la práctica hoy es inalcanzable, porque
+//     entidad_beneficiaria nunca se borra).
+//   - Desnormalizaciones ya presentes y a mantener (no agregar más): ver
+//     notas en donacion.estado_actual, donacion.donante_id, necesidad.cantidad_recibida
+//     y candidata_matchmaking más abajo.
 
 Enum tipo_persona {
   HUMANA
@@ -93,7 +121,7 @@ Table persona {
 }
 
 Table persona_humana {
-  persona_id bigint [pk, ref: - persona.id]
+  id bigint [pk, ref: - persona.id]
   nombre varchar(100) [not null]
   apellido varchar(100) [not null, default: '']
   edad int [null, note: 'NULL cuando viene del CSV de importacion']
@@ -102,15 +130,15 @@ Table persona_humana {
 }
 
 Table persona_juridica {
-  persona_id bigint [pk, ref: - persona.id]
+  id bigint [pk, ref: - persona.id]
   razon_social varchar(150) [not null]
   tipo_organizacion tipo_organizacion [null, note: 'NULL cuando viene del CSV']
   rubro varchar(100) [null]
 }
 
 Table representante {
-  persona_juridica_id bigint [not null, ref: > persona_juridica.persona_id]
-  persona_humana_id bigint [not null, ref: > persona_humana.persona_id]
+  persona_juridica_id bigint [not null, ref: > persona_juridica.id]
+  persona_humana_id bigint [not null, ref: > persona_humana.id]
 
   indexes {
     (persona_juridica_id, persona_humana_id) [pk]
@@ -135,31 +163,35 @@ Table donante {
   persona_id bigint [not null, unique, ref: - persona.id]
   ultima_actividad date [not null]
   notificado_por_inactividad boolean [not null, default: false]
+  activo boolean [not null, default: true, note: 'Baja lógica: nunca se borra físicamente. Inactivo no puede registrar nuevas solicitudes/donaciones ni modificar sus datos; reactivar() es la única modificación permitida']
 }
 
 Table entidad_beneficiaria {
   id bigint [pk, increment]
-  persona_juridica_id bigint [not null, unique, ref: - persona_juridica.persona_id]
+  persona_juridica_id bigint [not null, unique, ref: - persona_juridica.id]
   descripcion varchar(255)
   dir_calle varchar(150)
   dir_numero varchar(20)
   dir_ciudad varchar(100)
   dir_provincia varchar(100)
+  activa boolean [not null, default: true, note: 'Baja lógica: nunca se borra físicamente. Inactiva no puede iniciar operaciones nuevas ni modificar sus datos/necesidades, y queda excluida de nuevas asignaciones y del matchmaking; reactivar() es la única modificación permitida']
 }
 
 // ---------------- Necesidades (herencia SINGLE_TABLE) ----------------
 Table necesidad {
   id bigint [pk, increment]
   tipo_necesidad tipo_necesidad [not null, note: 'Discriminador de la herencia']
-  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id, note: 'Nullable: el codigo actual permite crear una necesidad sin entidad']
+  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id, note: 'Nullable: el codigo actual permite crear una necesidad sin entidad. Sin ON DELETE (RESTRICT): entidad_beneficiaria nunca se borra físicamente (baja lógica), así que no hace falta -- y si se intentara, debe rechazarse en vez de borrar necesidades en cascada']
   descripcion varchar(255) [not null]
   subcategoria subcategoria [not null]
   unidad_medida unidad_medida [not null]
-  cantidad_requerida decimal(12,3) [not null]
-  cantidad_recibida decimal(12,3) [not null, default: 0]
+  cantidad_requerida decimal(12,3) [not null, note: 'CHECK > 0']
+  cantidad_recibida decimal(12,3) [not null, default: 0, note: 'CHECK >= 0. Acumulador desnormalizado: se podría recalcular sumando Donacion.cantidadAsignada de las donaciones ENTREGADA con necesidadAsignada=esta fila, pero se mantiene como columna propia para no recorrer donacion en cada lectura de necesidadesPendientes()/satisfecha()']
   periodicidad periodicidad [null, note: 'Solo RECURRENTE']
   inicio_periodo_actual date [null, note: 'Solo RECURRENTE']
   tipo_extraordinario tipo_extraordinario [null, note: 'Solo EXTRAORDINARIA']
+
+  note: 'CHECK adicional: (tipo_necesidad=RECURRENTE y periodicidad no nula y tipo_extraordinario nulo) o (tipo_necesidad=EXTRAORDINARIA y tipo_extraordinario no nulo y periodicidad nula)'
 }
 
 // ---------------- Donaciones ----------------
@@ -168,17 +200,17 @@ Table solicitud_donacion {
   donante_id bigint [not null, ref: > donante.id]
   descripcion varchar(255) [not null]
   fecha_registro datetime [not null]
-  note: 'Donacion ORIGINAL: una sola carga del donante, antes de segmentar'
+  note: 'Donacion ORIGINAL: una sola carga del donante, antes de segmentar. Borrado físico (DELETE /api/solicitudes/{id}) solo permitido si todavía no generó ninguna Donacion -- 409 si ya generó alguna; borra también sus item_donado (cascade=ALL de JPA, mappedBy solicitudOrigen)'
 }
 
 Table donacion {
   id bigint [pk, increment]
   solicitud_id bigint [not null, ref: > solicitud_donacion.id]
-  donante_id bigint [not null, ref: > donante.id]
-  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id]
-  necesidad_asignada_id bigint [null, ref: > necesidad.id]
+  donante_id bigint [not null, ref: > donante.id, note: 'Desnormalizado respecto de solicitud_donacion.donante_id (siempre coincide, ver SolicitudDonacion.segmentar/Donacion.donante): evita un join a solicitud_donacion para resolver "quién donó" en cada lectura de Donacion']
+  entidad_beneficiaria_id bigint [null, ref: > entidad_beneficiaria.id, note: 'Sin ON DELETE (RESTRICT): entidad_beneficiaria nunca se borra físicamente (baja lógica); nunca se desvincula una donación histórica -- en CUALQUIER estado -- solo para permitir un borrado']
+  necesidad_asignada_id bigint [null, ref: > necesidad.id, note: 'Sin ON DELETE (RESTRICT): el borrado de una Necesidad referenciada se bloquea a nivel aplicación en CUALQUIER estado de la donación (ver NecesidadService.eliminar()), nunca se desvincula para permitirlo']
   fecha_creacion datetime [not null]
-  estado_actual estado_track [not null, default: 'EN_DEPOSITO']
+  estado_actual estado_track [not null, default: 'EN_DEPOSITO', note: 'Desnormalizado respecto del último cambio_estado de esta donación: evita leer el historial completo solo para saber el estado vigente']
   matchmaking_ejecutado_en datetime [null, note: 'NULL = nunca se ejecuto el matchmaking (distingue "sin ejecutar" de "ejecutado sin candidatas")']
   note: 'Donacion SEGMENTADA: unidad minima de asignacion (una subcategoria)'
 
@@ -191,18 +223,18 @@ Table donacion {
 Table item_donado {
   id bigint [pk, increment]
   solicitud_id bigint [null, ref: > solicitud_donacion.id, note: 'Items originales de la carga']
-  donacion_id bigint [null, ref: > donacion.id, note: 'Items vigentes de la donacion. NULL si fue reemplazado por una edicion']
+  donacion_id bigint [null, ref: > donacion.id, note: 'Items vigentes de la donacion. NULL si fue reemplazado por una edicion, o si la donacion (en deposito) se eliminó -- sin ON DELETE CASCADE a propósito: el item sigue siendo historial de la solicitud_donacion original']
   descripcion varchar(255) [not null]
   foto varchar(500)
   categoria categoria [not null]
   subcategoria subcategoria [not null]
   unidad_medida unidad_medida [not null]
-  cantidad decimal(12,3) [not null]
+  cantidad decimal(12,3) [not null, note: 'CHECK > 0']
   fecha_vencimiento date [null, note: 'Perecedero: solo ALIMENTOS']
   condicion condicion [null, note: 'ConEstado: solo MOBILIARIO / VESTIMENTA']
-  peso_kg int
-  volumen_m3 int
-  altura_m int
+  peso_kg int [note: 'CHECK > 0 si no es null']
+  volumen_m3 int [note: 'CHECK > 0 si no es null']
+  altura_m int [note: 'CHECK > 0 si no es null']
 }
 
 Table cambio_estado {
@@ -219,11 +251,11 @@ Table cambio_estado {
 }
 
 Table candidata_matchmaking {
-  donacion_id bigint [not null, ref: > donacion.id]
+  donacion_id bigint [not null, ref: > donacion.id, note: 'ON DELETE CASCADE: filas propias de esta donación']
   lista lista_matchmaking [not null]
-  posicion int [not null]
-  entidad_beneficiaria_id bigint [not null, ref: > entidad_beneficiaria.id]
-  note: 'ResultadoMatchmaking: las 3 listas (hasta 10 entidades cada una)'
+  posicion int [not null, note: 'CHECK >= 0']
+  entidad_beneficiaria_id bigint [not null, ref: > entidad_beneficiaria.id, note: 'ON DELETE CASCADE: si se borrara la entidad candidata, se borraría esta fila puntual (snapshot descartable, se puede re-ejecutar el matchmaking) -- no afecta la donación ni su historial. En la práctica hoy es inalcanzable: entidad_beneficiaria nunca se borra físicamente (baja lógica)']
+  note: 'ResultadoMatchmaking: las 3 listas (hasta 10 entidades cada una). Es en sí misma una desnormalización: una "foto" del último matchmaking corrido, persistida como filas sueltas en vez de recalcularse on-demand'
 
   indexes {
     (donacion_id, lista, posicion) [pk]
@@ -233,5 +265,5 @@ Table candidata_matchmaking {
 Table evento_aplicado {
   evento_id varchar(36) [pk]
   aplicado_en datetime [not null]
-  note: 'Idempotencia de eventos de Logistica (hoy un Set en memoria en DonacionService)'
+  note: 'Idempotencia de eventos de Logistica -- antes (antes de la persistencia JPA) era un Set<String> en memoria en DonacionService, hoy esta tabla'
 }

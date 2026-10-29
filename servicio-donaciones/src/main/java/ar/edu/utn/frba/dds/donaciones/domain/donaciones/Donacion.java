@@ -152,9 +152,25 @@ public class Donacion {
         // Los items viejos quedan huérfanos (donacion_id = null) en vez de
         // borrarse: siguen existiendo como registro de lo que trajo la
         // SolicitudDonacion original.
+        desvincularTodosLosItems();
+        nuevos.forEach(this::agregarItemInterno);
+    }
+
+    /**
+     * Desvincula cada item (donacion = null) Y vacía esta colección --
+     * usado antes de borrar la donación en GestorDonaciones.eliminar() (ver
+     * también reemplazarItems(), que hace lo mismo antes de cargar los
+     * nuevos). Es imprescindible vaciar también la colección en memoria, no
+     * solo la FK de cada item: el cascade=ALL de esta asociación cascadea
+     * el DELETE sobre cualquier ItemDonado que siga referenciado en
+     * "items" al momento de borrar la Donacion, sin importar que su FK ya
+     * esté en null -- Hibernate cascadea sobre el grafo de objetos en
+     * memoria, no sobre el estado ya persistido en la base. Package-
+     * private: es un detalle de borrado, no una operación de negocio.
+     */
+    void desvincularTodosLosItems() {
         this.items.forEach(item -> item.asignarDonacion(null));
         this.items = new ArrayList<>();
-        nuevos.forEach(this::agregarItemInterno);
     }
     public BigDecimal getCantidadAsignada() {
         return items.stream().map(ItemDonado::getCantidad).reduce(BigDecimal.ZERO, BigDecimal::add);

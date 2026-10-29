@@ -69,6 +69,10 @@ public class DonacionService {
     @org.springframework.transaction.annotation.Transactional
     public List<DonacionDTO> crear(CargaDonacionDTO dto) {
         Donante donante = gestorDonantes.buscarPorId(dto.getDonanteId());
+        if (!donante.isActivo()) {
+            throw new IllegalStateException(
+                    "No se puede registrar una donación: el donante " + donante.getId() + " está inactivo");
+        }
 
         SolicitudDonacion solicitud = new SolicitudDonacion(dto.getDescripcion());
         solicitud.setDonante(donante);
@@ -120,6 +124,9 @@ public class DonacionService {
         return convertirADTO(obtenerDominioPorId(id));
     }
 
+    // Transaccional: ahora GestorDonaciones.eliminar() hace dos pasos (huérfanar
+    // los items y recién después borrar la donación) que deben confirmarse juntos.
+    @org.springframework.transaction.annotation.Transactional
     public void eliminar(Long id) {
         gestorDonaciones.eliminar(id);
     }
@@ -196,6 +203,16 @@ public class DonacionService {
     @org.springframework.transaction.annotation.Transactional
     public DonacionDTO confirmarAsignacion(Long id, EntidadBeneficiaria entidad) {
         Donacion donacion = obtenerDominioPorId(id);
+        // Defensa en profundidad: el matchmaking (ver
+        // EntidadBeneficiariaService.obtenerEntidadesDominio()) ya excluye
+        // a las entidades inactivas de candidatasPropuestas(), pero esta
+        // entidad llega acá resuelta directo por id (DonacionController.asignar),
+        // no desde esa lista -- una entidad inactiva nunca puede ser el
+        // destino de una asignación nueva.
+        if (!entidad.isActiva()) {
+            throw new IllegalStateException(
+                    "La entidad " + entidad.getId() + " está inactiva y no puede recibir nuevas asignaciones");
+        }
         if (donacion.getPesoKg() == null || donacion.getVolumenM3() == null || donacion.getAlturaM() == null)
             throw new IllegalArgumentException("Complete pesoKg, volumenM3 y alturaM de todos los items antes de asignar");
         if (donacion.getResultadoMatchmaking() == null)
@@ -225,9 +242,7 @@ public class DonacionService {
     }
 
     public List<Donacion> obtenerDonacionesEnDeposito() {
-        return gestorDonaciones.getDonaciones().stream()
-                .filter(d -> d.getEstadoActual() == EstadoTrack.EN_DEPOSITO)
-                .toList();
+        return gestorDonaciones.getDonacionesPorEstado(EstadoTrack.EN_DEPOSITO);
     }
 
     public List<DonacionPendienteDTO> obtenerPendientes(int page, int size) {
@@ -238,19 +253,13 @@ public class DonacionService {
             throw new IllegalArgumentException("size debe estar entre 1 y 100");
         }
 
-        int skip = page * size;
-
-        return gestorDonaciones.getDonaciones().stream()
-                .filter(this::estaPendienteDePlanificacion)
-                .skip(skip)
-                .limit(size)
+        // Antes traía TODAS las donaciones (findAll()) para filtrar y paginar
+        // en memoria con skip/limit -- ahora la paginación la hace la base.
+        org.springframework.data.domain.Pageable pageable =
+                org.springframework.data.domain.PageRequest.of(page, size);
+        return gestorDonaciones.getDonacionesPendientesDePlanificacion(pageable).stream()
                 .map(this::convertirAPendienteDTO)
                 .toList();
-    }
-
-    private boolean estaPendienteDePlanificacion(Donacion donacion) {
-        return donacion.getEstadoActual() == EstadoTrack.ASIGNACION_REALIZADA
-                && donacion.getEntidadBeneficiaria() != null;
     }
 
     private DonacionPendienteDTO convertirAPendienteDTO(Donacion donacion) {

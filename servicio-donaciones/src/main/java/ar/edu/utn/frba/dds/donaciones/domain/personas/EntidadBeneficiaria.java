@@ -59,6 +59,17 @@ public class EntidadBeneficiaria {
     @OneToMany(mappedBy = "entidadBeneficiaria", fetch = FetchType.EAGER)
     private List<Donacion> donacionesRecibidas;
 
+    // Baja lógica -- ver EntidadBeneficiariaService.eliminar(). La entidad
+    // NUNCA se borra físicamente (conserva historial y relaciones); inactiva
+    // no puede iniciar operaciones nuevas ni modificar sus datos/necesidades
+    // (ver EntidadBeneficiariaService.actualizar, NecesidadService), y queda
+    // excluida de nuevas asignaciones y del matchmaking (ver
+    // obtenerEntidadesDominio(), DonacionService.confirmarAsignacion). Las
+    // entregas ya en curso asignadas a ella no se ven afectadas.
+    @Setter(AccessLevel.NONE)
+    @Column(name = "activa", nullable = false)
+    private boolean activa = true;
+
     public EntidadBeneficiaria(Long id, PersonaJuridica entidad, String descripcion) {
         this.id = id;
         this.entidad = entidad;
@@ -93,5 +104,15 @@ public class EntidadBeneficiaria {
      */
     public void agregarRepresentante(PersonaHumana representante) {
         entidad.agregarRepresentante(representante);
+    }
+
+    /** Baja lógica -- ver EntidadBeneficiariaService.eliminar(). */
+    public void desactivar() {
+        this.activa = false;
+    }
+
+    /** Única operación de modificación permitida sobre una entidad inactiva. */
+    public void reactivar() {
+        this.activa = true;
     }
 }

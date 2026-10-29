@@ -1,5 +1,9 @@
 package ar.edu.utn.frba.dds.donaciones.domain.personas;
 
+import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
+import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
 import ar.edu.utn.frba.dds.donaciones.repository.DonanteRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,6 +16,7 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
@@ -112,12 +117,42 @@ class GestorDonantesTest {
                 .isInstanceOf(NoSuchElementException.class);
     }
 
+    // Entrega 5 (revisión de reglas de negocio): eliminar() es baja lógica
+    // -- el donante nunca se borra físicamente, queda inactivo pero sigue
+    // en la lista.
     @Test
-    void eliminarSacaAlDonanteDeLaLista() {
+    void eliminarDesactivaAlDonanteSinBorrarloDeLaLista() {
         Donante donante = gestor.registrarDonante(new PersonaHumana("Ana", "Perez", 30, "1", null));
 
         gestor.eliminar(donante.getId());
 
-        assertThat(gestor.getDonantesRegistrados()).isEmpty();
+        assertThat(gestor.getDonantesRegistrados()).hasSize(1);
+        assertThat(gestor.buscarPorId(donante.getId()).isActivo()).isFalse();
+    }
+
+    // No debe bloquearse aunque el donante tenga donaciones registradas --
+    // se conservan todas sus solicitudes/donaciones históricas y los
+    // procesos de donaciones ya en curso no se ven afectados.
+    @Test
+    void eliminarDesactivaAlDonanteAunqueTengaDonacionesRegistradas() {
+        Donante donante = gestor.registrarDonante(new PersonaHumana("Ana", "Perez", 30, "1", null));
+        ItemDonado item = DatosPrueba.item(1L, "Sillas", Subcategoria.SILLA, 5, null);
+        Donacion donacion = DatosPrueba.donacion(1L, item, 5);
+        donante.agregarDonacion(donacion);
+
+        assertThatCode(() -> gestor.eliminar(donante.getId())).doesNotThrowAnyException();
+
+        assertThat(donante.isActivo()).isFalse();
+        assertThat(donante.getDonaciones()).hasSize(1); // se conserva la donación histórica
+    }
+
+    @Test
+    void reactivarVuelveAHabilitarAlDonante() {
+        Donante donante = gestor.registrarDonante(new PersonaHumana("Ana", "Perez", 30, "1", null));
+        gestor.eliminar(donante.getId());
+
+        gestor.reactivar(donante.getId());
+
+        assertThat(gestor.buscarPorId(donante.getId()).isActivo()).isTrue();
     }
 }
