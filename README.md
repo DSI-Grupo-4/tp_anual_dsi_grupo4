@@ -23,9 +23,9 @@
 │   └── Diagrama_de_Despliegue_Inicial.png
 ├── cli.py
 ├── consigna
-│   ├── DDS-TP-Anual-2026 (1).pdf
-│   ├── entrega4-requerimientos.md
-│   └── entrega5-requerimientos.md
+│   ├── DDS-TP-Anual-2026 (1).pdf
+│   ├── entrega4-requerimientos.md
+│   └── entrega5-requerimientos.md
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
@@ -39,8 +39,8 @@
 │       ├── donaciones.txt
 │       ├── incentivos.txt
 │       ├── logistica.txt
-│       ├── notificaciones.txt
-│       └── pdf
+│       ├── notificaciones.txt
+│       └── pdf
 ├── docker-compose.integration.yml
 ├── endpoints.md
 ├── mockups
@@ -81,7 +81,6 @@
 ├── servicio-incentivos
 │   ├── Makefile
 │   ├── README.md
-│   ├── credentials.env
 │   ├── docker-compose.yml
 │   ├── pom.xml
 │   ├── src
@@ -105,7 +104,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-31 directories, 57 files
+31 directories, 58 files
 ```
 <!-- TREE_END -->
 
