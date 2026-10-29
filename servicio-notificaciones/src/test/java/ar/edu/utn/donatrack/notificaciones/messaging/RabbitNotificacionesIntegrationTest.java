@@ -19,7 +19,16 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+        // Base en memoria: el test no depende de MySQL ni toca la base real
+        "spring.datasource.url=jdbc:h2:mem:notificaciones;MODE=MySQL;DB_CLOSE_DELAY=-1",
+        "spring.datasource.username=sa",
+        "spring.datasource.password=",
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        // Sin credenciales de Twilio, aunque la terminal tenga las variables cargadas
+        "twilio.account-sid=",
+        "twilio.auth-token="
+})
 @Testcontainers(disabledWithoutDocker = true)
 class RabbitNotificacionesIntegrationTest {
 

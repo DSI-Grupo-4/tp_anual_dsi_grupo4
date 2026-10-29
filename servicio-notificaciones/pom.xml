@@ -18,6 +18,8 @@
 
     <properties>
         <java.version>17</java.version>
+        <!-- Alinea el núcleo de Testcontainers con los módulos 2.0.5 (compatible con Docker 29) -->
+        <testcontainers.version>2.0.5</testcontainers.version>
     </properties>
 
     <dependencies>
