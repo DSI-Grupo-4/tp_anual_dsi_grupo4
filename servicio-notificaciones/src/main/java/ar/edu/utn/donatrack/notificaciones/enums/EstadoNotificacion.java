@@ -12,5 +12,6 @@ package ar.edu.utn.donatrack.notificaciones.enums;
  */
 public enum EstadoNotificacion {
     PENDIENTE,
-    COMPLETADA
+    COMPLETADA,
+    FALLIDA
 }

@@ -45,7 +45,7 @@ public class NotificacionResponseDTO {
                 notificacion.getContacto(),
                 notificacion.getEstado(),
                 notificacion.getServicioOrigen(),
-                notificacion.getFechaCreacion(),
+                notificacion.getFechaCreacion().toString(),
                 notificacion.getTipoEvento(),
                 notificacion.getEventoId()
         );
