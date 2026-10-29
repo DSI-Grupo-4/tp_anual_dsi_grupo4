@@ -413,6 +413,14 @@
 - **Validado:** `mvn test-compile` limpio y suite completa en verde tras el borrado -- 87 (Donaciones) + 20 (Logística) + 16 (Incentivos) + 3 (Notificaciones, 1 skip esperado), mismo patrón que D-030/D-032.
 - **Definida por:** usuario (pidió la auditoría contra Entregas 1-5, exigió la arqueología histórica y la verificación end-to-end antes de autorizar el borrado) + agente (reconstruyó la línea de tiempo completa con `git log`/`merge-base`, levantó el servicio real para confirmar Swagger, verificó aislamiento en las 4 direcciones -- otros servicios, n8n, scripts/docs, y dentro del propio cluster -- antes de borrar)
 
+## [D-034] Eliminación de 3 archivos huérfanos más en Donaciones, mismo origen que D-033
+- **Fecha:** 2026-10-29
+- **Servicio(s) afectado(s):** Donaciones
+- **Contexto:** al cerrar D-033 se extendió el mismo barrido (comparar cada `.java` contra `backup/refactor-pre-squash-20261009`) a los otros 3 servicios por las dudas. Logística y Notificaciones salieron limpios. Donaciones tenía 3 archivos del mismo origen que D-033 (código de `main` nunca tocado por `refactor`, sobrevivido sin conflicto al squash de D-032): `client/NotificacionesClient.java`, `service/ContactoPreferidoResolver.java`, `service/DonacionesService.java` (nótese el plural -- no confundir con `DonacionService.java`, singular, que es el real).
+- **Decisión tomada:** se confirmó que es código 100% muerto antes de borrar -- los 3 son beans de Spring (`@Component`/`@Service`, se instancian al bootear) pero ninguno tiene `@Scheduled`, `@EventListener`, `@RabbitListener` ni `@PostConstruct` con lógica propia; sus métodos públicos (`enviar(...)`, `resolver(...)`, `notificarDonantesInactivos(...)`) no los llama nada del código real, verificado por referencia cruzada. A diferencia del `N8nWebhookClient` de D-033, el `@Value` de `NotificacionesClient` tiene default (`http://localhost:8082`), por eso nunca rompió el boot ni se detectó antes. Funcionalmente es la misma idea que `InactividadScheduler` (D-032) -- notificar donantes inactivos a los 20 días -- pero sin el enganche (`@Scheduled`) que sí tiene la versión real. Se eliminaron los 3 archivos (`git rm`).
+- **Validado:** `mvn test-compile` limpio y suite de Donaciones en verde (87 tests) tras el borrado.
+- **Definida por:** usuario (pidió extender la limpieza a estos 3 archivos tras confirmar que eran código muerto) + agente (extendió el barrido de D-033 a los 4 servicios, leyó los 3 archivos completos para confirmar ausencia de cualquier gancho de activación antes de borrar)
+
 ## [D-026] docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n)
 - **Fecha:** 2026-10-09
 - **Servicio(s) afectado(s):** infraestructura (Logística, Incentivos), scripts de arranque
