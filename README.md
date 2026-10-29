@@ -37,6 +37,7 @@
 │       ├── donaciones.txt
 │       ├── incentivos.txt
 │       ├── logistica.txt
+│       ├── notificaciones.txt
 │       └── pdf
 ├── docker-compose.integration.yml
 ├── mockups
@@ -98,7 +99,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-31 directories, 52 files
+31 directories, 53 files
 ```
 <!-- TREE_END -->
 
