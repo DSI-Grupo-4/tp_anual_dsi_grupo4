@@ -31,18 +31,18 @@ Reemplazar el correo de ejemplo por los destinatarios de prueba. Se admite una l
 3. Ejecutar candidatas y confirmar asignación. Se generan avisos para ambas partes.
 4. Planificar la ruta en Logística y comenzar el recorrido. Esperar la consulta automática (60 segundos) o ejecutar POST /api/logistica/consumir-eventos en Donaciones.
 5. Seguir el enlace /api/rutas/{id}/seguimiento. Muestra un esquema de paradas y sus estados actuales, actualizado cada 15 segundos, sin servicios externos ni ubicación GPS. **No es un mapa geográfico ni implementa telemetría en tiempo real del camión**; eso requiere coordenadas y un componente cartográfico autorizado.
-6. Confirmar recepción o registrar fallo en Logística y volver a consumir eventos. Consultar GET /api/notificaciones en el puerto 8082: los avisos procesados quedan COMPLETADA. SMS, EMAIL y WHATSAPP siguen simulados según el alcance del TP.
+6. El email se envía por SMTP a Mailpit (bandeja en http://localhost:8025); SMS y WhatsApp se envían por Twilio si hay credenciales configuradas y, si no, se simulan (ver "Envío real" más abajo).
 7. Para registrar una interacción del usuario (por ejemplo, al iniciar sesión), invocar POST /api/donantes/{id}/interacciones. También renuevan actividad las ediciones y cargas de donaciones. Las consultas administrativas no se interpretan como actividad del donante.
 8. Incentivos recibe la actividad al crear la donación y una actualización al entregarla. donacionId identifica ambas fases y evita duplicar bienes, solicitudes y progreso. La confirmación de entrega actualiza misiones de donaciones exitosas; las otras misiones se procesan en el alta. Los cambios de contacto se sincronizan en cada actividad recibida.
 
 ## Reintentos y alcance de la persistencia
 
-- Las bandejas de avisos de los productores, la bandeja HTTP hacia Incentivos y el historial/deduplicación de Notificaciones se guardan debajo de .datos/, ignorado por Git. No borrar ese directorio si se quieren conservar pendientes e historial.
+- Las bandejas de avisos de los productores y la bandeja HTTP hacia Incentivos se guardan debajo de .datos/, ignorado por Git. No borrar ese directorio si se quieren conservar los pendientes. El historial de Notificaciones ya no está ahí: se guarda en MySQL (esquema notificaciones).
 - RabbitMQ debe confirmar tanto recepción como enrutamiento antes de borrar un aviso pendiente. Si el broker o el consumidor no está disponible, la operación de dominio no espera la conexión a RabbitMQ; el trabajador vuelve a intentar. La llamada HTTP a Incentivos también se realiza en segundo plano.
 - Un evento de Logística sólo se confirma después de procesarlo correctamente y guardar los avisos. Ante error queda disponible para la siguiente consulta. En la misma ejecución se reconocen eventos ya aplicados y no se repite la acreditación de necesidades.
 - El consumidor reintenta hasta tres veces. Hay una cola durable de fallidos configurada: donatrack.notificaciones.fallidas. Consultarla mediante RabbitMQ Management en localhost:15672.
-- Notificaciones conserva las solicitudes completadas y la deduplicación por servicioOrigen + eventoId tras reiniciar. Los productores de Donaciones mantienen identificadores estables por evento y destinatario.
-- Esto no implementa la persistencia completa del dominio del TP: donantes, donaciones, necesidades y progreso de Incentivos siguen en memoria. La deduplicación de actividades de Incentivos y eventos aplicados de Donaciones dura mientras esos dominios estén cargados. No se garantiza una transacción atómica entre el dominio en memoria y los archivos pendientes. La integración entrega al menos una vez; los proveedores reales futuros deberán aceptar una clave idempotente para cubrir una caída justo después del envío externo.
+- Notificaciones guarda cada aviso en la tabla notificacion. La deduplicación por servicioOrigen + eventoId la garantiza un UNIQUE de la base, por lo que sobrevive a reinicios. Si un envío falla, la fila queda FALLIDA con el motivo en detalle_error y el reintento de la cola trabaja sobre la misma fila. Los productores de Donaciones mantienen identificadores estables por evento y destinatario.
+- Los cuatro servicios persisten su dominio en MySQL (un esquema por servicio). No se garantiza una transacción atómica entre el dominio y los archivos pendientes de los productores. La integración entrega al menos una vez; un proveedor externo puede recibir un segundo envío solo si el servicio cae justo después de enviar y antes de guardar el resultado.
 
 ## Impacto en el diagrama de clases
 
@@ -56,7 +56,7 @@ Cambios en clases existentes:
 | DatosDonacion (Incentivos) | Agrega donacionId: Long para reconocer alta/confirmación de una misma donación. |
 | Donante (Donaciones) | Conserva ultimaActividad y el indicador de aviso; corrige el límite a más de 20 días. |
 | Donante (Incentivos) | Actualiza su contacto y reconoce donaciones identificadas sin agregar una entidad de contacto. |
-| Notificacion | Conserva sus campos y relaciones; el servicio ahora almacena su historial en disco. |
+| Notificacion | Pasa a ser entidad JPA (tabla notificacion). Agrega fechaEnvio, intentos, detalleError y el estado FALLIDA. Ver D-037. |
 | DTO y servicios | Transportan datos de comprobante/seguimiento y registran interacciones; no agregan relaciones de dominio. |
 
 Los atributos nuevos de Entrega están reflejados en LOGISTICA.drawio.xml y diagramas/SERVICIOS.json, conservando sus estilos. DatosDonacion no tenía una caja propia en el diagrama nativo de Incentivos; su donacionId se detalla aquí y el DER propuesto ya contenía donacion_id. No se agregó una caja nueva al diagrama. Las pruebas agregadas y los adaptadores técnicos no se presentan como entidades del diagrama de dominio.
@@ -75,3 +75,23 @@ Ya no se necesita registrar una donación para consultar `GET /api/donantes/{id}
 En entornos desplegados configurar `DONACIONES_BASE_URL` en Incentivos y `incentivos.base-url` en Donaciones. En local los valores por defecto son `http://localhost:8080` y `http://localhost:8081`. Se reutilizan `IncentivosClient`, `DonanteService`, `IncentivosController` y las clases de donante existentes: no hay nuevas clases de producción ni cambios en relaciones del diagrama.
 
 Se comprobó con dos instancias reales: alta humana en Donaciones seguida inmediatamente de GET de misiones en Incentivos, con cinco misiones disponibles, cero solicitudes de donación y cero insignias. Las pruebas adicionales cubren sincronización de perfil, reintentos y recuperación de un donante anterior desde Donaciones.
+
+## Envío real: Mailpit y Twilio (D-037)
+
+| Medio | Proveedor | Sin configurar nada |
+| --- | --- | --- |
+| EMAIL | SMTP → Mailpit (`localhost:1025`, bandeja en `http://localhost:8025`) | Funciona: Mailpit se levanta con el resto de la infraestructura |
+| SMS | Twilio | Simulado (solo log) |
+| WHATSAPP | Twilio | Simulado (solo log) |
+
+Para activar Twilio, cada integrante carga sus credenciales como variables de entorno (nunca en el repositorio) antes de levantar los servicios:
+
+```fish
+set -x TWILIO_ACCOUNT_SID "AC..."
+set -x TWILIO_AUTH_TOKEN "..."
+set -x TWILIO_NUMERO_SMS "+1..."                          # número de prueba asignado por Twilio
+set -x TWILIO_SMS_CUERPO_PRUEBA "sms_appointment_reminders"  # solo con cuenta de prueba
+set -x TWILIO_WHATSAPP_ACTIVO "false"                     # la cuenta de prueba exige plantillas
+```
+
+El log de arranque de Notificaciones indica el modo de cada medio: `grep "Twilio configurado" logs/servicio-notificaciones.log`.

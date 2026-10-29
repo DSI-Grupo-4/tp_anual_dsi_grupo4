@@ -1,0 +1,54 @@
+// =====================================================================
+// DonaTrack - Servicio de Notificaciones - DER físico (MySQL 8)
+// Pegar en https://dbdiagram.io  (Import > DBML) para graficarlo.
+// =====================================================================
+
+Project donatrack_notificaciones {
+  database_type: 'MySQL'
+  Note: '''
+    Servicio de Notificaciones. Un único MySQL con un esquema por servicio: este es el esquema `notificaciones`.
+    El destinatario (contacto) y el evento que originó el aviso pertenecen a OTROS servicios
+    (Donaciones, Incentivos): se guardan como datos del mensaje, sin FK, porque Notificaciones
+    solo los recibe por la cola de RabbitMQ y no conoce esas entidades.
+  '''
+}
+
+// ---------------------------------------------------------------------
+// Enums (se mapean con @Enumerated(EnumType.STRING))
+// ---------------------------------------------------------------------
+
+Enum notificaciones.medio_comunicacion {
+  WHATSAPP
+  EMAIL
+  SMS
+}
+
+Enum notificaciones.estado_notificacion {
+  PENDIENTE
+  COMPLETADA
+  FALLIDA
+}
+
+// ---------------------------------------------------------------------
+// Notificación (única tabla del servicio)
+// ---------------------------------------------------------------------
+
+Table notificaciones.notificacion {
+  id              char(36) [pk, note: 'UUID generado por la aplicación']
+  mensaje         varchar(2000) [not null]
+  medio           notificaciones.medio_comunicacion [not null]
+  contacto        varchar(150) [not null, note: 'Email o teléfono del destinatario, según el medio']
+  estado          notificaciones.estado_notificacion [not null, default: 'PENDIENTE']
+  servicio_origen varchar(50) [not null, note: 'Servicio que pidió el aviso (donaciones, incentivos)']
+  tipo_evento     varchar(50) [not null, note: 'Ej.: DONACION_ASIGNADA, MISION_COMPLETADA']
+  evento_id       varchar(200) [not null, note: 'Identificador del evento en el servicio de origen (ref. lógica)']
+  fecha_creacion  datetime [not null, note: 'UTC']
+  fecha_envio     datetime [null, note: 'UTC. Se completa cuando el proveedor acepta el envío']
+  intentos        int [not null, default: 0, note: 'Cantidad de intentos de envío (reintentos de la cola)']
+  detalle_error   varchar(500) [null, note: 'Motivo del último fallo devuelto por el proveedor']
+
+  indexes {
+    (servicio_origen, evento_id) [unique, name: 'uk_notificacion_origen_evento', note: 'Idempotencia: un mismo evento no se notifica dos veces']
+    estado [name: 'idx_notificacion_estado']
+  }
+}
