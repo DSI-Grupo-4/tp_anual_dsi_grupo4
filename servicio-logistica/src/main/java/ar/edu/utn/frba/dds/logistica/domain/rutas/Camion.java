@@ -1,43 +1,30 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 @Getter
 @Setter
-@Entity
-@Table(name = "camion", indexes = {
-        @Index(name = "idx_camion_estado_camion", columnList = "estado_camion")
-})
+@Document(collection = "camiones")
 public class Camion {
+
+    // Id numérico: lo asigna GeneradorIds (secuencia en la colección "secuencias") al guardar si es null.
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_camion")
     private Integer idCamion;
 
-    @Column(name = "patente", nullable = false, unique = true, length = 10)
+    @Indexed(unique = true)
     private String patente;
 
-    @Column(name = "capacidad_volumen_m3", nullable = false)
     private Integer capacidadVolumenM3;
 
-    @Column(name = "altura_m", nullable = false)
     private Integer alturaM;
 
-    @Column(name = "capacidad_carga_kg", nullable = false) // es carga en KG, no M3
-    private Integer capacidadCargaKg;
+    private Integer capacidadCargaKg; // es carga en KG, no M3
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado_camion", nullable = false)
+    @Indexed
     private EstadoCamion estadoCamion;
 
     public Camion() {}

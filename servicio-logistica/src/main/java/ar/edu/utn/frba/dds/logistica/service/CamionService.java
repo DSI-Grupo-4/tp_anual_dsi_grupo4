@@ -8,14 +8,12 @@ import ar.edu.utn.frba.dds.logistica.repository.CamionRepository;
 import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
 import ar.edu.utn.frba.dds.logistica.repository.RutaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
-@Transactional
 public class CamionService {
 
     // Estados en los que un camión está comprometido con una entrega real
@@ -45,19 +43,14 @@ public class CamionService {
                 dto.getEstadoCamion() != null ? dto.getEstadoCamion() : EstadoCamion.DISPONIBLE);
         return toDTO(camionRepository.save(camion));
     }
-
-    @Transactional(readOnly = true)
     public List<CamionDTO> obtenerCamiones() {
         return camionRepository.findAll().stream().map(this::toDTO).toList();
     }
-
-    @Transactional(readOnly = true)
     public List<CamionDTO> obtenerCamionesDisponibles() {
         return obtenerCamionesDisponiblesEntidad().stream().map(this::toDTO).toList();
     }
 
     // usado internamente por el planificador, que necesita las entidades de dominio, no DTOs
-    @Transactional(readOnly = true)
     public List<Camion> obtenerCamionesDisponiblesEntidad() {
         return camionRepository.findByEstadoCamionOrderByIdCamion(EstadoCamion.DISPONIBLE);
     }
@@ -71,7 +64,7 @@ public class CamionService {
         if (dto.getEstadoCamion() != null) {
             camion.cambiarEstado(dto.getEstadoCamion());
         }
-        return toDTO(camion);
+        return toDTO(camionRepository.save(camion)); // Mongo no hace dirty checking: se guarda explícitamente
     }
 
     public void eliminar(Integer id) {
@@ -92,7 +85,6 @@ public class CamionService {
 
     // usado por PlanificadorService.registrarPlanExterno para resolver el
     // camión que indicó el proveedor externo en el callback
-    @Transactional(readOnly = true)
     public Camion buscar(Integer id) {
         return camionRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No existe el camión " + id));

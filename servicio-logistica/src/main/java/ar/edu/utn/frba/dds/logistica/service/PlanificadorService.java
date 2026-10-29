@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
-import org.springframework.transaction.annotation.Transactional;
 
 import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
 import ar.edu.utn.frba.dds.logistica.domain.eventos.TipoEvento;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 
 @Service
-@Transactional
 public class PlanificadorService {
 
     private static final Set<EstadoEntrega> ASIGNABLES = Set.of(EstadoEntrega.PENDIENTE, EstadoEntrega.REPLANIFICABLE);

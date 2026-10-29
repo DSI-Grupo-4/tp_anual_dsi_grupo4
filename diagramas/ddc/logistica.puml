@@ -32,6 +32,8 @@ class Entrega {
 - idEntidadBeneficiariaAsociada: Integer
 - estadoEntrega: EstadoEntrega
 - fecha: LocalDate
+- fechaHoraEntrega: LocalDateTime
+- seguimientoUrl: String
 - pesoKG: Integer
 - volumenM3: Integer
 - alturaM: Integer

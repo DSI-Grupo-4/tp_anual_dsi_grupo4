@@ -21,7 +21,6 @@ services:
     container_name: donatrack-mysql
     environment:
       MYSQL_ROOT_PASSWORD: BasededatosTP1
-      MYSQL_DATABASE: logistica
     ports:
       - "3306:3306"
     healthcheck:
@@ -31,10 +30,24 @@ services:
       retries: 10
     volumes:
       - mysql-data:/var/lib/mysql
-      - ./servicio-logistica/src/main/resources/db/logistica.sql:/docker-entrypoint-initdb.d/01-logistica.sql:ro
       - ./servicio-incentivos/src/main/resources/db/incentivos.sql:/docker-entrypoint-initdb.d/02-incentivos.sql:ro
       - ./servicio-donaciones/src/main/resources/db/donaciones.sql:/docker-entrypoint-initdb.d/03-donaciones.sql:ro
       - ./servicio-notificaciones/src/main/resources/db/notificaciones.sql:/docker-entrypoint-initdb.d/04-notificaciones.sql:ro
+  # Persistencia documental de Logística (Entrega 5): MongoDB, base "logistica".
+  # GeneradorIds asigna los IDs enteros al primer save (ver Camion/Chofer/Entrega/Ruta);
+  # no se depende del ObjectId de Mongo para no romper el contrato de la API ni el broker con Donaciones.
+  mongo:
+    image: mongo:7
+    container_name: donatrack-mongo
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - mongo-data:/data/db
   # Consola de administración de la base (D-012 preveía MySQL Workbench,
   # pero es una app de escritorio -- no es un buen ciudadano de Docker,
   # necesitaría X11/VNC. Adminer es la alternativa web estándar, imagen
@@ -61,3 +74,4 @@ services:
 volumes:
   rabbitmq-data:
   mysql-data:
+  mongo-data:

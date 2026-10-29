@@ -87,6 +87,7 @@ public class RutaController {
         ruta.iniciarRuta();
         ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->
             e.setSeguimientoUrl(publicBaseUrl + "/api/rutas/" + id + "/seguimiento")));
+        gestorRutas.guardar(ruta); // ruta + camión + entregas (Mongo no cascadea ni hace dirty checking) -- setSeguimientoUrl debe ir ANTES para que quede persistido
         ruta.getParadas().forEach(p -> p.getEntregas().forEach(e ->
                 gestorEventos.crearEvento(TipoEvento.RUTA_INICIADA, e)));
         return ruta;
