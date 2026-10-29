@@ -28,7 +28,7 @@ public class NotificacionController {
     }
 
     @Operation(summary = "Envia una notificacion por el medio indicado (EMAIL, SMS o WHATSAPP)")
-    @PostMapping({"", "/"})
+    @PostMapping
     public ResponseEntity<NotificacionResponseDTO> enviarNotificacion(
             @Valid @RequestBody NotificacionRequestDTO request) {
 
@@ -48,7 +48,7 @@ public class NotificacionController {
     }
 
     @Operation(summary = "Lista todas las notificaciones registradas")
-    @GetMapping({"", "/"})
+    @GetMapping
     public ResponseEntity<List<NotificacionResponseDTO>> listarTodas() {
         List<NotificacionResponseDTO> notificaciones = notificacionService.listarTodas().stream()
                 .map(NotificacionResponseDTO::desde)
