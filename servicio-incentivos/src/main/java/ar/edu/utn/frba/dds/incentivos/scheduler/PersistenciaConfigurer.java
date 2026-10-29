@@ -1,9 +1,11 @@
 package ar.edu.utn.frba.dds.incentivos.scheduler;
 
+import ar.edu.utn.frba.dds.incentivos.consultor.Consultor;
 import ar.edu.utn.frba.dds.incentivos.donante.GestorDonante;
 import ar.edu.utn.frba.dds.incentivos.misiones.GestorMisiones;
 import ar.edu.utn.frba.dds.incentivos.ranking.HistorialRanking;
 import ar.edu.utn.frba.dds.incentivos.repository.ActividadMensualDonanteRepository;
+import ar.edu.utn.frba.dds.incentivos.repository.BeneficiarioRepository;
 import ar.edu.utn.frba.dds.incentivos.repository.CategoriaRepository;
 import ar.edu.utn.frba.dds.incentivos.repository.DonanteRepository;
 import ar.edu.utn.frba.dds.incentivos.repository.RankingRepository;
@@ -27,15 +29,18 @@ public class PersistenciaConfigurer implements ApplicationRunner {
     private final DonanteRepository donanteRepository;
     private final RankingRepository rankingRepository;
     private final ActividadMensualDonanteRepository actividadMensualDonanteRepository;
+    private final BeneficiarioRepository beneficiarioRepository;
 
     public PersistenciaConfigurer(CategoriaRepository categoriaRepository,
                                    DonanteRepository donanteRepository,
                                    RankingRepository rankingRepository,
-                                   ActividadMensualDonanteRepository actividadMensualDonanteRepository) {
+                                   ActividadMensualDonanteRepository actividadMensualDonanteRepository,
+                                   BeneficiarioRepository beneficiarioRepository) {
         this.categoriaRepository = categoriaRepository;
         this.donanteRepository = donanteRepository;
         this.rankingRepository = rankingRepository;
         this.actividadMensualDonanteRepository = actividadMensualDonanteRepository;
+        this.beneficiarioRepository = beneficiarioRepository;
     }
 
     @Override
@@ -43,5 +48,6 @@ public class PersistenciaConfigurer implements ApplicationRunner {
         GestorMisiones.getInstance().configurarPersistencia(categoriaRepository);
         GestorDonante.getInstance().configurarPersistencia(donanteRepository);
         HistorialRanking.getInstance().configurarPersistencia(rankingRepository, actividadMensualDonanteRepository);
+        Consultor.getInstance().configurarPersistencia(beneficiarioRepository);
     }
 }

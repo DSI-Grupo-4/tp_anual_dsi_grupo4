@@ -66,6 +66,7 @@ public class IncentivosController {
         var donante = gestorDonante.obtenerDonante(id,perfil.get("nombre"));
         donante.actualizarNombreSiFalta(perfil.get("nombre"));
         donante.actualizarContactoSiFalta(medio,contacto);
+        gestorDonante.guardar(donante);
         return org.springframework.http.ResponseEntity.noContent().build();
     }
 
@@ -85,6 +86,7 @@ public class IncentivosController {
                         donante.actualizarContactoSiFalta("TELEFONO".equals(medio) ? "SMS" : medio, contacto.path("valor").asText());
                     }
                 }
+                gestorDonante.guardar(donante);
                 return donante;
             } catch (org.springframework.web.client.RestClientResponseException e) {
                 if (e.getStatusCode().value() == 404) throw ausente;

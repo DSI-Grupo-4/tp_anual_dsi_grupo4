@@ -421,6 +421,16 @@
 - **Validado:** `mvn test-compile` limpio y suite de Donaciones en verde (87 tests) tras el borrado.
 - **Definida por:** usuario (pidió extender la limpieza a estos 3 archivos tras confirmar que eran código muerto) + agente (extendió el barrido de D-033 a los 4 servicios, leyó los 3 archivos completos para confirmar ausencia de cualquier gancho de activación antes de borrar)
 
+## [D-035] Hotfix: `GestorDonante` y `Consultor.beneficiarios` no persistían actualizaciones de entidades ya existentes
+- **Fecha:** 2026-10-29
+- **Servicio(s) afectado(s):** Incentivos
+- **Contexto:** durante el análisis de persistencia de Incentivos contra el DER (`diagramas/der/incentivos.txt`) se encontraron dos huecos reales de escritura, no relacionados con D-032/D-033/D-034.
+- **Decisión tomada:**
+  1. **`GestorDonante.obtenerDonante(Long id, String nombre)`**: actualizaba el nombre en memoria pero no llamaba `guardar()` salvo que el donante fuera nuevo (ese camino sí guarda dentro de `obtenerDonante(Long id)`). Afectaba dos endpoints reales: `PUT /api/donantes/{id}/perfil` (la propia doc dice "crea o actualiza identidad y contacto" -- el "actualiza" para un donante ya existente no se persistía) y el fallback de `resolverDonante()` que recupera el perfil desde Donaciones cuando Incentivos no lo conoce todavía (creaba y guardaba el donante con nombre/contacto vacíos, y recién después los completaba sin volver a guardar). El cambio quedaba visible en memoria durante esa misma ejecución del proceso pero se perdía en el próximo reinicio. Se agregó el `guardar()` que faltaba en los 3 puntos: dentro de `obtenerDonante(Long, String)`, y explícito en `sincronizarPerfil` y en el fallback de `resolverDonante` (ambos en `IncentivosController`), ya que en los dos la actualización de contacto ocurre después de esa llamada.
+  2. **`Consultor.beneficiarios`**: el único de los 4 managers (`GestorMisiones`/`GestorDonante`/`HistorialRanking`/`Consultor`) sin su propio `configurarPersistencia()` -- el cache de deduplicación de `obtenerOCrearBeneficiario()` arrancaba vacío en cada reinicio en vez de recargarse desde la base. No llegaba a duplicar filas (`Beneficiario.id` no tiene `@GeneratedValue`, un alta repetida hace `merge` sobre la misma PK), pero sí trabajo redundante e inconsistencia de patrón frente a los otros 3 managers. Se creó `BeneficiarioRepository` (no existía ningún repositorio para esta entidad -- hasta ahora se persistía solo por cascada desde `Donante`/`DatosDonacion`), se agregó `Consultor.configurarPersistencia(BeneficiarioRepository)` siguiendo el mismo patrón, y se conectó en `PersistenciaConfigurer`.
+- **Validado:** suite completa en verde tras el fix -- 87 (Donaciones) + 20 (Logística) + 16 (Incentivos) + 3 (Notificaciones, 1 skip esperado).
+- **Definida por:** usuario (pidió el análisis de persistencia que encontró el hueco, y confirmó arreglar ambos) + agente (encontró los 2 huecos comparando cada camino de escritura contra el patrón ya usado correctamente en `HistorialRanking.registrarMisionCompletada()`, implementó el fix mínimo necesario sin tocar el resto del diseño)
+
 ## [D-026] docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n)
 - **Fecha:** 2026-10-09
 - **Servicio(s) afectado(s):** infraestructura (Logística, Incentivos), scripts de arranque
