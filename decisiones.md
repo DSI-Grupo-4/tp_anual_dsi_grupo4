@@ -431,6 +431,17 @@
 - **Validado:** suite completa en verde tras el fix -- 87 (Donaciones) + 20 (Logística) + 16 (Incentivos) + 3 (Notificaciones, 1 skip esperado).
 - **Definida por:** usuario (pidió el análisis de persistencia que encontró el hueco, y confirmó arreglar ambos) + agente (encontró los 2 huecos comparando cada camino de escritura contra el patrón ya usado correctamente en `HistorialRanking.registrarMisionCompletada()`, implementó el fix mínimo necesario sin tocar el resto del diseño)
 
+## [D-036] Actualización puntual del DDC de Incentivos (`diagramas/ddc/incentivos.puml`)
+- **Fecha:** 2026-10-29
+- **Servicio(s) afectado(s):** Incentivos (documentación)
+- **Contexto:** el `.puml` de Incentivos ya estaba razonablemente al día (probablemente de la limpieza de D-022), pero comparado clase por clase contra el código real quedaron 3 diferencias, dos de ellas relacionadas con el trabajo de persistencia de D-035.
+- **Decisión tomada** (parche puntual, no regeneración completa, según `donatrack-system-modeling`):
+  1. Se agregó `GestorDonante.guardar(donante: Donante)` -- existía en el código desde D-028 pero nunca se reflejó en el diagrama, y es justo el método que D-035 llama en los puntos que antes no persistían.
+  2. Se agregó la clase `PersistenciaConfigurer <<ApplicationRunner>>` con relaciones `..>` hacia `GestorMisiones`, `GestorDonante`, `HistorialRanking` y `Consultor` ("inyecta repositorio") -- es la pieza real que conecta los 4 managers manuales con sus repositorios al bootear, ausente del diagrama hasta ahora. Se la dejó sin método propio, igual que `IncentivosScheduler`, consistente con que `configurarPersistencia(...)` ya estaba omitido en los otros 3 managers por ser wiring de infraestructura, no comportamiento de dominio.
+  3. Se corrigieron las visibilidades invertidas de `GestorMisiones`: `sembrarCatalogo()` es privado en el código real (el diagrama lo marcaba público) y `agregarCategoria`/`siguienteCategoria`/`cantCategorias`/`buscarCategoriaPorNombre` son públicos (el diagrama los marcaba privados) -- error preexistente, no introducido hoy.
+- **Validado:** re-renderizado con la imagen Docker `plantuml/plantuml` (mismo mecanismo que D-031), revisado visualmente.
+- **Definida por:** usuario (pidió actualizar el DDC tras el escaneo de persistencia) + agente (comparó clase por clase contra el código real antes de tocar el archivo, limitó el cambio a las diferencias encontradas)
+
 ## [D-026] docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n)
 - **Fecha:** 2026-10-09
 - **Servicio(s) afectado(s):** infraestructura (Logística, Incentivos), scripts de arranque
