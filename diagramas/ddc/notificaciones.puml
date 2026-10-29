@@ -7,7 +7,7 @@ skinparam classAttributeIconSize 0
 
 ' ===== NOTIFICACION =====
 
-class Notificacion {
+class Notificacion <<Entity>> {
 
 * id: String
 * mensaje: String
@@ -15,12 +15,24 @@ class Notificacion {
 * contacto: String
 * estado: EstadoNotificacion
 * servicioOrigen: String
-* fechaCreacion: LocalDateTime
 * tipoEvento: String
 * eventoId: String
+* fechaCreacion: LocalDateTime
+* fechaEnvio: LocalDateTime
+* intentos: int
+* detalleError: String
 
+* registrarIntento(): void
 * marcarCompletada(): void
+* marcarFallida(error: String): void
+* estaCompletada(): boolean
 }
+
+note right of Notificacion
+  Tabla "notificacion" (esquema notificaciones).
+  servicioOrigen + eventoId es UNIQUE:
+  un mismo evento se notifica una sola vez.
+end note
 
 enum MedioComunicacion {
 WHATSAPP
@@ -31,6 +43,7 @@ SMS
 enum EstadoNotificacion {
 PENDIENTE
 COMPLETADA
+FALLIDA
 }
 
 Notificacion --> MedioComunicacion
@@ -38,14 +51,14 @@ Notificacion --> EstadoNotificacion
 
 ' ===== ESTRATEGIA DE ENVIO =====
 
-' Las implementaciones simulan el envio (quedan registradas por log);
-' la integracion con los proveedores externos reales queda para una
-' entrega futura, sin tocar el resto del servicio (Open/Closed).
 interface Notificador {
 * enviarNotificacion(notificacion: Notificacion): void
 }
 
-class EmailNotificador
+class EmailNotificador {
+* remitente: String
+}
+
 class SmsNotificador
 class WhatsAppNotificador
 
@@ -63,7 +76,37 @@ NotificadorFactory o-- EmailNotificador
 NotificadorFactory o-- SmsNotificador
 NotificadorFactory o-- WhatsAppNotificador
 
-' ===== SERVICIO =====
+' ===== PROVEEDORES EXTERNOS =====
+
+class JavaMailSender <<Spring Mail / SMTP>>
+
+class TwilioCliente {
+* habilitado: boolean
+* numeroSms: String
+* numeroWhatsApp: String
+* contentSidWhatsApp: String
+* cuerpoSmsPrueba: String
+* whatsAppActivo: boolean
+
+* estaHabilitado(): boolean
+* puedeEnviarSms(): boolean
+* puedeEnviarWhatsApp(): boolean
+* enviarSms(destino: String, texto: String): String
+* enviarWhatsApp(destino: String, texto: String): String
+* {static} aE164(numero: String): String
+}
+
+EmailNotificador --> JavaMailSender : SMTP (Mailpit)
+SmsNotificador --> TwilioCliente
+WhatsAppNotificador --> TwilioCliente
+
+note bottom of TwilioCliente
+  Sin credenciales: SMS y WhatsApp se simulan.
+  Cuenta de prueba: SMS con plantilla de Twilio
+  (cuerpoSmsPrueba). Cuenta paga: texto libre.
+end note
+
+' ===== SERVICIO Y PERSISTENCIA =====
 
 class NotificacionService {
 
@@ -73,10 +116,15 @@ class NotificacionService {
 * listarTodas(): List<Notificacion>
 }
 
+interface NotificacionRepository <<JpaRepository<Notificacion, String>>> {
+* findByServicioOrigenAndEventoId(servicioOrigen: String, eventoId: String): Optional<Notificacion>
+}
+
 class EnvioNotificacionException <<exception>>
 
 NotificacionService --> NotificadorFactory
-NotificacionService "1" o-- "*" Notificacion : historial
+NotificacionService --> NotificacionRepository : persiste
+NotificacionRepository ..> Notificacion : administra
 NotificacionService ..> EnvioNotificacionException : lanza
 
 ' ===== INTEGRACION =====
