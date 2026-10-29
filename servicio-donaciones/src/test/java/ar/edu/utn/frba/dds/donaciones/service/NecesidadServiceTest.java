@@ -41,6 +41,7 @@ class NecesidadServiceTest {
     private EntidadBeneficiariaService entidadBeneficiariaService;
 
     private NecesidadService necesidadService;
+    private ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository donacionRepository;
 
     @BeforeEach
     void setUp() {
@@ -72,7 +73,13 @@ class NecesidadServiceTest {
             return null;
         }).when(repo).deleteById(any());
 
-        necesidadService = new NecesidadService(repo, entidadBeneficiariaService);
+        donacionRepository = mock(ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository.class);
+        // Por defecto ninguna necesidad está vinculada a una donación --
+        // los tests que necesiten lo contrario lo pisan explícitamente.
+        lenient().when(donacionRepository.existsByNecesidadAsignada_Id(any()))
+                .thenReturn(false);
+
+        necesidadService = new NecesidadService(repo, entidadBeneficiariaService, donacionRepository);
     }
 
     private NecesidadDTO crearNecesidadParaEntidad(Long entidadId) {
@@ -118,5 +125,29 @@ class NecesidadServiceTest {
 
         assertThatThrownBy(() -> necesidadService.actualizarRecurrente(999L, necesidad.getId(), cambios))
                 .isInstanceOf(NoSuchElementException.class);
+    }
+
+    // Entrega 5 (revisión de reglas de negocio): el borrado físico se
+    // bloquea si CUALQUIER donación -- en cualquier estado, incluidos los
+    // terminales ENTREGADA/ENTREGA_FALLIDA/VENCIDA -- tiene esta necesidad
+    // como necesidadAsignada. Nunca se desvincula una donación histórica
+    // solo para permitir el borrado.
+    @Test
+    void eliminarRechazaSiUnaDonacionYaTieneAsignadaLaNecesidad() {
+        NecesidadDTO necesidad = crearNecesidadParaEntidad(1L);
+        when(donacionRepository.existsByNecesidadAsignada_Id(necesidad.getId()))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> necesidadService.eliminar(1L, necesidad.getId()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("donación");
+    }
+
+    @Test
+    void eliminarBorraLaNecesidadSiNingunaDonacionLaReferencia() {
+        NecesidadDTO necesidad = crearNecesidadParaEntidad(1L);
+
+        assertThatCode(() -> necesidadService.eliminar(1L, necesidad.getId()))
+                .doesNotThrowAnyException();
     }
 }

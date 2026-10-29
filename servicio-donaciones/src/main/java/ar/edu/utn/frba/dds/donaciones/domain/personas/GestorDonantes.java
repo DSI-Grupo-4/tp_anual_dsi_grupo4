@@ -56,10 +56,26 @@ public class GestorDonantes {
                 .orElseThrow(() -> new NoSuchElementException("No existe el donante " + id));
     }
 
+    // Baja lógica -- el donante NUNCA se borra físicamente: "quién donó" es
+    // un dato que no tiene sentido perder, y donacion.donante_id/
+    // solicitud_donacion.donante_id son NOT NULL en el esquema físico, así
+    // que un borrado real volaría con un 500 por FK apenas tuviera alguna
+    // donación/solicitud real. Al quedar inactivo, el donante no puede
+    // registrar nuevas solicitudes/donaciones (ver DonacionService.crear)
+    // ni modificar sus datos (ver DonanteService) -- pero se conservan
+    // todas sus solicitudes y donaciones históricas, y los procesos
+    // internos de donaciones que ya estaban en curso no se ven afectados.
     public void eliminar(Long id) {
-        donanteRepository.findById(id)
-                .ifPresent(d -> donantesPorEmail.remove(claveEmail(emailDe(d.getPersona()))));
-        donanteRepository.deleteById(id);
+        Donante donante = buscarPorId(id);
+        donante.desactivar();
+        donanteRepository.save(donante);
+    }
+
+    /** Única operación de modificación permitida sobre un donante inactivo. */
+    public void reactivar(Long id) {
+        Donante donante = buscarPorId(id);
+        donante.reactivar();
+        donanteRepository.save(donante);
     }
 
     public void agregarImportador(Importador importador) {

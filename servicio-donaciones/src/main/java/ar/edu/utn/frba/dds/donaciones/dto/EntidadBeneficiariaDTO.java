@@ -33,6 +33,8 @@ import lombok.Setter;
 public class EntidadBeneficiariaDTO {
     @Schema(accessMode = Schema.AccessMode.READ_ONLY)
     private Long id;
+    @Schema(accessMode = Schema.AccessMode.READ_ONLY, description = "Baja lógica -- se ignora si se envía en el body, el estado lo gestiona el servidor (ver DELETE/{id}/reactivar)")
+    private Boolean activa;
     @NotNull(message = "personaJuridica es obligatoria")
     @Valid
     private PersonaJuridicaDTO personaJuridica;

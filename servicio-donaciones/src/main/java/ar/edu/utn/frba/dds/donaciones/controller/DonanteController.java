@@ -69,11 +69,18 @@ public class DonanteController {
         donanteService.registrarInteraccion(id);
     }
 
-    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
+    @io.swagger.v3.oas.annotations.Operation(summary = "Eliminar", description = "Baja lógica: el donante no se borra físicamente, conserva todas sus solicitudes y donaciones históricas. Queda inactivo (no puede registrar nuevas solicitudes/donaciones ni modificar sus datos); los procesos de donaciones ya en curso no se ven afectados.")
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
         donanteService.eliminar(id);
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Reactivar", description = "Única operación de modificación permitida sobre un donante inactivo (dado de baja lógica con DELETE).")
+    @PatchMapping("/{id}/reactivar")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void reactivar(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
+        donanteService.reactivar(id);
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Importar", description = "Seleccionar el archivo CSV de ejemplo en src/data. Devuelve solo la cantidad importada, no el detalle de cada donante (evita la latencia de serializar miles de registros) -- para consultarlos, usar GET /api/donantes.")

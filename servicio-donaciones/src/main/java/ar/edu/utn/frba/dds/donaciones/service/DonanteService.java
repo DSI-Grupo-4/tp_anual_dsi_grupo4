@@ -64,6 +64,7 @@ public class DonanteService {
             return contacto;
         }).toList());
         dto.setId(donante.getId());
+        dto.setActivo(donante.isActivo());
         return dto;
     }
 
@@ -115,6 +116,11 @@ public class DonanteService {
         gestorDonantes.eliminar(id);
     }
 
+    /** Única operación de modificación permitida sobre un donante inactivo. */
+    public void reactivar(Long id) {
+        gestorDonantes.reactivar(id);
+    }
+
     /**
      * El tipo de un donante (humano/jurídico) es inmutable una vez creado —
      * el cliente no decide la rama en un PUT, se determina acá a partir del
@@ -149,6 +155,7 @@ public class DonanteService {
             PersonaHumanaDTO dto) {
 
         Donante donante = gestorDonantes.buscarPorId(id);
+        exigirActivo(donante);
 
         PersonaHumana persona =
                 (PersonaHumana) donante.getPersona();
@@ -186,6 +193,7 @@ public class DonanteService {
             PersonaJuridicaDTO dto) {
 
         Donante donante = gestorDonantes.buscarPorId(id);
+        exigirActivo(donante);
 
         PersonaJuridica persona =
                 (PersonaJuridica) donante.getPersona();
@@ -212,8 +220,18 @@ public class DonanteService {
 
     public void registrarInteraccion(Long id) {
         Donante donante = gestorDonantes.buscarPorId(id);
+        exigirActivo(donante);
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
+    }
+
+    // Un donante inactivo no admite ninguna modificación -- la única
+    // operación permitida sobre él es reactivar() (ver GestorDonantes).
+    private void exigirActivo(Donante donante) {
+        if (!donante.isActivo()) {
+            throw new IllegalStateException(
+                    "No se puede modificar el donante " + donante.getId() + ": está inactivo. Reactívelo primero.");
+        }
     }
 
     /**

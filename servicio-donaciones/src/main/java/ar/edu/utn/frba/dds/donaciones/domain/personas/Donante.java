@@ -48,6 +48,15 @@ public class Donante {
     @Column(name = "notificado_por_inactividad", nullable = false)
     private boolean notificadoPorInactividad;
 
+    // Baja lógica -- ver GestorDonantes.eliminar(). El donante NUNCA se
+    // borra físicamente (conserva todas sus solicitudes/donaciones
+    // históricas); inactivo no puede registrar nuevas solicitudes/donaciones
+    // ni modificar sus datos (ver DonacionService.crear, DonanteService).
+    // Los procesos internos de donaciones ya en curso no se bloquean.
+    @Setter(AccessLevel.NONE)
+    @Column(name = "activo", nullable = false)
+    private boolean activo = true;
+
     public Donante(Long id, Persona persona) {
         this.id = id;
         this.persona = persona;
@@ -104,5 +113,15 @@ public class Donante {
                     "Una persona jurídica donante admite un único representante");
         }
         juridica.agregarRepresentante(representante);
+    }
+
+    /** Baja lógica -- ver GestorDonantes.eliminar(). */
+    public void desactivar() {
+        this.activo = false;
+    }
+
+    /** Única operación de modificación permitida sobre un donante inactivo. */
+    public void reactivar() {
+        this.activo = true;
     }
 }

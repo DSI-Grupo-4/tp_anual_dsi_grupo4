@@ -5,9 +5,11 @@ import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.CompatibilidadSemantica;
 import ar.edu.utn.frba.dds.donaciones.domain.algoritmos.PrioridadSubatendidos;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository;
+import ar.edu.utn.frba.dds.donaciones.repository.ItemDonadoRepository;
 import ar.edu.utn.frba.dds.donaciones.repository.SolicitudDonacionRepository;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -22,12 +24,15 @@ public class GestorDonaciones {
     private List<AlgoritmoAsignacion> algoritmos;
     private final DonacionRepository donacionRepository;
     private final SolicitudDonacionRepository solicitudDonacionRepository;
+    private final ItemDonadoRepository itemDonadoRepository;
 
     public GestorDonaciones(Deposito deposito, DonacionRepository donacionRepository,
-                             SolicitudDonacionRepository solicitudDonacionRepository) {
+                             SolicitudDonacionRepository solicitudDonacionRepository,
+                             ItemDonadoRepository itemDonadoRepository) {
         this.deposito = deposito;
         this.donacionRepository = donacionRepository;
         this.solicitudDonacionRepository = solicitudDonacionRepository;
+        this.itemDonadoRepository = itemDonadoRepository;
         this.algoritmos = new java.util.ArrayList<>();
         this.algoritmos.add(new CompatibilidadSemantica());
         this.algoritmos.add(new PrioridadSubatendidos());
@@ -35,6 +40,16 @@ public class GestorDonaciones {
 
     public List<Donacion> getDonaciones() {
         return donacionRepository.findAll();
+    }
+
+    public List<Donacion> getDonacionesPorEstado(EstadoTrack estado) {
+        return donacionRepository.findByEstadoActual(estado);
+    }
+
+    /** Página de donaciones ASIGNACION_REALIZADA con entidad ya asignada (ver DonacionService.obtenerPendientes). */
+    public List<Donacion> getDonacionesPendientesDePlanificacion(Pageable pageable) {
+        return donacionRepository.findByEstadoActualAndEntidadBeneficiariaIsNotNull(
+                EstadoTrack.ASIGNACION_REALIZADA, pageable);
     }
 
     /**
@@ -63,7 +78,16 @@ public class GestorDonaciones {
         Donacion donacion = buscarPorId(id);
         if (donacion.getEstadoActual() != EstadoTrack.EN_DEPOSITO)
             throw new IllegalStateException("Solo puede eliminarse una donación en depósito");
-        deposito.reemplazarItems(donacion.getItems(), List.of());
+        List<ItemDonado> items = donacion.getItems();
+        deposito.reemplazarItems(items, List.of());
+        // Desvincula los items Y vacía la colección en memoria de la
+        // donación (ver Donacion.desvincularTodosLosItems()) -- no alcanza
+        // con nulificar la FK de cada item: si siguieran en donacion.items
+        // al momento de borrar, el cascade=ALL de esa asociación igual
+        // cascadearía el DELETE sobre ellos (son los mismos ítems
+        // originales de la SolicitudDonacion, hay que conservarlos).
+        donacion.desvincularTodosLosItems();
+        itemDonadoRepository.saveAll(items);
         donacionRepository.deleteById(id);
         if (donacion.getDonante() != null) donacion.getDonante().getDonaciones().remove(donacion);
     }
@@ -71,6 +95,29 @@ public class GestorDonaciones {
     public void registrarSolicitud(SolicitudDonacion solicitud) {
         solicitud = solicitudDonacionRepository.save(solicitud);
         solicitud.getItems().forEach(deposito::cargarItem);
+    }
+
+    /**
+     * Borra físicamente una SolicitudDonacion solo si todavía no generó
+     * ninguna Donacion. En el flujo actual, DonacionService.crear()
+     * registra la solicitud y la segmenta en el mismo paso, así que esto
+     * solo es alcanzable si algo se interrumpió entre ambos pasos, o para
+     * datos de prueba cargados directo contra el repositorio. El
+     * cascade=ALL de SolicitudDonacion.items (mappedBy solicitudOrigen) ya
+     * borra sus ItemDonado -- a diferencia de Donacion.eliminar(), acá no
+     * hace falta desvincularlos antes: todavía no son historial de
+     * ninguna entrega, son items que nunca llegaron a convertirse en una
+     * Donacion real.
+     */
+    public void eliminarSolicitud(Long id) {
+        if (!solicitudDonacionRepository.existsById(id)) {
+            throw new NoSuchElementException("No existe la solicitud " + id);
+        }
+        if (donacionRepository.existsBySolicitudOrigen_Id(id)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar la solicitud " + id + ": ya generó una o más donaciones");
+        }
+        solicitudDonacionRepository.deleteById(id);
     }
 
     // NOTA (hallazgo "bajo" del scan de calidad): agregarAlgoritmo()/el campo

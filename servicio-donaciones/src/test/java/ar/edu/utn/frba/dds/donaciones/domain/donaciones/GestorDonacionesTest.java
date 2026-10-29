@@ -65,7 +65,11 @@ class GestorDonacionesTest {
 
         when(solicitudDonacionRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        gestor = new GestorDonaciones(new Deposito(), donacionRepository, solicitudDonacionRepository);
+        ar.edu.utn.frba.dds.donaciones.repository.ItemDonadoRepository itemDonadoRepository =
+                mock(ar.edu.utn.frba.dds.donaciones.repository.ItemDonadoRepository.class);
+        when(itemDonadoRepository.saveAll(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        gestor = new GestorDonaciones(new Deposito(), donacionRepository, solicitudDonacionRepository, itemDonadoRepository);
     }
 
     private Donacion nuevaDonacion(Long id, String subcategoria) {
@@ -101,6 +105,31 @@ class GestorDonacionesTest {
         gestor.eliminar(donacion.getId());
 
         assertThat(gestor.getDonaciones()).isEmpty();
+    }
+
+    // Entrega 5: antes el cascade=ALL de Donacion.items borraba también los
+    // ItemDonado al eliminar la donación -- pero esos mismos items son el
+    // historial de la SolicitudDonacion original (donacion_id y solicitud_id
+    // conviven en la misma fila). Ahora deben quedar huérfanos (donacion=null),
+    // no borrados.
+    @Test
+    void eliminarDesvinculaLosItemsEnVezDeBorrarlos() {
+        Donacion donacion = gestor.registrarDonacion(nuevaDonacion(null, "frazadas"));
+        ItemDonado item = donacion.getItems().get(0);
+
+        gestor.eliminar(donacion.getId());
+
+        assertThat(item.getDonacion()).isNull();
+    }
+
+    @Test
+    void eliminarRechazaUnaDonacionQueYaNoEstaEnDeposito() {
+        Donacion donacion = gestor.registrarDonacion(nuevaDonacion(null, "frazadas"));
+        donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, "Asignada a una entidad");
+
+        assertThatThrownBy(() -> gestor.eliminar(donacion.getId()))
+                .isInstanceOf(IllegalStateException.class);
+        assertThat(gestor.getDonaciones()).containsExactly(donacion);
     }
 
     @Test

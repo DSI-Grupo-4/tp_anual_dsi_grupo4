@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
  * plataforma (alta o donación) durante más de 20 días, para incentivarla a
  * donar de nuevo. Cada episodio de inactividad se notifica una sola vez
  * (ver Donante.debeNotificarsePorInactividad/marcarNotificadoPorInactividad).
+ * Un donante con baja lógica (activo = false) no recibe este recordatorio;
+ * las notificaciones de donaciones ya en curso no pasan por acá.
  */
 @Component
 public class InactividadScheduler {
@@ -28,7 +30,7 @@ public class InactividadScheduler {
     @Scheduled(cron = "${donantes.inactividad.cron:0 0 4 * * *}")
     public void verificarInactividad() {
         for (Donante donante : gestorDonantes.getDonantesRegistrados()) {
-            if (donante.debeNotificarsePorInactividad(UMBRAL_DIAS_INACTIVIDAD)) {
+            if (donante.isActivo() && donante.debeNotificarsePorInactividad(UMBRAL_DIAS_INACTIVIDAD)) {
                 publicadorEventos.publicar("INACTIVIDAD_20_DIAS", donante);
                 donante.marcarNotificadoPorInactividad();
                 gestorDonantes.guardar(donante);

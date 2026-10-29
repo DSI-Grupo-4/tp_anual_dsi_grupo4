@@ -1,17 +1,12 @@
 package ar.edu.utn.frba.dds.donaciones.service;
 
-import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.Donacion;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.EstadoTrack;
 import ar.edu.utn.frba.dds.donaciones.domain.donaciones.GestorDonaciones;
-import ar.edu.utn.frba.dds.donaciones.domain.donaciones.ItemDonado;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoOrganizacion;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,16 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 /**
- * Regresión del hallazgo crítico "integridad referencial al eliminar":
- * antes, DELETE /api/entidades/{id} borraba la entidad aunque tuviera una
- * donación activamente asignada, dejando una referencia colgante visible
- * incluso en /api/donaciones/pendientes.
+ * Entrega 5 (revisión de reglas de negocio): DELETE /api/entidades/{id} es
+ * baja lógica -- la entidad nunca se borra físicamente (conserva historial
+ * y relaciones), y no se bloquea aunque tenga donaciones en curso: esas
+ * entregas deben poder completarse igual.
  */
 @ExtendWith(MockitoExtension.class)
 class EntidadBeneficiariaServiceTest {
@@ -65,7 +58,8 @@ class EntidadBeneficiariaServiceTest {
             return null;
         }).when(repo).deleteById(any());
 
-        entidadBeneficiariaService = new EntidadBeneficiariaService(repo, gestorDonaciones);
+        entidadBeneficiariaService = new EntidadBeneficiariaService(repo, gestorDonaciones,
+                mock(ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository.class));
     }
 
     private EntidadBeneficiariaDTO crearEntidad(Long id, String razonSocial) {
@@ -83,55 +77,61 @@ class EntidadBeneficiariaServiceTest {
     }
 
     @Test
-    void rechazaElBorradoSiHayUnaDonacionActivaAsignada() {
+    void eliminarEsBajaLogicaYNoBorraLaEntidad() {
         EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
-        EntidadBeneficiaria entidadDominio = entidadBeneficiariaService.buscarEntidad(entidad.getId());
 
-        ItemDonado item = DatosPrueba.item(1L, "Fideos", DatosPrueba.subcategoria("fideos secos"), 100, null);
-        Donacion donacionActiva = DatosPrueba.donacion(1L, item, 100);
-        donacionActiva.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
-        donacionActiva.setEntidadBeneficiaria(entidadDominio);
+        entidadBeneficiariaService.eliminar(entidad.getId());
 
-        when(gestorDonaciones.getDonaciones()).thenReturn(List.of(donacionActiva));
+        // Sigue existiendo (y visible por obtenerTodas()/obtenerPorId()),
+        // solo queda inactiva -- nunca se borra físicamente.
+        assertThat(entidadBeneficiariaService.obtenerTodas()).hasSize(1);
+        assertThat(entidadBeneficiariaService.buscarEntidad(entidad.getId()).isActiva()).isFalse();
+    }
 
-        assertThatThrownBy(() -> entidadBeneficiariaService.eliminar(entidad.getId()))
+    // No debe bloquearse aunque la entidad tenga donaciones en curso
+    // asignadas: esas entregas deben poder completarse igual (el vínculo
+    // entidad-donación no se toca).
+    @Test
+    void eliminarNoSeBloqueaAunqueHayaDonacionesEnCurso() {
+        EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
+
+        assertThatCode(() -> entidadBeneficiariaService.eliminar(entidad.getId()))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void reactivarVuelveAHabilitarLaEntidad() {
+        EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
+        entidadBeneficiariaService.eliminar(entidad.getId());
+
+        entidadBeneficiariaService.reactivar(entidad.getId());
+
+        assertThat(entidadBeneficiariaService.buscarEntidad(entidad.getId()).isActiva()).isTrue();
+    }
+
+    // Única operación de modificación permitida sobre una entidad inactiva
+    // es reactivar(): actualizar() debe rechazarla.
+    @Test
+    void actualizarRechazaSiLaEntidadEstaInactiva() {
+        EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
+        entidadBeneficiariaService.eliminar(entidad.getId());
+
+        assertThatThrownBy(() -> entidadBeneficiariaService.actualizar(entidad.getId(), entidad))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("donación");
-
-        assertThat(entidadBeneficiariaService.obtenerTodas()).hasSize(1); // no se borró
+                .hasMessageContaining("inactiva");
     }
 
     @Test
-    void permiteElBorradoSiNoHayDonacionesActivas() {
-        EntidadBeneficiariaDTO entidad = crearEntidad(null, "Escuela Rural 10");
+    void obtenerEntidadesDominioExcluyeLasInactivas() {
+        EntidadBeneficiariaDTO activa = crearEntidad(null, "Escuela Rural 10");
+        EntidadBeneficiariaDTO inactiva = crearEntidad(null, "Comedor Sonrisas");
+        entidadBeneficiariaService.eliminar(inactiva.getId());
 
-        when(gestorDonaciones.getDonaciones()).thenReturn(List.of());
-
-        assertThatCode(() -> entidadBeneficiariaService.eliminar(entidad.getId()))
-                .doesNotThrowAnyException();
-        assertThat(entidadBeneficiariaService.obtenerTodas()).isEmpty();
+        assertThat(entidadBeneficiariaService.obtenerEntidadesDominio())
+                .extracting(e -> e.getId())
+                .containsExactly(activa.getId());
     }
 
-    @Test
-    void permiteElBorradoSiLasDonacionesDeLaEntidadYaEstanEntregadas() {
-        // Estados terminales (ENTREGADA/ENTREGA_FALLIDA/VENCIDA) no bloquean
-        // el borrado — solo los "en curso" (ver ESTADOS_ACTIVOS).
-        EntidadBeneficiariaDTO entidad = crearEntidad(null, "Comedor Sonrisas");
-        EntidadBeneficiaria entidadDominio = entidadBeneficiariaService.buscarEntidad(entidad.getId());
-
-        ItemDonado item = DatosPrueba.item(1L, "Fideos", DatosPrueba.subcategoria("fideos secos"), 100, null);
-        Donacion donacionEntregada = DatosPrueba.donacion(1L, item, 100);
-        donacionEntregada.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
-        donacionEntregada.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
-        donacionEntregada.cambiarEstado(EstadoTrack.EN_TRASLADO, null);
-        donacionEntregada.cambiarEstado(EstadoTrack.ENTREGADA, null);
-        donacionEntregada.setEntidadBeneficiaria(entidadDominio);
-
-        when(gestorDonaciones.getDonaciones()).thenReturn(List.of(donacionEntregada));
-
-        assertThatCode(() -> entidadBeneficiariaService.eliminar(entidad.getId()))
-                .doesNotThrowAnyException();
-    }
     @Test
     void contactosDeEntidadSeConservanYSePuedenActualizar() {
         var entidad=crearEntidad(null,"Comedor");

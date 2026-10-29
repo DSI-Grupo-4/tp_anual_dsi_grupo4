@@ -7,6 +7,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadExtraordinariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.NecesidadRecurrenteDTO;
+import ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository;
 import ar.edu.utn.frba.dds.donaciones.repository.NecesidadRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +16,16 @@ import java.util.NoSuchElementException;
 
 @Service
 public class NecesidadService {
+
     private final NecesidadRepository necesidadRepository;
     private final EntidadBeneficiariaService entidadBeneficiariaService;
+    private final DonacionRepository donacionRepository;
 
-    public NecesidadService(NecesidadRepository necesidadRepository, EntidadBeneficiariaService entidadBeneficiariaService) {
+    public NecesidadService(NecesidadRepository necesidadRepository, EntidadBeneficiariaService entidadBeneficiariaService,
+                             DonacionRepository donacionRepository) {
         this.necesidadRepository = necesidadRepository;
         this.entidadBeneficiariaService = entidadBeneficiariaService;
+        this.donacionRepository = donacionRepository;
     }
 
     public NecesidadDTO crearRecurrente(NecesidadRecurrenteDTO dto) {
@@ -67,6 +72,7 @@ public class NecesidadService {
 
     public NecesidadDTO actualizarRecurrente(Long entidadId, Long id, NecesidadRecurrenteDTO dto) {
         Necesidad necesidad = buscarDominioPorId(entidadId, id);
+        exigirEntidadActiva(necesidad);
         if (!(necesidad instanceof NecesidadRecurrente) || dto.getPeriodicidad() == null)
             throw new IllegalArgumentException("Debe editar una necesidad RECURRENTE con periodicidad");
 
@@ -82,6 +88,7 @@ public class NecesidadService {
 
     public NecesidadDTO actualizarExtraordinaria(Long entidadId, Long id, NecesidadExtraordinariaDTO dto) {
         Necesidad necesidad = buscarDominioPorId(entidadId, id);
+        exigirEntidadActiva(necesidad);
         if (!(necesidad instanceof NecesidadExtraordinaria) || dto.getTipoExtraordinario() == null)
             throw new IllegalArgumentException("Debe editar una necesidad EXTRAORDINARIA con tipoExtraordinario");
 
@@ -106,6 +113,16 @@ public class NecesidadService {
         // entidadId en el path (incluso uno inexistente) podía borrar una
         // necesidad de otra entidad — bug crítico confirmado en vivo.
         buscarDominioPorId(entidadId, id);
+        // Si CUALQUIER donación (en cualquier estado, incluidos los
+        // terminales ENTREGADA/ENTREGA_FALLIDA/VENCIDA) ya vinculó esta
+        // necesidad (necesidadAsignada, ver DonacionService.confirmarAsignacion),
+        // se bloquea el borrado -- no se desvincula una donación histórica
+        // solo para permitirlo: una ENTREGADA perdería la trazabilidad de
+        // qué necesidad satisfizo.
+        if (donacionRepository.existsByNecesidadAsignada_Id(id)) {
+            throw new IllegalStateException(
+                    "No se puede eliminar la necesidad " + id + ": una donación la tiene asignada (necesidadAsignada)");
+        }
         necesidadRepository.deleteById(id);
     }
 
@@ -133,10 +150,28 @@ public class NecesidadService {
         return necesidad;
     }
 
+    // Una entidad inactiva no puede modificar sus necesidades (ver crear,
+    // arriba, para el caso de alta). Si la necesidad no tiene entidad
+    // (nullable en el dominio) no hay nada que chequear.
+    private void exigirEntidadActiva(Necesidad necesidad) {
+        EntidadBeneficiaria entidad = necesidad.getEntidadBeneficiaria();
+        if (entidad != null && !entidad.isActiva()) {
+            throw new IllegalStateException(
+                    "No se puede modificar la necesidad " + necesidad.getId() + ": la entidad " + entidad.getId() + " está inactiva");
+        }
+    }
+
     private void asignarEntidadBeneficiaria(Necesidad necesidad, Long entidadBeneficiariaId) {
         if (entidadBeneficiariaId != null) {
             EntidadBeneficiaria entidad =
                     entidadBeneficiariaService.buscarEntidad(entidadBeneficiariaId);
+
+            // Una entidad inactiva no puede iniciar operaciones nuevas --
+            // crear una necesidad para ella es una de esas operaciones.
+            if (!entidad.isActiva()) {
+                throw new IllegalStateException(
+                        "No se puede crear una necesidad para la entidad " + entidadBeneficiariaId + ": está inactiva");
+            }
 
             entidad.agregarNecesidad(necesidad);
         }
