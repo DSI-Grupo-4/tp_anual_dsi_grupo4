@@ -3,7 +3,7 @@ package ar.edu.utn.frba.dds.logistica.repository;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Camion;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoEntrega;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -16,7 +16,7 @@ import java.util.Optional;
  * services y controllers (guardar, buscarPorId, ...) como default methods,
  * para no tocar a quienes los invocan.
  */
-public interface EntregaRepository extends JpaRepository<Entrega, Integer> {
+public interface EntregaRepository extends MongoRepository<Entrega, Integer> {
 
     Optional<Entrega> findByIdDonacionAsociada(Integer idDonacionAsociada);
 

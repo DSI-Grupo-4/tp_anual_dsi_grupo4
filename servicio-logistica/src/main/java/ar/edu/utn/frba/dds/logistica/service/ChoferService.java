@@ -6,14 +6,12 @@ import ar.edu.utn.frba.dds.logistica.dto.ChoferDTO;
 import ar.edu.utn.frba.dds.logistica.repository.ChoferRepository;
 import ar.edu.utn.frba.dds.logistica.repository.RutaRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
 @Service
-@Transactional
 public class ChoferService {
 
     private static final Set<EstadoRuta> RUTAS_ACTIVAS = Set.of(EstadoRuta.PLANIFICADA, EstadoRuta.INICIADA);
@@ -30,19 +28,14 @@ public class ChoferService {
         Chofer chofer = new Chofer(null, dto.getNombre(), dto.getDni(), dto.getHabilitado()); // el id lo asigna la base
         return toDTO(choferRepository.save(chofer));
     }
-
-    @Transactional(readOnly = true)
     public List<ChoferDTO> obtenerChoferes() {
         return choferRepository.findAll().stream().map(this::toDTO).toList();
     }
-
-    @Transactional(readOnly = true)
     public List<ChoferDTO> obtenerChoferesHabilitadosDTO() {
         return obtenerChoferesHabilitados().stream().map(this::toDTO).toList();
     }
 
     // usado internamente por el planificador
-    @Transactional(readOnly = true)
     public List<Chofer> obtenerChoferesHabilitados() {
         return choferRepository.findByHabilitadoTrueOrderByIdChofer();
     }
@@ -52,7 +45,7 @@ public class ChoferService {
         chofer.setNombre(dto.getNombre());
         chofer.setDni(dto.getDni());
         chofer.setHabilitado(dto.getHabilitado());
-        return toDTO(chofer);
+        return toDTO(choferRepository.save(chofer)); // Mongo no hace dirty checking: se guarda explícitamente
     }
 
     public void eliminar(Integer id) {
@@ -73,7 +66,6 @@ public class ChoferService {
 
     // usado por PlanificadorService.registrarPlanExterno para resolver el
     // chofer que indicó el proveedor externo en el callback
-    @Transactional(readOnly = true)
     public Chofer buscar(Integer id) {
         return choferRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("No existe el chofer " + id));

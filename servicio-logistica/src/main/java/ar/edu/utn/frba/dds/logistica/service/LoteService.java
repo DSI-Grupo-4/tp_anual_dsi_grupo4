@@ -1,6 +1,5 @@
 package ar.edu.utn.frba.dds.logistica.service;
 
-import org.springframework.transaction.annotation.Transactional;
 
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Entrega;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.EstadoEntrega;
@@ -16,7 +15,6 @@ import java.util.Optional;
 import java.util.Set;
 
 @Service
-@Transactional
 public class LoteService {
 
     private static final Logger logger = LoggerFactory.getLogger(LoteService.class);
@@ -81,6 +79,6 @@ public class LoteService {
         entrega.setPesoKG(dto.getPesoKG());
         entrega.setVolumenM3(dto.getVolumenM3());
         entrega.setAlturaM(dto.getAlturaM());
-        return entrega;
+        return entregaRepository.guardar(entrega); // Mongo no hace dirty checking: se guarda explícitamente
     }
 }

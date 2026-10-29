@@ -1,7 +1,5 @@
 package ar.edu.utn.frba.dds.logistica.domain.rutas;
 
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,11 +7,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @Setter
-@Embeddable
 public class Ciudad {
-    private String nombre;
 
-    @Embedded
+    private String nombre;
     private Provincia provincia;
 
     public Ciudad(

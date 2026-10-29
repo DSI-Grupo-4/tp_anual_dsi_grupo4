@@ -12,17 +12,34 @@ import ar.edu.utn.frba.dds.logistica.domain.rutas.Provincia;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Ruta;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.MongoDBContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Verifica el mapeo objeto-relacional (embebidos, cascadas, relaciones) contra H2 en memoria.
-@DataJpaTest(properties = "spring.jpa.hibernate.ddl-auto=create-drop")
+/**
+ * Verifica el mapeo ODM (referencias DBRef, paradas embebidas, GeneradorIds)
+ * contra una instancia real de MongoDB levantada con Testcontainers.
+ */
+@SpringBootTest
+@Testcontainers(disabledWithoutDocker = true)
 class RutaPersistenciaTest {
+
+    @Container
+    static final MongoDBContainer MONGO = new MongoDBContainer("mongo:7");
+
+    @DynamicPropertySource
+    static void mongoProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.data.mongodb.uri", MONGO::getReplicaSetUrl);
+    }
 
     @Autowired
     private RutaRepository rutaRepository;
@@ -31,7 +48,7 @@ class RutaPersistenciaTest {
     @Autowired
     private CamionRepository camionRepository;
     @Autowired
-    private TestEntityManager em;
+    private MongoTemplate mongoTemplate;
 
     private Direccion direccion() {
         return new Direccion("Falsa", "123", new Ciudad("CABA", new Provincia("Buenos Aires")));
@@ -50,8 +67,6 @@ class RutaPersistenciaTest {
     @Test
     void unaRutaSePersisteConSusParadasYEntregasYSeRecuperaIgual() {
         Ruta ruta = rutaConDosEntregasEnUnaParada();
-        em.flush();
-        em.clear();
 
         Ruta recuperada = rutaRepository.findById(ruta.getIdRuta()).orElseThrow();
 
@@ -66,13 +81,10 @@ class RutaPersistenciaTest {
     @Test
     void confirmarRecepcionGuardaUnaFotoPorEntregaYLasMarcaEntregadas() {
         Ruta ruta = rutaConDosEntregasEnUnaParada();
-        em.flush();
-        em.clear();
 
         Ruta recuperada = rutaRepository.findById(ruta.getIdRuta()).orElseThrow();
         recuperada.getParadas().get(0).confirmarRecepcion(new FotoEntrega("https://example.org/f.jpg", null));
-        em.flush();
-        em.clear();
+        recuperada.getParadas().get(0).getEntregas().forEach(entregaRepository::save);
 
         List<Entrega> entregas = entregaRepository.obtenerTodas();
         assertThat(entregas).hasSize(2);
@@ -80,5 +92,13 @@ class RutaPersistenciaTest {
             assertThat(e.getEstadoEntrega()).isEqualTo(EstadoEntrega.ENTREGADA);
             assertThat(e.getFotos()).hasSize(1);
         });
+    }
+
+    @Test
+    void generadorIdsAsignaIdsEnterosConsecutivosPorColeccion() {
+        Camion camion1 = camionRepository.save(new Camion(null, "AA111AA", 500, 3, 1000, EstadoCamion.DISPONIBLE));
+        Camion camion2 = camionRepository.save(new Camion(null, "AA222AA", 500, 3, 1000, EstadoCamion.DISPONIBLE));
+
+        assertThat(camion2.getIdCamion()).isEqualTo(camion1.getIdCamion() + 1);
     }
 }

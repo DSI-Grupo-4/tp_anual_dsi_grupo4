@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.logistica.config;
 
 import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.GestorRutas;
+import ar.edu.utn.frba.dds.logistica.repository.CamionRepository;
+import ar.edu.utn.frba.dds.logistica.repository.EntregaRepository;
 import ar.edu.utn.frba.dds.logistica.repository.EventoLogisticoRepository;
 import ar.edu.utn.frba.dds.logistica.repository.RutaRepository;
 import org.springframework.context.annotation.Bean;
@@ -12,8 +14,9 @@ public class BeansConfig {
 
     // Los gestores siguen siendo clases de dominio sin anotaciones de Spring; acá se les inyecta su repositorio.
     @Bean
-    public GestorRutas gestorRutas(RutaRepository rutaRepository) {
-        return new GestorRutas(rutaRepository);
+    public GestorRutas gestorRutas(RutaRepository rutaRepository, EntregaRepository entregaRepository,
+                                   CamionRepository camionRepository) {
+        return new GestorRutas(rutaRepository, entregaRepository, camionRepository);
     }
 
     @Bean
