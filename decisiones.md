@@ -2,6 +2,45 @@
 
 <!-- Formato de entrada, ver .claude/skills/donatrack-ambiguity-resolution/SKILL.md -->
 
+## Índice
+
+| N° | Fecha | Decisión |
+| --- | --- | --- |
+| [D-001] | 2026-09-10 | Organización de docker-compose para infraestructura y servicios |
+| [D-002] | 2026-09-10 | Modelo de categorías/subcategorías de bienes donados |
+| [D-003] | 2026-09-10 | Estado `PENDIENTE_CONFIRMACION` de la donación |
+| [D-004] | 2026-09-10 | Cardinalidad de representantes de `PersonaJuridica` |
+| [D-005] | 2026-09-10 | Corrección del bug de concurrencia (colisión de ids) detectado en el escaneo de calidad |
+| [D-006] | 2026-10-08 | Reconciliación `refactor`/`cola-broker` vía port selectivo (RF-3/RF-4) |
+| [D-007] | 2026-10-08 | Hueco de dominio: `Donacion` no tiene referencia al `Donante` |
+| [D-008] | 2026-10-08 | Resuelve D-007: `donanteId` en la carga de donación |
+| [D-009] | 2026-10-08 | Contrato de mensaje hacia Notificaciones ensanchado (`tipoEvento` + `eventoId`) |
+| [D-010] | 2026-10-08 | Hueco de dominio en Incentivos: `Donante` sin ninguna fuente de contacto |
+| [D-011] | 2026-10-08 | Prohibición de referenciar requerimientos/notaciones internas desde comentarios del código de proyecto |
+| [D-012] | 2026-10-08 | Arquitectura de persistencia decidida y registrada de antemano, implementación diferida hasta tener el DER |
+| [D-013] | 2026-10-08 | Integración Donaciones→Incentivos: cuándo dispara y corrección del modelo de "Categoria" en Incentivos |
+| [D-014] | 2026-10-08 | Cierre de gaps confirmados en la auditoría contra el PDF (más allá de persistencia) |
+| [D-015] | 2026-10-08 | Decisiones de Logística pendientes de registrar: Strategy propio y modelo polling |
+| [D-016] | 2026-10-08 | Enums simples y componentes de ItemDonado (sustituye D-002) |
+| [D-017] | 2026-10-09 | Cierre del tramo matchmaking → asignar → necesidad, contra el texto de la consigna |
+| [D-018] | 2026-10-09 | Auditoría de Logística: ciclo de vida del camión, idempotencia de lotes, incidentes logísticos y callback externo |
+| [D-019] | 2026-10-09 | Cierre de la conexión Donaciones↔Logística: evento de reingreso, timing de Necesidad.recibir() y actualización idempotente de lotes |
+| [D-020] | 2026-10-09 | Hotfix: importación CSV de donantes fallaba con cualquier archivo real |
+| [D-021] | 2026-10-09 | Hotfix: respuesta liviana en la importación CSV + cuello de botella real de latencia |
+| [D-022] | 2026-10-09 | Catálogo de 15 misiones (5 por categoría), consistencia de endpoints y limpieza del DDC de Incentivos |
+| [D-023] | 2026-10-09 | Hotfix: GET/PATCH de donante en Incentivos creaban un donante fantasma para cualquier id |
+| [D-024] | 2026-10-09 | Hotfix: insignias no disparaban n8n (3 causas independientes) |
+| [D-025] | 2026-10-09 | Merge de la rama BasedeDatos: persistencia JPA+MySQL para Logística |
+| [D-026] | 2026-10-09 | docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n) |
+| [D-027] | 2026-10-09 | Logística: DER real (dbdiagram.io) y esquema `logistica.sql` definitivo |
+| [D-028] | 2026-10-09 | Persistencia JPA+MySQL para Incentivos (desde cero, singletons manuales) |
+| [D-029] | 2026-10-09 | Consola de administración de la base: Adminer reemplaza a MySQL Workbench (enmienda D-012) |
+| [D-030] | 2026-10-09 | Persistencia JPA+MySQL para Donaciones (desde cero, con el DER del usuario) |
+| [D-031] | 2026-10-09 | DDC de los 4 servicios migrado de draw.io a PlantUML (`.puml`) |
+| [D-032] | 2026-10-09 | Notificaciones con pendientes durables y disparadores completos |
+| [D-033] | 2026-10-09 | Identidad de donantes en Incentivos desde el registro |
+| [D-034] | 2026-10-29 | Persistencia JPA+MySQL para Notificaciones y envío real por email (Mailpit) y SMS/WhatsApp (Twilio) |
+
 ## [D-001] Organización de docker-compose para infraestructura y servicios
 - **Fecha:** 2026-09-10
 - **Servicio(s) afectado(s):** Todos (Donaciones, Logística, Incentivos, Notificaciones) + infraestructura (MySQL, RabbitMQ, n8n)
@@ -194,7 +233,6 @@
 - **Decisión tomada:** se mantienen ambas tal como están implementadas (Strategy propio + polling), por una razón práctica concreta: son equivalentes en comportamiento observable para la cátedra (la planificación ocurre en horario de baja carga, los eventos se consumen igual de rápido con un `poll-delay-ms` corto) y migrar a un servicio externo real o a un callback verdadero no agrega valor de diseño adicional sobre lo ya demostrado (Strategy + broker con selección de proveedor ya están cubiertos por `LogisticaBroker`, que sí es un broker real con múltiples proveedores HTTP). Se documenta la brecha con el PDF explícitamente en vez de ignorarla: si la cátedra evalúa estrictamente "URL de callback" como entregable literal, este es el punto a revisar primero. No se cambia código en esta decisión — es un registro de lo ya implementado, no una implementación nueva.
 - **Definida por:** usuario (pidió cerrar el backlog de documentación pendiente) + agente (redactó la justificación a partir de lo ya implementado en sesiones previas)
 
-
 ## [D-016] Enums simples y componentes de ItemDonado (sustituye D-002)
 - **Fecha:** 2026-10-08.
 - **Definida por:** usuario, tras revisar y acordar el modelo en esta conversación.
@@ -325,6 +363,32 @@
 - **Pendiente, fuera de este merge:** la rama no trae contenedor Docker de MySQL ni el script `logistica.sql` que el propio `application.properties` menciona como forma de crear las tablas -- sin eso, Logística no puede arrancar contra un MySQL real todavía. Es el próximo paso acordado con el usuario.
 - **Definida por:** tomasdurruty (implementación original de la persistencia JPA) + usuario (pidió evaluar y mergear la rama) + agente (auditó la rama antes de mergear, resolvió los 2 conflictos reales conservando el trabajo de ambos lados, y encontró/corrigió el bug de `foto == null` que el merge automático no hubiera detectado)
 
+## [D-026] docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n)
+- **Fecha:** 2026-10-09
+- **Servicio(s) afectado(s):** infraestructura (Logística, Incentivos), scripts de arranque
+- **Contexto:** tras D-025, Logística quedó con JPA+MySQL pero sin contenedor de base de datos ni forma de levantar todo junto. El usuario pidió un único `docker-compose` en la raíz que despliegue todos los contenedores usados (RabbitMQ, MySQL, n8n) y evaluar antes qué se podía romper. Ya existía `docker-compose.integration.yml` en la raíz (solo RabbitMQ) y `servicio-incentivos/docker-compose.yml` (n8n), este último con bastante tooling alrededor (`Makefile`, 4 puntos de `run-servicios.sh`, `GUIA-LEVANTAR-SERVICIOS.md`) que se rompía si se movía/duplicaba la definición de n8n.
+- **Decisión tomada:**
+  1. **`include:`** (Docker Compose ≥2.20, confirmado 2.40 disponible) en vez de mover o duplicar la definición de n8n: `docker-compose.integration.yml` hace `include: [servicio-incentivos/docker-compose.yml]` y agrega el servicio `mysql` (imagen `mysql:8`, credenciales iguales a las de `application.properties` de Logística, volumen nombrado, healthcheck). `servicio-incentivos/docker-compose.yml` y su `Makefile` quedan intactos -- siguen funcionando igual para quien los use directamente.
+  2. **`run-servicios.sh`/`stop-servicios.sh`/`run-servicios.ps1`/`stop-servicios.ps1`** ahora suben/bajan `docker-compose.integration.yml` completo como parte de `up`/`down` (reemplaza el manejo puntual que solo tocaba n8n). `stop-servicios.sh`/`.ps1` solo bajan la infra si se detienen los 4 servicios juntos (no si se para uno puntual, para no afectar a los demás).
+  3. **Logística arranca con `JPA_DDL_AUTO=update`** (o `-Dspring.jpa.hibernate.ddl-auto=update` en el `.ps1`) desde estos scripts -- hasta que exista el DER y un `logistica.sql` real, Hibernate crea las 7 tablas solo a partir de las entidades JPA.
+  4. **Espera activa (polling), no un `sleep` fijo**, para que Incentivos no le pegue al webhook de n8n antes de que esté registrado: se midió en vivo que el entrypoint de n8n (import + publish + start) tarda entre 8 y 22 segundos según la corrida, así que el script sondea `POST /webhook/...` cada 2s hasta que deja de responder 404 (máximo 60s), en vez de asumir un tiempo fijo que falló en la mitad de las pruebas.
+  5. **Bug encontrado y corregido durante la implementación**: la primera versión del polling en bash trataba `curl`'s código `000` (conexión rechazada, contenedor todavía no escucha) como "ya está listo" porque solo descartaba `404` -- rompía el propósito del polling. Se corrigió excluyendo explícitamente `000` también.
+- **Validado en vivo, ciclo completo repetido varias veces**: `stop-servicios.sh` → `run-servicios.sh up` desde cero -- los 4 servicios Java y los 3 contenedores de infra quedan `[UP]`; Logística crea las 7 tablas y persiste un camión real en MySQL (confirmado con `SELECT` directo, sobrevive un ciclo completo down→up gracias al volumen nombrado); el flujo de insignia→webhook→n8n funciona sin warnings después del polling.
+- **Pendiente, no resuelto en este punto:** sigue sin existir `logistica.sql` -- la solución actual (`ddl-auto=update`) es un atajo documentado para poder correr el proyecto ya, no la decisión final de esquema (esa sigue diferida a cuando exista el DER, sin cambios respecto a lo ya fijado).
+- **Definida por:** usuario (pidió el compose único, exigió evaluar riesgos antes de tocar nada, y pidió explícitamente que los scripts de run/stop se encarguen del compose) + agente (evaluó el impacto en el tooling existente antes de elegir `include:` sobre mover/duplicar, y encontró en vivo tanto el problema de timing de n8n como el bug del propio fix)
+
+## [D-027] Logística: DER real (dbdiagram.io) y esquema `logistica.sql` definitivo
+- **Fecha:** 2026-10-09
+- **Servicio(s) afectado(s):** Logística
+- **Contexto:** el usuario entregó `diagramas/der/logistica.txt` y `diagramas/der/incentivos.txt` (DBML, dbdiagram.io) -- el DER que D-012 tenía diferido hasta que existiera. Antes de usarlo se verificó integralmente contra el esquema real que Hibernate venía generando con `ddl-auto=update` (D-026): coincidía casi exactamente, con 3 diferencias encontradas por comparación directa (`SHOW CREATE TABLE` vs el DBML, no por inspección visual): (1) al DER le faltaban `fecha_hora_entrega`/`seguimiento_url` en `entrega` -- código correcto, DER desactualizado; (2) ningún índice secundario del DER (`camion.estado_camion`, `ruta.(fecha,estado_ruta)`, `entrega.estado_entrega`, `entrega.fecha`, `evento_logistico.(publicado,fecha_generacion)`) existía en la base real -- Hibernate con `update` no los crea solo porque el DER los liste, hacen falta `@Table(indexes=...)` explícitos; (3) faltaba la restricción `UNIQUE(id_ruta, numero_parada)` en `parada` que el DER exige.
+- **Decisión tomada:**
+  1. DER actualizado con las 2 columnas que le faltaban.
+  2. `@Table(indexes = {...})` agregado a `Camion`, `Ruta`, `Entrega`, `EventoLogistico`; `@Table(uniqueConstraints = {...})` agregado a `Parada`.
+  3. `servicio-logistica/src/main/resources/db/logistica.sql`: esquema físico completo escrito a mano a partir del DER ya corregido (7 tablas, con los índices y la unique constraint). Se monta en `/docker-entrypoint-initdb.d/` del contenedor de MySQL (`docker-compose.integration.yml`) -- corre una sola vez, cuando el volumen se crea de cero.
+  4. `spring.jpa.hibernate.ddl-auto` pasa de `update` a `validate`: Hibernate ya no crea ni modifica el esquema, solo valida que las entidades coincidan con lo que generó el script. Se sacó el `JPA_DDL_AUTO=update` que los scripts de D-026 le pasaban a Logística -- ya no hace falta.
+- **Validado en vivo**: volumen de MySQL recreado desde cero, confirmado que el script corre (`docker logs` muestra `running /docker-entrypoint-initdb.d/01-logistica.sql`) y crea las 7 tablas con los índices/constraint nuevos (`SHOW INDEX FROM parada` confirma `uk_parada_ruta_numero`). Logística arranca con `ddl-auto=validate` sin errores (las entidades coinciden exactamente con el script) y persiste un camión real de punta a punta. Suite completa: 88 (Donaciones) + 15 (Incentivos) + 20 (Logística) + 3 (Notificaciones, 1 skip esperado) en verde.
+- **Definida por:** usuario (entregó el DER, pidió verificarlo íntegramente contra lo ya integrado antes de avanzar) + agente (encontró las 3 diferencias por comparación directa de esquemas, no asumió que el DER y el código ya coincidían)
+
 ## [D-028] Persistencia JPA+MySQL para Incentivos (desde cero, singletons manuales)
 - **Fecha:** 2026-10-09
 - **Servicio(s) afectado(s):** Incentivos
@@ -383,42 +447,36 @@
 - **Nota, no una acción de esta entrada:** `incentivos.puml` y `donaciones.puml` (convertidos por el usuario) reflejan el dominio *antes* de la persistencia JPA de D-028/D-030 -- por ejemplo `donaciones.puml` todavía muestra campos de `GestorDonaciones` (`siguienteId`/`siguienteSolicitudId`) que la persistencia ya eliminó, y ninguno de los dos muestra las entidades JPA nuevas. Actualizarlos para reflejar D-028/D-030 queda fuera del alcance de esta entrada.
 - **Definida por:** usuario (decidió y ejecutó la migración de formato de los primeros 3 servicios, con la motivación de reproducibilidad/escalabilidad) + agente (completó la conversión de Notificaciones desde el código real, renderizó el PNG faltante y documentó el cambio)
 
-## [D-026] docker-compose único en la base del proyecto (RabbitMQ + MySQL + n8n)
+## [D-032] Notificaciones con pendientes durables y disparadores completos
 - **Fecha:** 2026-10-09
-- **Servicio(s) afectado(s):** infraestructura (Logística, Incentivos), scripts de arranque
-- **Contexto:** tras D-025, Logística quedó con JPA+MySQL pero sin contenedor de base de datos ni forma de levantar todo junto. El usuario pidió un único `docker-compose` en la raíz que despliegue todos los contenedores usados (RabbitMQ, MySQL, n8n) y evaluar antes qué se podía romper. Ya existía `docker-compose.integration.yml` en la raíz (solo RabbitMQ) y `servicio-incentivos/docker-compose.yml` (n8n), este último con bastante tooling alrededor (`Makefile`, 4 puntos de `run-servicios.sh`, `GUIA-LEVANTAR-SERVICIOS.md`) que se rompía si se movía/duplicaba la definición de n8n.
+- **Nota de numeración:** figuraba como un segundo "D-017", sin corchetes; se renumeró para que cada decisión tenga un número único. Las referencias a [D-017] en otras entradas apuntan a la entrada original con ese número, no a esta.
 - **Decisión tomada:**
-  1. **`include:`** (Docker Compose ≥2.20, confirmado 2.40 disponible) en vez de mover o duplicar la definición de n8n: `docker-compose.integration.yml` hace `include: [servicio-incentivos/docker-compose.yml]` y agrega el servicio `mysql` (imagen `mysql:8`, credenciales iguales a las de `application.properties` de Logística, volumen nombrado, healthcheck). `servicio-incentivos/docker-compose.yml` y su `Makefile` quedan intactos -- siguen funcionando igual para quien los use directamente.
-  2. **`run-servicios.sh`/`stop-servicios.sh`/`run-servicios.ps1`/`stop-servicios.ps1`** ahora suben/bajan `docker-compose.integration.yml` completo como parte de `up`/`down` (reemplaza el manejo puntual que solo tocaba n8n). `stop-servicios.sh`/`.ps1` solo bajan la infra si se detienen los 4 servicios juntos (no si se para uno puntual, para no afectar a los demás).
-  3. **Logística arranca con `JPA_DDL_AUTO=update`** (o `-Dspring.jpa.hibernate.ddl-auto=update` en el `.ps1`) desde estos scripts -- hasta que exista el DER y un `logistica.sql` real, Hibernate crea las 7 tablas solo a partir de las entidades JPA.
-  4. **Espera activa (polling), no un `sleep` fijo**, para que Incentivos no le pegue al webhook de n8n antes de que esté registrado: se midió en vivo que el entrypoint de n8n (import + publish + start) tarda entre 8 y 22 segundos según la corrida, así que el script sondea `POST /webhook/...` cada 2s hasta que deja de responder 404 (máximo 60s), en vez de asumir un tiempo fijo que falló en la mitad de las pruebas.
-  5. **Bug encontrado y corregido durante la implementación**: la primera versión del polling en bash trataba `curl`'s código `000` (conexión rechazada, contenedor todavía no escucha) como "ya está listo" porque solo descartaba `404` -- rompía el propósito del polling. Se corrigió excluyendo explícitamente `000` también.
-- **Validado en vivo, ciclo completo repetido varias veces**: `stop-servicios.sh` → `run-servicios.sh up` desde cero -- los 4 servicios Java y los 3 contenedores de infra quedan `[UP]`; Logística crea las 7 tablas y persiste un camión real en MySQL (confirmado con `SELECT` directo, sobrevive un ciclo completo down→up gracias al volumen nombrado); el flujo de insignia→webhook→n8n funciona sin warnings después del polling.
-- **Pendiente, no resuelto en este punto:** sigue sin existir `logistica.sql` -- la solución actual (`ddl-auto=update`) es un atajo documentado para poder correr el proyecto ya, no la decisión final de esquema (esa sigue diferida a cuando exista el DER, sin cambios respecto a lo ya fijado).
-- **Definida por:** usuario (pidió el compose único, exigió evaluar riesgos antes de tocar nada, y pidió explícitamente que los scripts de run/stop se encarguen del compose) + agente (evaluó el impacto en el tooling existente antes de elegir `include:` sobre mover/duplicar, y encontró en vivo tanto el problema de timing de n8n como el bug del propio fix)
+  - Los adaptadores de Donaciones e Incentivos guardan solicitudes en archivos locales y publican en segundo plano con confirmación de RabbitMQ y verificación de enrutamiento. Se conserva la cola asíncrona y el consumidor Strategy. Notificaciones almacena historial y claves idempotentes entre reinicios. Se agrega una BandejaNotificaciones técnica por productor; no es entidad de dominio.
+  - Las entidades conservan contactos; el alta dispara bienvenida por correo, los avisos logísticos incorporan datos del comprobante y seguimiento, y los fallos se notifican a administradores configurados. Los eventos logísticos no se confirman tras errores. Incentivos registra altas y entregas por donacionId sin duplicar cantidades. Se expone un registro explícito de interacción del usuario y se corrige el umbral de inactividad.
+  - Entrega incorpora fechaHoraEntrega y seguimientoUrl; DatosDonacion incorpora donacionId. El detalle y los pasos de prueba están en NOTIFICACIONES.md. El seguimiento es un esquema interno de paradas actualizado; no hay GPS ni mapa geográfico porque el modelo no tiene coordenadas y no se autoriza compartir direcciones con un proveedor externo. La persistencia relacional y la atomicidad completa entre estado de dominio y pendientes siguen fuera de este cambio.
 
-## [D-027] Logística: DER real (dbdiagram.io) y esquema `logistica.sql` definitivo
+## [D-033] Identidad de donantes en Incentivos desde el registro
 - **Fecha:** 2026-10-09
-- **Servicio(s) afectado(s):** Logística
-- **Contexto:** el usuario entregó `diagramas/der/logistica.txt` y `diagramas/der/incentivos.txt` (DBML, dbdiagram.io) -- el DER que D-012 tenía diferido hasta que existiera. Antes de usarlo se verificó integralmente contra el esquema real que Hibernate venía generando con `ddl-auto=update` (D-026): coincidía casi exactamente, con 3 diferencias encontradas por comparación directa (`SHOW CREATE TABLE` vs el DBML, no por inspección visual): (1) al DER le faltaban `fecha_hora_entrega`/`seguimiento_url` en `entrega` -- código correcto, DER desactualizado; (2) ningún índice secundario del DER (`camion.estado_camion`, `ruta.(fecha,estado_ruta)`, `entrega.estado_entrega`, `entrega.fecha`, `evento_logistico.(publicado,fecha_generacion)`) existía en la base real -- Hibernate con `update` no los crea solo porque el DER los liste, hacen falta `@Table(indexes=...)` explícitos; (3) faltaba la restricción `UNIQUE(id_ruta, numero_parada)` en `parada` que el DER exige.
+- **Nota de numeración:** figuraba como un segundo "D-018", sin corchetes; se renumeró para que cada decisión tenga un número único. Las referencias a [D-018] en otras entradas apuntan a la entrada original con ese número, no a esta.
 - **Decisión tomada:**
-  1. DER actualizado con las 2 columnas que le faltaban.
-  2. `@Table(indexes = {...})` agregado a `Camion`, `Ruta`, `Entrega`, `EventoLogistico`; `@Table(uniqueConstraints = {...})` agregado a `Parada`.
-  3. `servicio-logistica/src/main/resources/db/logistica.sql`: esquema físico completo escrito a mano a partir del DER ya corregido (7 tablas, con los índices y la unique constraint). Se monta en `/docker-entrypoint-initdb.d/` del contenedor de MySQL (`docker-compose.integration.yml`) -- corre una sola vez, cuando el volumen se crea de cero.
-  4. `spring.jpa.hibernate.ddl-auto` pasa de `update` a `validate`: Hibernate ya no crea ni modifica el esquema, solo valida que las entidades coincidan con lo que generó el script. Se sacó el `JPA_DDL_AUTO=update` que los scripts de D-026 le pasaban a Logística -- ya no hace falta.
-- **Validado en vivo**: volumen de MySQL recreado desde cero, confirmado que el script corre (`docker logs` muestra `running /docker-entrypoint-initdb.d/01-logistica.sql`) y crea las 7 tablas con los índices/constraint nuevos (`SHOW INDEX FROM parada` confirma `uk_parada_ruta_numero`). Logística arranca con `ddl-auto=validate` sin errores (las entidades coinciden exactamente con el script) y persiste un camión real de punta a punta. Suite completa: 88 (Donaciones) + 15 (Incentivos) + 20 (Logística) + 3 (Notificaciones, 1 skip esperado) en verde.
-- **Definida por:** usuario (entregó el DER, pidió verificarlo íntegramente contra lo ya integrado antes de avanzar) + agente (encontró las 3 diferencias por comparación directa de esquemas, no asumió que el DER y el código ya coincidían)
+  - Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente de sus donaciones. Incentivos expone una operación idempotente de perfil que no suma actividad ni concede insignias. Donaciones guarda y reintenta perfiles si el servicio no responde. Para donantes anteriores o tras reiniciar Incentivos, los endpoints consultan la identidad canónica en Donaciones antes de crear el perfil vacío. No se fabrican donaciones ni se crean perfiles para IDs inexistentes. Se reutilizan clases existentes y se conserva el diagrama de dominio.
 
-
-## D-017 — Notificaciones con pendientes durables y disparadores completos
-
-Los adaptadores de Donaciones e Incentivos guardan solicitudes en archivos locales y publican en segundo plano con confirmación de RabbitMQ y verificación de enrutamiento. Se conserva la cola asíncrona y el consumidor Strategy. Notificaciones almacena historial y claves idempotentes entre reinicios. Se agrega una BandejaNotificaciones técnica por productor; no es entidad de dominio.
-
-Las entidades conservan contactos; el alta dispara bienvenida por correo, los avisos logísticos incorporan datos del comprobante y seguimiento, y los fallos se notifican a administradores configurados. Los eventos logísticos no se confirman tras errores. Incentivos registra altas y entregas por donacionId sin duplicar cantidades. Se expone un registro explícito de interacción del usuario y se corrige el umbral de inactividad.
-
-Entrega incorpora fechaHoraEntrega y seguimientoUrl; DatosDonacion incorpora donacionId. El detalle y los pasos de prueba están en NOTIFICACIONES.md. El seguimiento es un esquema interno de paradas actualizado; no hay GPS ni mapa geográfico porque el modelo no tiene coordenadas y no se autoriza compartir direcciones con un proveedor externo. La persistencia relacional y la atomicidad completa entre estado de dominio y pendientes siguen fuera de este cambio.
-
-
-## D-018 — Identidad de donantes en Incentivos desde el registro
-
-Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente de sus donaciones. Incentivos expone una operación idempotente de perfil que no suma actividad ni concede insignias. Donaciones guarda y reintenta perfiles si el servicio no responde. Para donantes anteriores o tras reiniciar Incentivos, los endpoints consultan la identidad canónica en Donaciones antes de crear el perfil vacío. No se fabrican donaciones ni se crean perfiles para IDs inexistentes. Se reutilizan clases existentes y se conserva el diagrama de dominio.
+## [D-034] Persistencia JPA+MySQL para Notificaciones y envío real por email (Mailpit) y SMS/WhatsApp (Twilio)
+- **Fecha:** 2026-10-29
+- **Servicio(s) afectado(s):** Notificaciones (+ infraestructura: `docker-compose.integration.yml`)
+- **Entrega vigente al momento:** Entrega 5 (persistencia relacional por servicio) + pendiente de Entrega 2 (envío real por los medios de notificación)
+- **Contexto:** Notificaciones era el único servicio sin DER ni persistencia relacional: guardaba el historial y la deduplicación en archivos JSON bajo `.datos/` (D-032). Además, los tres notificadores simulaban el envío, y el enunciado pide enviar "a través de correo electrónico, SMS y/o WhatsApp".
+- **Opciones consideradas:**
+  - Email: A) Gmail por SMTP (requiere contraseña de aplicación y manda mails reales a los datos de prueba). B) Mailpit, servidor SMTP de prueba local en Docker, sin cuentas.
+  - SMS/WhatsApp: A) Seguir simulando. B) Twilio (cuenta de prueba gratuita).
+- **Decisión tomada:** Mailpit + Twilio.
+  1. **Esquema propio `notificaciones`** en el mismo MySQL (`db/notificaciones.sql`, montado como `04-notificaciones.sql`), con una única tabla `notificacion`. El destinatario y el evento pertenecen a otros servicios y llegan por la cola: se guardan como datos del mensaje, sin FK (mismo criterio que las referencias lógicas de Logística). `ddl-auto=validate`, igual que el resto.
+  2. **Idempotencia en la base**: `UNIQUE (servicio_origen, evento_id)`. Reemplaza los mapas en memoria y los archivos; un reintento de RabbitMQ no genera un segundo envío aunque el servicio se reinicie.
+  3. **Registro de fallos**: nuevo estado `FALLIDA` y columnas `intentos`, `fecha_envio` y `detalle_error`. Si el proveedor falla, se guarda la fila como `FALLIDA` y se relanza la excepción para que RabbitMQ reintente (3 intentos y luego `donatrack.notificaciones.fallidas`); el reintento trabaja sobre la misma fila.
+  4. **Email real por SMTP** con `JavaMailSender`. En desarrollo el servidor es **Mailpit** (contenedor `donatrack-mailpit`, SMTP 1025, bandeja web 8025); para un proveedor real solo cambian las variables `MAIL_*`.
+  5. **SMS y WhatsApp por Twilio** a través de una clase `TwilioCliente` que usan ambos notificadores. Sin credenciales, se simulan (los compañeros sin cuenta no necesitan configurar nada). Las credenciales van en variables de entorno, nunca en el repo.
+  6. **Limitaciones de la cuenta de prueba de Twilio**, resueltas por configuración y no por código: solo envía a números verificados; el SMS no acepta texto libre, así que con `TWILIO_SMS_CUERPO_PRUEBA` se envía la plantilla de Twilio (`sms_appointment_reminders`); WhatsApp exige plantillas pre-aprobadas (`ContentSid`) que la cuenta de prueba no expone, así que se desactiva con `TWILIO_WHATSAPP_ACTIVO=false`. Con cuenta paga se quitan esas dos variables y sale el texto de DonaTrack.
+  7. El patrón Strategy (`Notificador` + `NotificadorFactory`) no cambió: los proveedores reales se incorporaron reemplazando las tres implementaciones, sin tocar el servicio (Open/Closed).
+- **Validado en vivo:** el servicio arranca con `validate` contra el esquema real; las notificaciones quedan como filas `COMPLETADA`; repetir un `eventoId` no duplica; con Mailpit detenido la fila queda `FALLIDA` y al reintentar pasa a `COMPLETADA` con `intentos = 2`; el email llega a Mailpit; el SMS llega al celular verificado (plantilla de prueba); WhatsApp queda simulado por configuración. Tests del servicio: 14 en verde (incluye `@DataJpaTest` con H2 y el de RabbitMQ con Testcontainers, alineado a 2.0.5 para Docker 29).
+- **Pendiente:** las fechas se guardan en UTC (`serverTimezone=UTC`); la conversión a hora local queda para la capa de presentación (Entrega 6). Si el grupo consigue una cuenta paga de Twilio, registrar plantillas propias de DonaTrack para WhatsApp.
+- **Definida por:** Basile, Bautista
