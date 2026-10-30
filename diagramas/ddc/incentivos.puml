@@ -17,7 +17,7 @@ skinparam classAttributeIconSize 0
 
 ' ===== FACHADA =====
 
-class Consultor <<Singleton >> {
+class Consultor <<Singleton>> {
 
 - {static} log: Logger
 - {static} instancia: Consultor
