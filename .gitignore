@@ -10,6 +10,7 @@ logs/
 .datos/
 
 servicio-incentivos/credentials.env
+servicio-notificaciones/.env
 .cli-venv/
 __pycache__/
 
