@@ -5,363 +5,551 @@ title Servicio de Incentivos - Modelo de dominio
 top to bottom direction
 skinparam classAttributeIconSize 0
 
+' Fuente: paquetes consultor, donante, donacion, misiones, progreso, ranking y metricas.
+' Todos los atributos declarados se muestran dentro de sus clases, incluidas referencias y colecciones.
+' Los miembros heredados se muestran en la superclase; no se duplican.
+' Se incluyen métodos públicos, protegidos, de paquete, privados y constructores.
+' Se omiten getters/setters simples; se conservan consultas con lógica y accesos a singletons.
+' Los constructores generados por Lombok también se muestran.
+' Los tipos externos aparecen en firmas sin desplegar DTOs ni infraestructura.
+' Las clases internas usan el nombre Exterior.Interior.
+' Las flechas no contienen etiquetas ni multiplicidades.
+
 ' ===== FACHADA =====
 
 class Consultor <<Singleton / Facade>> {
 
-* webhookN8nUrl: String
+- {static} log: Logger
+- {static} instancia: Consultor
+- misiones: GestorMisiones
+- donantes: GestorDonante
+- rankings: HistorialRanking
+- beneficiarios: Set<Beneficiario>
+- beneficiarioRepository: BeneficiarioRepository
+- restTemplate: RestTemplate
+- webhookN8nUrl: String
+- notificacionesClient: NotificacionesClient
 
-- obtenerMetricasActividad(donante: Donante, periodo: Periodo): MetricasActividad
-- obtenerMetricasSistema(): MetricasSistema
-- obtenerMisionesDisponibles(donante: Donante): List<Mision>
-- obtenerInsignias(donante: Donante): List<Insignia>
-- marcarInsigniaVisible(donante: Donante, nombre: String)
-- ocultarInsignia(donante: Donante, nombre: String)
-- obtenerOCrearBeneficiario(id: Long, nombre: String): Beneficiario
-- registrarActividadDonacion(donante: Donante, datos: DatosDonacion): ProgresoInsignia
-- ejecutarVerificacionVigenciaMisiones()
-- ejecutarCierreMensualRanking()
-- obtenerHistorialRanking(): List<Ranking>
-- obtenerRankingDeMes(fecha: LocalDate): Ranking
-- obtenerUltimoRanking(): Ranking
-- publicarInsignia(donante: Donante, insignia: Insignia)
-- notificarMisionCompletada(donante: Donante, progreso: ProgresoInsignia)
-- notificarCambioCategoria(donante: Donante, categoria: String)
-  }
+--
+
+- Consultor()
++ {static} getInstance(): Consultor
++ configurarWebhookN8n(webhookN8nUrl: String): void
++ configurarNotificacionesClient(notificacionesClient: NotificacionesClient): void
++ configurarPersistencia(beneficiarioRepository: BeneficiarioRepository): void
++ obtenerMetricasActividad(donante: Donante, periodo: Periodo): MetricasActividad
+- categoriaActualDe(donante: Donante): String
+- calcularEvolucionMensual(donaciones: List<DatosDonacion>): List<EvolucionMensual>
++ obtenerMetricasSistema(): MetricasSistema
++ obtenerMisionesDisponibles(donante: Donante): List<Mision>
++ obtenerInsignias(donante: Donante): List<Insignia>
++ marcarInsigniaVisible(donante: Donante, insigniaNombre: String): void
++ ocultarInsignia(donante: Donante, insigniaNombre: String): void
+- buscarProgresoInsignia(donante: Donante, insigniaNombre: String): ProgresoInsignia
++ obtenerOCrearBeneficiario(id: Long, nombre: String): Beneficiario
++ registrarActividadDonacion(donante: Donante, datosDonacion: DatosDonacion): ProgresoInsignia
++ ejecutarVerificacionVigenciaMisiones(): void
++ ejecutarCierreMensualRanking(): void
++ obtenerHistorialRanking(): List<Ranking>
++ obtenerRankingDeMes(fecha: LocalDate): Ranking
++ obtenerUltimoRanking(): Ranking
++ publicarInsignia(donante: Donante, insignia: Insignia): void
++ notificarMisionCompletada(donante: Donante, obtenida: ProgresoInsignia): void
++ notificarCambioCategoria(donante: Donante, categoriaNombre: String): void
+- enviarNotificacion(tipo: String, donante: Donante, mensaje: String): void
+}
 
 ' ===== DONANTE =====
 
 class Donante {
 
-* id: Long
-* nombre: String
-* medioContactoPreferido: String
-* contactoPreferido: String
-* solicitudesDonacionHechas: int
+- id: Long
+- nombre: String
+- medioContactoPreferido: String
+- contactoPreferido: String
+- solicitudesDonacionHechas: int
+- beneficiariosAyudados: Set<Beneficiario>
+- progresoAsociado: ProgresoAsociado
+- historialDonaciones: List<DatosDonacion>
 
-- actualizarNombreSiFalta(nombre: String)
-- actualizarContactoSiFalta(medio: String, contacto: String)
-- registrarActividadDonacion(datos: DatosDonacion): ProgresoInsignia
-- verificarVigenciaMisiones()
-  }
+--
+
+# Donante()
++ Donante(id: Long)
++ actualizarNombreSiFalta(nombre: String): void
++ actualizarContactoSiFalta(medio: String, contacto: String): void
++ registrarActividadDonacion(datosDonacion: DatosDonacion): ProgresoInsignia
++ verificarVigenciaMisiones(): void
+}
 
 class GestorDonante <<Singleton>> {
 
-* obtenerDonante(id: Long): Donante
-* obtenerDonante(id: Long, nombre: String): Donante
-* buscarDonante(id: Long): Donante
-* listarDonantes(): List<Donante>
-* verificarVigenciaMisiones()
-* guardar(donante: Donante)
-  }
+- {static} instancia: GestorDonante
+- donantes: List<Donante>
+- donanteRepository: DonanteRepository
+
+--
+
+- GestorDonante()
++ {static} getInstance(): GestorDonante
++ configurarPersistencia(donanteRepository: DonanteRepository): void
++ verificarVigenciaMisiones(): void
++ obtenerDonante(id: Long): Donante
++ obtenerDonante(id: Long, nombre: String): Donante
++ buscarDonante(id: Long): Donante
++ listarDonantes(): List<Donante>
++ guardar(donante: Donante): void
+}
 
 class Beneficiario {
 
-* id: Long
-* nombre: String
+- id: Long
+- nombre: String
 
-- equals(objeto: Object): boolean
-- hashCode(): int
-  }
+--
+
+# Beneficiario()
++ Beneficiario(id: Long, nombre: String)
++ equals(o: Object): boolean
++ hashCode(): int
+}
 
 class DatosDonacion {
 
-* donacionId: Long
-* fecha: LocalDate
-* categoriaBien: String
-* cantidadBienes: BigDecimal
-* donacionExitosa: boolean
-  }
+- idDatosDonacion: Integer
+- donacionId: Long
+- fecha: LocalDate
+- categoriaBien: String
+- cantidadBienes: BigDecimal
+- donacionExitosa: boolean
+- beneficiario: Beneficiario
+- donante: Donante
 
-GestorDonante "1" o-- "*" Donante
-Donante "1" o-- "*" Beneficiario : beneficiariosAyudados
-Donante "1" o-- "*" DatosDonacion : historialDonaciones
-Donante "1" *-- "1" ProgresoAsociado
-DatosDonacion --> Beneficiario
+--
+
+# DatosDonacion()
++ DatosDonacion(fecha: LocalDate, categoriaBien: String, cantidadBienes: BigDecimal, donacionExitosa: boolean, beneficiario: Beneficiario)
+}
 
 ' ===== CATALOGO DE MISIONES =====
 
 class GestorMisiones <<Singleton>> {
 
-- sembrarCatalogo()
+- {static} instancia: GestorMisiones
+- catalogoCategorias: List<Categoria>
+- categoriaRepository: CategoriaRepository
 
-* agregarCategoria(categoria: Categoria)
-* siguienteCategoria(indice: int): Categoria
-* cantCategorias(): int
-* buscarCategoriaPorNombre(nombre: String): Optional<Categoria>
-  }
+--
+
+- GestorMisiones()
++ {static} getInstance(): GestorMisiones
+- sembrarCatalogo(): void
++ agregarCategoria(categoria: Categoria): void
++ siguienteCategoria(indice: int): Categoria
++ cantCategorias(): int
++ buscarCategoriaPorNombre(nombre: String): Optional<Categoria>
++ configurarPersistencia(categoriaRepository: CategoriaRepository): void
+}
 
 class Categoria {
 
-* nombre: String
+- idCategoria: Integer
+- nombre: String
+- orden: Integer
+- misiones: List<Mision>
 
-- agregarMision(mision: Mision)
-- indexMision(indice: int): Mision
-- cantMisiones(): int
-  }
+--
+
+# Categoria()
++ Categoria(nombre: String)
++ agregarMision(mision: Mision): void
++ indexMision(indice: int): Mision
++ cantMisiones(): int
+}
 
 abstract class Mision {
 
-* nombreMision: String
+- idMision: Integer
+- categoriaAsociada: Categoria
+- orden: Integer
+- nombreMision: String
+- insigniaAsociada: Insignia
 
-- validarCumplimiento(progreso: ProgresoMision): boolean
-- crearProgreso(): ProgresoMision
-  }
+--
 
-class Racha {
+# Mision()
+# Mision(nombreMision: String, insigniaAsociada: Insignia)
+~ asignarCategoria(categoria: Categoria, orden: int): void
++ {abstract} validarCumplimiento(progresoMision: ProgresoMision): boolean
++ {abstract} crearProgreso(): ProgresoMision
+}
 
-* mesesRequeridos: int
-  }
+class "Mision.Racha" as Mision_Racha {
 
-class Completitud {
+- mesesRequeridos: int
 
-* categoriasRequeridas: int
-  }
+--
 
-class HabilDonador {
+# Racha()
++ Racha(nombreMision: String, insigniaAsociada: Insignia, mesesRequeridos: int)
++ validarCumplimiento(progresoMision: ProgresoMision): boolean
++ crearProgreso(): ProgresoMision
+}
 
-* cantidadBienesRequerida: int
-  }
+class "Mision.Completitud" as Mision_Completitud {
 
-class DonacionesExitosas {
+- categoriasRequeridas: int
 
-* donacionesRequeridas: int
-  }
+--
+
+# Completitud()
++ Completitud(nombreMision: String, insigniaAsociada: Insignia, categoriasRequeridas: int)
++ validarCumplimiento(progresoMision: ProgresoMision): boolean
++ crearProgreso(): ProgresoMision
+}
+
+class "Mision.HabilDonador" as Mision_HabilDonador {
+
+- cantidadBienesRequerida: int
+
+--
+
+# HabilDonador()
++ HabilDonador(nombreMision: String, insigniaAsociada: Insignia, cantidadBienesRequerida: int)
++ validarCumplimiento(progresoMision: ProgresoMision): boolean
++ crearProgreso(): ProgresoMision
+}
+
+class "Mision.DonacionesExitosas" as Mision_DonacionesExitosas {
+
+- donacionesRequeridas: int
+
+--
+
+# DonacionesExitosas()
++ DonacionesExitosas(nombreMision: String, insigniaAsociada: Insignia, donacionesRequeridas: int)
++ validarCumplimiento(progresoMision: ProgresoMision): boolean
++ crearProgreso(): ProgresoMision
+}
 
 class Insignia {
 
-* nombre: String
-* imagenUrl: String
-  }
+- idInsignia: Integer
+- nombre: String
+- imagenUrl: String
 
-GestorMisiones "1" o-- "*" Categoria : catalogo
-Categoria "1" o-- "*" Mision : ordenadas
+--
 
-Mision <|-- Racha
-Mision <|-- Completitud
-Mision <|-- HabilDonador
-Mision <|-- DonacionesExitosas
-
-Mision "1" --> "1" Insignia
+# Insignia()
++ Insignia(nombre: String, imagenUrl: String)
+}
 
 ' ===== PROGRESO =====
 
 class ProgresoAsociado {
 
-* indiceMisionActual: int
+- idProgresoAsociado: Integer
+- categoriasObtenidas: List<ProgresoCategoria>
+- gestorAsociado: GestorMisiones
+- misionActual: ProgresoMision
+- indiceMisionActual: int
 
-- subirCategoria()
-- siguienteMision(): Mision
-- actualizarProgreso(datos: DatosDonacion): ProgresoInsignia
-- verificarVigenciaMisiones()
+--
 
-* iniciarCategoria(categoria: Categoria)
-  }
+# ProgresoAsociado()
++ ProgresoAsociado(gestorAsociado: GestorMisiones)
+- iniciarCategoria(categoria: Categoria): void
++ subirCategoria(): void
++ siguienteMision(): Mision
++ actualizarProgreso(datosDonacion: DatosDonacion): ProgresoInsignia
++ verificarVigenciaMisiones(): void
+}
 
 class ProgresoCategoria {
 
-* nombre: String
+- idProgresoCategoria: Integer
+- progresoAsociado: ProgresoAsociado
+- nombre: String
+- orden: Integer
+- misiones: List<ProgresoMision>
 
-- cantMisionesCompletadas(): int
-  }
+--
+
+# ProgresoCategoria()
++ ProgresoCategoria(progresoAsociado: ProgresoAsociado, categoria: Categoria, orden: int)
++ cantMisionesCompletadas(): int
+}
 
 abstract class ProgresoMision {
 
-* completarMision(): ProgresoInsignia
-* asignarInsignia()
-* actualizarProgresoMision(datos: DatosDonacion)
-* evaluarVigencia(fecha: LocalDate)
-* obtenerProgresoActual(): BigDecimal
-* distanciaRestante(): BigDecimal
-  }
+- idProgresoMision: Integer
+- progresoCategoriaAsociado: ProgresoCategoria
+- orden: Integer
+- misionAsociada: Mision
+- insigniaObtenida: ProgresoInsignia
 
-class ProgresoRacha {
+--
 
-* mesesConsecutivosActuales: int
-* ultimaDonacionRegistrada: LocalDate
+# ProgresoMision()
+# ProgresoMision(misionAsociada: Mision)
+~ asignarProgresoCategoria(progresoCategoria: ProgresoCategoria, orden: int): void
++ completarMision(): ProgresoInsignia
++ asignarInsignia(): void
++ {abstract} actualizarProgresoMision(datosDonacion: DatosDonacion): void
++ evaluarVigencia(fechaReferencia: LocalDate): void
++ {abstract} obtenerProgresoActual(): BigDecimal
++ {abstract} distanciaRestante(): BigDecimal
+}
 
-- evaluarVigencia(fecha: LocalDate)
-  }
+class "ProgresoMision.ProgresoRacha" as ProgresoMision_ProgresoRacha {
 
-class ProgresoCompletitud {
+- mesesConsecutivosActuales: int
+- ultimaDonacionRegistrada: LocalDate
 
-* categoriasCubiertas: Set<String>
-  }
+--
 
-class ProgresoHabilDonador {
+# ProgresoRacha()
++ ProgresoRacha(misionAsociada: Mision)
++ actualizarProgresoMision(datosDonacion: DatosDonacion): void
++ evaluarVigencia(fechaReferencia: LocalDate): void
++ obtenerProgresoActual(): BigDecimal
++ distanciaRestante(): BigDecimal
+}
 
-* mejorDonacionRegistrada: BigDecimal
-  }
+class "ProgresoMision.ProgresoCompletitud" as ProgresoMision_ProgresoCompletitud {
 
-class ProgresoDonacionesExitosas {
+- categoriasCubiertas: Set<String>
 
-* donacionesExitosasActuales: int
-  }
+--
+
+# ProgresoCompletitud()
++ ProgresoCompletitud(misionAsociada: Mision)
++ actualizarProgresoMision(datosDonacion: DatosDonacion): void
++ obtenerProgresoActual(): BigDecimal
++ distanciaRestante(): BigDecimal
+}
+
+class "ProgresoMision.ProgresoHabilDonador" as ProgresoMision_ProgresoHabilDonador {
+
+- mejorDonacionRegistrada: BigDecimal
+
+--
+
+# ProgresoHabilDonador()
++ ProgresoHabilDonador(misionAsociada: Mision)
++ actualizarProgresoMision(datosDonacion: DatosDonacion): void
++ obtenerProgresoActual(): BigDecimal
++ distanciaRestante(): BigDecimal
+}
+
+class "ProgresoMision.ProgresoDonacionesExitosas" as ProgresoMision_ProgresoDonacionesExitosas {
+
+- donacionesExitosasActuales: int
+
+--
+
+# ProgresoDonacionesExitosas()
++ ProgresoDonacionesExitosas(misionAsociada: Mision)
++ actualizarProgresoMision(datosDonacion: DatosDonacion): void
++ obtenerProgresoActual(): BigDecimal
++ distanciaRestante(): BigDecimal
+}
 
 class ProgresoInsignia {
 
-* fechaObtencion: LocalDate
-* visible: boolean
+- idProgresoInsignia: Integer
+- insigniaAsociada: Insignia
+- fechaObtencion: LocalDate
+- visible: boolean
 
-- marcarVisible()
-- ocultarInsignia()
-  }
+--
 
-ProgresoAsociado --> GestorMisiones
-ProgresoAsociado "1" *-- "*" ProgresoCategoria : categoriasObtenidas
-ProgresoAsociado --> ProgresoMision : misionActual
-
-ProgresoCategoria "1" *-- "*" ProgresoMision
-
-ProgresoMision --> Mision : misionAsociada
-ProgresoMision "1" --> "0..1" ProgresoInsignia
-ProgresoInsignia --> Insignia
-
-ProgresoMision <|-- ProgresoRacha
-ProgresoMision <|-- ProgresoCompletitud
-ProgresoMision <|-- ProgresoHabilDonador
-ProgresoMision <|-- ProgresoDonacionesExitosas
-
-Mision ..> ProgresoMision : crearProgreso()
-ProgresoMision ..> DatosDonacion
+# ProgresoInsignia()
++ ProgresoInsignia(insigniaAsociada: Insignia)
++ marcarVisible(): void
++ ocultarInsignia(): void
+}
 
 ' ===== RANKING =====
 
 class HistorialRanking <<Singleton>> {
 
-* TOP_DONANTES: int = 3
+- {static} TOP_DONANTES: int
+- {static} instancia: HistorialRanking
+- donantesMisionesMensuales: List<ActividadMensualDonante>
+- rankings: List<Ranking>
+- rankingRepository: RankingRepository
+- actividadMensualDonanteRepository: ActividadMensualDonanteRepository
 
-- generarRanking()
-- registrarMisionCompletada(donante: Donante)
-- obtenerPosicionActual(donante: Donante): Optional<Integer>
-- obtenerHistorial(): List<Ranking>
-- obtenerUltimoRanking(): Ranking
-- obtenerRankingDeMes(fecha: LocalDate): Ranking
-  }
+--
+
+- HistorialRanking()
++ {static} getInstance(): HistorialRanking
++ configurarPersistencia(rankingRepository: RankingRepository, actividadMensualDonanteRepository: ActividadMensualDonanteRepository): void
++ generarRanking(): void
++ registrarMisionCompletada(donante: Donante): void
++ obtenerPosicionActual(donante: Donante): Optional<Integer>
++ obtenerHistorial(): List<Ranking>
++ obtenerUltimoRanking(): Ranking
++ obtenerRankingDeMes(fecha: LocalDate): Ranking
+}
 
 class Ranking {
 
-* fechaEmision: LocalDate
-  }
+- idRanking: Integer
+- fechaEmision: LocalDate
+- topDonantes: List<ActividadMensualDonante>
+
+--
+
+# Ranking()
++ Ranking(fechaEmision: LocalDate, topDonantes: List<ActividadMensualDonante>)
+}
 
 class ActividadMensualDonante {
 
-* cantidad: int
+- idActividadMensualDonante: Integer
+- donanteAsociado: Donante
+- cantidad: int
+- ranking: Ranking
+- posicion: Integer
 
-- incrementar()
-  }
+--
 
-HistorialRanking "1" o-- "*" Ranking
-HistorialRanking "1" o-- "*" ActividadMensualDonante : misionesMensuales
-Ranking "1" o-- "*" ActividadMensualDonante : topDonantes
-ActividadMensualDonante --> Donante
+# ActividadMensualDonante()
++ ActividadMensualDonante(donanteAsociado: Donante)
++ incrementar(): void
+}
 
 ' ===== METRICAS =====
 
 enum Periodo {
+
 MENSUAL
 TRIMESTRAL
 SEMESTRAL
 ANUAL
 HISTORICO
----------
+- meses: int
 
-* fechaDesde(fecha: LocalDate): LocalDate
-  }
+--
+
+- Periodo(meses: int)
++ fechaDesde(referencia: LocalDate): LocalDate
+}
 
 class MetricasActividad {
 
-* donanteNombre: String
-* categoriaActual: String
-* solicitudesDonacionHechas: int
-* beneficiariosAyudados: int
-* misionesCompletadas: int
-* insigniasObtenidas: int
-* impactoAcumulado: BigDecimal
-* posicionRanking: Integer
-  }
+- donanteNombre: String
+- categoriaActual: String
+- periodo: Periodo
+- solicitudesDonacionHechas: int
+- beneficiariosAyudados: int
+- misionesCompletadas: int
+- insigniasObtenidas: int
+- impactoAcumulado: BigDecimal
+- posicionRanking: Integer
+- evolucionMensual: List<EvolucionMensual>
+
+--
+
++ MetricasActividad(donanteNombre: String, categoriaActual: String, periodo: Periodo, solicitudesDonacionHechas: int, beneficiariosAyudados: int, misionesCompletadas: int, insigniasObtenidas: int, impactoAcumulado: BigDecimal, posicionRanking: Integer, evolucionMensual: List<EvolucionMensual>)
+}
 
 class MetricasSistema {
 
-* donantesActivos: int
-* solicitudesDonacionTotales: int
-* misionesCompletadasTotales: int
-* insigniasOtorgadasTotales: int
-  }
+- donantesActivos: int
+- solicitudesDonacionTotales: int
+- misionesCompletadasTotales: int
+- insigniasOtorgadasTotales: int
+- evolucionMensual: List<EvolucionMensual>
+
+--
+
++ MetricasSistema(donantesActivos: int, solicitudesDonacionTotales: int, misionesCompletadasTotales: int, insigniasOtorgadasTotales: int, evolucionMensual: List<EvolucionMensual>)
+}
 
 class EvolucionMensual {
 
-* mes: YearMonth
-* solicitudes: int
-* impacto: BigDecimal
-  }
+- mes: YearMonth
+- solicitudes: int
+- impacto: BigDecimal
 
-MetricasActividad --> Periodo
-MetricasActividad "1" o-- "*" EvolucionMensual
-MetricasSistema "1" o-- "*" EvolucionMensual
+--
 
-' ===== CONSULTOR (RELACIONES) =====
++ EvolucionMensual(mes: YearMonth, solicitudes: int, impacto: BigDecimal)
+}
+
+' ===== HERENCIA =====
+
+Mision <|-- Mision_Racha
+Mision <|-- Mision_Completitud
+Mision <|-- Mision_HabilDonador
+Mision <|-- Mision_DonacionesExitosas
+ProgresoMision <|-- ProgresoMision_ProgresoRacha
+ProgresoMision <|-- ProgresoMision_ProgresoCompletitud
+ProgresoMision <|-- ProgresoMision_ProgresoHabilDonador
+ProgresoMision <|-- ProgresoMision_ProgresoDonacionesExitosas
+
+' ===== RELACIONES ESTRUCTURALES =====
 
 Consultor --> GestorMisiones
 Consultor --> GestorDonante
 Consultor --> HistorialRanking
+Consultor --> Beneficiario
+DatosDonacion --> Beneficiario
+Donante *-- DatosDonacion
+Donante --> Beneficiario
+Donante *-- ProgresoAsociado
+GestorDonante --> Donante
+MetricasActividad --> Periodo
+MetricasActividad --> EvolucionMensual
+MetricasSistema --> EvolucionMensual
+Categoria *-- Mision
+GestorMisiones --> Categoria
+Mision *-- Insignia
+ProgresoAsociado *-- ProgresoCategoria
+ProgresoAsociado --> GestorMisiones
+ProgresoAsociado --> ProgresoMision
+ProgresoCategoria *-- ProgresoMision
+ProgresoInsignia --> Insignia
+ProgresoMision --> Mision
+ProgresoMision *-- ProgresoInsignia
+ActividadMensualDonante --> Donante
+ActividadMensualDonante --> Ranking
+HistorialRanking --> ActividadMensualDonante
+HistorialRanking --> Ranking
 
-Consultor "1" o-- "*" Beneficiario
+' ===== DEPENDENCIAS =====
 
-Consultor ..> MetricasActividad : crea
-Consultor ..> MetricasSistema : crea
-
-' ===== INTEGRACION =====
-
-class IncentivosController <<RestController /api/donantes>>
-class RankingController <<RestController /api/ranking>>
-class AdminController <<RestController /api/admin>>
-
-class IncentivosScheduler {
-
-* ejecutarVerificacionVigenciaMisiones()
-* ejecutarCierreMensualRanking()
-  }
-
-' GestorMisiones/GestorDonante/HistorialRanking son singletons manuales (no
-' beans de Spring) -- este ApplicationRunner les inyecta el repositorio
-' correspondiente al bootear. Mismo patrón para Consultor (deduplicación de
-' Beneficiario).
-class PersistenciaConfigurer <<ApplicationRunner>>
-
-class NotificacionesClient {
-
-* enviar(tipoEvento: String, mensaje: String, medio: String, contacto: String)
-  }
-
-class BandejaNotificaciones <<Outbox>> {
-
-* guardar(objeto: Object)
-* publicarPendientes()
-  }
-
-class ColaNotificaciones <<RabbitMQ queue>>
-
-class WorkflowN8n <<external webhook>> {
-publicacion de insignias en redes
-}
-
-IncentivosController --> Consultor
-IncentivosController --> GestorDonante
-
-RankingController --> Consultor
-AdminController --> Consultor
-IncentivosScheduler --> Consultor
-
-PersistenciaConfigurer ..> GestorMisiones : inyecta repositorio
-PersistenciaConfigurer ..> GestorDonante : inyecta repositorio
-PersistenciaConfigurer ..> HistorialRanking : inyecta repositorios
-PersistenciaConfigurer ..> Consultor : inyecta repositorio
-
-Consultor --> NotificacionesClient
-Consultor ..> WorkflowN8n : HTTP webhook (publicarInsignia)
-
-NotificacionesClient --> BandejaNotificaciones
-BandejaNotificaciones ..> ColaNotificaciones : publica
+Consultor ..> DatosDonacion
+Consultor ..> Donante
+Consultor ..> EvolucionMensual
+Consultor ..> Insignia
+Consultor ..> MetricasActividad
+Consultor ..> MetricasSistema
+Consultor ..> Mision
+Consultor ..> Periodo
+Consultor ..> ProgresoInsignia
+Consultor ..> Ranking
+Donante ..> ProgresoInsignia
+HistorialRanking ..> Donante
+Mision_Completitud ..> ProgresoMision
+Mision_Completitud ..> ProgresoMision_ProgresoCompletitud
+Mision_DonacionesExitosas ..> ProgresoMision
+Mision_DonacionesExitosas ..> ProgresoMision_ProgresoDonacionesExitosas
+Mision_HabilDonador ..> ProgresoMision
+Mision_HabilDonador ..> ProgresoMision_ProgresoHabilDonador
+Mision_Racha ..> ProgresoMision
+Mision_Racha ..> ProgresoMision_ProgresoRacha
+ProgresoAsociado ..> Categoria
+ProgresoAsociado ..> DatosDonacion
+ProgresoAsociado ..> Mision
+ProgresoAsociado ..> ProgresoInsignia
+ProgresoMision ..> DatosDonacion
+ProgresoMision_ProgresoCompletitud ..> DatosDonacion
+ProgresoMision_ProgresoDonacionesExitosas ..> DatosDonacion
+ProgresoMision_ProgresoHabilDonador ..> DatosDonacion
+ProgresoMision_ProgresoRacha ..> DatosDonacion
 
 @enduml
