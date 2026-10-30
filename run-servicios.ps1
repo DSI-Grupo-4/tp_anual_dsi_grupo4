@@ -84,7 +84,15 @@ foreach ($service in $services) {
             $line = $_.Trim()
             if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
                 $key, $value = $line.Split("=", 2)
-                [System.Environment]::SetEnvironmentVariable($key.Trim(), $value.Trim(), "Process")
+                $value = $value.Trim()
+                # Las comillas delimitan el valor en .env; no forman parte de la credencial.
+                if ($value.Length -ge 2 -and (
+                    ($value.StartsWith('"') -and $value.EndsWith('"')) -or
+                    ($value.StartsWith("'") -and $value.EndsWith("'"))
+                )) {
+                    $value = $value.Substring(1, $value.Length - 2)
+                }
+                [System.Environment]::SetEnvironmentVariable($key.Trim(), $value, "Process")
             }
         }
     }
