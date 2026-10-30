@@ -74,6 +74,21 @@ foreach ($service in $services) {
     $stdoutPath = Join-Path $runDirectory ($service.Name + ".out.log")
     $stderrPath = Join-Path $runDirectory ($service.Name + ".err.log")
 
+    # Si el servicio trae un .env propio (ej. credenciales SMTP reales de
+    # servicio-notificaciones), se carga en el entorno del proceso actual antes
+    # de levantarlo -- Start-Process hereda ese entorno. Sin el archivo, sigue
+    # usando los defaults de application.properties (Mailpit local).
+    $serviceEnvFile = Join-Path $repoRoot ($service.Module + "\.env")
+    if (Test-Path -LiteralPath $serviceEnvFile) {
+        Get-Content -LiteralPath $serviceEnvFile | ForEach-Object {
+            $line = $_.Trim()
+            if ($line -and -not $line.StartsWith("#") -and $line.Contains("=")) {
+                $key, $value = $line.Split("=", 2)
+                [System.Environment]::SetEnvironmentVariable($key.Trim(), $value.Trim(), "Process")
+            }
+        }
+    }
+
     $process = Start-Process `
         -FilePath $mavenCommand.Source `
         -ArgumentList @("-f", $pomPath, "spring-boot:run") `
