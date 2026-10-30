@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.domain.donaciones;
 
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.Categoria;
+import ar.edu.utn.frba.dds.donaciones.domain.categorias.Perecedero;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.Subcategoria;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.necesidades.NecesidadRecurrente;
@@ -11,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import ar.edu.utn.frba.dds.donaciones.DatosPrueba;
 import ar.edu.utn.frba.dds.donaciones.domain.categorias.UnidadMedida;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -20,6 +23,11 @@ class DonacionTest {
 
     private ItemDonado itemDeEjemplo() {
         return DatosPrueba.item(1L, "Frazadas", DatosPrueba.subcategoria("frazadas"), 10, null);
+    }
+
+    private ItemDonado itemAlimentoVencido() {
+        return new ItemDonado(1L, "Arroz", Categoria.ALIMENTOS, Subcategoria.ARROZ, UnidadMedida.KILOGRAMO,
+                BigDecimal.TEN, null, new Perecedero(LocalDate.now().minusDays(1)), null, 10, 1, 1);
     }
 
     @Test
@@ -91,6 +99,42 @@ class DonacionTest {
         donacion.cambiarEstado(EstadoTrack.EN_DEPOSITO, null);
 
         assertThat(donacion.getEstadoActual()).isEqualTo(EstadoTrack.EN_DEPOSITO);
+    }
+
+    @Test
+    void enDepositoUnaDonacionVencidaSoloPuedeIrAVencida() {
+        Donacion donacion = DatosPrueba.donacion(1L, itemAlimentoVencido(), 10);
+
+        assertThatThrownBy(() -> donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null))
+                .isInstanceOf(IllegalStateException.class);
+
+        assertThatCode(() -> donacion.cambiarEstado(EstadoTrack.VENCIDA, null))
+                .doesNotThrowAnyException();
+        assertThat(donacion.getEstadoActual()).isEqualTo(EstadoTrack.VENCIDA);
+    }
+
+    @Test
+    void siVenceDespuesDeAsignadaSigueAvanzandoHastaEntregaFallida() {
+        // Regresión: antes, una donación ya asignada/en camino cuyos bienes vencían quedaba
+        // trabada para siempre (el guard de vencimiento bloqueaba cualquier transición sin
+        // importar el estado actual, y VENCIDA no es un destino válido fuera de EN_DEPOSITO).
+        ItemDonado item = new ItemDonado(1L, "Arroz", Categoria.ALIMENTOS, Subcategoria.ARROZ,
+                UnidadMedida.KILOGRAMO, BigDecimal.TEN, null,
+                new Perecedero(LocalDate.now().plusDays(1)), null, 10, 1, 1);
+        Donacion donacion = DatosPrueba.donacion(1L, item, 10);
+        donacion.cambiarEstado(EstadoTrack.ASIGNACION_REALIZADA, null);
+
+        // Simula que el bien vence mientras la donación ya está en curso (fuera de depósito).
+        org.springframework.test.util.ReflectionTestUtils.setField(
+                item.getPerecedero(), "fechaVencimiento", LocalDate.now().minusDays(1));
+
+        assertThatCode(() -> {
+            donacion.cambiarEstado(EstadoTrack.LISTA_PARA_ENTREGAR, null);
+            donacion.cambiarEstado(EstadoTrack.EN_TRASLADO, null);
+            donacion.cambiarEstado(EstadoTrack.ENTREGA_FALLIDA, "Vencio antes de la entrega");
+        }).doesNotThrowAnyException();
+
+        assertThat(donacion.getEstadoActual()).isEqualTo(EstadoTrack.ENTREGA_FALLIDA);
     }
 
     @Test

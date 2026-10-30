@@ -196,7 +196,12 @@ public class Donacion {
 
     public void cambiarEstado(EstadoTrack nuevoEstado, String justificacion) {
         if (nuevoEstado == null) throw new IllegalArgumentException("nuevoEstado es obligatorio");
-        if (estaVencida() && nuevoEstado != EstadoTrack.VENCIDA && nuevoEstado != EstadoTrack.ENTREGA_FALLIDA)
+        // El vencimiento solo bloquea el avance mientras la donación está en depósito (Figura 2 del
+        // PDF: la única transición hacia VENCIDA es En depósito -> Vencida). Una vez asignada/en
+        // camino, si los bienes vencen, el camino de salida ya modelado es ENTREGA_FALLIDA al
+        // intentar la entrega (ver Entrega 3: "vencimiento de los bienes previo a la entrega" como
+        // motivo de entrega no satisfactoria), no un bloqueo prematuro del resto del flujo.
+        if (estadoActual == EstadoTrack.EN_DEPOSITO && estaVencida() && nuevoEstado != EstadoTrack.VENCIDA)
             throw new IllegalStateException("La donación contiene bienes vencidos");
         if (nuevoEstado == EstadoTrack.ENTREGA_FALLIDA
                 && (justificacion == null || justificacion.isBlank())) {
