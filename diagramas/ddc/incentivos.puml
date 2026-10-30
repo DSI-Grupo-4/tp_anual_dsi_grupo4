@@ -453,7 +453,9 @@ class MetricasActividad {
 
 --
 
-+ MetricasActividad(donanteNombre: String, categoriaActual: String, periodo: Periodo, solicitudesDonacionHechas: int, beneficiariosAyudados: int, misionesCompletadas: int, insigniasObtenidas: int, impactoAcumulado: BigDecimal, posicionRanking: Integer, evolucionMensual: List<EvolucionMensual>)
++ MetricasActividad(donanteNombre: String, categoriaActual: String, periodo: Periodo, solicitudesDonacionHechas: int,
+ beneficiariosAyudados: int, misionesCompletadas: int, insigniasObtenidas: int, impactoAcumulado: BigDecimal, 
+ posicionRanking: Integer, evolucionMensual: List<EvolucionMensual>)
 }
 
 class MetricasSistema {
@@ -466,7 +468,8 @@ class MetricasSistema {
 
 --
 
-+ MetricasSistema(donantesActivos: int, solicitudesDonacionTotales: int, misionesCompletadasTotales: int, insigniasOtorgadasTotales: int, evolucionMensual: List<EvolucionMensual>)
++ MetricasSistema(donantesActivos: int, solicitudesDonacionTotales: int, misionesCompletadasTotales: int, insigniasOtorgadasTotales: int, 
+evolucionMensual: List<EvolucionMensual>)
 }
 
 class EvolucionMensual {
