@@ -88,8 +88,10 @@ for name in "${targets[@]}"; do
 done
 
 if [[ "$stop_all" -eq 1 ]]; then
-  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
-  docker compose -f "$COMPOSE_FILE" down
+  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, n8n, Keycloak si está arriba)..."
+  # Con "--profile auth" también baja Keycloak, que guarda sus datos en MySQL.
+  # Sin "-v": los volúmenes y los datos se conservan.
+  docker compose -f "$COMPOSE_FILE" --profile auth down
 fi
 
 exit $failed

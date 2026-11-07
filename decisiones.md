@@ -525,3 +525,33 @@ Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente 
 - **Validado en vivo end-to-end contra Mongo real** (no Testcontainers, instancia real vía `docker compose up -d mongo`): alta de camión y chofer con ids enteros secuenciales asignados por `GeneradorIds`; `POST /api/lotes` crea la entrega; `POST /api/planificador/ejecutar` crea la ruta con la parada embebida y la entrega referenciada por `DBRef`, camión pasa a `ASIGNADO`; `POST /api/rutas/{id}/iniciar` pasa el camión a `EN_RUTA`, la entrega a `EN_TRASLADO`, y (tras el fix del punto 2) persiste `seguimientoUrl`; `/api/rutas/{id}/seguimiento` devuelve HTML con la dirección con `<script>` escapada; `POST .../confirmar` con foto marca `ENTREGADA`, persiste `fechaHoraEntrega` y la foto embebida, y libera el camión a `DISPONIBLE` (ruta `FINALIZADA`); los eventos (`RUTA_PLANIFICADA`, `RUTA_INICIADA`, `ENTREGA_CONFIRMADA`) quedan en `eventos_logisticos` con UUID propio y `DBRef` a la entrega, visibles sin publicar en `GET /api/eventos` (el mismo endpoint que consulta Donaciones). Suite completa de los 4 módulos en verde (`mvn test`): Logística incluye los 3 tests nuevos de `RutaPersistenciaTest`, que se saltean limpio en este sandbox por incompatibilidad de API de Docker con Testcontainers (mismo entorno que ya saltea los tests de Testcontainers de Notificaciones), no por fallo de código -- verificado también por el smoke test en vivo de este punto.
 - **Pendiente, fuera de este cambio:** no se migró Logística a Atlas para Render todavía (la URI de producción queda en `MONGODB_URI`, a configurar cuando se despliegue); no se tocó la configuración de despliegue existente de `render.yaml` más allá de lo que ya traía.
 - **Definida por:** equipo (implementación original en la rama `mongodb`) + agente (reconciliación con `main`, recuperación de las regresiones D-017/D-025, hallazgo y fix del bug de `seguimientoUrl` no persistido, reescritura de `RutaPersistenciaTest` contra Mongo real, actualización de DER/DDC, verificación end-to-end en vivo)
+
+## [D-039] Keycloak local como servidor de identidad, sin tocar las APIs
+
+- **Fecha:** 2026-11-07
+- **Servicio(s) afectado(s):** infraestructura. Ningún microservicio.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** La consigna pide un servicio de autenticación, SSO y Social Login, y un frontend que consuma las APIs con tokens. Hoy no hay autenticación en el código. El usuario pidió incorporar Keycloak al Docker local, reproducible por los cinco integrantes, sin activar todavía la seguridad de las APIs ni Social Login.
+- **Fuentes revisadas:** `docker-compose.integration.yml`, `servicio-incentivos/docker-compose.yml`, `run-servicios.ps1`/`run-servicios.sh`, `.gitignore`, guía de arranque. No había una decisión previa de identidad en esta bitácora. La versión de imagen se fijó contra el release 26.8.2 publicado por Keycloak el 2026-11-05.
+- **Opciones consideradas** (evaluadas en esta implementación, no discutidas antes por el equipo):
+  - A) Reusar el MySQL existente, con una base `keycloak` aparte.
+  - B) Base H2 de `start-dev`, en un volumen propio de Keycloak.
+  - C) Dejar Keycloak en el `up` general de la infraestructura.
+  - D) Dejarlo en el mismo compose, detrás del perfil `auth`, para que no arranque solo.
+- **Decisión tomada:** Keycloak `quay.io/keycloak/keycloak:26.8.2`, puerto del host 8180 (8080 ya lo usa Donaciones). Persistencia H2 en el volumen `keycloak-data` (opción B): los scripts de init de MySQL no corren si el volumen ya existe, y crear una base ahí habría escrito en `mysql-data`. El servicio usa el perfil `auth` (opción D), así `run-servicios` y `docker compose up -d` siguen levantando solo lo de antes. El realm `donatrack` y los roles `ADMIN`, `DONANTE` y `BENEFICIARIA` se importan desde `keycloak/import/donatrack-realm.json`. La contraseña del administrador de la consola sale de `keycloak/.env`, que no se versiona; el ejemplo está en `keycloak/.env.example`.
+- **Definida por:** usuario (Keycloak como proveedor local) + agente (H2 propio, perfil `auth`, puerto 8180, realm sin usuarios ni secretos)
+- **Enmendada por D-040:** la persistencia pasó de H2 a una base `keycloak` en el MySQL existente.
+
+## [D-040] Keycloak persiste en el MySQL existente, con base y usuario propios (enmienda D-039)
+
+- **Fecha:** 2026-11-07
+- **Servicio(s) afectado(s):** infraestructura. Ningún microservicio.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** D-039 usó H2 para no depender de los scripts de init de MySQL, que no corren sobre un `mysql-data` ya inicializado. El equipo prefirió reutilizar el motor relacional que ya tiene el proyecto en vez de una base embebida.
+- **Fuentes revisadas:** `docker-compose.integration.yml`, los tres `.sql` montados en `docker-entrypoint-initdb.d` (todos con `CREATE DATABASE IF NOT EXISTS`, ninguno con `DROP`), `stop-servicios.ps1`/`.sh`, `run-servicios.sh`, guía de bases de datos de Keycloak (MySQL 8.0 y 8.4 soportados, driver incluido, `utf8mb4`, `sql_generate_invisible_primary_key` en OFF) y documentación de la imagen `mysql`.
+- **Opciones consideradas:**
+  - A) Script nuevo en `docker-entrypoint-initdb.d`: no corre en volúmenes existentes, y en uno nuevo correría sin la contraseña, porque `run-servicios` no carga `keycloak/.env`.
+  - B) Contenedor de un solo uso, idempotente, en el perfil `auth`.
+  - C) PostgreSQL propio para Keycloak: aísla mejor, pero suma otro motor y otro volumen.
+- **Decisión tomada:** opción B. `keycloak-db-init` usa la misma imagen `mysql:8`, espera a que MySQL esté sano y responda por red, y ejecuta solo `CREATE DATABASE IF NOT EXISTS keycloak` (`utf8mb4_unicode_ci`), `CREATE USER IF NOT EXISTS 'keycloak'@'%'`, `ALTER USER` para que la contraseña siga a `keycloak/.env`, y `GRANT ALL ON keycloak.*`. Keycloak arranca después (`service_completed_successfully`) con `KC_DB=mysql`. La contraseña de root para el inicializador sale de `KEYCLOAK_DB_ROOT_PASSWORD` en `keycloak/.env`, así el bloque nuevo no repite el literal. El servicio `mysql` queda sin cambios. El volumen `keycloak-data` sale del compose y no se borra. `stop-servicios` y `run-servicios.sh down` agregan `--profile auth` para que Keycloak no quede corriendo sin MySQL. La versión de MySQL no cambia.
+- **Definida por:** usuario (MySQL compartido, base y usuario exclusivos, one-shot) + agente (detalles del inicializador y ajuste de los scripts de stop)

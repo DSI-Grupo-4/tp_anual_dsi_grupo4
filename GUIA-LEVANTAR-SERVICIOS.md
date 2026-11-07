@@ -4,8 +4,8 @@
 
 - Java 17 o superior.
 - Maven disponible desde la terminal (`mvn -version`).
-- Docker Desktop corriendo (para RabbitMQ, MySQL, Adminer y n8n).
-- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer), 5678 (n8n) y 1025/8025 (Mailpit) libres.
+- Docker Desktop corriendo (para RabbitMQ, MySQL, Adminer, n8n y, si se va a probar autenticación, Keycloak).
+- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer), 5678 (n8n), 1025/8025 (Mailpit) y 8180 (Keycloak) libres.
 
 Ejecutar los comandos desde la raíz del repositorio:
 
@@ -62,7 +62,7 @@ Para aplicar cambios de código, detener los servicios y volver a compilar e ini
 
 Cerrar la terminal que ejecutó `run-servicios.ps1` no detiene los servicios en segundo plano. Si se iniciaron manualmente en terminales separadas con `spring-boot:run`, usar **Ctrl+C** en cada terminal para solicitar el cierre normal de Spring.
 
-`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, Adminer, n8n) cuando se detienen los 4 servicios (sin `-Service`). Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
+`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, Adminer, n8n y Keycloak si estaba levantado) cuando se detienen los 4 servicios (sin `-Service`). No borra volúmenes. Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
 
 ## Levantar los servicios manualmente
 
@@ -126,3 +126,52 @@ docker compose -f docker-compose.integration.yml down
 Los esquemas de Logística, Incentivos y Donaciones (`servicio-logistica/src/main/resources/db/logistica.sql`, `servicio-incentivos/src/main/resources/db/incentivos.sql`, `servicio-donaciones/src/main/resources/db/donaciones.sql`) se montan en `docker-entrypoint-initdb.d/` y corren solo la primera vez que se crea el volumen de MySQL. Hibernate arranca con `ddl-auto=validate`: no crea ni modifica tablas, solo valida que las entidades coincidan con lo que generaron los scripts.
 
 El de Notificaciones es `servicio-notificaciones/src/main/resources/db/notificaciones.sql`. Si tu volumen de MySQL ya existía antes de que se agregara, ejecutalo una vez a mano desde Adminer (SQL command) o recreá el volumen con `docker compose -f docker-compose.integration.yml down -v` (borra todos los datos).
+
+## Keycloak (autenticación local)
+
+`run-servicios.ps1` y `run-servicios.sh` no levantan Keycloak. El servicio está en `docker-compose.integration.yml` con el perfil `auth`, así que un `docker compose up -d` de la infraestructura actual no lo arranca ni lo recrea.
+
+Keycloak guarda sus datos en una base `keycloak` del mismo MySQL del proyecto, con un usuario `keycloak` que solo tiene permisos sobre esa base. No toca `donaciones`, `incentivos` ni `notificaciones`. La base y el usuario los crea el contenedor `keycloak-db-init`, que corre antes de Keycloak en cada arranque y termina. Es idempotente: funciona igual con un volumen de MySQL nuevo o con uno que ya tiene datos.
+
+La primera vez, en la raíz del repo:
+
+```powershell
+Copy-Item keycloak\.env.example keycloak\.env
+```
+
+Editar `keycloak\.env` y reemplazar los tres valores `definir-...` por contraseñas propias. `KEYCLOAK_DB_PASSWORD` no puede tener comillas simples ni barras invertidas. `KEYCLOAK_DB_ROOT_PASSWORD` tiene que ser la misma clave de root que usa el servicio `mysql` del compose: la necesita el inicializador para crear la base y el usuario. Ese archivo no se commitea.
+
+```powershell
+docker compose --env-file keycloak/.env --profile auth -f docker-compose.integration.yml up -d keycloak
+```
+
+Si MySQL no estaba corriendo, ese comando lo levanta también, sin recrear su volumen. El primer arranque descarga la imagen `quay.io/keycloak/keycloak:26.8.2` y puede tardar un par de minutos. La consola queda en http://localhost:8180. Se entra con el usuario y la contraseña de `keycloak/.env`, en el realm `master`.
+
+Si Keycloak no arranca, revisar primero el inicializador:
+
+```powershell
+docker logs donatrack-keycloak-db-init
+docker logs donatrack-keycloak --tail 100
+```
+
+Para ver el realm de la aplicación: selector de realm, arriba a la izquierda, `donatrack`. En Realm roles tienen que aparecer `ADMIN`, `DONANTE` y `BENEFICIARIA`.
+
+Comprobación sin abrir el navegador, cuando el contenedor ya responde:
+
+```powershell
+Invoke-RestMethod http://localhost:8180/realms/donatrack/.well-known/openid-configuration
+```
+
+El `issuer` tiene que ser `http://localhost:8180/realms/donatrack`.
+
+El realm se importa desde `keycloak/import/donatrack-realm.json` solo si todavía no existe en la base `keycloak`. Si se cambia ese archivo y la base ya tiene el realm, Keycloak no lo vuelve a importar: hay que aplicar el cambio desde la consola.
+
+Para bajarlo sin tocar el resto de la infraestructura:
+
+```powershell
+docker compose --profile auth -f docker-compose.integration.yml stop keycloak
+```
+
+`stop-servicios` también lo baja junto con MySQL, para que no quede corriendo sin su base. Los datos quedan en `mysql-data`.
+
+Las versiones anteriores de esta configuración usaban un volumen `keycloak-data` con H2. Si existe en tu máquina, ya no se usa y no hace falta borrarlo.

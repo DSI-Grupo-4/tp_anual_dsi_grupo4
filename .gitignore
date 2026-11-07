@@ -10,6 +10,7 @@ logs/
 .datos/
 
 servicio-incentivos/credentials.env
+keycloak/.env
 .cli-venv/
 __pycache__/
 

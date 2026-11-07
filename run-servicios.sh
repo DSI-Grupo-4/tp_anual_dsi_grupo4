@@ -140,8 +140,9 @@ start_infra() {
 }
 
 stop_infra() {
-  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, Adminer, n8n)..."
-  docker compose -f "$COMPOSE_FILE" down
+  echo "==> Deteniendo infraestructura (RabbitMQ, MySQL, Adminer, n8n, Keycloak si está arriba)..."
+  # Con "--profile auth" también baja Keycloak, que guarda sus datos en MySQL.
+  docker compose -f "$COMPOSE_FILE" --profile auth down
 }
 
 up() {

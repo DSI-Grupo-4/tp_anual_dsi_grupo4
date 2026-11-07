@@ -1,0 +1,34 @@
+{
+  "id": "donatrack",
+  "realm": "donatrack",
+  "displayName": "DonaTrack",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Persona administradora de DonaTrack",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "DONANTE",
+        "description": "Persona donante",
+        "composite": false,
+        "clientRole": false
+      },
+      {
+        "name": "BENEFICIARIA",
+        "description": "Entidad beneficiaria",
+        "composite": false,
+        "clientRole": false
+      }
+    ]
+  }
+}

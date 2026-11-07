@@ -67,9 +67,11 @@ foreach ($name in $Service) {
     }
 }
 
-if ($stopAll -and $PSCmdlet.ShouldProcess($composeFile, "Bajar infraestructura (RabbitMQ, MySQL, n8n)")) {
-    Write-Host "Deteniendo infraestructura (RabbitMQ, MySQL, n8n)..."
-    docker compose -f $composeFile down
+if ($stopAll -and $PSCmdlet.ShouldProcess($composeFile, "Bajar infraestructura (RabbitMQ, MySQL, n8n, Keycloak si está arriba)")) {
+    Write-Host "Deteniendo infraestructura (RabbitMQ, MySQL, n8n, Keycloak si está arriba)..."
+    # Con "--profile auth" también baja Keycloak, que guarda sus datos en MySQL.
+    # Sin "-v": los volúmenes y los datos se conservan.
+    docker compose -f $composeFile --profile auth down
 }
 
 if ($failed) {
