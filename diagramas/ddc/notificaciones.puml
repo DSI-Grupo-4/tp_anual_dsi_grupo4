@@ -5,139 +5,188 @@ title Servicio de Notificaciones - Modelo de dominio
 top to bottom direction
 skinparam classAttributeIconSize 0
 
+' Fuente: model, enums, strategy, proveedores, NotificacionService y EnvioNotificacionException.
+' Todos los atributos declarados se muestran dentro de sus clases.
+' Se incluyen métodos públicos, de paquete, privados y constructores.
+' Se omiten getters y setters simples; se conservan operaciones con lógica.
+' Los tipos de DTOs, repositorios y frameworks aparecen en firmas sin desplegar sus clases.
+' Los controladores, el consumidor y las colas quedan fuera de este diagrama de dominio.
+' Las flechas no contienen etiquetas ni multiplicidades.
+
 ' ===== NOTIFICACION =====
 
 class Notificacion <<Entity>> {
 
-* id: String
-* mensaje: String
-* medio: MedioComunicacion
-* contacto: String
-* estado: EstadoNotificacion
-* servicioOrigen: String
-* tipoEvento: String
-* eventoId: String
-* fechaCreacion: LocalDateTime
-* fechaEnvio: LocalDateTime
-* intentos: int
-* detalleError: String
+- {static} MAX_DETALLE_ERROR: int = 500
+- id: String
+- mensaje: String
+- medio: MedioComunicacion
+- contacto: String
+- estado: EstadoNotificacion
+- servicioOrigen: String
+- tipoEvento: String
+- eventoId: String
+- fechaCreacion: LocalDateTime
+- fechaEnvio: LocalDateTime
+- intentos: int
+- detalleError: String
 
-* registrarIntento(): void
-* marcarCompletada(): void
-* marcarFallida(error: String): void
-* estaCompletada(): boolean
+--
+
++ Notificacion()
++ Notificacion(mensaje: String, medio: MedioComunicacion, contacto: String, servicioOrigen: String, tipoEvento: String, eventoId: String)
++ registrarIntento(): void
++ marcarCompletada(): void
++ marcarFallida(error: String): void
++ estaCompletada(): boolean
 }
 
-note right of Notificacion
-  Tabla "notificacion" (esquema notificaciones).
-  servicioOrigen + eventoId es UNIQUE:
-  un mismo evento se notifica una sola vez.
-end note
-
 enum MedioComunicacion {
+
 WHATSAPP
 EMAIL
 SMS
 }
 
 enum EstadoNotificacion {
+
 PENDIENTE
 COMPLETADA
 FALLIDA
 }
 
-Notificacion --> MedioComunicacion
-Notificacion --> EstadoNotificacion
-
 ' ===== ESTRATEGIA DE ENVIO =====
 
 interface Notificador {
-* enviarNotificacion(notificacion: Notificacion): void
+
++ enviarNotificacion(notificacion: Notificacion): void
 }
 
 class EmailNotificador {
-* remitente: String
+
+- {static} logger: Logger
+- mailSender: JavaMailSender
+- remitente: String
+
+--
+
++ EmailNotificador(mailSender: JavaMailSender, remitente: String)
++ enviarNotificacion(notificacion: Notificacion): void
+- asunto(tipoEvento: String): String
 }
 
-class SmsNotificador
-class WhatsAppNotificador
+class SmsNotificador {
+
+- {static} logger: Logger
+- twilio: TwilioCliente
+
+--
+
++ SmsNotificador(twilio: TwilioCliente)
++ enviarNotificacion(notificacion: Notificacion): void
+}
+
+class WhatsAppNotificador {
+
+- {static} logger: Logger
+- twilio: TwilioCliente
+
+--
+
++ WhatsAppNotificador(twilio: TwilioCliente)
++ enviarNotificacion(notificacion: Notificacion): void
+}
+
+class NotificadorFactory {
+
+- notificadoresPorMedio: Map<MedioComunicacion, Notificador>
+
+--
+
++ NotificadorFactory(emailNotificador: EmailNotificador, smsNotificador: SmsNotificador, whatsAppNotificador: WhatsAppNotificador)
++ obtenerNotificador(medio: MedioComunicacion): Notificador
+}
+
+' ===== PROVEEDOR DE SMS Y WHATSAPP =====
+
+class TwilioCliente {
+
+- {static} logger: Logger
+- {static} MAX_VARIABLE: int = 200
+- habilitado: boolean
+- numeroSms: String
+- numeroWhatsApp: String
+- contentSidWhatsApp: String
+- cuerpoSmsPrueba: String
+- whatsAppActivo: boolean
+
+--
+
++ TwilioCliente(accountSid: String, authToken: String, numeroSms: String, numeroWhatsApp: String, contentSidWhatsApp: String, cuerpoSmsPrueba: String, whatsAppActivo: boolean)
++ TwilioCliente(accountSid: String, authToken: String, numeroSms: String, numeroWhatsApp: String)
++ estaHabilitado(): boolean
++ puedeEnviarSms(): boolean
++ puedeEnviarWhatsApp(): boolean
++ enviarSms(destino: String, texto: String): String
++ enviarWhatsApp(destino: String, texto: String): String
+~ cuerpoSms(texto: String): String
+~ {static} variablesPlantilla(texto: String): String
++ {static} aE164(numero: String): String
+- descripcionSms(): String
+- descripcionWhatsApp(): String
+}
+
+' ===== GESTION DE NOTIFICACIONES =====
+
+class NotificacionService {
+
+- {static} logger: Logger
+- notificadorFactory: NotificadorFactory
+- repository: NotificacionRepository
+
+--
+
++ NotificacionService(notificadorFactory: NotificadorFactory, repository: NotificacionRepository)
++ enviarNotificacion(request: NotificacionRequestDTO): Notificacion
++ despachar(notificacion: Notificacion): Notificacion
++ buscarPorId(id: String): Optional<Notificacion>
++ listarTodas(): List<Notificacion>
+- normalizarOrigen(origen: String): String
+}
+
+class EnvioNotificacionException <<exception>> {
+
++ EnvioNotificacionException(mensaje: String)
++ EnvioNotificacionException(mensaje: String, causa: Throwable)
+}
+
+' ===== HERENCIA E IMPLEMENTACION =====
 
 Notificador <|.. EmailNotificador
 Notificador <|.. SmsNotificador
 Notificador <|.. WhatsAppNotificador
-Notificador ..> Notificacion : envia
 
-class NotificadorFactory {
-* obtenerNotificador(medio: MedioComunicacion): Notificador
-}
+' ===== RELACIONES ESTRUCTURALES =====
 
-NotificadorFactory --> Notificador : resuelve
-NotificadorFactory o-- EmailNotificador
-NotificadorFactory o-- SmsNotificador
-NotificadorFactory o-- WhatsAppNotificador
-
-' ===== PROVEEDORES EXTERNOS =====
-
-class JavaMailSender <<Spring Mail / SMTP>>
-
-class TwilioCliente {
-* habilitado: boolean
-* numeroSms: String
-* numeroWhatsApp: String
-* contentSidWhatsApp: String
-* cuerpoSmsPrueba: String
-* whatsAppActivo: boolean
-
-* estaHabilitado(): boolean
-* puedeEnviarSms(): boolean
-* puedeEnviarWhatsApp(): boolean
-* enviarSms(destino: String, texto: String): String
-* enviarWhatsApp(destino: String, texto: String): String
-* {static} aE164(numero: String): String
-}
-
-EmailNotificador --> JavaMailSender : SMTP (Mailpit)
+Notificacion --> MedioComunicacion
+Notificacion --> EstadoNotificacion
+NotificacionService --> NotificadorFactory
+NotificadorFactory --> MedioComunicacion
+NotificadorFactory --> Notificador
 SmsNotificador --> TwilioCliente
 WhatsAppNotificador --> TwilioCliente
 
-note bottom of TwilioCliente
-  Sin credenciales: SMS y WhatsApp se simulan.
-  Cuenta de prueba: SMS con plantilla de Twilio
-  (cuerpoSmsPrueba). Cuenta paga: texto libre.
-end note
+' ===== DEPENDENCIAS =====
 
-' ===== SERVICIO Y PERSISTENCIA =====
-
-class NotificacionService {
-
-* enviarNotificacion(request: NotificacionRequestDTO): Notificacion
-* despachar(notificacion: Notificacion): Notificacion
-* buscarPorId(id: String): Optional<Notificacion>
-* listarTodas(): List<Notificacion>
-}
-
-interface NotificacionRepository <<JpaRepository<Notificacion, String>>> {
-* findByServicioOrigenAndEventoId(servicioOrigen: String, eventoId: String): Optional<Notificacion>
-}
-
-class EnvioNotificacionException <<exception>>
-
-NotificacionService --> NotificadorFactory
-NotificacionService --> NotificacionRepository : persiste
-NotificacionRepository ..> Notificacion : administra
-NotificacionService ..> EnvioNotificacionException : lanza
-
-' ===== INTEGRACION =====
-
-class NotificacionController <<RestController /api/notificaciones>>
-class NotificacionSolicitadaConsumer <<RabbitMQ listener>>
-class ColaNotificacionesSolicitadas <<RabbitMQ queue>>
-class ColaNotificacionesFallidas <<RabbitMQ DLQ>>
-
-NotificacionController --> NotificacionService
-NotificacionSolicitadaConsumer --> NotificacionService
-
-ColaNotificacionesSolicitadas ..> NotificacionSolicitadaConsumer : consume
-ColaNotificacionesSolicitadas ..> ColaNotificacionesFallidas : reintentos agotados
+EmailNotificador ..> Notificacion
+NotificacionService ..> EnvioNotificacionException
+NotificacionService ..> Notificacion
+NotificacionService ..> Notificador
+Notificador ..> Notificacion
+NotificadorFactory ..> EmailNotificador
+NotificadorFactory ..> SmsNotificador
+NotificadorFactory ..> WhatsAppNotificador
+SmsNotificador ..> Notificacion
+WhatsAppNotificador ..> Notificacion
 
 @enduml

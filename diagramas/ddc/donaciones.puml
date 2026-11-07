@@ -5,152 +5,210 @@ title Servicio de Donaciones - Modelo de dominio
 top to bottom direction
 skinparam classAttributeIconSize 0
 
+' Fuente: servicio-donaciones/src/main/java/ar/edu/utn/frba/dds/donaciones/domain.
+' Cada clase muestra todos sus atributos declarados, incluidas referencias y colecciones.
+' Los miembros heredados se muestran en la superclase; no se duplican.
+' Se incluyen métodos públicos, protegidos, de paquete y privados, y constructores.
+' Se omiten getters y setters simples; se conservan operaciones calculadas o con lógica.
+' Los constructores indicados por Lombok también se muestran.
+' Los tipos externos se conservan en las firmas sin desplegar DTOs ni infraestructura.
+' Todas las flechas carecen de etiquetas y multiplicidades.
+
 ' ===== PERSONAS =====
 
 abstract class Persona {
 
-* mediosContacto: List<MedioContacto>
+- id: Long
+- mediosContacto: List<MedioContacto>
 
-- agregarMedio(medio: MedioContacto)
-- eliminarMedio(medio: MedioContacto)
-- medioPreferido(): Optional<MedioContacto>
-  }
+--
+
++ Persona()
++ agregarMedio(medio: MedioContacto): void
++ eliminarMedio(medio: MedioContacto): void
++ medioPreferido(): Optional<MedioContacto>
+}
 
 class PersonaHumana {
 
-* nombre: String
-* apellido: String
-* edad: Integer
-* documento: String
-* genero: Genero
+- nombre: String
+- apellido: String
+- edad: Integer
+- documento: String
+- genero: Genero
 
-- nombreCompleto(): String
-  }
+--
+
+# PersonaHumana()
++ PersonaHumana(nombre: String, apellido: String, edad: Integer, documento: String, genero: Genero)
++ nombreCompleto(): String
+}
 
 class PersonaJuridica {
 
-* razonSocial: String
-* tipo: TipoOrganizacion
-* rubro: String
-* representantes: List<PersonaHumana>
+- razonSocial: String
+- tipo: TipoOrganizacion
+- rubro: String
+- representantes: List<PersonaHumana>
 
-- agregarRepresentante(representante: PersonaHumana)
-- nombreRepresentante(): String
-  }
+--
+
+# PersonaJuridica()
++ PersonaJuridica(razonSocial: String, tipo: TipoOrganizacion, rubro: String, representantes: List<PersonaHumana>)
++ agregarRepresentante(representante: PersonaHumana): void
++ nombreRepresentante(): String
+}
 
 class MedioContacto {
 
-* tipo: TipoContacto
-* valor: String
-* esPreferido: Boolean
+- id: Long
+- tipo: TipoContacto
+- valor: String
+- esPreferido: Boolean
 
-- marcarComoPreferido()
-- desmarcarPreferido()
-- esPreferido(): Boolean
-  }
+--
+
+# MedioContacto()
++ MedioContacto(tipo: TipoContacto, valor: String, esPreferido: Boolean)
++ marcarComoPreferido(): void
++ desmarcarPreferido(): void
++ esPreferido(): Boolean
+}
 
 class Donante {
 
-* id: Long
-* ultimaActividad: LocalDate
-* notificadoPorInactividad: boolean
+- id: Long
+- persona: Persona
+- donaciones: List<Donacion>
+- ultimaActividad: LocalDate
+- notificadoPorInactividad: boolean
+- activo: boolean
 
-- registrarActividad()
-- debeNotificarsePorInactividad(dias: int): boolean
-- marcarNotificadoPorInactividad()
-- agregarDonacion(donacion: Donacion)
-- cantidadDonaciones(): Integer
-- realizoDonaciones(): boolean
-- agregarRepresentante(representante: PersonaHumana)
-  }
+--
+
+# Donante()
++ Donante(id: Long, persona: Persona)
++ registrarActividad(): void
++ debeNotificarsePorInactividad(dias: int): boolean
++ marcarNotificadoPorInactividad(): void
++ agregarDonacion(donacion: Donacion): void
++ cantidadDonaciones(): Integer
++ realizoDonaciones(): boolean
++ agregarRepresentante(representante: PersonaHumana): void
++ desactivar(): void
++ reactivar(): void
+}
 
 class EntidadBeneficiaria {
 
-* id: Long
-* descripcion: String
+- id: Long
+- entidad: PersonaJuridica
+- descripcion: String
+- direccion: Direccion
+- necesidades: List<Necesidad>
+- donacionesRecibidas: List<Donacion>
+- activa: boolean
 
-- agregarNecesidad(necesidad: Necesidad)
-- registrarAyuda(donacion: Donacion)
-- cantidadAyudasRecibidas(): Integer
-- necesidadesPendientes(): List<Necesidad>
-- agregarRepresentante(representante: PersonaHumana)
-  }
+--
+
+# EntidadBeneficiaria()
++ EntidadBeneficiaria(id: Long, entidad: PersonaJuridica, descripcion: String)
++ agregarNecesidad(necesidad: Necesidad): void
++ registrarAyuda(donacion: Donacion): void
++ cantidadAyudasRecibidas(): Integer
++ necesidadesPendientes(): List<Necesidad>
++ agregarRepresentante(representante: PersonaHumana): void
++ desactivar(): void
++ reactivar(): void
+}
 
 enum Genero {
+
 MASCULINO
 FEMENINO
 X
 }
 
 enum TipoContacto {
+
 EMAIL
 TELEFONO
 WHATSAPP
 }
 
 enum TipoOrganizacion {
+
 GUBERNAMENTAL
 ONG
 EMPRESA
 INSTITUCION
 }
 
-Persona <|-- PersonaHumana
-Persona <|-- PersonaJuridica
-Persona "1" *-- "1..*" MedioContacto
-PersonaJuridica "1" o-- "*" PersonaHumana : representantes
-Donante "1" --> "1" Persona
-EntidadBeneficiaria "1" --> "1" PersonaJuridica : entidad
-MedioContacto --> TipoContacto
-PersonaHumana --> Genero
-PersonaJuridica --> TipoOrganizacion
-
 ' ===== LUGARES =====
 
 class Direccion {
 
-* calle: String
-* numero: String
-  }
+- calle: String
+- numero: String
+- ciudad: Ciudad
+
+--
+
++ Direccion()
++ Direccion(calle: String, numero: String, ciudad: Ciudad)
+}
 
 class Ciudad {
 
-* nombre: String
-  }
+- nombre: String
+- provincia: Provincia
+
+--
+
++ Ciudad()
++ Ciudad(nombre: String, provincia: Provincia)
+}
 
 class Provincia {
 
-* nombre: String
-  }
+- nombre: String
 
-Direccion --> Ciudad
-Ciudad --> Provincia
-EntidadBeneficiaria --> Direccion
+--
+
++ Provincia()
++ Provincia(nombre: String)
+}
 
 ' ===== CATEGORIAS =====
 
 enum Categoria {
+
 ALIMENTOS
 MOBILIARIO
 VESTIMENTA
 }
 
 enum Subcategoria {
+
 SILLA
 MESA
 BANCO
 COLCHON
 FIDEOS_SECOS
 ARROZ
+LEGUMBRES_SECAS
+ACEITE_VEGETAL
 TOMATE
 FRUTA
 CAMPERA
 REMERA
 PANTALON
-...
+ROPA_INFANTIL
+FRAZADA
 }
 
 enum UnidadMedida {
+
 UNIDAD
 KILOGRAMO
 CAJA
@@ -159,74 +217,140 @@ LITRO
 }
 
 enum Condicion {
+
 NUEVO
 USADO
 }
 
 class Perecedero <<final>> {
 
-* fechaVencimiento: LocalDate
+- fechaVencimiento: LocalDate
 
-- estaVencido(): boolean
-  }
+--
+
++ Perecedero()
++ Perecedero(fechaVencimiento: LocalDate)
++ estaVencido(): boolean
+}
 
 class ConEstado <<final>> {
 
-* condicion: Condicion
-  }
+- condicion: Condicion
 
-ConEstado --> Condicion
+--
+
++ ConEstado()
++ ConEstado(condicion: Condicion)
+}
 
 ' ===== DONACIONES =====
 
 class SolicitudDonacion {
 
-* id: Long
-* descripcion: String
-* fechaRegistro: LocalDateTime
+- id: Long
+- descripcion: String
+- fechaRegistro: LocalDateTime
+- items: List<ItemDonado>
+- donante: Donante
 
-- agregarItem(item: ItemDonado)
-- segmentar(): List<Donacion>
-  }
+--
+
+# SolicitudDonacion()
++ SolicitudDonacion(descripcion: String)
++ agregarItem(item: ItemDonado): void
++ segmentar(): List<Donacion>
+}
 
 class ItemDonado {
 
-* id: Long
-* descripcion: String
-* foto: String
-* cantidad: BigDecimal
-* pesoKg: Integer
-* volumenM3: Integer
-* alturaM: Integer
+- id: Long
+- descripcion: String
+- foto: String
+- categoria: Categoria
+- subcategoria: Subcategoria
+- unidadMedida: UnidadMedida
+- cantidad: BigDecimal
+- perecedero: Perecedero
+- conEstado: ConEstado
+- pesoKg: Integer
+- volumenM3: Integer
+- alturaM: Integer
+- solicitudOrigen: SolicitudDonacion
+- donacion: Donacion
 
-- mismaSegmentacion(item: ItemDonado): boolean
-- condicion(): Condicion
-- vencimiento(): LocalDate
-- estaVencido(): boolean
-  }
+--
+
+# ItemDonado()
++ ItemDonado(id: Long, descripcion: String, categoria: Categoria, subcategoria: Subcategoria, unidadMedida: UnidadMedida, cantidad: BigDecimal, foto: String, perecedero: Perecedero, conEstado: ConEstado, pesoKg: Integer, volumenM3: Integer, alturaM: Integer)
+- {static} validar(descripcion: String, categoria: Categoria, subcategoria: Subcategoria, unidad: UnidadMedida, cantidad: BigDecimal, perecedero: Perecedero, conEstado: ConEstado): void
+- {static} validarDimension(valor: Integer, nombre: String): void
++ mismaSegmentacion(otro: ItemDonado): boolean
++ condicion(): Condicion
++ vencimiento(): LocalDate
++ estaVencido(): boolean
+~ asignarSolicitudOrigen(solicitud: SolicitudDonacion): void
+~ asignarDonacion(donacion: Donacion): void
+}
 
 class Donacion {
 
-* id: Long
-* fechaCreacion: LocalDateTime
-* estadoActual: EstadoTrack
-* TRANSICIONES_VALIDAS: Map
+- {static} TRANSICIONES_VALIDAS: Map<EstadoTrack, Set<EstadoTrack>>
+- id: Long
+- necesidadAsignada: Necesidad
+- items: List<ItemDonado>
+- solicitudOrigen: SolicitudDonacion
+- fechaCreacion: LocalDateTime
+- estadoActual: EstadoTrack
+- historialEstados: List<CambioEstado>
+- entidadBeneficiaria: EntidadBeneficiaria
+- candidatasMatchmaking: List<CandidataMatchmaking>
+- matchmakingEjecutadoEn: LocalDateTime
+- donante: Donante
 
-- reemplazarItems(items: List<ItemDonado>)
-- cambiarEstado(estado: EstadoTrack, justificacion: String)
-- estaVencida(): boolean
-- estaAsignada(): boolean
-- candidatasPropuestas(): List<EntidadBeneficiaria>
-  }
+--
+
+# Donacion()
++ Donacion(id: Long, items: List<ItemDonado>, solicitudOrigen: SolicitudDonacion)
+- agregarItemInterno(item: ItemDonado): void
+- agregarCambioEstado(estado: EstadoTrack, justificacion: String): void
+- {static} validarItems(items: List<ItemDonado>): void
++ reemplazarItems(nuevos: List<ItemDonado>): void
+~ desvincularTodosLosItems(): void
++ getCantidadAsignada(): BigDecimal
++ getCategoria(): Categoria
++ getSubcategoria(): Subcategoria
++ getUnidadMedida(): UnidadMedida
++ estaVencida(): boolean
++ getPesoKg(): Integer
++ getVolumenM3(): Integer
+- sumarDimension(peso: boolean): Integer
++ getAlturaM(): Integer
++ cambiarEstado(nuevoEstado: EstadoTrack, justificacion: String): void
++ estaAsignada(): boolean
++ setResultadoMatchmaking(resultado: ResultadoMatchmaking): void
+- agregarLista(entidades: List<EntidadBeneficiaria>, lista: ListaMatchmaking): void
++ getResultadoMatchmaking(): ResultadoMatchmaking
+- candidatasDeLista(lista: ListaMatchmaking): List<EntidadBeneficiaria>
++ candidatasPropuestas(): List<EntidadBeneficiaria>
+}
 
 class CambioEstado {
 
-* estadoNuevo: EstadoTrack
-* fechaCambio: LocalDateTime
-* justificacion: String
-  }
+- id: Long
+- donacion: Donacion
+- estadoNuevo: EstadoTrack
+- fechaCambio: LocalDateTime
+- justificacion: String
+
+--
+
+# CambioEstado()
++ CambioEstado(estadoNuevo: EstadoTrack, justificacion: String)
+~ asignarDonacion(donacion: Donacion): void
+}
 
 enum EstadoTrack {
+
 EN_DEPOSITO
 ASIGNACION_REALIZADA
 LISTA_PARA_ENTREGAR
@@ -238,71 +362,115 @@ VENCIDA
 
 class ResultadoMatchmaking {
 
-* porCompatibilidad: List<EntidadBeneficiaria>
-* porSubatencion: List<EntidadBeneficiaria>
-* interseccion: List<EntidadBeneficiaria>
-  }
+- porCompatibilidad: List<EntidadBeneficiaria>
+- porSubatencion: List<EntidadBeneficiaria>
+- interseccion: List<EntidadBeneficiaria>
 
-class EstadoInvalidoException <<exception>>
+--
 
-SolicitudDonacion "1" *-- "1..*" ItemDonado
-SolicitudDonacion --> Donante
-SolicitudDonacion ..> Donacion : segmentar() crea
++ ResultadoMatchmaking(porCompatibilidad: List<EntidadBeneficiaria>, porSubatencion: List<EntidadBeneficiaria>, interseccion: List<EntidadBeneficiaria>)
+}
 
-Donacion "1" *-- "1..*" ItemDonado : items
-Donacion --> SolicitudDonacion : solicitudOrigen
-Donacion "1" *-- "*" CambioEstado : historialEstados
-Donacion --> EstadoTrack
-Donacion --> Donante
-Donacion --> EntidadBeneficiaria : entidadBeneficiaria
-Donacion --> Necesidad : necesidadAsignada
-Donacion --> ResultadoMatchmaking
-Donacion ..> EstadoInvalidoException : lanza
+class CandidataMatchmaking {
 
-Donante "1" o-- "*" Donacion
-EntidadBeneficiaria "1" o-- "*" Donacion : donacionesRecibidas
-CambioEstado --> EstadoTrack
-ResultadoMatchmaking o-- EntidadBeneficiaria
+- donacion: Donacion
+- lista: ListaMatchmaking
+- posicion: Integer
+- entidadBeneficiaria: EntidadBeneficiaria
 
-ItemDonado --> Categoria
-ItemDonado --> Subcategoria
-ItemDonado --> UnidadMedida
-ItemDonado "1" --> "0..1" Perecedero
-ItemDonado "1" --> "0..1" ConEstado
+--
+
+# CandidataMatchmaking()
++ CandidataMatchmaking(donacion: Donacion, lista: ListaMatchmaking, posicion: int, entidadBeneficiaria: EntidadBeneficiaria)
+}
+
+class "CandidataMatchmaking.Id" as CandidataMatchmaking_Id {
+
+- donacion: Long
+- lista: ListaMatchmaking
+- posicion: Integer
+
+--
+
++ Id()
++ equals(o: Object): boolean
++ hashCode(): int
+}
+
+enum ListaMatchmaking {
+
+COMPATIBILIDAD
+SUBATENCION
+INTERSECCION
+}
+
+class EventoAplicado {
+
+- eventoId: String
+- aplicadoEn: LocalDateTime
+
+--
+
++ EventoAplicado()
++ EventoAplicado(eventoId: String)
+}
+
+class EstadoInvalidoException <<exception>> {
+
++ EstadoInvalidoException(desde: EstadoTrack, hacia: EstadoTrack)
+}
 
 ' ===== NECESIDADES =====
 
 abstract class Necesidad {
 
-* id: Long
-* descripcion: String
-* cantidadRequerida: BigDecimal
-
+- descripcion: String
+- subcategoria: Subcategoria
+- unidadMedida: UnidadMedida
+- cantidadRequerida: BigDecimal
 # cantidadRecibida: BigDecimal
+- entidadBeneficiaria: EntidadBeneficiaria
+- id: Long
 
-* actualizar(...)
-* satisfecha(): boolean
-* recibir(cantidad: BigDecimal)
-  }
+--
+
+# Necesidad()
++ Necesidad(id: Long, descripcion: String, subcategoria: Subcategoria, unidad: UnidadMedida, cantidad: BigDecimal)
++ actualizar(descripcion: String, subcategoria: Subcategoria, unidad: UnidadMedida, cantidad: BigDecimal): void
++ satisfecha(): boolean
++ recibir(cantidad: BigDecimal): void
+}
 
 class NecesidadExtraordinaria {
 
-* tipoExtraordinario: TipoExtraordinario
-  }
+- tipoExtraordinario: TipoExtraordinario
+
+--
+
+# NecesidadExtraordinaria()
++ NecesidadExtraordinaria(id: Long, descripcion: String, subcategoria: Subcategoria, unidadMedida: UnidadMedida, cantidadRequerida: BigDecimal, tipoExtraordinario: TipoExtraordinario)
++ setTipoExtraordinario(tipo: TipoExtraordinario): void
+}
 
 class NecesidadRecurrente {
 
-* periodicidad: Periodicidad
-* inicioPeriodoActual: LocalDate
+- periodicidad: Periodicidad
+- inicioPeriodoActual: LocalDate
 
-- recibir(cantidad: BigDecimal)
-- satisfecha(): boolean
+--
 
-* avanzarPeriodoSiCorresponde()
-* finDePeriodoDesde(fecha: LocalDate): LocalDate
-  }
+# NecesidadRecurrente()
++ NecesidadRecurrente(id: Long, descripcion: String, subcategoria: Subcategoria, unidadMedida: UnidadMedida, cantidadRequerida: BigDecimal, periodicidad: Periodicidad)
++ setPeriodicidad(periodicidad: Periodicidad): void
++ getCantidadRecibida(): BigDecimal
++ recibir(cantidad: BigDecimal): void
++ satisfecha(): boolean
+- avanzarPeriodoSiCorresponde(): void
+- finDePeriodoDesde(inicio: LocalDate): LocalDate
+}
 
 enum Periodicidad {
+
 DIARIA
 SEMANAL
 MENSUAL
@@ -310,103 +478,192 @@ ANUAL
 }
 
 enum TipoExtraordinario {
+
 INUNDACION
 SISMO
 OLA_POLAR
 }
 
-Necesidad <|-- NecesidadExtraordinaria
-Necesidad <|-- NecesidadRecurrente
-Necesidad --> Subcategoria
-Necesidad --> UnidadMedida
-Necesidad --> EntidadBeneficiaria
-EntidadBeneficiaria "1" *-- "*" Necesidad
-NecesidadRecurrente --> Periodicidad
-NecesidadExtraordinaria --> TipoExtraordinario
-
 ' ===== ASIGNACION (STRATEGY) =====
 
 interface AlgoritmoAsignacion {
 
-* ejecutarAlgoritmo(donacion: Donacion, entidades: List<EntidadBeneficiaria>): List<EntidadBeneficiaria>
-  }
++ ejecutarAlgoritmo(donacion: Donacion, entidades: List<EntidadBeneficiaria>): List<EntidadBeneficiaria>
+}
 
 class CompatibilidadSemantica {
 
-* puntaje(entidad: EntidadBeneficiaria, donacion: Donacion): int
-  }
++ ejecutarAlgoritmo(donacion: Donacion, entidades: List<EntidadBeneficiaria>): List<EntidadBeneficiaria>
+- puntaje(entidad: EntidadBeneficiaria, donacion: Donacion): int
+}
 
 class PrioridadSubatendidos {
 
-* donacionesEntregadasEnTrimestre(entidad: EntidadBeneficiaria, fecha: LocalDateTime): long
-  }
-
-AlgoritmoAsignacion <|.. CompatibilidadSemantica
-AlgoritmoAsignacion <|.. PrioridadSubatendidos
++ ejecutarAlgoritmo(donacion: Donacion, entidades: List<EntidadBeneficiaria>): List<EntidadBeneficiaria>
+- tieneNecesidadCompatible(entidad: EntidadBeneficiaria, donacion: Donacion): boolean
+- donacionesEntregadasEnTrimestre(entidad: EntidadBeneficiaria, desde: LocalDateTime): long
+}
 
 ' ===== GESTORES =====
 
 class Deposito {
 
-* items: List<ItemDonado>
+- items: List<ItemDonado>
 
-- cargarItem(item: ItemDonado)
-- itemsDisponibles(): List<ItemDonado>
-- reemplazarItems(listaAnterior: List, listaNueva: List)
-  }
+--
+
++ cargarItem(item: ItemDonado): void
++ itemsDisponibles(): List<ItemDonado>
++ reemplazarItems(anteriores: List<ItemDonado>, nuevos: List<ItemDonado>): void
+}
 
 class GestorDonaciones {
 
-* siguienteId: Long
-* siguienteSolicitudId: Long
+- deposito: Deposito
+- algoritmos: List<AlgoritmoAsignacion>
+- donacionRepository: DonacionRepository
+- solicitudDonacionRepository: SolicitudDonacionRepository
+- itemDonadoRepository: ItemDonadoRepository
 
-- registrarDonacion(donacion: Donacion): Donacion
-- buscarPorId(id: Long): Donacion
-- eliminar(id: Long)
-- registrarSolicitud(solicitud: SolicitudDonacion)
-- agregarAlgoritmo(algoritmo: AlgoritmoAsignacion)
-- ejecutarMatchmaking(donacion: Donacion, entidades: List<EntidadBeneficiaria>): ResultadoMatchmaking
-  }
+--
+
++ GestorDonaciones(deposito: Deposito, donacionRepository: DonacionRepository, solicitudDonacionRepository: SolicitudDonacionRepository, itemDonadoRepository: ItemDonadoRepository)
++ getDonaciones(): List<Donacion>
++ getDonacionesPorEstado(estado: EstadoTrack): List<Donacion>
++ getDonacionesPendientesDePlanificacion(pageable: Pageable): List<Donacion>
++ registrarDonacion(donacion: Donacion): Donacion
++ guardar(donacion: Donacion): Donacion
++ buscarPorId(id: Long): Donacion
++ eliminar(id: Long): void
++ registrarSolicitud(solicitud: SolicitudDonacion): void
++ eliminarSolicitud(id: Long): void
++ agregarAlgoritmo(algoritmo: AlgoritmoAsignacion): void
++ ejecutarMatchmaking(donacion: Donacion, todasLasEntidades: List<EntidadBeneficiaria>): ResultadoMatchmaking
+}
 
 class GestorDonantes {
 
-* siguienteId: Long
-* donantesPorEmail: Map
+- donanteRepository: DonanteRepository
+- importadores: List<Importador>
+- donantesPorEmail: Map<String, Donante>
 
-- registrarDonante(persona: Persona): Donante
-- buscarPorId(id: Long): Donante
-- eliminar(id: Long)
-- agregarImportador(importador: Importador)
-- importarDonantes(nombreImportador: String): List<Donante>
-- actualizarContactos(donante: Donante, medios: List<MedioContacto>)
-  }
+--
+
++ GestorDonantes(donanteRepository: DonanteRepository)
+~ cargarIndiceDeEmails(): void
++ guardar(donante: Donante): Donante
++ getDonantesRegistrados(): List<Donante>
++ registrarDonante(persona: Persona): Donante
++ buscarPorId(id: Long): Donante
++ eliminar(id: Long): void
++ reactivar(id: Long): void
++ agregarImportador(importador: Importador): void
++ importarDonantes(nombreImportador: String): List<Donante>
+- registrarOActualizarDonante(persona: Persona): Donante
++ actualizarContactos(donante: Donante, contactos: List<MedioContacto>): void
+- buscarPorEmail(email: String): Optional<Donante>
+- indexarEmail(donante: Donante): void
+- claveEmail(email: String): String
+- emailDe(persona: Persona): String
+}
 
 abstract class Importador {
 
 # nombre: String
-
 # personasImportadas: List<Persona>
 
-* importar(entrada: InputStream)*
-  }
+--
+
++ {abstract} importar(inputStream: InputStream): void
+}
 
 class ImportadorCSV {
 
-* importar(entrada: InputStream)
-
++ ImportadorCSV(nombre: String)
++ importar(inputStream: InputStream): void
 - crearPersona(datos: String[]): Persona
-  }
+}
 
-GestorDonaciones --> Deposito
-GestorDonaciones "1" o-- "*" Donacion
-GestorDonaciones "1" o-- "*" SolicitudDonacion
-GestorDonaciones "1" o-- "*" AlgoritmoAsignacion
-GestorDonaciones ..> ResultadoMatchmaking : crea
+' ===== HERENCIA E IMPLEMENTACION =====
 
-Deposito "1" o-- "*" ItemDonado
-GestorDonantes "1" o-- "*" Donante
-GestorDonantes "1" o-- "*" Importador
+AlgoritmoAsignacion <|.. CompatibilidadSemantica
+AlgoritmoAsignacion <|.. PrioridadSubatendidos
+Necesidad <|-- NecesidadExtraordinaria
+Necesidad <|-- NecesidadRecurrente
 Importador <|-- ImportadorCSV
-Importador o-- Persona
+Persona <|-- PersonaHumana
+Persona <|-- PersonaJuridica
+
+' ===== RELACIONES ESTRUCTURALES =====
+
+ConEstado --> Condicion
+CambioEstado --> Donacion
+CambioEstado --> EstadoTrack
+Donacion *-- CandidataMatchmaking
+CandidataMatchmaking --> ListaMatchmaking
+CandidataMatchmaking --> EntidadBeneficiaria
+CandidataMatchmaking_Id --> ListaMatchmaking
+Deposito --> ItemDonado
+Donacion --> EstadoTrack
+Donacion --> Necesidad
+Donacion --> ItemDonado
+Donacion --> SolicitudDonacion
+Donacion --> EntidadBeneficiaria
+Donacion --> Donante
+GestorDonaciones --> Deposito
+GestorDonaciones --> AlgoritmoAsignacion
+ItemDonado --> Categoria
+ItemDonado --> Subcategoria
+ItemDonado --> UnidadMedida
+ItemDonado *-- Perecedero
+ItemDonado *-- ConEstado
+ItemDonado --> SolicitudDonacion
+ResultadoMatchmaking --> EntidadBeneficiaria
+SolicitudDonacion --> Donante
+Ciudad *-- Provincia
+Direccion *-- Ciudad
+Necesidad --> Subcategoria
+Necesidad --> UnidadMedida
+EntidadBeneficiaria *-- Necesidad
+NecesidadExtraordinaria --> TipoExtraordinario
+NecesidadRecurrente --> Periodicidad
+Donante *-- Persona
+EntidadBeneficiaria *-- PersonaJuridica
+EntidadBeneficiaria *-- Direccion
+GestorDonantes --> Importador
+GestorDonantes --> Donante
+Importador --> Persona
+MedioContacto --> TipoContacto
+Persona *-- MedioContacto
+PersonaHumana --> Genero
+PersonaJuridica --> TipoOrganizacion
+PersonaJuridica --> PersonaHumana
+
+' ===== DEPENDENCIAS =====
+
+AlgoritmoAsignacion ..> Donacion
+AlgoritmoAsignacion ..> EntidadBeneficiaria
+CandidataMatchmaking ..> CandidataMatchmaking_Id
+CompatibilidadSemantica ..> Donacion
+CompatibilidadSemantica ..> EntidadBeneficiaria
+Donacion ..> Categoria
+Donacion ..> EstadoInvalidoException
+Donacion ..> ListaMatchmaking
+Donacion ..> ResultadoMatchmaking
+Donacion ..> Subcategoria
+Donacion ..> UnidadMedida
+Donante ..> PersonaHumana
+EntidadBeneficiaria ..> PersonaHumana
+GestorDonaciones ..> Donacion
+GestorDonaciones ..> EntidadBeneficiaria
+GestorDonaciones ..> EstadoTrack
+GestorDonaciones ..> ResultadoMatchmaking
+GestorDonaciones ..> SolicitudDonacion
+GestorDonantes ..> MedioContacto
+GestorDonantes ..> Persona
+ImportadorCSV ..> Persona
+ItemDonado ..> Condicion
+PrioridadSubatendidos ..> Donacion
+PrioridadSubatendidos ..> EntidadBeneficiaria
 
 @enduml

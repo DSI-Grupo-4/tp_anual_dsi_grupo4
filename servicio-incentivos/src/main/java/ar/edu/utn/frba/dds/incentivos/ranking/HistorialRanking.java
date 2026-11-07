@@ -55,9 +55,22 @@ public class HistorialRanking {
 
         Ranking ranking = new Ranking(LocalDate.now(), topDonantes);
         rankings.add(ranking);
+
+        // Quienes no entraron al top 3 no quedan asociados a ningún Ranking (ranking=null sigue
+        // significando "mes en curso", ver ActividadMensualDonante) -- si no se borran, sobreviven
+        // en la base y configurarPersistencia() los recarga en el próximo boot, mezclándolos con
+        // la actividad del mes nuevo (el ranking deja de ser mensual).
+        List<ActividadMensualDonante> descartados = donantesMisionesMensuales.stream()
+                .filter(a -> !topDonantes.contains(a))
+                .toList();
+
         donantesMisionesMensuales.clear();
+
         if (rankingRepository != null) {
             rankingRepository.save(ranking);
+        }
+        if (actividadMensualDonanteRepository != null && !descartados.isEmpty()) {
+            actividadMensualDonanteRepository.deleteAll(descartados);
         }
     }
 

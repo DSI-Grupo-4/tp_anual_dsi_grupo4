@@ -12,3 +12,10 @@ services:
         value: 8083
       - key: SPRING_PROFILES_ACTIVE
         value: render
+      # URI de MongoDB Atlas (con credenciales). sync: false -> el valor se carga
+      # a mano en el dashboard de Render y nunca se versiona en el repo.
+      - key: MONGODB_URI
+        sync: false
+      # URL pública del servicio, usada para armar los links de seguimiento.
+      - key: LOGISTICA_PUBLIC_BASE_URL
+        value: https://tp-anual-dsi-grupo4-1.onrender.com

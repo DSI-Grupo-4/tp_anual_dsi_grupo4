@@ -11,6 +11,8 @@ logs/
 
 servicio-incentivos/credentials.env
 keycloak/.env
+servicio-notificaciones/.env
+servicio-logistica/.env
 .cli-venv/
 __pycache__/
 

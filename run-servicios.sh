@@ -88,6 +88,17 @@ start_java_service() {
     return 0
   fi
 
+  # Si el servicio trae un .env propio (ej. credenciales SMTP de
+  # servicio-notificaciones), se exporta antes de levantarlo. Sin el
+  # archivo, sigue usando los defaults de application.properties.
+  local env_file="$ROOT_DIR/$name/.env"
+  if [[ -f "$env_file" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$env_file"
+    set +a
+  fi
+
   local jar
   jar="$(find_jar "$name")"
   if [[ -z "$jar" ]]; then
