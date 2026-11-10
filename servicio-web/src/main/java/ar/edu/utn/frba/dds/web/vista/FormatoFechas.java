@@ -48,6 +48,11 @@ public class FormatoFechas {
         return fechaHora == null ? SIN_DATO : FECHA_HORA.format(fechaHora.atZoneSameInstant(zona));
     }
 
+    /** Fecha y hora ISO-8601 con zona (como Marcador.actualizadoEn) → hora local. */
+    public String fechaHoraIso(String iso) {
+        return iso == null ? SIN_DATO : fechaHora(OffsetDateTime.parse(iso));
+    }
+
     /** Fechas sin hora (vencimientos, fecha de lote): no se convierten de zona. */
     public String fecha(LocalDate fecha) {
         return fecha == null ? SIN_DATO : FECHA.format(fecha);

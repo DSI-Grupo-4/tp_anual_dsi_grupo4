@@ -35,6 +35,13 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Leaflet para el componente de mapa (D-042). Se sirve desde /webjars/leaflet/1.9.4/, sin CDN. -->
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>leaflet</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
