@@ -1,0 +1,101 @@
+/*
+ * Ajustes de DonaTrack sobre el tema keycloak.v2 (PatternFly 5).
+ * Usa los tokens de tokens.css para que el login se vea como servicio-web:
+ * fondo lavanda, tarjeta blanca, botón oscuro, enlaces violeta y controles de 48 px.
+ */
+
+:root {
+  --keycloak-logo-url: url("../img/logo-donatrack.svg");
+  --keycloak-logo-height: 48px;
+  --keycloak-logo-width: 230px;
+  --keycloak-card-top-color: var(--color-primario);
+
+  --pf-v5-global--FontFamily--text: var(--fuente-base);
+  --pf-v5-global--FontFamily--heading: var(--fuente-base);
+  --pf-v5-global--FontFamily--sans-serif: var(--fuente-base);
+  --pf-v5-global--Color--100: var(--color-texto);
+  --pf-v5-global--Color--200: var(--color-texto-secundario);
+  --pf-v5-global--link--Color: var(--color-primario);
+  --pf-v5-global--link--Color--hover: var(--color-primario-hover);
+  --pf-v5-global--primary-color--100: var(--color-oscuro);
+  --pf-v5-global--primary-color--200: #2a2638;
+  --pf-v5-global--BorderRadius--sm: var(--radio-md);
+  --pf-v5-global--danger-color--100: var(--color-error);
+}
+
+.login-pf body {
+  background: linear-gradient(135deg, #eef2ff 0%, #e4e1fb 100%);
+  color: var(--color-texto);
+  font-family: var(--fuente-base);
+}
+
+/* Logo propio en lugar del de Keycloak. */
+div.kc-logo-text {
+  background-image: var(--keycloak-logo-url);
+}
+#kc-header-wrapper {
+  color: var(--color-texto) !important; /* el tema base lo fuerza a blanco con !important */
+  font-family: var(--fuente-base);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Tarjeta */
+.pf-v5-c-login__main {
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-md);
+  overflow: hidden;
+}
+.pf-v5-c-login__main-header {
+  border-top-width: 4px;
+}
+#kc-page-title {
+  font-weight: var(--peso-fuerte);
+  font-size: var(--texto-2xl);
+}
+
+/* Campos y botones con área táctil de 48 px (consigna). */
+.pf-v5-c-form-control {
+  min-height: var(--area-tactil);
+  --pf-v5-c-form-control--BackgroundColor: var(--color-campo);
+  --pf-v5-c-form-control--before--BorderColor: var(--color-borde-control);
+  --pf-v5-c-form-control--after--BorderColor: var(--color-borde-control);
+  border-radius: var(--radio-md);
+}
+.pf-v5-c-form-control input {
+  font-size: var(--texto-base);
+}
+.pf-v5-c-button {
+  min-height: var(--area-tactil);
+  border-radius: var(--radio-md);
+  font-weight: var(--peso-medio);
+}
+.pf-v5-c-button.pf-m-primary {
+  background-color: var(--color-oscuro);
+  color: var(--color-sobre-oscuro);
+}
+.pf-v5-c-button.pf-m-primary:hover {
+  background-color: #2a2638;
+}
+.pf-v5-c-button.pf-m-link {
+  color: var(--color-primario);
+}
+.pf-v5-c-login__main-footer-band a,
+#kc-registration a,
+.pf-v5-c-login__main a {
+  color: var(--color-primario);
+  font-weight: var(--peso-medio);
+}
+
+/* Foco visible propio, igual que en servicio-web. */
+.login-pf :focus-visible {
+  outline: var(--foco-ancho) solid var(--foco-color);
+  outline-offset: var(--foco-separacion);
+}
+
+/* Botones de redes sociales (social login). */
+.pf-v5-c-login__main-footer-links-item,
+#kc-social-providers .pf-v5-c-button {
+  min-height: var(--area-tactil);
+}

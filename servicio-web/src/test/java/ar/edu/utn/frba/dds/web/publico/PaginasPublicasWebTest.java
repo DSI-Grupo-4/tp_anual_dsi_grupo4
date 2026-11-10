@@ -100,6 +100,18 @@ class PaginasPublicasWebTest {
     }
 
     @Test
+    void elRegistroExplicaElProcesoYLlevaAlRegistroConfigurado() throws Exception {
+        mvc.perform(get("/registro"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("role=\"tablist\""),
+                        containsString("Para entidades beneficiarias"),
+                        containsString("ubicación de la sede"),
+                        containsString("<a class=\"boton boton--primario\" href=\"/ingresar\">Crear cuenta</a>"),
+                        containsString("href=\"/legal/terminos\""))));
+    }
+
+    @Test
     void lasPaginasLegalesYDeAyudaEstanPublicadas() throws Exception {
         mvc.perform(get("/legal/privacidad")).andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("Ley 25.326"), containsString("AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA"))));

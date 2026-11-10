@@ -6,6 +6,7 @@ import ar.edu.utn.frba.dds.web.publico.MapaPublico;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,17 +27,19 @@ public class PublicoController {
 
     /** Ruta pública → clave del título. Se van quitando a medida que cada página se implementa. */
     private static final Map<String, String> EN_CONSTRUCCION = Map.of(
-            "ingresar", "nav.ingresar",
-            "registro", "nav.registrarse");
+            "ingresar", "nav.ingresar");
 
     private static final Set<String> LEGALES = Set.of("privacidad", "terminos");
 
     private final FuentePublica fuente;
     private final MapaPublico mapa;
+    private final String registroUrl;
 
-    public PublicoController(FuentePublica fuente, MapaPublico mapa) {
+    public PublicoController(FuentePublica fuente, MapaPublico mapa,
+                             @Value("${donatrack.web.auth.registro-url}") String registroUrl) {
         this.fuente = fuente;
         this.mapa = mapa;
+        this.registroUrl = registroUrl;
     }
 
     @GetMapping("/")
@@ -64,6 +67,17 @@ public class PublicoController {
         return mapa.entregasRealizadas().marcadores();
     }
 
+    /**
+     * Entrada al registro: explica el proceso y lleva al registro de Keycloak (tema "donatrack").
+     * El formulario para completar el perfil (crear el Donante o la Entidad y vincularlo
+     * con la cuenta) depende de la decisión de identidad de la Persona 2.
+     */
+    @GetMapping("/registro")
+    public String registro(Model model) {
+        model.addAttribute("registroUrl", registroUrl);
+        return "publico/registro";
+    }
+
     @GetMapping("/ayuda")
     public String ayuda() {
         return "publico/ayuda";
@@ -77,7 +91,7 @@ public class PublicoController {
         return "publico/legal/" + pagina;
     }
 
-    @GetMapping("/{pagina:ingresar|registro}")
+    @GetMapping("/{pagina:ingresar}")
     public String enConstruccion(@PathVariable String pagina, Model model) {
         model.addAttribute("tituloClave", EN_CONSTRUCCION.get(pagina));
         return "publico/en-construccion";
