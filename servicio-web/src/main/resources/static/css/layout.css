@@ -281,3 +281,13 @@ main:focus {
   border-color: var(--color-sobre-primario);
 }
 .heroe .boton--fantasma:hover { background: rgba(255, 255, 255, 0.14); }
+
+/* ============ Página de error ============ */
+.error-pagina { align-items: flex-start; }
+.error-pagina__codigo {
+  margin: 0;
+  font-size: var(--texto-3xl);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-primario);
+  line-height: 1;
+}
