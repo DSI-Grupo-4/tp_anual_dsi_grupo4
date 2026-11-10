@@ -65,6 +65,13 @@ div.kc-logo-text {
 }
 .pf-v5-c-form-control input {
   font-size: var(--texto-base);
+  min-height: var(--area-tactil);
+}
+/* Enlaces del formulario ("¿Olvidaste tu contraseña?", "Registrate", "Volver"): área de 48 px. */
+.pf-v5-c-login__main a:not(.pf-v5-c-button) {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--area-tactil);
 }
 .pf-v5-c-button {
   min-height: var(--area-tactil);

@@ -25,7 +25,8 @@
 </svg>
 
 <!-- Región de toasts. Los mensajes flash del servidor llegan en el atributo "toasts". -->
-<div th:fragment="toasts" id="toasts" class="toasts" th:aria-label="#{a11y.notificaciones}">
+<!-- Sin aria-label: un div sin rol no puede tenerlo; cada toast lleva role="status" o "alert". -->
+<div th:fragment="toasts" id="toasts" class="toasts">
   <div th:each="t : ${toasts}" class="toast" th:classappend="'toast--' + ${t.tipo.clase}"
        th:attr="data-tipo=${t.tipo.clase}" data-servidor
        th:role="${t.tipo.name() == 'ERROR'} ? 'alert' : 'status'">

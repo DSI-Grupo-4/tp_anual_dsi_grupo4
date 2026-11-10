@@ -96,6 +96,14 @@ table {
   transform: translate(-50%, -50%);
 }
 
+/*
+ * hidden siempre oculta: sin esto, un componente con display propio (p. ej. .loader-global
+ * con display: grid) seguía ocupando la pantalla con el atributo hidden puesto.
+ */
+[hidden] {
+  display: none !important;
+}
+
 /* --- Accesibilidad --- */
 .solo-lector {
   position: absolute !important;

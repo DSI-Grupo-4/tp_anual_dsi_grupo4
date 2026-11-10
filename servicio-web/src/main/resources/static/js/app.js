@@ -190,8 +190,16 @@
     if (disparador) alternarAyuda(disparador, true);
   });
   document.addEventListener("mouseout", function (evento) {
-    var disparador = evento.target.closest(".ayuda__disparador");
+    // mouseout también se dispara al pasar a un hijo (el ícono) o al texto del tooltip:
+    // solo se cierra si el puntero salió de todo el componente .ayuda (WCAG 1.4.13).
+    var ayuda = evento.target.closest(".ayuda");
+    if (!ayuda || (evento.relatedTarget && ayuda.contains(evento.relatedTarget))) return;
+    var disparador = ayuda.querySelector(".ayuda__disparador");
     if (disparador && disparador !== document.activeElement) alternarAyuda(disparador, false);
+  });
+  // Con teclado, el tooltip se muestra al recibir el foco (no solo con Enter).
+  document.addEventListener("focusin", function (evento) {
+    if (evento.target.matches && evento.target.matches(".ayuda__disparador")) alternarAyuda(evento.target, true);
   });
   document.addEventListener("focusout", function (evento) {
     if (evento.target.matches && evento.target.matches(".ayuda__disparador")) alternarAyuda(evento.target, false);

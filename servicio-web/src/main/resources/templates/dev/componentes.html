@@ -56,7 +56,7 @@
         <th:block th:replace="~{fragments/comunes :: icono('ubicacion')}"/>
       </button>
     </div>
-    <pre class="catalogo__codigo"><code>&lt;button class="boton boton--primario"&gt;Guardar&lt;/button&gt;
+    <pre class="catalogo__codigo" tabindex="0" aria-label="Ejemplo de código: botones"><code>&lt;button class="boton boton--primario"&gt;Guardar&lt;/button&gt;
 &lt;a class="boton boton--secundario" href="..."&gt;Volver&lt;/a&gt;</code></pre>
   </section>
 
@@ -122,7 +122,7 @@
 
   <section class="tarjeta pila" aria-labelledby="t-tabla">
     <h2 id="t-tabla">Tabla</h2>
-    <div class="tabla-contenedor">
+    <div class="tabla-contenedor" tabindex="0" role="region" aria-label="Donaciones de ejemplo">
       <table class="tabla">
         <caption class="solo-lector">Donaciones de ejemplo</caption>
         <thead><tr><th scope="col">Donación</th><th scope="col">Categoría</th><th scope="col">Estado</th><th scope="col">Fecha</th></tr></thead>
@@ -139,6 +139,8 @@
         <a class="boton boton--secundario" href="#">Siguiente</a>
       </div>
     </nav>
+    <p class="texto-chico texto-secundario">Una tabla que puede desbordar en celular va dentro de
+      <code>&lt;div class="tabla-contenedor" tabindex="0" role="region" aria-label="..."&gt;</code>, para que se pueda desplazar con el teclado.</p>
   </section>
 
   <section class="tarjeta pila" aria-labelledby="t-metricas">
@@ -180,7 +182,7 @@
       <button type="button" class="boton boton--secundario" data-toast-demo="error">Toast de error</button>
       <button type="button" class="boton boton--secundario" data-abrir-modal="modal-demo">Abrir modal</button>
     </div>
-    <pre class="catalogo__codigo"><code>// En el controller, antes de redirigir (POST-redirect-GET):
+    <pre class="catalogo__codigo" tabindex="0" aria-label="Ejemplo de código: toasts"><code>// En el controller, antes de redirigir (POST-redirect-GET):
 Toasts.exito(redirectAttributes, "La donación se registró correctamente.");
 // Desde JS:
 DonaTrack.toast("Filtros aplicados", "info");</code></pre>
