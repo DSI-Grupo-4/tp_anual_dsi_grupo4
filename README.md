@@ -115,6 +115,9 @@
 ## Despliegue
 Servicio de Logística: https://tp-anual-dsi-grupo4-1.onrender.com
 
+## Cliente web (Entrega 6)
+El cliente liviano está en [`servicio-web`](servicio-web/README.md) (Spring Boot + Thymeleaf, puerto 8085). Consume las APIs REST de los servicios y se levanta junto con ellos con `run-servicios`. Su README explica cómo sumar pantallas, el sistema de diseño, el componente de mapa, el tema de login de Keycloak ([`keycloak/themes/donatrack`](keycloak/themes/donatrack)) y el trabajo pendiente de cada integrante.
+
 
 
 

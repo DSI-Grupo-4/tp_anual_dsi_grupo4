@@ -5,7 +5,7 @@
 - Java 17 o superior.
 - Maven disponible desde la terminal (`mvn -version`).
 - Docker Desktop corriendo (para RabbitMQ, MySQL, Adminer y n8n).
-- Puertos 8080, 8081, 8082, 8083 (servicios), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer), 5678 (n8n) y 1025/8025 (Mailpit) libres.
+- Puertos 8080, 8081, 8082, 8083 (servicios), 8085 (cliente web), 3306 (MySQL), 5672/15672 (RabbitMQ), 8090 (Adminer), 5678 (n8n) y 1025/8025 (Mailpit) libres.
 
 Ejecutar los comandos desde la raíz del repositorio:
 
@@ -21,7 +21,7 @@ En PowerShell:
 .\run-servicios.ps1
 ```
 
-El script levanta primero la infraestructura de Docker (RabbitMQ, MySQL, Adminer y n8n, definida en `docker-compose.integration.yml`), compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios en segundo plano. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`. Requiere Docker Desktop corriendo.
+El script levanta primero la infraestructura de Docker (RabbitMQ, MySQL, Adminer y n8n, definida en `docker-compose.integration.yml`), compila el proyecto sin ejecutar las pruebas y levanta los cuatro servicios y el cliente web (`servicio-web`) en segundo plano. El cliente web arranca último porque consume las APIs de los demás. En Linux o macOS, el equivalente es `./run-servicios.sh up`. Los logs y los identificadores de proceso quedan en la carpeta `.servicios`. Requiere Docker Desktop corriendo.
 
 Si el proyecto ya está compilado y se quiere omitir ese paso:
 
@@ -62,7 +62,7 @@ Para aplicar cambios de código, detener los servicios y volver a compilar e ini
 
 Cerrar la terminal que ejecutó `run-servicios.ps1` no detiene los servicios en segundo plano. Si se iniciaron manualmente en terminales separadas con `spring-boot:run`, usar **Ctrl+C** en cada terminal para solicitar el cierre normal de Spring.
 
-`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, Adminer, n8n) cuando se detienen los 4 servicios (sin `-Service`). Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
+`stop-servicios.ps1` también baja la infraestructura de Docker (RabbitMQ, MySQL, Adminer, n8n) cuando se detienen todos los servicios (sin `-Service`). El cliente web se detiene con `-Service web`. Si se detiene solo uno puntual, la infraestructura queda arriba para no afectar al resto.
 
 ## Levantar los servicios manualmente
 
@@ -84,6 +84,12 @@ mvn -f .\servicio-notificaciones\pom.xml spring-boot:run
 mvn -f .\servicio-logistica\pom.xml spring-boot:run
 ```
 
+```powershell
+# Cliente web (Entrega 6). Con el perfil dev se habilita el catálogo de componentes
+# en /dev/componentes y el mapa público muestra datos de ejemplo.
+mvn -f .\servicio-web\pom.xml spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
 ## Puertos y Swagger
 
 | Servicio | Puerto | Swagger |
@@ -92,6 +98,7 @@ mvn -f .\servicio-logistica\pom.xml spring-boot:run
 | Incentivos | 8081 | http://localhost:8081/swagger-ui/index.html |
 | Notificaciones | 8082 | http://localhost:8082/swagger-ui/index.html |
 | Logística | 8083 | http://localhost:8083/swagger-ui/index.html |
+| Cliente web | 8085 | No expone API: se abre en http://localhost:8085 (ver [servicio-web/README.md](servicio-web/README.md)) |
 
 Si `/swagger-ui.html` redirige, también se puede probar `/swagger-ui/index.html` en el mismo puerto.
 
@@ -104,6 +111,7 @@ Test-NetConnection localhost -Port 8080
 Test-NetConnection localhost -Port 8081
 Test-NetConnection localhost -Port 8082
 Test-NetConnection localhost -Port 8083
+Test-NetConnection localhost -Port 8085
 ```
 
 La primera ejecución puede tardar porque Maven necesita descargar dependencias y compilar los módulos.
