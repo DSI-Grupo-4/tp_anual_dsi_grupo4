@@ -229,8 +229,27 @@
     evento.preventDefault();
   });
 
+  // ---------------- Fotos que no cargan ----------------
+  // Las fotos de entregas son URLs cargadas por las entidades: si una no
+  // carga, se reemplaza por una imagen neutra en vez de dejar el ícono roto.
+  function usarRespaldo(img) {
+    img.removeAttribute("data-foto");
+    img.src = img.getAttribute("data-respaldo") || "/img/foto-no-disponible.svg";
+  }
+  document.addEventListener("error", function (evento) {
+    var img = evento.target;
+    if (img.matches && img.matches("img[data-foto]")) usarRespaldo(img);
+  }, true);
+  // app.js se carga con defer: una foto puede haber fallado antes de que exista el listener.
+  function revisarFotosFallidas() {
+    document.querySelectorAll("img[data-foto]").forEach(function (img) {
+      if (img.complete && img.naturalWidth === 0) usarRespaldo(img);
+    });
+  }
+
   // ---------------- Inicio ----------------
   document.addEventListener("DOMContentLoaded", function () {
+    revisarFotosFallidas();
     // Los toasts que vienen renderizados del servidor (flash attributes) se
     // vuelven a crear dentro de la región viva para que el lector de pantalla
     // los anuncie; sin JS quedan visibles igual.

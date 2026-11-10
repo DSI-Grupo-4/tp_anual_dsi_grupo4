@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+  BORRADOR para revisión del equipo (ver servicio-web/README.md, "Pendientes del equipo").
+  La sección de accesibilidad se basa en la Ley 26.653, citada en el anexo de la consigna.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{pie.terminos}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <article class="documento">
+    <h1>Términos y condiciones</h1>
+    <p class="documento__fecha">Última actualización: 10 de noviembre de 2026</p>
+
+    <p>Al usar DonaTrack aceptás estas condiciones. Si no estás de acuerdo con ellas, no uses la plataforma.</p>
+
+    <h2>1. Qué es DonaTrack</h2>
+    <p>DonaTrack conecta a personas y organizaciones que donan bienes con entidades sin fines de lucro que los necesitan,
+      y registra el recorrido de cada donación desde el depósito hasta su entrega.</p>
+
+    <h2>2. Cuentas</h2>
+    <ul>
+      <li>Los datos de registro tienen que ser verdaderos y estar actualizados.</li>
+      <li>Tu cuenta es personal: sos responsable de lo que se haga con ella.</li>
+      <li>Las personas administradoras pueden desactivar una cuenta si se usa en contra de estos términos. Una cuenta desactivada se puede reactivar.</li>
+    </ul>
+
+    <h2>3. Donaciones</h2>
+    <ul>
+      <li>Los bienes se entregan en el depósito y tienen que estar en condiciones de uso. Los alimentos perecederos tienen que tener fecha de vencimiento.</li>
+      <li>Una vez recibida, la donación se asigna según las necesidades cargadas por las entidades. La persona donante no elige la entidad de destino.</li>
+      <li>Si una donación vence o no se puede entregar, queda registrado en su historial y se informa a las personas involucradas.</li>
+    </ul>
+
+    <h2>4. Entidades beneficiarias</h2>
+    <ul>
+      <li>Se comprometen a cargar necesidades reales y a confirmar la recepción de lo que reciben.</li>
+      <li>Las fotos que cargan al confirmar una entrega se publican en la galería pública. No deben mostrar personas identificables sin su consentimiento ni datos personales.</li>
+    </ul>
+
+    <h2>5. Incentivos</h2>
+    <p>Las misiones, insignias, categorías y rankings son un reconocimiento a la participación y no tienen valor económico.</p>
+
+    <h2>6. Datos personales</h2>
+    <p>El tratamiento de tus datos se rige por la <a th:href="@{/legal/privacidad}">política de privacidad</a>.</p>
+
+    <h2 id="accesibilidad">7. Accesibilidad</h2>
+    <p>DonaTrack se diseña para que cualquier persona pueda usarla, incluidas las personas con discapacidad. Tomamos como
+      referencia la Ley 26.653 de Accesibilidad de la Información en las Páginas Web y las pautas WCAG 2.1 en su nivel AA:
+      estructura semántica, textos alternativos en imágenes, contraste suficiente, navegación completa con teclado, foco visible
+      y áreas táctiles de al menos 48 × 48 píxeles.</p>
+    <p>Si encontrás una barrera de accesibilidad, avisale a una persona administradora para que la corrijamos.</p>
+
+    <h2>8. Cambios</h2>
+    <p>Podemos actualizar estos términos. Si lo hacemos, lo vamos a avisar en la plataforma y vamos a actualizar la fecha de arriba.</p>
+  </article>
+</div>
+</th:block>
+</body>
+</html>

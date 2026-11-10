@@ -46,7 +46,7 @@ La profundidad máxima es de tres niveles (zona / sección / detalle), como pide
 
 | Zona | Rutas | Responsable |
 |---|---|---|
-| Pública | `/`, `/galeria`, `/mapa`, `/ayuda`, `/legal/privacidad`, `/legal/terminos`, `/ingresar`, `/registro` | Persona 1 (ingreso y registro con la 2) |
+| Pública | `/`, `/galeria`, `/ayuda`, `/legal/privacidad`, `/legal/terminos` (implementadas); `/mapa`, `/ingresar`, `/registro` (en construcción) | Persona 1 (ingreso y registro con la 2) |
 | Donante | `/donante`, `/donante/donaciones[/{id}]`, `/donante/entidades[/{id}]`, `/donante/seguimiento`, `/donante/incentivos` | Persona 4 |
 | Beneficiaria | `/beneficiaria`, `/beneficiaria/necesidades[/{id}]`, `/beneficiaria/donaciones[/{id}]`, `/beneficiaria/seguimiento` | Persona 5 |
 | Admin | `/admin/donaciones[/{id}]`, `/admin/asignaciones`, `/admin/donantes[/{id}]`, `/admin/entidades[/{id}]` | Persona 3 |
@@ -97,14 +97,13 @@ Todas las rutas ya navegan y muestran "Sección en construcción" con el menú d
 ## Trabajo pendiente
 
 ### Persona 1 (cliente web, diseño compartido y acceso público)
-Fases ya terminadas: módulo base, sistema de diseño, layouts y navegación, clientes REST y manejo de errores.
+Fases ya terminadas: módulo base, sistema de diseño, layouts y navegación, clientes REST, manejo de errores y páginas públicas.
 
-- [ ] **Fase 5. Páginas públicas.**
-  - Landing con cifras y donaciones destacadas del último mes.
-  - Galería de fotos de entregas.
-  - Privacidad y términos: borrador basado en las leyes 25.326 y 26.653, para que lo revise el equipo.
-  - Ayuda con una guía de primeros pasos.
-  - Datos: hasta que existan endpoints públicos (ver Persona 3 y 5), salen de `GET /api/entregas` y `GET /api/donaciones`, sin exponer direcciones ni camiones.
+- [x] **Fase 5. Páginas públicas.** Landing (`/`), galería (`/galeria`), ayuda (`/ayuda`) y borradores de privacidad y términos (`/legal/*`).
+  - La fuente de datos es provisoria: `FuentePublicaApis` arma la landing y la galería a partir de los listados completos de `GET /api/entregas`, `/api/donaciones`, `/api/entidades` y `/api/donantes`, en cada visita. Las vistas nunca reciben direcciones, camiones ni datos personales. Cuando existan los endpoints públicos de las Personas 3 y 5, se reemplaza esa clase y las vistas no cambian.
+  - "Último mes" son los últimos 30 días, sobre la fecha y hora de entrega de Logística.
+  - Si un backend no responde, la landing sigue funcionando: muestra "—" en las cifras afectadas y un aviso en lugar de las entregas. La galería, en cambio, muestra la página 503.
+  - Las fotos son URLs cargadas por las entidades: solo se aceptan `http(s)`, y si una no carga se muestra una imagen neutra.
 - [ ] **Fase 6. Componente de mapa.**
   - Leaflet con tiles de OpenStreetMap y una lista accesible equivalente.
   - `/mapa` público con datos de ejemplo hasta que se valide D-042.
@@ -178,5 +177,5 @@ Lo que ya existe: la rama `iam` (Keycloak, realm `donatrack`, roles `ADMIN`/`DON
 - [ ] Acordar los endpoints públicos de la landing (D-041). Afecta a las Personas 1, 3 y 5.
 - [ ] Decidir si la campana de notificaciones de los mockups se implementa como panel dentro de la app o se saca.
 - [ ] Decidir qué muestra el panel `/admin`.
-- [ ] Revisar el texto legal (privacidad y términos) cuando la Persona 1 lo entregue.
+- [ ] Revisar los borradores de [privacidad](src/main/resources/templates/publico/legal/privacidad.html) y [términos](src/main/resources/templates/publico/legal/terminos.html). Falta definir un medio de contacto real para ejercer los derechos de la Ley 25.326 (hoy dice "una persona administradora").
 - [ ] Prueba integrada final: registro → ingreso → carga de donación → asignación → seguimiento → recepción → actualización de métricas.

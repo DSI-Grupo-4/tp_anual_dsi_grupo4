@@ -21,6 +21,11 @@ public class DonacionesClient {
         return http.get().uri("/api/donaciones").retrieve().body(new ParameterizedTypeReference<>() { });
     }
 
+    /** GET /api/donantes (solo se leen id y activo) */
+    public List<DonanteApi> donantes() {
+        return http.get().uri("/api/donantes").retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
     /** GET /api/entidades */
     public List<EntidadApi> entidades() {
         return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });

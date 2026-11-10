@@ -171,6 +171,11 @@ table {
   grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--grilla-min, 14rem)), 1fr));
 }
 
+/* Variante que estira las columnas para ocupar todo el ancho (pocas tarjetas fijas). */
+.grilla--ajustada {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grilla-min, 14rem)), 1fr));
+}
+
 .texto-secundario { color: var(--color-texto-secundario); }
 .texto-chico { font-size: var(--texto-sm); }
 .texto-centro { text-align: center; }

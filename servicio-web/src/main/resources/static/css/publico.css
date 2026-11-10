@@ -1,0 +1,175 @@
+/*
+ * Páginas públicas: landing, galería, ayuda y legales.
+ * Depende de tokens.css, base.css y componentes.css.
+ */
+
+ul.grilla {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ============ Cifras ============ */
+.cifras {
+  margin-top: calc(-1 * var(--espacio-6));
+  position: relative;
+}
+.cifras .icono { color: var(--color-primario); }
+
+/* ============ Cómo funciona ============ */
+.pasos {
+  display: grid;
+  gap: var(--espacio-4);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  margin: var(--espacio-4) 0 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: paso;
+}
+.pasos__item {
+  counter-increment: paso;
+  padding: var(--espacio-5);
+  border-left: 4px solid var(--color-primario);
+  background: var(--color-superficie);
+  border-radius: 0 var(--radio-lg) var(--radio-lg) 0;
+}
+.pasos__item::before {
+  content: counter(paso);
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-bottom: var(--espacio-3);
+  border-radius: 50%;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+  font-weight: var(--peso-fuerte);
+}
+.pasos__item p { margin: 0; color: var(--color-texto-secundario); }
+
+/* ============ Franja de fondo alternativo ============ */
+.franja {
+  background: var(--color-superficie-alt);
+}
+
+/* ============ Tarjeta de donación entregada ============ */
+.grilla-donaciones {
+  --grilla-min: 16rem;
+}
+.tarjeta-donacion {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-superficie);
+  border: var(--borde);
+  border-radius: var(--radio-lg);
+  box-shadow: var(--sombra-sm);
+}
+.tarjeta-donacion__foto {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--color-primario-suave);
+}
+.tarjeta-donacion__foto--vacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  color: var(--color-primario);
+  font-size: var(--texto-sm);
+}
+.tarjeta-donacion__foto--vacia .icono { width: 2.5rem; height: 2.5rem; }
+.tarjeta-donacion__cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  padding: var(--espacio-4);
+}
+.tarjeta-donacion__cuerpo p { margin: 0; }
+.tarjeta-donacion__titulo { margin: 0; font-size: var(--texto-lg); }
+.tarjeta-donacion__datos { gap: var(--espacio-2); }
+
+/* ============ Accesos ============ */
+.acceso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+  height: 100%;
+  min-height: var(--area-tactil);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition: border-color var(--transicion), box-shadow var(--transicion);
+}
+.acceso:hover {
+  color: var(--color-texto);
+  border-color: var(--color-primario);
+  box-shadow: var(--sombra-md);
+}
+.acceso .icono { width: 1.75rem; height: 1.75rem; color: var(--color-primario); }
+.acceso__titulo { font-weight: var(--peso-fuerte); font-size: var(--texto-lg); }
+
+/* ============ Páginas de texto (ayuda, legales) ============ */
+.documento {
+  max-width: var(--ancho-lectura);
+}
+.documento h2 {
+  margin-top: var(--espacio-6);
+}
+.documento h3 {
+  margin-top: var(--espacio-5);
+}
+.documento ul,
+.documento ol {
+  margin: 0 0 var(--espacio-4);
+  padding-left: var(--espacio-5);
+}
+.documento li + li { margin-top: var(--espacio-2); }
+.documento__fecha {
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-sm);
+}
+
+.indice {
+  padding: var(--espacio-4) var(--espacio-5);
+  background: var(--color-superficie);
+  border: var(--borde);
+  border-radius: var(--radio-lg);
+}
+.indice ol { margin: 0; }
+.indice a { display: inline-flex; align-items: center; min-height: var(--area-tactil); }
+.documento .indice li + li { margin-top: 0; }
+
+/* ============ Preguntas frecuentes (<details>) ============ */
+.faq {
+  border: var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+}
+.faq + .faq { margin-top: var(--espacio-2); }
+.faq summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--area-tactil);
+  padding: var(--espacio-2) var(--espacio-4);
+  font-weight: var(--peso-medio);
+  cursor: pointer;
+}
+.faq summary:focus-visible { border-radius: var(--radio-lg); }
+.faq > div { padding: 0 var(--espacio-4) var(--espacio-4); }
+.faq > div p:last-child { margin: 0; }
+
+.estados {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--espacio-3) var(--espacio-4);
+  align-items: center;
+  margin: 0 0 var(--espacio-4);
+}
+.estados dd { margin: 0; color: var(--color-texto-secundario); }
+@media (max-width: 599px) {
+  .estados { grid-template-columns: 1fr; gap: var(--espacio-1); }
+  .estados dd { margin-bottom: var(--espacio-3); }
+}

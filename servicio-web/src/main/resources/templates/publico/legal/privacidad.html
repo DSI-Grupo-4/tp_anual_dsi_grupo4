@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!--
+  BORRADOR para revisión del equipo (ver servicio-web/README.md, "Pendientes del equipo").
+  Basado en la Ley 25.326 de Protección de los Datos Personales, citada en el anexo de la consigna.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{pie.privacidad}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <article class="documento">
+    <h1>Política de privacidad</h1>
+    <p class="documento__fecha">Última actualización: 10 de noviembre de 2026</p>
+
+    <p>DonaTrack es una plataforma para registrar, asignar y seguir donaciones de bienes hacia organizaciones sociales.
+      Esta política explica qué datos personales tratamos, para qué y cómo podés ejercer tus derechos, de acuerdo con
+      la Ley 25.326 de Protección de los Datos Personales.</p>
+
+    <h2>1. Quién es responsable de los datos</h2>
+    <p>El responsable de la base de datos es DonaTrack, proyecto desarrollado en el marco del Trabajo Práctico Anual
+      de Diseño de Sistemas de Información (UTN FRBA, 2026, Grupo 4). Las consultas sobre tus datos se canalizan a
+      través de las personas administradoras de la plataforma.</p>
+
+    <h2>2. Qué datos tratamos</h2>
+    <ul>
+      <li><strong>Personas donantes humanas:</strong> nombre, apellido, documento, edad, género y medios de contacto (correo, teléfono, WhatsApp).</li>
+      <li><strong>Personas donantes jurídicas y entidades beneficiarias:</strong> razón social, tipo de organización, rubro, dirección de la sede y medios de contacto.</li>
+      <li><strong>Donaciones:</strong> los bienes entregados, su estado y su historial.</li>
+      <li><strong>Entregas:</strong> fechas, rutas y fotos que cargan las entidades al recibir una donación.</li>
+      <li><strong>Cuenta de acceso:</strong> usuario y datos de inicio de sesión, gestionados por el servicio de autenticación. Si ingresás con una red social, recibimos de ella tu nombre y correo electrónico.</li>
+    </ul>
+    <p>No pedimos datos sensibles en los términos del artículo 7 de la Ley 25.326.</p>
+
+    <h2>3. Para qué los usamos</h2>
+    <ul>
+      <li>Registrar las donaciones y asignarlas a las entidades que las necesitan.</li>
+      <li>Planificar y seguir las entregas.</li>
+      <li>Enviarte avisos sobre tus donaciones, tus logros y la recepción de las entregas.</li>
+      <li>Calcular estadísticas y rankings de participación.</li>
+    </ul>
+    <p>Tratamos los datos con tu consentimiento, que otorgás al registrarte (artículo 5 de la Ley 25.326), y solo para estas finalidades.</p>
+
+    <h2>4. Qué se muestra en público</h2>
+    <p>Las páginas públicas (inicio, galería y mapa) muestran qué se donó, a qué entidad beneficiaria y cuándo, junto con las
+      fotos de la entrega. <strong>No muestran datos de las personas donantes, direcciones exactas ni datos de los camiones.</strong>
+      Las entidades se comprometen a no cargar fotos en las que se pueda identificar a personas sin su consentimiento.</p>
+
+    <h2>5. Con quién los compartimos</h2>
+    <ul>
+      <li>Los servicios internos de DonaTrack (donaciones, logística, incentivos y notificaciones) intercambian los datos necesarios para funcionar.</li>
+      <li>Los proveedores de envío de correos, SMS y WhatsApp reciben solo el destinatario y el mensaje.</li>
+      <li>El mapa usa imágenes de OpenStreetMap: tu navegador las pide directamente a sus servidores, que reciben tu dirección IP pero no tus datos de DonaTrack.</li>
+    </ul>
+    <p>No vendemos ni cedemos datos personales a terceros con otros fines.</p>
+
+    <h2>6. Seguridad y conservación</h2>
+    <p>Aplicamos medidas técnicas y organizativas para proteger los datos contra pérdida, acceso no autorizado o alteración
+      (artículo 9 de la Ley 25.326). Conservamos los datos mientras tengas una cuenta activa o mientras sean necesarios para
+      la trazabilidad de las donaciones.</p>
+
+    <h2>7. Tus derechos</h2>
+    <p>Podés pedir el <strong>acceso</strong> a tus datos de forma gratuita a intervalos no inferiores a seis meses, salvo que acredites
+      un interés legítimo (artículo 14), y su <strong>rectificación, actualización o supresión</strong> (artículo 16). Para
+      hacerlo, comunicate con una persona administradora de DonaTrack.</p>
+    <p class="banner banner--info" style="display: block">
+      La AGENCIA DE ACCESO A LA INFORMACIÓN PÚBLICA, en su carácter de Órgano de Control de la Ley N° 25.326, tiene la
+      atribución de atender las denuncias y reclamos que interpongan quienes resulten afectados en sus derechos por
+      incumplimiento de las normas vigentes en materia de protección de datos personales.
+    </p>
+
+    <h2>8. Cambios en esta política</h2>
+    <p>Si cambiamos esta política, lo vamos a avisar en la plataforma y vamos a actualizar la fecha de arriba.</p>
+  </article>
+</div>
+</th:block>
+</body>
+</html>
