@@ -1,0 +1,85 @@
+@startuml ComponentesDonaTrack
+
+title DonaTrack - Diagrama de componentes (Entrega 6)
+
+' Líneas punteadas: integraciones definidas pero todavía no implementadas (ver servicio-web/README.md).
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName "Fira Sans"
+skinparam ArrowColor #444444
+skinparam component {
+  BackgroundColor #FFFFFF
+  BorderColor #5b16e0
+}
+skinparam database {
+  BackgroundColor #F1F1F5
+  BorderColor #575468
+}
+skinparam queue {
+  BackgroundColor #F1F1F5
+  BorderColor #575468
+}
+
+actor "Persona donante\nEntidad beneficiaria\nPersona administradora" as usuario
+node "Navegador" as navegador {
+  component "Vistas HTML + CSS\n(app.js, mapa.js con Leaflet)" as vistas
+}
+
+package "servicio-web (8085) - cliente liviano" as web {
+  component "Controllers MVC" as controllers
+  component "Plantillas Thymeleaf\n(layouts, fragmentos, componentes)" as plantillas
+  component "Clientes REST\n(RestClient por servicio)" as clientes
+  component "PropagadorCredenciales" as propagador
+  controllers --> plantillas
+  controllers --> clientes
+  clientes ..> propagador : token del usuario\n(Persona 2)
+}
+
+package "Servicios de aplicación" {
+  component "servicio-donaciones (8080)" as donaciones
+  component "servicio-incentivos (8081)" as incentivos
+  component "servicio-notificaciones (8082)" as notificaciones
+  component "servicio-logistica (8083)" as logistica
+}
+
+component "Keycloak (8180)\nrealm donatrack, tema donatrack" as keycloak
+component "n8n (5678)" as n8n
+component "Tiles de OpenStreetMap" as osm <<externo>>
+component "Planificador de rutas" as planificador <<externo>>
+queue "RabbitMQ" as rabbit
+database "MySQL\n(donaciones, incentivos,\nnotificaciones, keycloak)" as mysql
+database "MongoDB\n(logistica)" as mongo
+
+usuario --> vistas
+vistas --> controllers : HTTP (páginas y JSON del mapa)
+vistas --> osm : imágenes del mapa
+vistas ..> keycloak : login y registro (OIDC)
+controllers ..> keycloak : sesión OIDC (Persona 2)
+
+clientes --> donaciones : REST
+clientes --> incentivos : REST
+clientes --> logistica : REST
+
+donaciones --> logistica : REST (broker de proveedores,\nconsulta de eventos)
+donaciones --> incentivos : REST (actividad de donación)
+incentivos --> donaciones : REST
+donaciones --> rabbit : eventos
+incentivos --> rabbit : eventos
+rabbit --> notificaciones : cola de notificaciones
+incentivos --> n8n : webhook de insignias
+logistica --> planificador : solicitud de rutas
+planificador --> logistica : callback
+
+donaciones --> mysql
+incentivos --> mysql
+notificaciones --> mysql
+keycloak --> mysql
+logistica --> mongo
+
+note bottom of logistica
+  No invoca a Donaciones, Incentivos
+  ni Notificaciones: deja la información
+  disponible por API.
+end note
+
+@enduml
