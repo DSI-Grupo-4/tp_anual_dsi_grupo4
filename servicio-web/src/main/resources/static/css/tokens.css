@@ -1,0 +1,135 @@
+/*
+ * Tokens de diseño de DonaTrack (D-041).
+ * Toda pantalla usa estas variables: no escribir colores, tamaños ni
+ * espaciados sueltos en los estilos de una vista. Si falta un valor,
+ * se agrega acá y se documenta en el catálogo (/dev/componentes).
+ *
+ * Los pares texto/fondo están verificados para WCAG AA (contraste
+ * mínimo 4.5:1 para texto, 3:1 para bordes de controles y foco).
+ */
+
+@font-face {
+  font-family: "Fira Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/fira-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fira Sans";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/fira-sans-latin-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Fira Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/fira-sans-latin-700-normal.woff2") format("woff2");
+}
+
+:root {
+  /* --- Color: marca --- */
+  --color-primario: #5b16e0;
+  --color-primario-hover: #4a0fbc;
+  --color-primario-activo: #3d0c9c;
+  --color-primario-suave: #efe8fd;
+  --color-sobre-primario: #ffffff;
+  --gradiente-marca: linear-gradient(135deg, #5b16e0 0%, #6d12c9 100%);
+
+  /* --- Color: neutros --- */
+  --color-texto: #0e0c1a;
+  --color-texto-secundario: #575468;
+  --color-texto-deshabilitado: #8a8799;
+  --color-fondo: #f7f7fb;
+  --color-superficie: #ffffff;
+  --color-superficie-alt: #f1f1f5;
+  --color-campo: #f3f3f6;
+  --color-borde: #e2e1e8;
+  --color-borde-control: #85839a;
+  --color-oscuro: #0e0c1a;
+  --color-sobre-oscuro: #ffffff;
+
+  /* --- Color: estados (texto sobre su fondo suave) --- */
+  --color-exito: #166534;
+  --color-exito-suave: #e6f6ec;
+  --color-advertencia: #92400e;
+  --color-advertencia-suave: #fdf1e2;
+  --color-error: #b42318;
+  --color-error-suave: #fdecea;
+  --color-info: #1d4ed8;
+  --color-info-suave: #e8effd;
+
+  /* --- Foco visible --- */
+  --foco-color: #5b16e0;
+  --foco-color-sobre-oscuro: #ffffff;
+  --foco-ancho: 3px;
+  --foco-separacion: 2px;
+
+  /* --- Tipografía --- */
+  --fuente-base: "Fira Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --fuente-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --texto-xs: 0.75rem;   /* 12px: solo metadatos, nunca contenido principal */
+  --texto-sm: 0.875rem;  /* 14px */
+  --texto-base: 1rem;    /* 16px */
+  --texto-lg: 1.125rem;  /* 18px */
+  --texto-xl: 1.375rem;  /* 22px */
+  --texto-2xl: 1.75rem;  /* 28px */
+  --texto-3xl: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  --peso-normal: 400;
+  --peso-medio: 500;
+  --peso-fuerte: 700;
+  --interlineado: 1.5;
+  --interlineado-titulo: 1.2;
+
+  /* --- Espaciado (escala de 4px) --- */
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+  --espacio-7: 3rem;
+  --espacio-8: 4rem;
+
+  /* --- Bordes y sombras --- */
+  --radio-sm: 6px;
+  --radio-md: 10px;
+  --radio-lg: 14px;
+  --radio-pildora: 999px;
+  --borde: 1px solid var(--color-borde);
+  --sombra-sm: 0 1px 2px rgba(14, 12, 26, 0.06);
+  --sombra-md: 0 4px 16px rgba(14, 12, 26, 0.08);
+  --sombra-lg: 0 12px 32px rgba(14, 12, 26, 0.16);
+
+  /* --- Interacción --- */
+  --area-tactil: 48px;        /* consigna: hit area mínima 48x48 px */
+  --transicion: 150ms ease;
+  --demora-loader: 300ms;     /* consigna: loader si la latencia supera 300 ms */
+
+  /* --- Layout --- */
+  --ancho-contenido: 72rem;
+  --ancho-lectura: 44rem;
+  --ancho-menu-lateral: 16rem;
+  --alto-encabezado: 4rem;
+  --capa-encabezado: 100;
+  --capa-menu: 200;
+  --capa-modal: 300;
+  --capa-toast: 400;
+  --capa-loader: 500;
+
+  /*
+   * Puntos de corte (no se pueden usar variables en @media; se documentan acá):
+   *   móvil   < 600px
+   *   tablet  600px – 959px
+   *   desktop ≥ 960px
+   */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --transicion: 0ms;
+  }
+}
