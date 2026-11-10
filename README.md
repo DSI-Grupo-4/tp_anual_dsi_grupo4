@@ -29,6 +29,10 @@
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
+│   ├── arquitectura
+│   │   ├── ?
+│   │   ├── componentes.puml
+│   │   └── img
 │   ├── ddc
 │   │   ├── donaciones.puml
 │   │   ├── img
@@ -43,6 +47,9 @@
 │       └── pdf
 ├── docker-compose.integration.yml
 ├── endpoints.md
+├── keycloak
+│   └── themes
+│       └── donatrack
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -101,10 +108,18 @@
 │   └── src
 │       ├── main
 │       └── test
+├── servicio-web
+│   ├── README.md
+│   ├── herramientas
+│   │   └── accesibilidad
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       └── test
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-31 directories, 58 files
+43 directories, 61 files
 ```
 <!-- TREE_END -->
 
