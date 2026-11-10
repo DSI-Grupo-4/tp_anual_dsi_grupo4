@@ -525,3 +525,48 @@ Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente 
 - **Validado en vivo end-to-end contra Mongo real** (no Testcontainers, instancia real vía `docker compose up -d mongo`): alta de camión y chofer con ids enteros secuenciales asignados por `GeneradorIds`; `POST /api/lotes` crea la entrega; `POST /api/planificador/ejecutar` crea la ruta con la parada embebida y la entrega referenciada por `DBRef`, camión pasa a `ASIGNADO`; `POST /api/rutas/{id}/iniciar` pasa el camión a `EN_RUTA`, la entrega a `EN_TRASLADO`, y (tras el fix del punto 2) persiste `seguimientoUrl`; `/api/rutas/{id}/seguimiento` devuelve HTML con la dirección con `<script>` escapada; `POST .../confirmar` con foto marca `ENTREGADA`, persiste `fechaHoraEntrega` y la foto embebida, y libera el camión a `DISPONIBLE` (ruta `FINALIZADA`); los eventos (`RUTA_PLANIFICADA`, `RUTA_INICIADA`, `ENTREGA_CONFIRMADA`) quedan en `eventos_logisticos` con UUID propio y `DBRef` a la entrega, visibles sin publicar en `GET /api/eventos` (el mismo endpoint que consulta Donaciones). Suite completa de los 4 módulos en verde (`mvn test`): Logística incluye los 3 tests nuevos de `RutaPersistenciaTest`, que se saltean limpio en este sandbox por incompatibilidad de API de Docker con Testcontainers (mismo entorno que ya saltea los tests de Testcontainers de Notificaciones), no por fallo de código -- verificado también por el smoke test en vivo de este punto.
 - **Pendiente, fuera de este cambio:** no se migró Logística a Atlas para Render todavía (la URI de producción queda en `MONGODB_URI`, a configurar cuando se despliegue); no se tocó la configuración de despliegue existente de `render.yaml` más allá de lo que ya traía.
 - **Definida por:** equipo (implementación original en la rama `mongodb`) + agente (reconciliación con `main`, recuperación de las regresiones D-017/D-025, hallazgo y fix del bug de `seguimientoUrl` no persistido, reescritura de `RutaPersistenciaTest` contra Mongo real, actualización de DER/DDC, verificación end-to-end en vivo)
+
+## [D-041] Cliente web `servicio-web`: stack, estructura e integración con las APIs
+
+- **Fecha:** 2026-11-10
+- **Servicio(s) afectado(s):** `servicio-web` (nuevo). Ningún servicio existente cambia con esta decisión.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** La Entrega 6 pide "un nuevo proyecto independiente" para la interfaz gráfica, desacoplado de la lógica de negocio, que consuma las APIs REST existentes y genere las vistas con un motor de plantillas. Las consideraciones de maquetado exigen loaders para latencias mayores a 300 ms, notificaciones no intrusivas (toasts, modals, banners), tokens de diseño, diseño responsive y WCAG AA. Hasta ahora no había proyecto de frontend. Esta decisión fija la base que construye la Persona 1 y que reutilizan las otras cuatro.
+- **Fuentes revisadas:** PDF de consigna (Entrega 6, págs. 26-27; requerimientos mínimos de UI/UX, págs. 9-10), `mockups/` de la Entrega 1, `pom.xml` raíz (Spring Boot 3.5.5, Java 17), controllers de los cuatro servicios, D-017 (seguimiento sin GPS) y D-037 (fechas en UTC, conversión pendiente para la presentación). Numeración: se salta D-039/D-040 porque ya las usa la rama `iam` (Keycloak), todavía sin integrar.
+- **Opciones consideradas:**
+  - Motor de plantillas: A) Thymeleaf; B) FreeMarker/Mustache; C) JTE.
+  - Interactividad: A) renderizado en servidor + JS propio mínimo; B) A + htmx; C) SPA (React u otro).
+  - Estilos: A) CSS propio con tokens en variables CSS; B) Bootstrap 5 personalizado; C) Tailwind.
+  - Cliente HTTP: A) `RestClient`; B) OpenFeign; C) `WebClient`.
+- **Decisión tomada:**
+  - **Proyecto:** módulo Maven `servicio-web` en el mismo repo (sigue la nomenclatura `servicio-*`), declarado en el pom padre pero **sin dependencias hacia otros módulos**: tiene sus propios modelos de vista y no reutiliza DTOs de los servicios. Puerto 8085.
+  - **Plantillas:** Thymeleaf con fragmentos nativos (`th:replace`) para el layout común; sin Layout Dialect. Habilita `thymeleaf-extras-springsecurity6` para la Persona 2.
+  - **Integración:** un cliente `RestClient` por servicio (`DonacionesClient`, `LogisticaClient`, `IncentivosClient`), con URL base por configuración, timeouts y un punto de extensión (interceptor) para que la Persona 2 agregue el token. Las pantallas usan esos clientes, no HTTP directo.
+  - **Interactividad:** opción A. Formularios con POST-redirect-GET y mensajes de resultado vía flash attributes que el layout muestra como toast; un script común muestra el loader si la navegación o el envío supera 300 ms. htmx queda como opción si las pantallas con filtros (Personas 3 y 4) lo necesitan. Se descarta la SPA porque la consigna pide motor de plantillas y cliente liviano.
+  - **Estilos:** opción A. CSS propio con tokens de diseño (colores, tipografía, espaciado, bordes, foco) en variables CSS, componentes basados en los mockups de la Entrega 1 y patrones de Material Design. Sin paso de build ni Node. Una página interna de catálogo de componentes sirve de referencia al resto del equipo.
+  - **Recursos de terceros:** WebJars o archivos en `/static`; sin CDN.
+  - **Fechas:** se reciben en UTC y se muestran en `America/Argentina/Buenos_Aires` con un helper común (resuelve el pendiente de D-037).
+  - **Textos:** etiquetas, ayudas y mensajes en `messages.properties`.
+  - **Errores:** `@ControllerAdvice` del cliente web que traduce errores de los backends a errores de campo o toasts, y muestra una página de "servicio no disponible" si un backend no responde.
+- **Pendiente:** los datos de la landing pública (donaciones del último mes, galería de fotos) se proponen como **endpoints públicos de solo lectura en los backends** que ya devuelven únicamente datos publicables (sin direcciones ni camión), y no como agregación y filtrado en el cliente web, que obligaría a usar credenciales amplias para una página anónima. Requiere acordarlo con las Personas 3 (Donaciones) y 5 (Logística).
+- **Definida por:** usuario (Spring Boot, nombre `servicio-web`, aprobación de las recomendaciones) + agente (propuesta de opciones y detalles)
+
+## [D-042] Estrategia de mapas: Leaflet + tiles de OpenStreetMap, sin geocodificación ni ruteo (propuesta, a validar por el equipo)
+
+- **Fecha:** 2026-11-10
+- **Servicio(s) afectado(s):** `servicio-web` (componente de mapa), Logística (coordenadas y ubicación de camiones), Donaciones (ubicación de las sedes de entidades, si se guarda ahí).
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** La consigna pide un mapa interactivo de donaciones entregadas con detalle al hacer clic en cada marcador (req. mínimo UI n°2) y el seguimiento de camiones "con ubicación y última actualización" para donantes y entidades (req. 9 y 14). D-017 dejó el seguimiento como un HTML de paradas, sin GPS ni mapa, porque el modelo no tiene coordenadas y no se autoriza compartir direcciones con un proveedor externo. Ningún servicio guarda hoy latitud/longitud.
+- **Fuentes revisadas:** PDF de consigna (requerimientos mínimos de UI/UX; Entrega 3, planificación de rutas por componente externo con callback), D-017, modelo `Direccion`/`Entrega` de Logística, `RutaController` (`/api/rutas/{id}/seguimiento`).
+- **Opciones consideradas:**
+  - Tiles: A) servidor público de OSM con atribución; B) proveedor con plan gratuito (Carto, MapTiler, Stadia); C) servidor de tiles propio.
+  - Coordenadas: A) geocodificar direcciones (Nominatim, Georef); B) marcar la sede con un clic en el mapa al registrarla o editarla.
+  - Ruteo: A) motor de ruteo (OSRM/GraphHopper) consultado por Logística; B) sin ruteo.
+- **Decisión propuesta:**
+  - Leaflet servido por `servicio-web`, como fragmento Thymeleaf + módulo JS que recibe marcadores en JSON (coordenadas, título, detalle, última actualización) y no conoce el origen de los datos, para que lo reutilicen la landing y las Personas 4 y 5.
+  - Tiles del servidor público de OSM (A) con la atribución visible; si se despliega con más tráfico, pasar a B. Pedir tiles no envía direcciones a terceros.
+  - Coordenadas cargadas con un clic en el mapa (B), sin geocodificación: respeta la restricción de D-017 de no compartir direcciones con proveedores externos.
+  - Sin ruteo (B): las rutas transitables las genera el componente externo de planificación definido en la Entrega 3, y la consigna no pide dibujar el trazado por calles.
+  - La ubicación del camión la reporta el chofer (o un simulador para la demo) a Logística mediante un endpoint nuevo; Logística guarda latitud, longitud y fecha/hora y la deja disponible para consulta, sin llamar a otros servicios. El mapa la consulta periódicamente. La actualización en tiempo real más allá del polling queda para la Entrega 7 (gRPC).
+- **Pendiente:** validar con el equipo, en especial con la Persona 5, que implementa las coordenadas y la ubicación de camiones en Logística. Hasta entonces, el componente de mapa se construye con datos de prueba.
+- **Definida por:** agente (propuesta) + usuario (conformidad inicial); pendiente de confirmación del equipo
