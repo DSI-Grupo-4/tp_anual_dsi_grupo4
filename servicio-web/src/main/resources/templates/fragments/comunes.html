@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Fragmentos comunes de DonaTrack. Uso desde cualquier vista:
+    <th:block th:replace="~{fragments/comunes :: icono('corazon')}"/>
+    <th:block th:replace="~{fragments/comunes :: en-construccion}"/>
+-->
+<head th:fragment="cabeza(titulo)">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title th:text="${titulo} + ' · ' + #{app.nombre}">DonaTrack</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+  <link rel="stylesheet" th:href="@{/css/tokens.css}">
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/componentes.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <script th:src="@{/js/app.js}" defer></script>
+</head>
+<body>
+
+<!-- Ícono decorativo del sprite /img/iconos.svg (oculto para lectores de pantalla). -->
+<svg th:fragment="icono(nombre)" class="icono" aria-hidden="true" focusable="false">
+  <use th:href="@{/img/iconos.svg} + '#' + ${nombre}"></use>
+</svg>
+
+<!-- Región de toasts. Los mensajes flash del servidor llegan en el atributo "toasts". -->
+<div th:fragment="toasts" id="toasts" class="toasts" th:aria-label="#{a11y.notificaciones}">
+  <div th:each="t : ${toasts}" class="toast" th:classappend="'toast--' + ${t.tipo.clase}"
+       th:attr="data-tipo=${t.tipo.clase}" data-servidor
+       th:role="${t.tipo.name() == 'ERROR'} ? 'alert' : 'status'">
+    <span class="toast__mensaje" th:text="${t.texto}">Mensaje</span>
+    <button type="button" class="boton boton--fantasma boton--icono" data-cerrar-toast
+            th:aria-label="#{a11y.cerrar-mensaje}">✕</button>
+  </div>
+</div>
+
+<!-- Logo con enlace al inicio. -->
+<a th:fragment="logo(destino)" class="logo" th:href="@{${destino}}">
+  <svg class="icono logo__icono" aria-hidden="true" focusable="false"><use th:href="@{/img/iconos.svg} + '#corazon'"></use></svg>
+  <span th:text="#{app.nombre}">DonaTrack</span>
+</a>
+
+<!-- Pie común (público y privado). -->
+<footer th:fragment="pie" class="pie">
+  <div class="contenedor pie__contenido">
+    <nav th:aria-label="#{pie.privacidad} + ', ' + #{pie.terminos}">
+      <ul class="pie__enlaces">
+        <li><a th:href="@{/legal/privacidad}" th:text="#{pie.privacidad}">Privacidad</a></li>
+        <li><a th:href="@{/legal/terminos}" th:text="#{pie.terminos}">Términos</a></li>
+        <li><a th:href="@{/ayuda}" th:text="#{nav.ayuda}">Ayuda</a></li>
+      </ul>
+    </nav>
+    <p class="texto-chico texto-secundario" th:text="#{pie.derechos}">TP Anual</p>
+  </div>
+</footer>
+
+<!-- Contenido estándar de una sección todavía no implementada. -->
+<div th:fragment="en-construccion" class="tarjeta vacio">
+  <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+  <h2 th:text="#{construccion.titulo}">Sección en construcción</h2>
+  <p th:text="#{construccion.texto}">Texto</p>
+</div>
+
+</body>
+</html>

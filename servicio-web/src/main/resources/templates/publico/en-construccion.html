@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{${tituloClave}}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="contenedor seccion--angosta pila">
+    <h1 th:text="#{${tituloClave}}">Página</h1>
+    <div th:replace="~{fragments/comunes :: en-construccion}"></div>
+  </div>
+</th:block>
+</body>
+</html>

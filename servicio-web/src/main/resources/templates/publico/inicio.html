@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<!-- Provisoria: la landing completa (cifras, donaciones del último mes, galería) llega en la fase 5. -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.inicio}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <section class="heroe sobre-primario">
+    <div class="contenedor heroe__contenido">
+      <h1>Transformá vidas a través de la donación</h1>
+      <p class="heroe__bajada">DonaTrack conecta donantes con organizaciones sociales, con transparencia y trazabilidad en cada donación.</p>
+      <div class="fila heroe__acciones">
+        <a class="boton boton--secundario" th:href="@{/registro}" th:text="#{nav.registrarse}">Registrarse</a>
+        <a class="boton boton--fantasma heroe__enlace" th:href="@{/galeria}" th:text="#{nav.galeria}">Galería</a>
+      </div>
+    </div>
+  </section>
+</th:block>
+</body>
+</html>

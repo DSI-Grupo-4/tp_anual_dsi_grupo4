@@ -168,7 +168,7 @@
     var menu = document.getElementById(boton.getAttribute("aria-controls"));
     var abierto = boton.getAttribute("aria-expanded") === "true";
     boton.setAttribute("aria-expanded", String(!abierto));
-    if (menu) menu.classList.toggle("menu-lateral--abierto", !abierto);
+    if (menu) menu.classList.toggle("abierto", !abierto);
   });
 
   // ---------------- Ayudas (tooltip) ----------------
@@ -231,7 +231,15 @@
 
   // ---------------- Inicio ----------------
   document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".toast").forEach(prepararToast);
+    // Los toasts que vienen renderizados del servidor (flash attributes) se
+    // vuelven a crear dentro de la región viva para que el lector de pantalla
+    // los anuncie; sin JS quedan visibles igual.
+    document.querySelectorAll(".toast[data-servidor]").forEach(function (original) {
+      var texto = original.querySelector(".toast__mensaje").textContent;
+      var tipo = original.getAttribute("data-tipo");
+      original.remove();
+      toast(texto, tipo);
+    });
   });
 
   window.DonaTrack = { toast: toast, conLoader: conLoader };
