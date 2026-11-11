@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<!--
+  Entrada al registro (Persona 1, coordinado con Persona 2). La cuenta se crea en Keycloak
+  (tema keycloak/themes/donatrack); el botón usa donatrack.web.auth.registro-url.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.registrarse}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <div class="documento pila">
+    <div>
+      <h1 th:text="#{registro.titulo}">Crear una cuenta</h1>
+      <p class="texto-secundario" th:text="#{registro.bajada}">Bajada</p>
+    </div>
+
+    <div class="pestanas" role="tablist" th:aria-label="#{registro.tipo}">
+      <button type="button" class="pestanas__item" role="tab" id="tab-donante" aria-selected="true"
+              aria-controls="panel-donante" th:text="#{registro.donante}">Quiero donar</button>
+      <button type="button" class="pestanas__item" role="tab" id="tab-entidad" aria-selected="false"
+              aria-controls="panel-entidad" tabindex="-1" th:text="#{registro.entidad}">Represento a una entidad</button>
+    </div>
+
+    <section id="panel-donante" role="tabpanel" aria-labelledby="tab-donante" class="tarjeta pila">
+      <h2 th:text="#{registro.donante.titulo}">Para donantes</h2>
+      <ol>
+        <li th:text="#{registro.donante.paso1}">Creá tu cuenta</li>
+        <li th:text="#{registro.donante.paso2}">Completá tus datos</li>
+        <li th:text="#{registro.donante.paso3}">Llevá tu donación</li>
+      </ol>
+      <div class="pista">
+        <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+        <p style="margin: 0" th:text="#{registro.donante.ya-registrado}">Si ya te registraron en el depósito...</p>
+      </div>
+    </section>
+
+    <section id="panel-entidad" role="tabpanel" aria-labelledby="tab-entidad" class="tarjeta pila" hidden>
+      <h2 th:text="#{registro.entidad.titulo}">Para entidades beneficiarias</h2>
+      <ol>
+        <li th:text="#{registro.entidad.paso1}">Creá la cuenta</li>
+        <li th:text="#{registro.entidad.paso2}">Completá los datos</li>
+        <li th:text="#{registro.entidad.paso3}">Cargá necesidades</li>
+      </ol>
+    </section>
+
+    <div class="fila">
+      <a class="boton boton--primario" th:href="${registroUrl}" th:text="#{registro.crear}">Crear cuenta</a>
+      <span class="texto-secundario" th:text="#{registro.ya-tengo}">¿Ya tenés cuenta?</span>
+      <a class="boton boton--fantasma" th:href="@{/ingresar}" th:text="#{nav.ingresar}">Iniciar sesión</a>
+    </div>
+    <p class="texto-chico texto-secundario">
+      <span th:text="#{registro.legal}">Al registrarte aceptás</span>
+      <a th:href="@{/legal/terminos}" th:text="#{pie.terminos}">Términos</a> ·
+      <a th:href="@{/legal/privacidad}" th:text="#{pie.privacidad}">Privacidad</a>
+    </p>
+  </div>
+</div>
+</th:block>
+</body>
+</html>

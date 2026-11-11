@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+  Layout de las zonas privadas (/admin, /donante, /beneficiaria). Uso:
+    <html th:replace="~{layout/privado :: layout(#{clave.titulo}, ~{::contenido}, _)}">
+  El menú lateral, el rol y las migas de pan los agrega NavegacionModelAdvice.
+  Para migas propias (p. ej. con el nombre de una entidad), el controller
+  agrega el atributo "migas" (List<Miga>).
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(titulo, contenido, scripts)">
+<head th:replace="~{fragments/comunes :: cabeza(${titulo})}"></head>
+<body class="pagina-privada">
+  <a class="saltar-contenido" href="#contenido" th:text="#{a11y.saltar-contenido}">Saltar al contenido</a>
+
+  <header class="encabezado-privado">
+    <button type="button" class="boton boton--fantasma boton--icono encabezado-privado__alternar"
+            data-alternar-menu aria-controls="menu-lateral" aria-expanded="false"
+            th:aria-label="#{a11y.abrir-menu}">
+      <th:block th:replace="~{fragments/comunes :: icono('menu')}"/>
+    </button>
+    <a th:replace="~{fragments/comunes :: logo(${rolActual != null} ? ${rolActual.rutaInicio} : '/')}"></a>
+    <div class="encabezado-privado__usuario">
+      <!-- usuarioActual (con "nombre") lo agrega la Persona 2 al integrar la autenticación. -->
+      <span class="avatar" aria-hidden="true" th:if="${usuarioActual != null}"
+            th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
+      <span class="encabezado-privado__datos">
+        <span class="encabezado-privado__nombre" th:if="${usuarioActual != null}" th:text="${usuarioActual.nombre}">Nombre</span>
+        <span class="texto-chico texto-secundario" th:if="${rolActual != null}" th:text="#{'rol.' + ${rolActual.name()}}">Rol</span>
+      </span>
+    </div>
+  </header>
+
+  <div class="app-privada">
+    <nav id="menu-lateral" class="menu-lateral" th:aria-label="#{a11y.menu-seccion}">
+      <ul class="menu-lateral__lista">
+        <li th:each="item : ${menu}">
+          <a class="menu-lateral__enlace" th:href="@{${item.ruta}}"
+             th:aria-current="${item.contiene(rutaActual)} ? 'page'">
+            <th:block th:replace="~{fragments/comunes :: icono(${item.icono})}"/>
+            <span th:text="#{${item.clave}}">Sección</span>
+          </a>
+        </li>
+      </ul>
+      <!-- POST a /logout: lo atiende Spring Security cuando la Persona 2 lo incorpore (incluye CSRF automáticamente). -->
+      <form class="menu-lateral__salir" th:action="@{/logout}" method="post" data-sin-loader>
+        <button type="submit" class="menu-lateral__enlace">
+          <th:block th:replace="~{fragments/comunes :: icono('salir')}"/>
+          <span th:text="#{nav.cerrar-sesion}">Cerrar sesión</span>
+        </button>
+      </form>
+    </nav>
+
+    <div class="app-privada__contenido">
+      <nav class="migas" th:if="${migas != null}" th:aria-label="#{a11y.migas}">
+        <ol>
+          <li th:each="miga : ${migas}">
+            <a th:if="${miga.ruta != null}" th:href="@{${miga.ruta}}"
+               th:text="${miga.literal} ? ${miga.etiqueta} : #{${miga.etiqueta}}">Miga</a>
+            <span th:if="${miga.ruta == null}" aria-current="page"
+                  th:text="${miga.literal} ? ${miga.etiqueta} : #{${miga.etiqueta}}">Actual</span>
+          </li>
+        </ol>
+      </nav>
+      <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+    </div>
+  </div>
+
+  <footer th:replace="~{fragments/comunes :: pie}"></footer>
+  <div th:replace="~{fragments/comunes :: toasts}"></div>
+  <th:block th:replace="${scripts}"></th:block>
+</body>
+</html>

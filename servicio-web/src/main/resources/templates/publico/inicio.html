@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--
+  Landing pública (requerimiento mínimo de UI n°1): propósito de DonaTrack,
+  donaciones destacadas del último mes y accesos a fotos, registro/ingreso
+  e información legal. Datos: FuentePublica (ver D-041).
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.inicio}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+
+  <section class="heroe sobre-primario" aria-labelledby="heroe-titulo">
+    <div class="contenedor heroe__contenido">
+      <h1 id="heroe-titulo" th:text="#{landing.titulo}">Transformá vidas a través de la donación</h1>
+      <p class="heroe__bajada" th:text="#{landing.bajada}">Bajada</p>
+      <div class="fila heroe__acciones">
+        <a class="boton boton--secundario" th:href="@{/registro}" th:text="#{landing.cta-donar}">Quiero donar</a>
+        <a class="boton boton--fantasma" th:href="@{/galeria}" th:text="#{landing.cta-impacto}">Ver entregas</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="contenedor cifras" aria-labelledby="cifras-titulo" th:with="c=${resumen.cifras}">
+    <h2 id="cifras-titulo" class="solo-lector" th:text="#{landing.cifras.titulo}">DonaTrack en números</h2>
+    <ul class="grilla grilla--ajustada cifras__lista" style="--grilla-min: 13rem">
+      <li class="tarjeta metrica">
+        <span class="metrica__cabecera"><span th:text="#{landing.cifras.entregadas}">Entregadas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('caja')}"/></span>
+        <span th:replace="~{fragments/publico :: valor(${c.entregadasUltimoMes})}">0</span>
+        <span class="metrica__detalle" th:text="#{landing.cifras.entregadas-detalle}">Últimos 30 días</span>
+      </li>
+      <li class="tarjeta metrica">
+        <span class="metrica__cabecera"><span th:text="#{landing.cifras.en-camino}">En camino</span>
+          <th:block th:replace="~{fragments/comunes :: icono('camion')}"/></span>
+        <span th:replace="~{fragments/publico :: valor(${c.enCamino})}">0</span>
+        <span class="metrica__detalle" th:text="#{landing.cifras.en-camino-detalle}">En traslado</span>
+      </li>
+      <li class="tarjeta metrica">
+        <span class="metrica__cabecera"><span th:text="#{landing.cifras.entidades}">Entidades</span>
+          <th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></span>
+        <span th:replace="~{fragments/publico :: valor(${c.entidadesActivas})}">0</span>
+        <span class="metrica__detalle" th:text="#{landing.cifras.entidades-detalle}">Activas</span>
+      </li>
+      <li class="tarjeta metrica">
+        <span class="metrica__cabecera"><span th:text="#{landing.cifras.donantes}">Donantes</span>
+          <th:block th:replace="~{fragments/comunes :: icono('usuarios')}"/></span>
+        <span th:replace="~{fragments/publico :: valor(${c.donantesActivos})}">0</span>
+        <span class="metrica__detalle" th:text="#{landing.cifras.donantes-detalle}">Registrados</span>
+      </li>
+    </ul>
+  </section>
+
+  <section class="contenedor seccion" aria-labelledby="como-titulo">
+    <h2 id="como-titulo" th:text="#{landing.como.titulo}">Cómo funciona</h2>
+    <ol class="pasos">
+      <li class="pasos__item">
+        <h3 th:text="#{landing.como.paso1.titulo}">Donás</h3>
+        <p th:text="#{landing.como.paso1.texto}">Texto</p>
+      </li>
+      <li class="pasos__item">
+        <h3 th:text="#{landing.como.paso2.titulo}">Asignamos</h3>
+        <p th:text="#{landing.como.paso2.texto}">Texto</p>
+      </li>
+      <li class="pasos__item">
+        <h3 th:text="#{landing.como.paso3.titulo}">Seguís</h3>
+        <p th:text="#{landing.como.paso3.texto}">Texto</p>
+      </li>
+    </ol>
+  </section>
+
+  <section class="franja" aria-labelledby="destacadas-titulo">
+    <div class="contenedor seccion pila">
+      <div class="cabecera-pagina">
+        <div>
+          <h2 id="destacadas-titulo" th:text="#{landing.destacadas.titulo}">Donaciones entregadas</h2>
+          <p th:text="#{landing.destacadas.bajada}">Bajada</p>
+        </div>
+        <a class="boton boton--secundario" th:href="@{/galeria}" th:text="#{landing.destacadas.ver-todas}">Ver todas</a>
+      </div>
+
+      <div class="banner banner--advertencia" role="status" th:unless="${resumen.entregasDisponibles}">
+        <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+        <div class="banner__contenido" th:text="#{landing.destacadas.no-disponible}">No disponible</div>
+      </div>
+      <div class="tarjeta vacio" th:if="${resumen.entregasDisponibles and #lists.isEmpty(resumen.destacadas)}">
+        <th:block th:replace="~{fragments/comunes :: icono('caja')}"/>
+        <p th:text="#{landing.destacadas.vacio}">Todavía no hay entregas.</p>
+      </div>
+      <ul class="grilla grilla-donaciones" th:unless="${#lists.isEmpty(resumen.destacadas)}">
+        <li th:each="d : ${resumen.destacadas}">
+          <article th:replace="~{fragments/publico :: tarjeta-donacion(${d})}"></article>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="contenedor seccion" aria-labelledby="accesos-titulo">
+    <h2 id="accesos-titulo" th:text="#{landing.accesos.titulo}">Accesos</h2>
+    <ul class="grilla grilla--ajustada accesos" style="--grilla-min: 16rem">
+      <li>
+        <a class="tarjeta acceso" th:href="@{/galeria}">
+          <th:block th:replace="~{fragments/comunes :: icono('imagen')}"/>
+          <span class="acceso__titulo" th:text="#{landing.accesos.galeria}">Fotos</span>
+          <span class="texto-secundario" th:text="#{landing.accesos.galeria-texto}">Sin login</span>
+        </a>
+      </li>
+      <li>
+        <a class="tarjeta acceso" th:href="@{/registro}">
+          <th:block th:replace="~{fragments/comunes :: icono('usuarios')}"/>
+          <span class="acceso__titulo" th:text="#{landing.accesos.cuenta}">Registro</span>
+          <span class="texto-secundario" th:text="#{landing.accesos.cuenta-texto}">Donantes y entidades</span>
+        </a>
+      </li>
+      <li>
+        <a class="tarjeta acceso" th:href="@{/legal/privacidad}">
+          <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+          <span class="acceso__titulo" th:text="#{landing.accesos.legal}">Legal</span>
+          <span class="texto-secundario" th:text="#{landing.accesos.legal-texto}">Datos y condiciones</span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+</th:block>
+</body>
+</html>

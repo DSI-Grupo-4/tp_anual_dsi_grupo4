@@ -27,6 +27,7 @@
         <module>servicio-logistica</module>
         <module>servicio-incentivos</module>
         <module>servicio-notificaciones</module>
+        <module>servicio-web</module>
     </modules>
 
 </project>

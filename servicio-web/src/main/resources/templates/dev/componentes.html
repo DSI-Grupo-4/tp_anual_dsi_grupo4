@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<!--
+  Catálogo de componentes de DonaTrack (perfil dev): /dev/componentes
+  Cada bloque muestra el componente y el HTML mínimo para usarlo.
+  Si agregás un componente nuevo a componentes.css, sumalo acá.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout('Catálogo de componentes', ~{::contenido}, ~{::scripts})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta pila pila--grande catalogo">
+
+  <header>
+    <h1>Catálogo de componentes</h1>
+    <p class="texto-secundario lectura">Referencia del sistema de diseño (D-041). Usá estas clases y los tokens de
+      <code>tokens.css</code>; no escribas colores ni tamaños sueltos en las vistas.</p>
+  </header>
+
+  <section class="tarjeta pila" aria-labelledby="t-colores">
+    <h2 id="t-colores">Colores</h2>
+    <div class="grilla catalogo__muestras">
+      <div class="catalogo__muestra" style="--m: var(--color-primario)"><span></span>primario</div>
+      <div class="catalogo__muestra" style="--m: var(--color-primario-suave)"><span></span>primario-suave</div>
+      <div class="catalogo__muestra" style="--m: var(--color-oscuro)"><span></span>oscuro</div>
+      <div class="catalogo__muestra" style="--m: var(--color-texto-secundario)"><span></span>texto-secundario</div>
+      <div class="catalogo__muestra" style="--m: var(--color-borde)"><span></span>borde</div>
+      <div class="catalogo__muestra" style="--m: var(--color-fondo)"><span></span>fondo</div>
+      <div class="catalogo__muestra" style="--m: var(--color-exito)"><span></span>exito</div>
+      <div class="catalogo__muestra" style="--m: var(--color-advertencia)"><span></span>advertencia</div>
+      <div class="catalogo__muestra" style="--m: var(--color-error)"><span></span>error</div>
+      <div class="catalogo__muestra" style="--m: var(--color-info)"><span></span>info</div>
+    </div>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-tipo">
+    <h2 id="t-tipo">Tipografía</h2>
+    <p style="font-size: var(--texto-3xl); font-weight: 700; margin: 0">Título de héroe</p>
+    <h1>Título de página (h1)</h1>
+    <h2>Título de sección (h2)</h2>
+    <h3>Subtítulo (h3)</h3>
+    <p>Texto base de 16px con interlineado 1.5. <a href="#">Enlace dentro del texto</a>.</p>
+    <p class="texto-chico texto-secundario">Texto chico secundario, para metadatos.</p>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-botones">
+    <h2 id="t-botones">Botones</h2>
+    <div class="fila">
+      <button type="button" class="boton boton--primario">Primario</button>
+      <button type="button" class="boton boton--marca">Marca</button>
+      <button type="button" class="boton boton--secundario">Secundario</button>
+      <button type="button" class="boton boton--fantasma">Fantasma</button>
+      <button type="button" class="boton boton--peligro">Peligro</button>
+      <button type="button" class="boton boton--primario" disabled>Deshabilitado</button>
+      <button type="button" class="boton boton--primario" aria-busy="true">Procesando</button>
+      <button type="button" class="boton boton--secundario boton--icono" aria-label="Ver en el mapa">
+        <th:block th:replace="~{fragments/comunes :: icono('ubicacion')}"/>
+      </button>
+    </div>
+    <pre class="catalogo__codigo" tabindex="0" aria-label="Ejemplo de código: botones"><code>&lt;button class="boton boton--primario"&gt;Guardar&lt;/button&gt;
+&lt;a class="boton boton--secundario" href="..."&gt;Volver&lt;/a&gt;</code></pre>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-form">
+    <h2 id="t-form">Formularios</h2>
+    <form class="formulario" action="#" data-sin-loader onsubmit="return false">
+      <div class="formulario__fila">
+        <div class="campo">
+          <label class="campo__etiqueta" for="c-nombre">Nombre <span class="campo__obligatorio" aria-hidden="true">*</span></label>
+          <input class="control" id="c-nombre" name="nombre" placeholder="María González" required
+                 aria-describedby="c-nombre-ayuda">
+          <span class="campo__ayuda" id="c-nombre-ayuda">Como figura en tu documento.</span>
+        </div>
+        <div class="campo">
+          <label class="campo__etiqueta" for="c-mail">Correo electrónico</label>
+          <input class="control" id="c-mail" type="email" value="maria@" aria-invalid="true"
+                 aria-describedby="c-mail-error">
+          <span class="campo__error" id="c-mail-error">Ingresá un correo válido, por ejemplo nombre@dominio.com.</span>
+        </div>
+      </div>
+      <div class="formulario__fila">
+        <div class="campo">
+          <label class="campo__etiqueta" for="c-cat">Categoría</label>
+          <select class="control" id="c-cat">
+            <option>Alimentos</option><option>Mobiliario</option><option>Vestimenta</option>
+          </select>
+        </div>
+        <div class="campo">
+          <span class="campo__etiqueta fila" id="c-cant-etq">Cantidad
+            <span class="ayuda">
+              <button type="button" class="ayuda__disparador" aria-describedby="c-cant-tip" aria-expanded="false"
+                      aria-label="Más información sobre la cantidad">
+                <th:block th:replace="~{fragments/comunes :: icono('ayuda')}"/>
+              </button>
+              <span class="ayuda__texto" id="c-cant-tip" role="tooltip" hidden>En la unidad de la subcategoría: kg, litros o unidades.</span>
+            </span>
+          </span>
+          <input class="control" type="number" min="1" aria-labelledby="c-cant-etq" placeholder="10">
+        </div>
+      </div>
+      <label class="casilla"><input type="checkbox"> Acepto los términos y condiciones</label>
+      <div class="formulario__acciones">
+        <button type="button" class="boton boton--secundario">Cancelar</button>
+        <button type="submit" class="boton boton--primario">Guardar</button>
+      </div>
+    </form>
+    <p class="texto-chico texto-secundario">Cada control tiene su <code>&lt;label&gt;</code>. Las ayudas y errores se asocian con
+      <code>aria-describedby</code>; un campo con error lleva <code>aria-invalid="true"</code>.</p>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-estados">
+    <h2 id="t-estados">Estados</h2>
+    <div class="fila">
+      <span class="insignia-estado insignia-estado--info">En depósito</span>
+      <span class="insignia-estado insignia-estado--marca">Asignación realizada</span>
+      <span class="insignia-estado insignia-estado--advertencia">En traslado</span>
+      <span class="insignia-estado insignia-estado--exito">Entregada</span>
+      <span class="insignia-estado insignia-estado--error">Entrega fallida</span>
+      <span class="insignia-estado">Vencida</span>
+    </div>
+    <p class="texto-chico texto-secundario">El color nunca es la única señal: el texto del estado siempre está visible.</p>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-tabla">
+    <h2 id="t-tabla">Tabla</h2>
+    <div class="tabla-contenedor" tabindex="0" role="region" aria-label="Donaciones de ejemplo">
+      <table class="tabla">
+        <caption class="solo-lector">Donaciones de ejemplo</caption>
+        <thead><tr><th scope="col">Donación</th><th scope="col">Categoría</th><th scope="col">Estado</th><th scope="col">Fecha</th></tr></thead>
+        <tbody>
+          <tr><td>Arroz 1 kg × 20</td><td>Alimentos</td><td><span class="insignia-estado insignia-estado--exito">Entregada</span></td><td>03/11/2026</td></tr>
+          <tr><td>Sillas × 12</td><td>Mobiliario</td><td><span class="insignia-estado insignia-estado--advertencia">En traslado</span></td><td>05/11/2026</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <nav class="paginacion" aria-label="Paginación">
+      <span class="texto-chico texto-secundario">Página 1 de 3</span>
+      <div class="fila">
+        <a class="boton boton--secundario" aria-disabled="true">Anterior</a>
+        <a class="boton boton--secundario" href="#">Siguiente</a>
+      </div>
+    </nav>
+    <p class="texto-chico texto-secundario">Una tabla que puede desbordar en celular va dentro de
+      <code>&lt;div class="tabla-contenedor" tabindex="0" role="region" aria-label="..."&gt;</code>, para que se pueda desplazar con el teclado.</p>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-metricas">
+    <h2 id="t-metricas">Tarjetas de métricas</h2>
+    <div class="grilla">
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera"><span>Donaciones</span><th:block th:replace="~{fragments/comunes :: icono('corazon')}"/></div>
+        <span class="metrica__valor">128</span>
+        <span class="metrica__detalle">En el último mes</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera"><span>Entidades</span><th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></div>
+        <span class="metrica__valor">34</span>
+        <span class="metrica__detalle">Registradas</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-mensajes">
+    <h2 id="t-mensajes">Mensajes</h2>
+    <div class="banner banner--exito" role="status">
+      <th:block th:replace="~{fragments/comunes :: icono('exito')}"/>
+      <div class="banner__contenido"><p class="banner__titulo">Importación completa</p>Se cargaron 10.240 donantes.</div>
+    </div>
+    <div class="banner banner--advertencia">
+      <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+      <div class="banner__contenido">Hay 3 donaciones que vencen esta semana.</div>
+    </div>
+    <div class="banner banner--error" role="alert">
+      <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+      <div class="banner__contenido"><p class="banner__titulo">No se pudo guardar</p>Revisá los campos marcados.</div>
+    </div>
+    <div class="pista">
+      <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+      <div><p class="pista__titulo">Primeros pasos</p>Cargá tu primera necesidad para que podamos asignarte donaciones.</div>
+    </div>
+    <div class="fila">
+      <button type="button" class="boton boton--secundario" data-toast-demo="exito">Toast de éxito</button>
+      <button type="button" class="boton boton--secundario" data-toast-demo="error">Toast de error</button>
+      <button type="button" class="boton boton--secundario" data-abrir-modal="modal-demo">Abrir modal</button>
+    </div>
+    <pre class="catalogo__codigo" tabindex="0" aria-label="Ejemplo de código: toasts"><code>// En el controller, antes de redirigir (POST-redirect-GET):
+Toasts.exito(redirectAttributes, "La donación se registró correctamente.");
+// Desde JS:
+DonaTrack.toast("Filtros aplicados", "info");</code></pre>
+    <dialog class="modal" id="modal-demo" aria-labelledby="modal-demo-titulo">
+      <div class="modal__cuerpo">
+        <h2 id="modal-demo-titulo">¿Marcar como vencida?</h2>
+        <p>La donación dejará de estar disponible para asignar. Esta acción queda en el historial.</p>
+      </div>
+      <div class="modal__acciones">
+        <button type="button" class="boton boton--secundario" data-cerrar-modal>Cancelar</button>
+        <button type="button" class="boton boton--peligro" data-cerrar-modal>Marcar vencida</button>
+      </div>
+    </dialog>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-carga">
+    <h2 id="t-carga">Carga</h2>
+    <div class="fila"><span class="spinner" role="status" aria-label="Cargando"></span>
+      <button type="button" class="boton boton--secundario" data-loader-demo>Simular operación lenta (1,5 s)</button></div>
+    <div class="pila pila--chica" aria-hidden="true">
+      <span class="esqueleto esqueleto--titulo"></span>
+      <span class="esqueleto esqueleto--texto"></span>
+      <span class="esqueleto esqueleto--texto" style="width: 80%"></span>
+    </div>
+    <p class="texto-chico texto-secundario">Formularios y enlaces internos muestran el loader global solos si tardan más de
+      300 ms. Para un <code>fetch</code>: <code>DonaTrack.conLoader(fetch(url))</code>.</p>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-otros">
+    <h2 id="t-otros">Pestañas y estado vacío</h2>
+    <div class="pestanas" role="tablist" aria-label="Tipo de cuenta">
+      <button type="button" class="pestanas__item" role="tab" id="tab-don" aria-selected="true" aria-controls="panel-don">Donante</button>
+      <button type="button" class="pestanas__item" role="tab" id="tab-ben" aria-selected="false" aria-controls="panel-ben" tabindex="-1">Entidad beneficiaria</button>
+    </div>
+    <div id="panel-don" role="tabpanel" aria-labelledby="tab-don"><p>Contenido para donantes.</p></div>
+    <div id="panel-ben" role="tabpanel" aria-labelledby="tab-ben" hidden><p>Contenido para entidades.</p></div>
+    <div class="vacio">
+      <th:block th:replace="~{fragments/comunes :: icono('caja')}"/>
+      <p>Aún no realizaste donaciones.</p>
+      <a class="boton boton--primario" href="#">Cómo donar</a>
+    </div>
+  </section>
+</div>
+</th:block>
+
+<th:block th:fragment="scripts">
+<style>
+  .catalogo__muestra { display: flex; align-items: center; gap: var(--espacio-2); font-family: var(--fuente-mono); font-size: var(--texto-sm); }
+  .catalogo__muestra span { width: 2.5rem; height: 2.5rem; border-radius: var(--radio-sm); border: var(--borde); background: var(--m); }
+  .catalogo__codigo { margin: 0; padding: var(--espacio-3); overflow-x: auto; background: var(--color-superficie-alt); border-radius: var(--radio-md); font-size: var(--texto-sm); }
+  .catalogo .icono { width: 1.5rem; height: 1.5rem; }
+</style>
+<script>
+  document.addEventListener("click", function (e) {
+    var t = e.target.closest("[data-toast-demo]");
+    if (t) {
+      var tipo = t.getAttribute("data-toast-demo");
+      DonaTrack.toast(tipo === "error" ? "No se pudo conectar con el servicio de Donaciones." : "Cambios guardados.", tipo);
+    }
+    if (e.target.closest("[data-loader-demo]")) {
+      DonaTrack.conLoader(new Promise(function (r) { setTimeout(r, 1500); }), "Procesando…")
+        .then(function () { DonaTrack.toast("Operación terminada.", "exito"); });
+    }
+  });
+</script>
+</th:block>
+</body>
+</html>

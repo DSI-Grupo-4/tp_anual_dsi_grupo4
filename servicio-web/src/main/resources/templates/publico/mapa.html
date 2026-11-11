@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<!--
+  Mapa público de donaciones entregadas (requerimiento mínimo de UI n°2):
+  un marcador por entrega, con el detalle al hacer clic. Datos: MapaPublico (D-042).
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.mapa}, ~{::contenido}, ~{fragments/mapa :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="contenedor seccion--angosta pila">
+    <div class="cabecera-pagina">
+      <div>
+        <h1 th:text="#{nav.mapa}">Mapa de entregas</h1>
+        <p th:text="#{mapa.bajada}">Bajada</p>
+      </div>
+      <a class="boton boton--secundario" th:href="@{/galeria}" th:text="#{landing.destacadas.ver-todas}">Ver fotos</a>
+    </div>
+
+    <div class="banner banner--advertencia" role="status" th:if="${mapaEntregas.origen.name() == 'EJEMPLO'}">
+      <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+      <div class="banner__contenido" th:text="#{mapa.ejemplo}">Datos de ejemplo</div>
+    </div>
+    <div class="banner" role="status" th:if="${mapaEntregas.origen.name() == 'SIN_COORDENADAS'}">
+      <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+      <div class="banner__contenido" th:text="#{mapa.sin-coordenadas}">Sin coordenadas</div>
+    </div>
+
+    <section th:replace="~{fragments/mapa :: mapa('mapa-entregas', #{mapa.nombre-accesible}, ${mapaEntregas.marcadores}, @{/mapa/entregas.json}, 0)}"></section>
+  </div>
+</th:block>
+</body>
+</html>

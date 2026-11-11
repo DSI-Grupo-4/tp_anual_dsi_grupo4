@@ -1,0 +1,99 @@
+/* Componente de mapa (fragments/mapa.html). Depende de tokens.css y de leaflet.css. */
+
+.mapa {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-2);
+}
+.mapa__lienzo {
+  height: clamp(18rem, 60vh, 34rem);
+  border: var(--borde);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie-alt);
+  overflow: hidden;
+  z-index: 0; /* Leaflet usa z-index altos: así no tapa el encabezado ni los toasts */
+}
+.mapa__lienzo:focus-visible {
+  outline: var(--foco-ancho) solid var(--foco-color);
+  outline-offset: var(--foco-separacion);
+}
+.mapa__sin-js {
+  padding: var(--espacio-5);
+  color: var(--color-texto-secundario);
+}
+.mapa__ayuda,
+.mapa__estado { margin: 0; }
+.mapa__estado:empty { display: none; }
+
+/* Pines: círculo de color con ícono blanco y borde blanco (contraste ≥ 3:1 sobre el mapa). */
+.mapa__pin {
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  box-shadow: var(--sombra-md);
+  background: var(--color-primario);
+  color: #fff;
+}
+.mapa__pin .icono {
+  width: 18px;
+  height: 18px;
+  transform: rotate(45deg);
+}
+.mapa__pin--entrega { background: var(--color-exito); }
+.mapa__pin--camion { background: var(--color-primario); }
+.mapa__pin--sede { background: var(--color-info); }
+.mapa__pin--otro { background: var(--color-oscuro); }
+.leaflet-marker-icon:focus-visible {
+  outline: var(--foco-ancho) solid var(--color-oscuro);
+  outline-offset: 2px;
+}
+
+.mapa__popup p { margin: 0 0 var(--espacio-1); font-family: var(--fuente-base); }
+.mapa__popup-titulo { font-weight: var(--peso-fuerte); font-size: var(--texto-base); }
+.leaflet-container { font-family: var(--fuente-base); }
+.leaflet-container a { color: var(--color-primario); }
+/* Controles de zoom con área táctil de 48 px. */
+.leaflet-touch .leaflet-bar a,
+.leaflet-bar a {
+  width: var(--area-tactil);
+  height: var(--area-tactil);
+  line-height: var(--area-tactil);
+  font-size: 1.4rem;
+}
+.leaflet-popup-close-button {
+  width: 32px !important;
+  height: 32px !important;
+  font-size: 22px !important;
+}
+
+/* Lista accesible equivalente al mapa. */
+.mapa__items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mapa__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-1) var(--espacio-3);
+  padding-block: var(--espacio-1);
+  border-bottom: var(--borde);
+}
+.mapa__item:last-child { border-bottom: 0; }
+.mapa__ir {
+  padding-inline: var(--espacio-2);
+  font-weight: var(--peso-medio);
+}
+.mapa__pin-lista {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-oscuro);
+}
+.mapa__pin-lista--entrega { background: var(--color-exito); }
+.mapa__pin-lista--camion { background: var(--color-primario); }
+.mapa__pin-lista--sede { background: var(--color-info); }
+.mapa__item-detalle { color: var(--color-texto-secundario); }

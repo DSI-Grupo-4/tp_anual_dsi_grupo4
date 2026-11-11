@@ -1,0 +1,12 @@
+{
+  "name": "donatrack-revision-accesibilidad",
+  "private": true,
+  "description": "Revisión automática de accesibilidad y comportamiento de servicio-web (axe-core + Chromium).",
+  "scripts": {
+    "revisar": "node revision.js"
+  },
+  "dependencies": {
+    "axe-core": "4.10.2",
+    "puppeteer-core": "23.11.1"
+  }
+}

@@ -1,14 +1,14 @@
 [CmdletBinding(SupportsShouldProcess = $true)]
 param(
-    [ValidateSet("donaciones", "incentivos", "notificaciones", "logistica")]
-    [string[]]$Service = @("donaciones", "incentivos", "notificaciones", "logistica")
+    [ValidateSet("web", "donaciones", "incentivos", "notificaciones", "logistica")]
+    [string[]]$Service = @("web", "donaciones", "incentivos", "notificaciones", "logistica")
 )
 
 $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
 $runDirectory = Join-Path $repoRoot ".servicios"
 $composeFile = Join-Path $repoRoot "docker-compose.integration.yml"
-# Solo baja la infra (RabbitMQ, MySQL, n8n) si se pidieron los 4 servicios --
+# Solo baja la infra (RabbitMQ, MySQL, n8n) si se pidieron todos los servicios --
 # si se pasó un subconjunto puntual (-Service donaciones), el resto puede
 # seguir dependiendo de ella.
 $stopAll = -not $PSBoundParameters.ContainsKey("Service")
@@ -17,6 +17,7 @@ $modules = @{
     incentivos = "servicio-incentivos"
     notificaciones = "servicio-notificaciones"
     logistica = "servicio-logistica"
+    web = "servicio-web"
 }
 $failed = $false
 

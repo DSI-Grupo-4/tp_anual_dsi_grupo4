@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<!-- Ayuda: guía de primeros pasos y preguntas frecuentes (onboarding de la consigna). -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.ayuda}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <article class="documento">
+    <h1>Ayuda</h1>
+    <p class="texto-secundario">Todo lo que necesitás para empezar a usar DonaTrack.</p>
+
+    <nav class="indice" aria-labelledby="indice-ayuda">
+      <h2 id="indice-ayuda" class="texto-chico" style="margin: 0">En esta página</h2>
+      <ol>
+        <li><a href="#donantes">Si querés donar</a></li>
+        <li><a href="#entidades">Si representás a una entidad beneficiaria</a></li>
+        <li><a href="#estados">Estados de una donación</a></li>
+        <li><a href="#preguntas">Preguntas frecuentes</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="donantes">Si querés donar</h2>
+    <ol>
+      <li><strong>Creá tu cuenta.</strong> Podés registrarte desde <a th:href="@{/registro}">Registrarse</a> o hacerlo en el depósito con ayuda de una persona administradora.</li>
+      <li><strong>Llevá tus bienes al depósito.</strong> Recibimos alimentos, mobiliario y vestimenta. Si los alimentos son perecederos, tienen que tener fecha de vencimiento visible.</li>
+      <li><strong>Seguí tu donación.</strong> Desde <em>Mis donaciones</em> ves en qué estado está y, cuando sale en un camión, podés seguir la entrega en el mapa.</li>
+      <li><strong>Sumá logros.</strong> Si sos una persona humana, en <em>Incentivos</em> ves tus misiones e insignias.</li>
+    </ol>
+
+    <h2 id="entidades">Si representás a una entidad beneficiaria</h2>
+    <ol>
+      <li><strong>Registrá tu organización</strong> con sus datos de contacto y la ubicación de la sede.</li>
+      <li><strong>Cargá tus necesidades.</strong> Pueden ser recurrentes (por ejemplo, 50 kg de arroz por mes) o extraordinarias (un pedido puntual).</li>
+      <li><strong>Recibí las donaciones asignadas.</strong> Te avisamos cuando se te asigna una donación y cuando el camión sale hacia tu sede.</li>
+      <li><strong>Confirmá la recepción</strong> y cargá fotos de lo que recibiste. Las fotos aparecen en la <a th:href="@{/galeria}">galería pública</a>.</li>
+    </ol>
+
+    <h2 id="estados">Estados de una donación</h2>
+    <dl class="estados">
+      <dt><span class="insignia-estado insignia-estado--info">En depósito</span></dt>
+      <dd>La recibimos y está disponible para asignar.</dd>
+      <dt><span class="insignia-estado insignia-estado--marca">Asignación realizada</span></dt>
+      <dd>Ya tiene una entidad beneficiaria de destino.</dd>
+      <dt><span class="insignia-estado insignia-estado--marca">Lista para entregar</span></dt>
+      <dd>Está preparada y espera su lugar en una ruta.</dd>
+      <dt><span class="insignia-estado insignia-estado--advertencia">En traslado</span></dt>
+      <dd>Va en un camión hacia la entidad.</dd>
+      <dt><span class="insignia-estado insignia-estado--exito">Entregada</span></dt>
+      <dd>La entidad confirmó que la recibió.</dd>
+      <dt><span class="insignia-estado insignia-estado--error">Entrega fallida</span></dt>
+      <dd>No se pudo entregar. Vuelve al depósito para intentarlo de nuevo.</dd>
+      <dt><span class="insignia-estado">Vencida</span></dt>
+      <dd>El alimento venció antes de poder entregarse.</dd>
+    </dl>
+
+    <h2 id="preguntas">Preguntas frecuentes</h2>
+    <details class="faq">
+      <summary>¿Necesito una cuenta para ver las entregas?</summary>
+      <div><p>No. La <a th:href="@{/galeria}">galería de entregas</a> y el <a th:href="@{/mapa}">mapa</a> son públicos.</p></div>
+    </details>
+    <details class="faq">
+      <summary>¿Qué datos personales se muestran en público?</summary>
+      <div><p>Ninguno. En las páginas públicas solo se ve qué se donó, a qué entidad y cuándo. Más información en la <a th:href="@{/legal/privacidad}">política de privacidad</a>.</p></div>
+    </details>
+    <details class="faq">
+      <summary>¿Puedo donar si ya me registraron en el depósito?</summary>
+      <div><p>Sí. Si una persona administradora cargó tus datos en el depósito, recibís un correo de bienvenida y ya podés seguir tus donaciones en la plataforma.</p></div>
+    </details>
+    <details class="faq">
+      <summary>¿Por qué mi donación quedó en varias partes?</summary>
+      <div><p>Cuando llevás bienes de distintos tipos, cada tipo se registra como una donación separada. Así cada uno puede llegar a la entidad que lo necesita.</p></div>
+    </details>
+  </article>
+</div>
+</th:block>
+</body>
+</html>

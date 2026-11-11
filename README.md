@@ -29,6 +29,9 @@
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
+│   ├── arquitectura
+│   │   ├── componentes.puml
+│   │   └── img
 │   ├── ddc
 │   │   ├── donaciones.puml
 │   │   ├── img
@@ -44,8 +47,10 @@
 ├── docker-compose.integration.yml
 ├── endpoints.md
 ├── keycloak
-│   └── import
-│       └── donatrack-realm.json
+│   ├── import
+│   │   └── donatrack-realm.json
+│   └── themes
+│       └── donatrack
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -104,10 +109,18 @@
 │   └── src
 │       ├── main
 │       └── test
+├── servicio-web
+│   ├── README.md
+│   ├── herramientas
+│   │   └── accesibilidad
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       └── test
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-33 directories, 59 files
+42 directories, 61 files
 ```
 <!-- TREE_END -->
 
@@ -117,6 +130,9 @@
 
 ## Despliegue
 Servicio de Logística: https://tp-anual-dsi-grupo4-1.onrender.com
+
+## Cliente web (Entrega 6)
+El cliente liviano está en [`servicio-web`](servicio-web/README.md) (Spring Boot + Thymeleaf, puerto 8085). Consume las APIs REST de los servicios y se levanta junto con ellos con `run-servicios`. Su README explica cómo sumar pantallas, el sistema de diseño, el componente de mapa, el tema de login de Keycloak ([`keycloak/themes/donatrack`](keycloak/themes/donatrack)) y el trabajo pendiente de cada integrante.
 
 
 

@@ -1,0 +1,189 @@
+/*
+ * Estilos base: reset, elementos HTML semánticos, foco visible, áreas
+ * táctiles y utilidades de layout. Depende de tokens.css.
+ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--fuente-base);
+  font-size: var(--texto-base);
+  line-height: var(--interlineado);
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 var(--espacio-3);
+  line-height: var(--interlineado-titulo);
+  font-weight: var(--peso-fuerte);
+}
+h1 { font-size: var(--texto-2xl); }
+h2 { font-size: var(--texto-xl); }
+h3 { font-size: var(--texto-lg); }
+h4 { font-size: var(--texto-base); }
+
+p {
+  margin: 0 0 var(--espacio-4);
+}
+
+a {
+  color: var(--color-primario);
+  text-underline-offset: 0.2em;
+}
+a:hover {
+  color: var(--color-primario-hover);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* --- Foco visible (WCAG 2.4.7). Nunca quitar el outline sin reemplazo. --- */
+:focus-visible {
+  outline: var(--foco-ancho) solid var(--foco-color);
+  outline-offset: var(--foco-separacion);
+}
+.sobre-oscuro :focus-visible,
+.sobre-primario :focus-visible {
+  outline-color: var(--foco-color-sobre-oscuro);
+}
+
+/*
+ * --- Área táctil mínima 48x48 (consigna) ---
+ * Los controles la cumplen con min-height/min-width en componentes.css.
+ * Los enlaces dentro de un texto corrido no pueden medir 48px de alto sin
+ * romper el párrafo: se amplía su zona clickeable con un pseudo-elemento.
+ */
+:where(p, li, td, dd, small) > a:not([class]) {
+  position: relative;
+}
+:where(p, li, td, dd, small) > a:not([class])::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: max(100%, var(--area-tactil));
+  height: var(--area-tactil);
+  transform: translate(-50%, -50%);
+}
+
+/*
+ * hidden siempre oculta: sin esto, un componente con display propio (p. ej. .loader-global
+ * con display: grid) seguía ocupando la pantalla con el atributo hidden puesto.
+ */
+[hidden] {
+  display: none !important;
+}
+
+/* --- Accesibilidad --- */
+.solo-lector {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.saltar-contenido {
+  position: absolute;
+  left: var(--espacio-4);
+  top: -100px;
+  z-index: calc(var(--capa-loader) + 1);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--area-tactil);
+  padding: 0 var(--espacio-4);
+  background: var(--color-oscuro);
+  color: var(--color-sobre-oscuro);
+  border-radius: var(--radio-sm);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+}
+.saltar-contenido:focus {
+  top: var(--espacio-2);
+  color: var(--color-sobre-oscuro);
+}
+.saltar-contenido:focus-visible {
+  outline-color: var(--foco-color);
+}
+
+/* --- Utilidades de layout --- */
+.contenedor {
+  width: 100%;
+  max-width: var(--ancho-contenido);
+  margin-inline: auto;
+  padding-inline: var(--espacio-4);
+}
+@media (min-width: 600px) {
+  .contenedor {
+    padding-inline: var(--espacio-5);
+  }
+}
+
+.lectura {
+  max-width: var(--ancho-lectura);
+}
+
+.pila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-4);
+}
+.pila--chica { gap: var(--espacio-2); }
+.pila--grande { gap: var(--espacio-6); }
+
+.fila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+}
+.fila--separada { justify-content: space-between; }
+
+.grilla {
+  display: grid;
+  gap: var(--espacio-4);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--grilla-min, 14rem)), 1fr));
+}
+
+/* Variante que estira las columnas para ocupar todo el ancho (pocas tarjetas fijas). */
+.grilla--ajustada {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--grilla-min, 14rem)), 1fr));
+}
+
+.texto-secundario { color: var(--color-texto-secundario); }
+.texto-chico { font-size: var(--texto-sm); }
+.texto-centro { text-align: center; }
