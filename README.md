@@ -30,7 +30,6 @@
 ├── diagramas
 │   ├── SERVICIOS.json
 │   ├── arquitectura
-│   │   ├── ?
 │   │   ├── componentes.puml
 │   │   └── img
 │   ├── ddc
@@ -119,7 +118,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-43 directories, 61 files
+42 directories, 61 files
 ```
 <!-- TREE_END -->
 
