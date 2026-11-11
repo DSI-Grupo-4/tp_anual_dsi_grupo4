@@ -1,0 +1,42 @@
+/* Pantallas de depósito: mismas escalas, controles y superficies que el catálogo. */
+.admin-contenido { display: grid; gap: var(--espacio-5); min-width: 0; }
+.admin-cabecera { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--espacio-4); }
+.admin-cabecera h1 { margin: var(--espacio-2) 0; }
+.admin-cabecera p { max-width: var(--ancho-lectura); }
+.admin-antetitulo { color: var(--color-primario); font-size: var(--texto-sm); font-weight: var(--peso-medio); }
+.admin-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: var(--espacio-3); }
+.admin-tarjeta { border: var(--borde); border-radius: var(--radio-lg); background: var(--color-superficie); padding: var(--espacio-5); box-shadow: var(--sombra-sm); min-width: 0; }
+.admin-tarjeta h2:first-child { margin-top: 0; }
+.admin-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: var(--espacio-5); }
+.admin-metricas { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--espacio-4); }
+.admin-metrica { display: grid; gap: var(--espacio-3); border: var(--borde); border-radius: var(--radio-lg); padding: var(--espacio-5); background: var(--color-superficie); text-decoration: none; color: var(--color-texto); }
+.admin-metrica:hover { background: var(--color-primario-suave); }
+.admin-metrica strong { font-size: var(--texto-3xl); color: var(--color-primario); }
+.admin-metrica span:last-child { font-size: var(--texto-sm); color: var(--color-texto-secundario); }
+.admin-filtros { display: flex; flex-wrap: wrap; gap: var(--espacio-3); align-items: end; }
+.admin-filtros .campo { flex: 1 1 12rem; min-width: 0; }
+.admin-form { display: grid; gap: var(--espacio-5); }
+.admin-renglon { border: var(--borde); border-radius: var(--radio-md); padding: var(--espacio-4); margin: 0 0 var(--espacio-4); min-width: 0; }
+.admin-renglon legend { font-weight: var(--peso-fuerte); padding: var(--espacio-2); }
+.admin-renglon [data-quitar] { margin-top: var(--espacio-3); }
+.admin-radio { display:flex; align-items:center; gap:var(--espacio-3); min-height:var(--area-tactil); cursor:pointer; }
+.admin-radio input { width:var(--espacio-5); height:var(--espacio-5); accent-color:var(--color-primario); }
+.admin-paginacion { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:var(--espacio-3); }
+.admin-vacio { padding:var(--espacio-7); text-align:center; border:var(--borde); border-radius:var(--radio-lg); background:var(--color-superficie); }
+.admin-datos { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--espacio-4); }
+.admin-datos dt { font-size:var(--texto-sm); color:var(--color-texto-secundario); }
+.admin-datos dd { margin:var(--espacio-1) 0; overflow-wrap:anywhere; }
+.admin-historial { display:grid; gap:var(--espacio-4); }
+.admin-historial time { display:block; color:var(--color-texto-secundario); font-size:var(--texto-sm); }
+.admin-contenido td, .admin-renglon p { overflow-wrap:anywhere; }
+.admin-contenido form > .admin-acciones, .admin-contenido form > button { margin-top:var(--espacio-4); }
+.admin-confirmacion { max-width:var(--ancho-lectura); border:var(--borde); border-radius:var(--radio-lg); padding:var(--espacio-6); box-shadow:var(--sombra-lg); }
+.admin-confirmacion::backdrop { background:var(--color-texto-secundario); opacity:.7; }
+@media(max-width:959px) { .admin-metricas { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:599px) {
+ .admin-grid,.admin-datos { grid-template-columns:1fr; }
+ .admin-metricas { grid-template-columns:1fr; }
+ .admin-tarjeta { padding:var(--espacio-4); }
+ .admin-cabecera .admin-acciones,.admin-filtros > button { width:100%; }
+ .admin-contenido .control { min-width:0; }
+}

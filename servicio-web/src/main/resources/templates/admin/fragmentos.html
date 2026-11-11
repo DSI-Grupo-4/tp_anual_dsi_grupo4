@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="recursos">
+<link rel="stylesheet" th:href="@{/css/admin.css}">
+<script th:src="@{/js/admin.js}" defer>
+</script>
+</th:block>
+<nav th:fragment="paginacion" class="admin-paginacion" aria-label="Páginas de resultados">
+<p>
+<strong th:text="${pagina.totalElements}">0</strong> resultados · Página <span th:text="${pagina.number + 1}">1</span> de <span th:text="${T(java.lang.Math).max(1,pagina.totalPages)}">1</span>
+</p>
+<div class="admin-acciones">
+<a th:if="${pagina.number > 0}" class="boton boton--secundario" th:href="${anterior}">Anterior</a>
+<a th:if="${pagina.number + 1 < pagina.totalPages}" class="boton boton--secundario" th:href="${siguiente}">Siguiente</a>
+</div>
+</nav>
+<section th:fragment="vacio" class="admin-vacio" th:if="${pagina.content.isEmpty()}">
+<h2>No encontramos resultados</h2>
+<p>Probá otra búsqueda o quitá los filtros. Si todavía no hay registros, podés crear el primero.</p>
+<a class="boton boton--secundario" th:href="${rutaLista}" th:text="#{admin.textos.74}">Quitar filtros</a>
+</section>
+</body>
+</html>

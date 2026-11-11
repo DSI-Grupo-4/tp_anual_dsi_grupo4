@@ -86,9 +86,9 @@ La profundidad máxima es de tres niveles (zona / sección / detalle), como pide
 | Admin | `/admin/donaciones[/{id}]`, `/admin/asignaciones`, `/admin/donantes[/{id}]`, `/admin/entidades[/{id}]` | Persona 3 |
 | Admin | `/admin/reportes` | Persona 4 |
 | Admin | `/admin/camiones`, `/admin/seguimiento` | Persona 5 |
-| Admin | `/admin` (panel) | A definir |
+| Admin | `/admin` (panel) | Persona 3 |
 
-Las rutas privadas muestran "Sección en construcción" con el menú del rol hasta que se implementan. Para agregar una sección que no está en el menú, se suma en `NavegacionService`.
+Las rutas privadas pendientes muestran "Sección en construcción"; las rutas de administración de Persona 3 ya tienen vistas funcionales. Para agregar una sección que no está en el menú, se suma en `NavegacionService`.
 
 ## Cómo implementar una pantalla
 
@@ -253,16 +253,22 @@ Lo que ya existe: la rama `iam` (Keycloak, realm `donatrack`, roles `ADMIN`/`DON
 - [ ] Tests de permisos: un rol que entra a la zona de otro rol, un acceso a un recurso ajeno, y una sesión vencida.
 
 ### Persona 3 (administración y gestión de Donaciones)
-- [ ] Pantallas `/admin/donaciones[/{id}]`, `/admin/asignaciones`, `/admin/donantes[/{id}]` y `/admin/entidades[/{id}]`:
-  - altas, modificaciones, desactivación y reactivación;
-  - importación CSV con resultado, errores y estado (debe soportar más de 10.000 filas);
-  - formulario de carga con varios ítems;
-  - historial de estados;
-  - matchmaking con las tres listas y la confirmación de la candidata;
-  - marcar donaciones como vencidas.
-- [ ] Agregar los métodos que falten en `DonacionesClient`. Ya existen `donaciones()`, `entidades()` y `donantes()`.
-- [ ] Agregar a la API los filtros y la paginación que necesiten las pantallas. Hoy `GET /api/donaciones` no filtra ni pagina, y `DonacionDTO` no tiene fecha.
-- [ ] **Para la landing (D-041), acordarlo con la Persona 1:** un endpoint público de solo lectura con las donaciones destacadas del último mes (categoría, subcategoría, cantidad, entidad y fecha), sin datos personales de donantes.
+Implementado:
+
+- Panel `/admin` con cantidades del depósito y accesos a las tareas principales.
+- Donantes y entidades: búsqueda paginada, alta, ficha, edición, baja lógica y reactivación. Correo obligatorio, contacto preferido, dirección humana y representantes de organizaciones.
+- Importación CSV de hasta 20 MB, ejemplo descargable, indicador de espera y resultado. Cliente de importación con timeout independiente de 10 minutos (`api.timeout-importacion`).
+- Carga de varios bienes con categoría, subcategoría, unidad, condición o vencimiento y medidas logísticas. El backend realiza la segmentación.
+- Donaciones: búsqueda paginada por descripción, estado, categoría, subcategoría, fechas y relaciones con donante o entidad; detalle, edición, eliminación en depósito, historial y vencimiento justificado.
+- Asignaciones: ejecución manual, lectura del último resultado persistido, tres listas separadas y confirmación de candidata. Consultar o refrescar la página no ejecuta los algoritmos.
+- API `/api/administracion/{donantes,entidades,donaciones,resumen}`. Los listados aceptan `page` desde 0 y `size` entre 1 y 100; las vistas usan 20 registros.
+- Endpoint público `GET /api/publico/donaciones/destacadas?limite=6`: últimas entregas de los últimos 30 días, máximo 20, sin datos personales de donantes. Queda disponible para que Persona 1 conecte la landing; la galería y sus fotos siguen siendo parte de Logística.
+
+Para probar, levantá el sistema con `run-servicios` y abrí **http://localhost:8085/admin**. No simula un inicio de sesión: hasta integrar Persona 2, el acceso sigue siendo directo. La protección ADMIN y la vinculación de cuentas/representantes quedan pendientes de esa integración. `AdminDonacionesClient` reutiliza la propagación de credenciales de los clientes existentes.
+
+La dirección humana agrega cuatro columnas anulables a `persona_humana`. El arranque aplica esa ampliación de forma aditiva e idempotente antes de la validación JPA; no borra tablas ni datos. El usuario de base necesita permiso para agregar esas columnas en la primera ejecución. El esquema SQL de instalaciones nuevas también está actualizado.
+
+Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas MVC, contratos HTTP, persistencia H2, importación de 10.001 filas y consulta pública sin datos personales. Las comprobaciones no envían correos reales. La revisión en navegador usa un backend aislado; todavía corresponde realizar la prueba final con todos los servicios y la autenticación integrados.
 
 ### Persona 4 (portal del donante, Incentivos y reportes)
 - [ ] Pantallas `/donante/**` y `/admin/reportes`:

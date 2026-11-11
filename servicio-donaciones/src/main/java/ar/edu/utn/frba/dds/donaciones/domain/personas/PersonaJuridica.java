@@ -41,7 +41,7 @@ public class PersonaJuridica extends Persona {
     // real depende del rol que cumpla esta persona jurídica (1 si actúa
     // como donante, N si actúa como entidad beneficiaria) y se valida en
     // Donante/EntidadBeneficiaria, que son quienes conocen ese rol.
-    @ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name = "representante",
             joinColumns = @JoinColumn(name = "persona_juridica_id"),
             inverseJoinColumns = @JoinColumn(name = "persona_humana_id"))

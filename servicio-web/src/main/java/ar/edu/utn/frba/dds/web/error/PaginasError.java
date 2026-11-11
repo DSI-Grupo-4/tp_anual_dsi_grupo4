@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component("paginasError")
 public class PaginasError {
 
-    private static final Set<Integer> CON_TEXTO_PROPIO = Set.of(400, 403, 404, 409, 503);
+    private static final Set<Integer> CON_TEXTO_PROPIO = Set.of(400, 403, 404, 409, 413, 503);
 
     public int codigo(Integer status) {
         return status != null && CON_TEXTO_PROPIO.contains(status) ? status : 500;

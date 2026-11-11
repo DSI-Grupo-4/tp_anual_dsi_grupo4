@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Asignar donación', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.59}">
+</p>
+<h1 th:text="#{admin.ui.60}">Elegí el destino de la donación</h1>
+<p class="texto-secundario" th:text="#{admin.ui.61}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<section class="admin-tarjeta">
+<h2 th:text="|Donación #${donacion.id} · ${@adminVista.texto(donacion.subcategoria)}|">
+</h2>
+<p th:text="|${donacion.cantidadAsignada} ${@adminVista.texto(donacion.unidadMedida)} · ${donacion.descripcionItem}|">
+</p>
+<p>Los algoritmos proponen hasta diez entidades por criterio. Ejecutarlos no asigna la donación; vos confirmás el destino final.</p>
+<div class="admin-acciones">
+<form th:if="${donacion.editable()}" method="post" th:action="@{'/admin/asignaciones/'+${donacion.id}+'/ejecutar'}" data-texto-loader="Buscando entidades candidatas…">
+<button class="boton boton--primario" type="submit" th:text="#{admin.textos.1}">Ejecutar algoritmos</button>
+</form>
+<a class="boton boton--secundario" th:href="@{'/admin/donaciones/'+${donacion.id}}" th:text="#{admin.textos.2}">Ver bienes y medidas</a>
+</div>
+<p th:unless="${donacion.editable()}" class="banner banner--info" th:text="#{admin.textos.3}">La donación ya no está en depósito. No se puede volver a asignar desde esta pantalla.</p>
+</section>
+<th:block th:if="${resultado!=null and donacion.editable()}">
+<section class="admin-tarjeta">
+<h2>Coincidencias de ambos algoritmos</h2>
+<p>Estas entidades aparecen en ambas listas. Revisalas primero.</p>
+<p th:if="${resultado.interseccion.isEmpty()}" th:text="#{admin.textos.4}">No hay propuestas en esta lista.</p>
+<div class="admin-grid">
+<article class="admin-renglon" th:each="c:${resultado.interseccion}">
+<h3 th:text="${c.razonSocial}">
+</h3>
+<p th:text="${c.descripcion}">
+</p>
+<p th:text="|Necesidades compatibles pendientes: ${c.puntaje}|">
+</p>
+<div class="admin-acciones">
+<a class="boton boton--secundario" th:href="@{'/admin/entidades/'+${c.entidadBeneficiariaId}}" th:text="#{admin.textos.5}">Ver necesidades</a>
+<form method="post" th:action="@{'/admin/asignaciones/'+${donacion.id}+'/confirmar'}" th:attr="data-confirmar=|¿Asignar la donación #${donacion.id} a ${c.razonSocial}?|">
+<input type="hidden" name="entidadId" th:value="${c.entidadBeneficiariaId}">
+<button class="boton boton--marca" type="submit" th:aria-label="|Asignar a ${c.razonSocial}|" th:text="#{admin.textos.6}">Asignar a esta entidad</button>
+</form>
+</div>
+</article>
+</div>
+</section>
+<section class="admin-tarjeta">
+<h2>Compatibilidad con las necesidades</h2>
+<p>Entidades propuestas por coincidencia entre los bienes y sus necesidades.</p>
+<p th:if="${resultado.porCompatibilidad.isEmpty()}" th:text="#{admin.textos.7}">No hay propuestas en esta lista.</p>
+<div class="admin-grid">
+<article class="admin-renglon" th:each="c:${resultado.porCompatibilidad}">
+<h3 th:text="${c.razonSocial}">
+</h3>
+<p th:text="${c.descripcion}">
+</p>
+<p th:text="|Necesidades compatibles pendientes: ${c.puntaje}|">
+</p>
+<div class="admin-acciones">
+<a class="boton boton--secundario" th:href="@{'/admin/entidades/'+${c.entidadBeneficiariaId}}" th:text="#{admin.textos.8}">Ver necesidades</a>
+<form method="post" th:action="@{'/admin/asignaciones/'+${donacion.id}+'/confirmar'}" th:attr="data-confirmar=|¿Asignar la donación #${donacion.id} a ${c.razonSocial}?|">
+<input type="hidden" name="entidadId" th:value="${c.entidadBeneficiariaId}">
+<button class="boton boton--marca" type="submit" th:aria-label="|Asignar a ${c.razonSocial}|" th:text="#{admin.textos.9}">Asignar a esta entidad</button>
+</form>
+</div>
+</article>
+</div>
+</section>
+<section class="admin-tarjeta">
+<h2>Prioridad a entidades menos atendidas</h2>
+<p>Entidades priorizadas según las donaciones recibidas en el último trimestre.</p>
+<p th:if="${resultado.porSubatencion.isEmpty()}" th:text="#{admin.textos.10}">No hay propuestas en esta lista.</p>
+<div class="admin-grid">
+<article class="admin-renglon" th:each="c:${resultado.porSubatencion}">
+<h3 th:text="${c.razonSocial}">
+</h3>
+<p th:text="${c.descripcion}">
+</p>
+<p th:text="|Necesidades compatibles pendientes: ${c.puntaje}|">
+</p>
+<div class="admin-acciones">
+<a class="boton boton--secundario" th:href="@{'/admin/entidades/'+${c.entidadBeneficiariaId}}" th:text="#{admin.textos.11}">Ver necesidades</a>
+<form method="post" th:action="@{'/admin/asignaciones/'+${donacion.id}+'/confirmar'}" th:attr="data-confirmar=|¿Asignar la donación #${donacion.id} a ${c.razonSocial}?|">
+<input type="hidden" name="entidadId" th:value="${c.entidadBeneficiariaId}">
+<button class="boton boton--marca" type="submit" th:aria-label="|Asignar a ${c.razonSocial}|" th:text="#{admin.textos.12}">Asignar a esta entidad</button>
+</form>
+</div>
+</article>
+</div>
+</section>
+</th:block>
+<section class="admin-vacio" th:if="${resultado==null and donacion.editable()}">
+<h2>Busquemos a quién ayudar</h2>
+<p>Ejecutá los algoritmos para consultar las candidatas. Asegurate de completar el peso, volumen y altura de todos los bienes antes de confirmar.</p>
+</section>
+</div>
+</th:block>
+</body>
+</html>
