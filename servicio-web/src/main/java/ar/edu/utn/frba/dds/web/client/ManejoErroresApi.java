@@ -1,10 +1,12 @@
 package ar.edu.utn.frba.dds.web.client;
 
+import ar.edu.utn.frba.dds.web.error.AccesoDenegadoException;
 import ar.edu.utn.frba.dds.web.error.BackendException;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
+import ar.edu.utn.frba.dds.web.error.SesionVencidaException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
@@ -52,6 +54,8 @@ public final class ManejoErroresApi {
             mensaje = "El servicio de " + servicio.getNombreVisible() + " respondió con error " + status;
         }
         return switch (status) {
+            case 401 -> new SesionVencidaException(servicio, mensaje, null);
+            case 403 -> new AccesoDenegadoException(servicio, mensaje);
             case 404 -> new RecursoNoEncontradoException(servicio, mensaje);
             case 502, 503, 504 -> new BackendNoDisponibleException(servicio, status, null);
             case 400, 409, 413, 422 -> new BackendRechazoException(servicio, status, mensaje, detalles(cuerpo));

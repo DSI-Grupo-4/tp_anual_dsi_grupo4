@@ -4,10 +4,12 @@
   "displayName": "DonaTrack",
   "enabled": true,
   "sslRequired": "external",
-  "registrationAllowed": false,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": true,
+  "verifyEmail": true,
   "loginWithEmailAllowed": true,
   "duplicateEmailsAllowed": false,
-  "resetPasswordAllowed": false,
+  "resetPasswordAllowed": true,
   "editUsernameAllowed": false,
   "loginTheme": "donatrack",
   "internationalizationEnabled": true,
@@ -45,11 +47,12 @@
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": false,
-      "serviceAccountsEnabled": false,
+      "serviceAccountsEnabled": true,
       "frontchannelLogout": true,
       "rootUrl": "http://localhost:8085",
       "redirectUris": [
-        "http://localhost:8085/login/oauth2/code/keycloak"
+        "http://localhost:8085/login/oauth2/code/keycloak",
+        "http://localhost:8085/ingresar"
       ],
       "webOrigins": [
         "http://localhost:8085"
@@ -57,6 +60,28 @@
       "attributes": {
         "post.logout.redirect.uris": "http://localhost:8085##http://localhost:8085/"
       }
+    },
+    {
+      "clientId": "servicio-donaciones",
+      "name": "Servicio de Donaciones",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
+    },
+    {
+      "clientId": "servicio-incentivos",
+      "name": "Servicio de Incentivos",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": true
     }
   ]
 }

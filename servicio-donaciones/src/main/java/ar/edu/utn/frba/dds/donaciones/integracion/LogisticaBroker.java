@@ -31,9 +31,11 @@ public class LogisticaBroker {
     public LogisticaBroker(
             @Value("${logistica.proveedores.propia-url:http://localhost:8083}") String propiaUrl,
             @Value("${logistica.proveedores.alternativa-url:}") String alternativaUrl,
-            @Value("${logistica.broker.estrategia:ROUND_ROBIN}") String estrategia) {
+            @Value("${logistica.broker.estrategia:ROUND_ROBIN}") String estrategia,
+            ar.edu.utn.frba.dds.donaciones.seguridad.TokenServicio tokenServicio) {
         List<LogisticaClient> configurados = new ArrayList<>();
-        configurados.add(new LogisticaClient("PROPIA", propiaUrl));
+        // Solo nuestro servicio de Logística recibe el token del realm; el proveedor alternativo es de otro equipo.
+        configurados.add(new LogisticaClient("PROPIA", propiaUrl, tokenServicio.interceptor()));
         if (alternativaUrl != null && !alternativaUrl.isBlank()) {
             configurados.add(new LogisticaClient("ALTERNATIVA", alternativaUrl));
         }

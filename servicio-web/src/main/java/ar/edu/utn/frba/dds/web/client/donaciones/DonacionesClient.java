@@ -30,4 +30,15 @@ public class DonacionesClient {
     public List<EntidadApi> entidades() {
         return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
     }
+
+    /** POST /api/cuentas/vincular: asocia la cuenta del token con el donante o las entidades de su email. */
+    public Vinculacion vincularCuenta() {
+        return http.post().uri("/api/cuentas/vincular").retrieve().body(Vinculacion.class);
+    }
+
+    public record Vinculacion(Long donanteId, List<Long> entidadIds) {
+        public boolean vinculo() {
+            return donanteId != null || (entidadIds != null && !entidadIds.isEmpty());
+        }
+    }
 }

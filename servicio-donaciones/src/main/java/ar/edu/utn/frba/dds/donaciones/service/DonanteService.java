@@ -29,6 +29,10 @@ public class DonanteService {
     private void bienvenida(Donante donante) {
         if (publicador != null) publicador.publicar("BIENVENIDA_DONANTE", donante);
     }
+    private ar.edu.utn.frba.dds.donaciones.integracion.CuentasKeycloak cuentas;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarCuentas(ar.edu.utn.frba.dds.donaciones.integracion.CuentasKeycloak cuentas) { this.cuentas = cuentas; }
+    private void sincronizarCuenta(Donante donante) { if (cuentas != null) cuentas.encolarDonante(donante.getId()); }
 
     public DonanteService(GestorDonantes gestorDonantes) {
         this.gestorDonantes = gestorDonantes;
@@ -84,6 +88,7 @@ public class DonanteService {
         Donante donante = gestorDonantes.registrarDonante(persona);
         sincronizarPerfil(donante);
         bienvenida(donante);
+        sincronizarCuenta(donante);
         return convertirADTO(donante);
     }
 
@@ -109,6 +114,7 @@ public class DonanteService {
         Donante donante = gestorDonantes.registrarDonante(persona);
         sincronizarPerfil(donante);
         bienvenida(donante);
+        sincronizarCuenta(donante);
 
         return convertirADTO(donante);
     }
@@ -193,6 +199,7 @@ public class DonanteService {
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
+        sincronizarCuenta(donante);
         return convertirADTO(donante);
     }
 
@@ -225,6 +232,7 @@ public class DonanteService {
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
+        sincronizarCuenta(donante);
         return convertirADTO(donante);
     }
 
@@ -280,6 +288,7 @@ public class DonanteService {
             var importados = gestorDonantes.importarDonantes(importador.getNombre());
             importados.stream().filter(d -> !existentes.contains(d.getId())).distinct().forEach(this::bienvenida);
             if (incentivos != null) importados.stream().distinct().forEach(incentivos::encolarPerfil);
+            importados.stream().distinct().forEach(this::sincronizarCuenta);
             int cantidadImportados = importados.size();
 
             return new ImportacionDonantesDTO(cantidadImportados);

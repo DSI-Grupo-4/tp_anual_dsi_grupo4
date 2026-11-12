@@ -35,6 +35,12 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
+        <!-- Validación de tokens de Keycloak en la API REST (Entrega 6) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
         <!-- Cola asincronica entre los servicios de dominio y Notificaciones -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

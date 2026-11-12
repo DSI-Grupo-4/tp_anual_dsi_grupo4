@@ -44,11 +44,13 @@ public class IncentivosController {
     private final GestorDonante gestorDonante = GestorDonante.getInstance();
     private org.springframework.web.client.RestClient donacionesClient;
 
-    @org.springframework.beans.factory.annotation.Value("${donaciones.base-url:http://localhost:8080}")
-    public void configurarDonaciones(String url) {
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarDonaciones(@org.springframework.beans.factory.annotation.Value("${donaciones.base-url:http://localhost:8080}") String url,
+                                     ar.edu.utn.frba.dds.incentivos.seguridad.TokenServicio tokenServicio) {
         var transporte = new org.springframework.http.client.SimpleClientHttpRequestFactory();
         transporte.setConnectTimeout(3000); transporte.setReadTimeout(5000);
-        donacionesClient = org.springframework.web.client.RestClient.builder().requestFactory(transporte).baseUrl(url).build();
+        donacionesClient = org.springframework.web.client.RestClient.builder().requestFactory(transporte).baseUrl(url)
+            .requestInterceptor(tokenServicio.interceptor()).build();
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Sincronizar perfil de donante", description = "Integración desde Donaciones: crea o actualiza identidad y contacto sin sumar donaciones, insignias ni progreso.")

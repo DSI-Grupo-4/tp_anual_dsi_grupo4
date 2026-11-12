@@ -3,6 +3,7 @@ package ar.edu.utn.frba.dds.donaciones.client;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
@@ -14,8 +15,17 @@ public class LogisticaClient {
     private final RestClient restClient;
 
     public LogisticaClient(String nombre, String baseUrl) {
+        this(nombre, baseUrl, null);
+    }
+
+    /** credenciales: token de servicio; null para proveedores externos, que no deben recibirlo. */
+    public LogisticaClient(String nombre, String baseUrl, ClientHttpRequestInterceptor credenciales) {
         this.nombre = nombre;
-        this.restClient = RestClient.builder().baseUrl(baseUrl).build();
+        RestClient.Builder builder = RestClient.builder().baseUrl(baseUrl);
+        if (credenciales != null) {
+            builder.requestInterceptor(credenciales);
+        }
+        this.restClient = builder.build();
     }
 
     public String getNombre() {

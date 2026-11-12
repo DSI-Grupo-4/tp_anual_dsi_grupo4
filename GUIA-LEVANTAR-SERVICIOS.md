@@ -176,7 +176,9 @@ El realm se importa desde `keycloak/import/donatrack-realm.json` solo si todaví
 
 ## Login del cliente web (realm que ya existe)
 
-Esta configuración deja funcionando el flujo: `http://localhost:8085/admin` redirige a Keycloak, el usuario entra, vuelve a `servicio-web` con sesión y "Cerrar sesión" cierra también la sesión de Keycloak. No incluye Google ni la protección de las APIs.
+Esta configuración deja funcionando el flujo: `http://localhost:8085/admin` redirige a Keycloak, el usuario entra, vuelve a `servicio-web` con sesión y "Cerrar sesión" cierra también la sesión de Keycloak.
+
+Desde D-045 estos pasos los hace solo el contenedor `keycloak-config` (ver "Configuración automática del realm" más abajo). Se dejan como referencia y para revisar a mano lo que aplicó el script.
 
 El contenedor que ya está corriendo no ve el tema hasta recrearlo. Este comando no borra volúmenes:
 
@@ -187,7 +189,7 @@ docker compose --env-file keycloak/.env --profile auth -f docker-compose.integra
 En la consola (http://localhost:8180, realm `master`, y después cambiar a `donatrack`):
 
 1. **Realm settings → Themes.** Login theme: `donatrack`. Save.
-2. **Realm settings → Localization.** Internationalization ON, supported locale `es`, default locale `es`. Save. El registro de usuarios queda desactivado.
+2. **Realm settings → Localization.** Internationalization ON, supported locale `es`, default locale `es`. Save.
 3. **Clients → Create client.**
    - Client type: OpenID Connect. Client ID: `servicio-web`.
    - Client authentication: On. Standard flow: On. Direct access grants: Off.
@@ -223,8 +225,6 @@ Prueba:
 3. Abrir http://localhost:8085/donante con ese usuario. Tiene que responder 403.
 4. "Cerrar sesión". Vuelve a http://localhost:8085. Entrar de nuevo a `/admin` tiene que pedir usuario otra vez. Si entra solo, la sesión de Keycloak no se cerró: revisar el post logout redirect del cliente.
 
-El botón "Crear cuenta" sigue yendo a `/ingresar`, que ahora inicia el login. El registro en Keycloak queda para la fase siguiente.
-
 En una instalación nueva el JSON ya crea el cliente `servicio-web`, sin secret. Keycloak genera uno al importar el realm: igual hay que copiarlo de Credentials. Si ese import fallara, no borres la base; creá el cliente en la consola con los mismos datos de arriba.
 
 Para bajarlo sin tocar el resto de la infraestructura:
@@ -236,3 +236,92 @@ docker compose --profile auth -f docker-compose.integration.yml stop keycloak
 `stop-servicios` también lo baja junto con MySQL, para que no quede corriendo sin su base. Los datos quedan en `mysql-data`.
 
 Las versiones anteriores de esta configuración usaban un volumen `keycloak-data` con H2. Si existe en tu máquina, ya no se usa y no hace falta borrarlo.
+
+## Configuración automática del realm (keycloak-config)
+
+`keycloak/config/configurar-realm.sh` deja el realm `donatrack` igual en todas las máquinas, aunque ya exista en la base. Corre en el contenedor `keycloak-config` (perfil `auth`) cuando Keycloak está sano, y termina. No borra el realm, ni usuarios, ni clientes. Se puede correr las veces que haga falta.
+
+Qué configura:
+
+- Tema `donatrack`, idioma español, registro de usuarios con el email como usuario, verificación de email y "¿Olvidaste tu contraseña?". Los mails de Keycloak salen por Mailpit (`mailpit:1025`); se ven en http://localhost:8025.
+- Cliente `servicio-web` (login, logout, cuenta de servicio para la landing) con mappers de `realm_access.roles`, `donante_id` y `entidad_ids` en el ID token y el access token.
+- Clientes `servicio-donaciones` y `servicio-incentivos`, solo con cuenta de servicio. La de Donaciones recibe `manage-users`, `view-users`, `query-users` y `view-realm` de `realm-management`: los usa para crear y completar cuentas de donantes y representantes.
+- Atributos de usuario no declarados en modo `ADMIN_EDIT`: el usuario no ve ni edita `donante_id` ni `entidad_ids`.
+- Google, si están `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`.
+
+Antes de correrlo, completar en `keycloak\.env` los secrets de los clientes (`KEYCLOAK_WEB_CLIENT_SECRET`, `KEYCLOAK_DONACIONES_CLIENT_SECRET`, `KEYCLOAK_INCENTIVOS_CLIENT_SECRET`). Cada integrante elige los suyos: mínimo 16 caracteres entre letras, números y `. _ ~ -`. Si quedan vacíos, el cliente conserva el secret que ya tenía y hay que copiarlo de la consola (Clients → cliente → Credentials).
+
+```powershell
+docker compose --env-file keycloak/.env --profile auth -f docker-compose.integration.yml up -d keycloak keycloak-config
+docker logs donatrack-keycloak-config
+```
+
+El log termina en `Realm donatrack configurado.` Nunca muestra los secrets. También levanta Mailpit si no estaba.
+
+Después, cada servicio usa el secret de su cliente en su propio `.env` (no se versiona; `run-servicios` lo carga):
+
+| Archivo | `KEYCLOAK_CLIENT_SECRET` igual a |
+|---|---|
+| `servicio-web\.env` | `KEYCLOAK_WEB_CLIENT_SECRET` |
+| `servicio-donaciones\.env` | `KEYCLOAK_DONACIONES_CLIENT_SECRET` |
+| `servicio-incentivos\.env` | `KEYCLOAK_INCENTIVOS_CLIENT_SECRET` |
+
+Hay un `.env.example` en cada una de esas carpetas.
+
+## Ingreso con Google
+
+En Google Cloud Console (https://console.cloud.google.com), con una cuenta propia; cada integrante puede usar su propio proyecto:
+
+1. Crear un proyecto (o elegir uno) y entrar a **APIs y servicios → Pantalla de consentimiento de OAuth**. Tipo de usuario: Externo. Nombre de la app: DonaTrack. Email de asistencia: el propio. Ámbitos: `openid`, `email` y `profile`. Mientras la app esté "En prueba", agregar como usuarios de prueba las cuentas de Google con las que se va a probar.
+2. **APIs y servicios → Credenciales → Crear credenciales → ID de cliente de OAuth.** Tipo: Aplicación web.
+   - Orígenes autorizados de JavaScript: `http://localhost:8180`.
+   - URI de redireccionamiento autorizados: `http://localhost:8180/realms/donatrack/broker/google/endpoint`. Tiene que ser exactamente esa: apunta a Keycloak, no a `servicio-web`.
+3. Copiar el ID de cliente y el secreto a `keycloak\.env` como `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET`. No van a Git ni a ningún otro archivo.
+4. Volver a correr `keycloak-config` (comando de arriba). El log dice `Google configurado como proveedor de identidad.`
+
+En Keycloak queda como Identity provider `google` con "Trust email" activado: Google ya verificó ese correo. Si existe una cuenta de Keycloak con el mismo email (por ejemplo, la que creó Donaciones para un donante), Keycloak no la une sola: pide entrar con la contraseña de esa cuenta o confirmar por un mail a ese correo.
+
+La pantalla de login muestra el botón de Google debajo del formulario, con el estilo de botones sociales del tema `donatrack`.
+
+## Seguridad de las APIs
+
+Los cuatro servicios validan el access token de Keycloak (firma, vencimiento e issuer `http://localhost:8180/realms/donatrack`) solo con `SEGURIDAD_HABILITADA=true`. Por defecto es `false` y todo queda abierto como antes: sirve para desarrollar sin Keycloak, para los tests y para el despliegue de Logística en Render. Para probar la seguridad, poner `SEGURIDAD_HABILITADA=true` en el `.env` de **todos** los servicios y de `servicio-web`: un servicio protegido rechaza las llamadas de otro que no manda token.
+
+Quedan públicos sin token: Swagger, `/actuator/health`, `/ping` y `/api/publico/**` de Donaciones; `GET /api/ranking/**` de Incentivos (lo consulta n8n); el link de seguimiento `GET /api/rutas/{id}/seguimiento` y el callback del planificador de Logística. Las reglas por endpoint están en `SeguridadApiConfig` de cada servicio (D-045).
+
+Las tareas automáticas siguen funcionando con un token propio (client_credentials): Donaciones → Logística (lotes y eventos) y Donaciones → Incentivos (perfil y actividad); Incentivos → Donaciones (consulta de un donante). El proveedor alternativo de Logística, que no es nuestro, nunca recibe el token.
+
+Swagger con la seguridad habilitada: las operaciones protegidas responden 401 porque Swagger no pide token. Para probarlas, usar la web o deshabilitar la seguridad.
+
+## Cuentas de donantes y entidades
+
+Con la seguridad habilitada, cada alta o edición de un donante o una entidad (desde la administración o la importación CSV) encola el registro en `.datos/donaciones/cuentas-pendientes`. Cada 10 segundos Donaciones procesa hasta 200:
+
+- por cada email cargado (del donante, de la entidad o de sus representantes) busca la cuenta en Keycloak;
+- si no existe, la crea y Keycloak manda el mail "Actualizá tu contraseña" con el link para el primer acceso (válido 7 días; después sirve "¿Olvidaste tu contraseña?");
+- si existe y su email está verificado, le agrega `donante_id` o `entidad_ids` y el rol `DONANTE` o `BENEFICIARIA`; si el email no está verificado, no la toca;
+- los emails que ya no figuran pierden ese vínculo.
+
+Nunca se asigna `ADMIN`: las cuentas administradoras se crean a mano en la consola. Para los donantes y entidades cargados antes de habilitar la seguridad, un ADMIN puede llamar a `POST /api/cuentas/sincronizar` de Donaciones.
+
+Quien se registra por su cuenta (o entra con Google) y todavía no tiene rol cae en http://localhost:8085/cuenta. "Buscar mis datos" llama a `POST /api/cuentas/vincular`: si su email verificado figura en un donante o una entidad, se vincula y vuelve a pedir el login para traer el rol nuevo.
+
+Prueba con Docker:
+
+1. `keycloak-config` corrido, los `.env` con los secrets y `SEGURIDAD_HABILITADA=true` en todos. Levantar con `run-servicios`.
+2. Entrar como ADMIN y dar de alta un donante con un email inventado. A los pocos segundos llega a http://localhost:8025 el mail de Keycloak. Seguir el link, elegir contraseña e ingresar: tiene que entrar a `/donante`.
+3. Reglas de la API. Sin token, `Invoke-WebRequest http://localhost:8080/api/donantes` responde 401. Con el token de servicio de `servicio-web` responde 200, y una operación de administración responde 403:
+
+   ```powershell
+   $secret = Read-Host "Secret de servicio-web"
+   $t = (Invoke-RestMethod -Method Post http://localhost:8180/realms/donatrack/protocol/openid-connect/token `
+         -Body @{ grant_type = "client_credentials"; client_id = "servicio-web"; client_secret = $secret }).access_token
+   Invoke-RestMethod http://localhost:8080/api/donantes -Headers @{ Authorization = "Bearer $t" }
+   Invoke-WebRequest -Method Delete http://localhost:8080/api/donantes/1 -Headers @{ Authorization = "Bearer $t" }
+   ```
+
+   La pertenencia (un DONANTE ve su `/api/donantes/{id}` y recibe 403 en el de otro) necesita un token de usuario; las pantallas de donante y entidad todavía no llaman a la API, así que hoy se prueba con los tests o desde la consola de Keycloak (Clients → servicio-web → Client scopes → Evaluate → Generated access token, para ver `donante_id`).
+4. Desde "Crear cuenta" en `/registro`, registrar un email que no figura en ningún donante. Después de verificarlo en Mailpit, el ingreso lleva a `/cuenta` y "Buscar mis datos" avisa que no encontró nada.
+5. Con Google configurado, entrar con una cuenta de Google de prueba. La primera vez cae en `/cuenta`.
+6. Cerrar sesión y volver a `/admin`: tiene que pedir usuario. En la pestaña de cookies, `DONATRACK_SESSION` ya no está.
+7. Sesión vencida: en Keycloak, Users → el usuario → Sessions → Sign out. El access token que ya tiene la web sigue valiendo hasta que vence (5 minutos por defecto); la primera acción que llama a una API después de eso no puede renovarlo y vuelve al login con el aviso "Tu sesión venció". Si se borra la sesión de la web (cookie vieja tras reiniciar `servicio-web`), entrar a una zona privada muestra el mismo aviso.

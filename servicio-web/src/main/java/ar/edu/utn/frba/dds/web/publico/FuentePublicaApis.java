@@ -5,6 +5,7 @@ import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
 import ar.edu.utn.frba.dds.web.client.logistica.EntregaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.LogisticaClient;
+import ar.edu.utn.frba.dds.web.config.CredencialesKeycloak;
 import ar.edu.utn.frba.dds.web.error.BackendException;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -85,7 +86,7 @@ public class FuentePublicaApis implements FuentePublica {
     @Override
     public PaginaFotos fotos(int pagina, int tamanio) {
         // Sin try: si Logística no responde, la galería no tiene nada que mostrar → página 503.
-        List<EntregaApi> entregadas = logistica.entregas().stream()
+        List<EntregaApi> entregadas = CredencialesKeycloak.comoServicio(logistica::entregas).stream()
                 .filter(FuentePublicaApis::realizada)
                 .filter(e -> e.fotos().stream().anyMatch(f -> esUrlSegura(f.url())))
                 .sorted(Comparator.comparing(EntregaApi::fechaHoraEntrega).reversed())
@@ -168,10 +169,13 @@ public class FuentePublicaApis implements FuentePublica {
                 .collect(Collectors.toMap(id, Function.identity(), (a, b) -> a));
     }
 
-    /** La landing no se cae si un servicio no responde: esa parte queda sin datos (null). */
+    /**
+     * La landing no se cae si un servicio no responde: esa parte queda sin datos (null).
+     * Siempre consulta con el token de servicio, aunque quien mira tenga sesión iniciada.
+     */
     private static <T> List<T> intentar(String que, Supplier<List<T>> llamada) {
         try {
-            List<T> resultado = llamada.get();
+            List<T> resultado = CredencialesKeycloak.comoServicio(llamada);
             return resultado == null ? List.of() : resultado;
         } catch (BackendException e) {
             log.warn("Landing sin {}: {}", que, e.getMessage());

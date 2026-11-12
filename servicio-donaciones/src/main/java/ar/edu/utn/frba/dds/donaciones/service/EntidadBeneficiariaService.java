@@ -41,6 +41,11 @@ public class EntidadBeneficiariaService {
         this.donacionRepository = donacionRepository;
     }
 
+    private ar.edu.utn.frba.dds.donaciones.integracion.CuentasKeycloak cuentas;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void configurarCuentas(ar.edu.utn.frba.dds.donaciones.integracion.CuentasKeycloak cuentas) { this.cuentas = cuentas; }
+    private void sincronizarCuentas(EntidadBeneficiaria entidad) { if (cuentas != null) cuentas.encolarEntidad(entidad.getId()); }
+
     public EntidadBeneficiariaDTO crear(EntidadBeneficiariaDTO dto) {
         PersonaJuridicaDTO personaJuridicaDTO = dto.getPersonaJuridica();
 
@@ -62,6 +67,7 @@ public class EntidadBeneficiariaService {
         entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
         personaJuridica.setRepresentantes(DatosPersonaMapper.representantes(personaJuridicaDTO.getRepresentantes()));
         entidad = entidadBeneficiariaRepository.save(entidad);
+        sincronizarCuentas(entidad);
 
         return convertirADTO(entidad);
     }
@@ -234,7 +240,9 @@ public class EntidadBeneficiariaService {
         entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
         if (dto.getPersonaJuridica().getRepresentantes() != null)
             persona.setRepresentantes(DatosPersonaMapper.actualizarRepresentantes(dto.getPersonaJuridica().getRepresentantes(), persona.getRepresentantes()));
-        return convertirADTO(entidadBeneficiariaRepository.save(entidad));
+        EntidadBeneficiaria guardada = entidadBeneficiariaRepository.save(entidad);
+        sincronizarCuentas(guardada);
+        return convertirADTO(guardada);
     }
 
         /**

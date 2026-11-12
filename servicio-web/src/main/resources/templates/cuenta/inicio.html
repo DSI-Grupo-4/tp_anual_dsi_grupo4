@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<!--
+  Primer acceso (Persona 2): cuenta de Keycloak sin rol de DonaTrack todavía.
+  El botón pide a Donaciones que la vincule por email verificado (POST /cuenta/vincular).
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{cuenta.titulo}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <div class="documento pila">
+    <div>
+      <h1 th:text="#{cuenta.titulo}">Tu cuenta</h1>
+      <p class="texto-secundario" th:if="${usuarioActual != null}" th:text="${usuarioActual.nombre}">Nombre</p>
+    </div>
+
+    <section class="tarjeta pila" th:if="${#lists.isEmpty(roles)}">
+      <h2 th:text="#{cuenta.sin-vincular.titulo}">Tu cuenta todavía no está vinculada</h2>
+      <p th:text="#{cuenta.sin-vincular.texto}">Explicación</p>
+      <form method="post" th:action="@{/cuenta/vincular}">
+        <button type="submit" class="boton boton--primario" th:text="#{cuenta.vincular}">Buscar mis datos</button>
+      </form>
+      <div class="pista">
+        <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+        <p style="margin: 0" th:text="#{cuenta.sin-vincular.pista}">Pista</p>
+      </div>
+    </section>
+
+    <section class="tarjeta pila" th:unless="${#lists.isEmpty(roles)}">
+      <h2 th:text="#{cuenta.vinculada.titulo}">Tu cuenta está lista</h2>
+      <div class="fila">
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'ADMIN')}" th:href="@{/admin}" th:text="#{cuenta.ir.admin}">Administración</a>
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'DONANTE')}" th:href="@{/donante}" th:text="#{cuenta.ir.donante}">Mis donaciones</a>
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'BENEFICIARIA')}" th:href="@{/beneficiaria}" th:text="#{cuenta.ir.beneficiaria}">Mi entidad</a>
+      </div>
+    </section>
+
+    <form method="post" th:action="@{/logout}">
+      <button type="submit" class="boton boton--fantasma" th:text="#{cuenta.salir}">Cerrar sesión</button>
+    </form>
+  </div>
+</div>
+</th:block>
+</body>
+</html>

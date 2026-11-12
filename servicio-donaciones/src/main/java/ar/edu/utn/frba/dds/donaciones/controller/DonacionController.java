@@ -43,6 +43,7 @@ public class DonacionController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public List<DonacionDTO> crear(@Valid @RequestBody CargaDonacionDTO dto) {
+        ar.edu.utn.frba.dds.donaciones.seguridad.UsuarioToken.exigirDonante(dto.getDonanteId());
         return donacionService.crear(dto);
     }
 

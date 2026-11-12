@@ -47,7 +47,9 @@ Sin backends, la landing igual carga: muestra "—" en las cifras y un aviso en 
 | `LOGISTICA_API_URL` | `http://localhost:8083` | API de Logística |
 | `API_TIMEOUT_CONEXION` / `API_TIMEOUT_LECTURA` | `2s` / `5s` | Después de ese tiempo se muestra "Servicio no disponible" |
 | `MAPA_TILES_URL` / `MAPA_ATRIBUCION` | Servidor público de OpenStreetMap | Proveedor de las imágenes del mapa |
-| `AUTH_REGISTRO_URL` | `/ingresar` | Destino del botón "Crear cuenta" de `/registro` (Persona 2) |
+| `AUTH_REGISTRO_URL` | `/oauth2/authorization/keycloak?registro` | Destino del botón "Crear cuenta" de `/registro`: abre el formulario de registro de Keycloak |
+| `KEYCLOAK_CLIENT_SECRET` | vacío | Secret del cliente `servicio-web` en Keycloak, en `servicio-web/.env` |
+| `SEGURIDAD_HABILITADA` | `false` | `true`: manda el token a las APIs (el del usuario, o el de servicio para la landing). Va igual que en los cuatro servicios |
 
 ## Estructura
 
@@ -227,27 +229,20 @@ Terminado: las fases 1 a 9 del plan (ver [Estado](#estado)). Queda:
 - [ ] Subir la rama: `git push -u origin feat/servicio-web` y abrir el PR.
 
 ### Persona 2 (autenticación, SSO, social login y permisos)
-Lo que ya existe: la rama `iam` (Keycloak, realm `donatrack`, roles `ADMIN`/`DONANTE`/`BENEFICIARIA`, D-039 y D-040), todavía sin mergear.
+Implementado en la rama `iam` (D-044 a D-046; pasos y pruebas en [GUIA-LEVANTAR-SERVICIOS.md](../GUIA-LEVANTAR-SERVICIOS.md)), sin compilar ni probar todavía en Docker:
 
-- [ ] Mergear `iam` en `main`. La bitácora de `feat/servicio-web` usa D-041 a D-043 y no choca con D-039 y D-040.
-- [ ] Crear en el realm el cliente OIDC confidencial `servicio-web`, con redirect a `http://localhost:8085/login/oauth2/code/keycloak`, y al menos un proveedor de social login.
-- [ ] Montar el tema `donatrack` y activarlo (pasos en [Tema de login de Keycloak](#tema-de-login-de-keycloak)).
-- [ ] En `servicio-web`:
-  - Agregar `spring-boot-starter-oauth2-client`, `spring-boot-starter-security` y `thymeleaf-extras-springsecurity6`.
-  - Proteger `/admin/**` (ADMIN), `/donante/**` (DONANTE) y `/beneficiaria/**` (BENEFICIARIA). El resto es público, incluidos `/mapa/entregas.json`, `/webjars/**`, `/css/**`, `/js/**`, `/img/**` y `/fonts/**`.
-  - `/ingresar` debe redirigir a `/oauth2/authorization/keycloak`. Hoy muestra "en construcción", en `PublicoController`.
-  - Configurar `AUTH_REGISTRO_URL` con el endpoint de registro de Keycloak. Hay un ejemplo en `application.properties`.
-  - El layout ya tiene el cierre de sesión por `POST /logout`, con CSRF automático.
-  - Con la sesión vencida, volver al login y mostrar un toast explicando por qué.
-- [ ] Implementar `PropagadorCredenciales` como un `@Component` que agregue `Authorization: Bearer <access token del usuario>`. Reemplaza al vacío sin tocar los clientes.
-- [ ] En `NavegacionModelAdvice`, tomar el rol del usuario autenticado en lugar de deducirlo de la ruta, y agregar `usuarioActual` (con `nombre`) al modelo. El encabezado ya lo muestra.
-- [ ] Configurar las APIs como resource server, validando los tokens de Keycloak. Cada operación tiene que quedar restringida a los recursos propios del usuario, no alcanza con ocultar botones.
-  - Ojo: la landing pública usa hoy `GET /api/entregas`, `/api/donaciones`, `/api/entidades` y `/api/donantes` sin token. Hasta que existan los endpoints públicos (D-041), esos cuatro tienen que seguir aceptando lecturas de `servicio-web`, por ejemplo con una credencial de servicio de solo lectura.
-- [ ] Mantener funcionando las llamadas entre servicios (Donaciones ↔ Logística e Incentivos, eventos, colas) con credenciales de servicio.
-- [ ] Definir el vínculo entre la cuenta de Keycloak y el Donante o la EntidadBeneficiaria.
-  - Propuesta: el usuario se registra en Keycloak y, al volver, completa su perfil en `servicio-web`, que crea el registro del dominio.
-  - Acordarlo con la Persona 1 para la vista y con la Persona 3 para las cuentas creadas por administración o importadas por CSV.
-- [ ] Tests de permisos: un rol que entra a la zona de otro rol, un acceso a un recurso ajeno, y una sesión vencida.
+- Login con Keycloak (authorization code), registro con `prompt=create`, ingreso con Google configurable, logout con `end_session` y borrado de `DONATRACK_SESSION`.
+- `/admin/**`, `/donante/**` y `/beneficiaria/**` por rol; `/cuenta` para usuarios sin rol, que pueden pedir la vinculación con su email verificado.
+- `CredencialesKeycloak` (implementa `PropagadorCredenciales`): manda el access token del usuario, renovándolo con el refresh token; la landing y las fotos usan el token de servicio de `servicio-web`.
+- 401 de las APIs: se cierra la sesión y vuelve al login con el aviso "Tu sesión venció". 403: página de acceso denegado.
+- Las cuatro APIs como resource servers, con reglas por endpoint y pertenencia (`donante_id`, `entidad_ids`), detrás de `SEGURIDAD_HABILITADA`. Llamadas entre servicios con client_credentials.
+- Cuentas creadas y vinculadas desde Donaciones al dar de alta o importar donantes y entidades (varios representantes por entidad).
+
+Pendiente:
+
+- [ ] Compilar, correr los tests y probar en Docker con la guía.
+- [ ] Con la Persona 1: autoregistro de una entidad o un donante que todavía no existe en la base. Falta decidir si un administrador aprueba antes de dar el rol BENEFICIARIA o DONANTE; hasta entonces, el usuario sin datos queda en `/cuenta`.
+- [ ] Endpoint "mis donaciones" para la vista del donante: hoy solo existe el acceso a una donación por id.
 
 ### Persona 3 (administración y gestión de Donaciones)
 Implementado:

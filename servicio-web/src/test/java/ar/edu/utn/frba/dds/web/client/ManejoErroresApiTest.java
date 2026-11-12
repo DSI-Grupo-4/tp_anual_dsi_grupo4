@@ -9,11 +9,13 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import ar.edu.utn.frba.dds.web.client.logistica.EntregaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.LogisticaClient;
+import ar.edu.utn.frba.dds.web.error.AccesoDenegadoException;
 import ar.edu.utn.frba.dds.web.error.BackendException;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
+import ar.edu.utn.frba.dds.web.error.SesionVencidaException;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,6 +91,16 @@ class ManejoErroresApiTest {
                     assertThat(e.getMessage()).isEqualTo("Datos inválidos");
                     assertThat(e.getErroresPorCampo()).containsEntry("patente", "es obligatoria");
                 });
+    }
+
+    @Test
+    void un401EsSesionVencidaYUn403AccesoDenegado() {
+        servidor.expect(requestTo("http://logistica/api/entregas")).andRespond(withStatus(HttpStatus.UNAUTHORIZED));
+        assertThatThrownBy(cliente::entregas).isInstanceOf(SesionVencidaException.class);
+
+        servidor.reset();
+        servidor.expect(requestTo("http://logistica/api/entregas")).andRespond(withStatus(HttpStatus.FORBIDDEN));
+        assertThatThrownBy(cliente::entregas).isInstanceOf(AccesoDenegadoException.class);
     }
 
     @Test

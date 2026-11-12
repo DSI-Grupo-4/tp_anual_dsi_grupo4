@@ -14,6 +14,8 @@ keycloak/.env
 servicio-web/.env
 servicio-notificaciones/.env
 servicio-logistica/.env
+servicio-donaciones/.env
+servicio-incentivos/.env
 .cli-venv/
 __pycache__/
 

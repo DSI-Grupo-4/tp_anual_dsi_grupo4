@@ -107,7 +107,7 @@ class PaginasPublicasWebTest {
                         containsString("role=\"tablist\""),
                         containsString("Para entidades beneficiarias"),
                         containsString("ubicación de la sede"),
-                        containsString("<a class=\"boton boton--primario\" href=\"/ingresar\">Crear cuenta</a>"),
+                        containsString("<a class=\"boton boton--primario\" href=\"/oauth2/authorization/keycloak?registro\">Crear cuenta</a>"),
                         containsString("href=\"/legal/terminos\""))));
     }
 

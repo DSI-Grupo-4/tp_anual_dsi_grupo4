@@ -160,6 +160,37 @@ services:
       retries: 12
       start_period: 90s
     restart: unless-stopped
+  # Aplica keycloak/config/configurar-realm.sh sobre el realm, exista o no de
+  # antes: tema, registro, clientes de los servicios, mappers y Google.
+  # Corre una vez por "up" y termina. Se le sacan los CR antes de ejecutarlo
+  # por si el checkout de Windows lo dejó con CRLF.
+  keycloak-config:
+    profiles: ["auth"]
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: donatrack-keycloak-config
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: "no"
+    environment:
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-}
+      KEYCLOAK_WEB_CLIENT_SECRET: ${KEYCLOAK_WEB_CLIENT_SECRET:-}
+      KEYCLOAK_DONACIONES_CLIENT_SECRET: ${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}
+      KEYCLOAK_INCENTIVOS_CLIENT_SECRET: ${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - ./keycloak/config:/opt/donatrack:ro
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        while IFS= read -r linea || [ -n "$$linea" ]; do
+          printf '%s\n' "$${linea%$$'\r'}"
+        done < /opt/donatrack/configurar-realm.sh > /tmp/configurar-realm.sh
+        exec bash /tmp/configurar-realm.sh
 volumes:
   rabbitmq-data:
   mysql-data:
