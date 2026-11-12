@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.seguimiento}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:text="#{logistica.beneficiaria.titulo}">Seguimiento</h1>
+      <p th:text="#{logistica.beneficiaria.bajada}">Seguí las entregas que van hacia tu organización</p>
+    </div>
+  </div>
+
+  <div class="pila pila--grande">
+    <div class="grilla grilla--ajustada">
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{logistica.beneficiaria.en-camino}">En camino</span>
+          <th:block th:replace="~{fragments/comunes :: icono('camion')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.iniciadas()}">0</span>
+        <span class="metrica__detalle" th:text="#{logistica.beneficiaria.en-camino.detalle}">Rutas en curso</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{logistica.beneficiaria.programadas}">Programadas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('lista')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.planificadas()}">0</span>
+        <span class="metrica__detalle" th:text="#{logistica.beneficiaria.programadas.detalle}">Todavía no salieron</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{logistica.beneficiaria.completadas}">Completadas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('exito')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.finalizadas()}">0</span>
+        <span class="metrica__detalle" th:text="#{logistica.beneficiaria.completadas.detalle}">Rutas terminadas</span>
+      </div>
+    </div>
+
+    <div class="tarjeta vacio" th:if="${#lists.isEmpty(envios)}">
+      <th:block th:replace="~{fragments/comunes :: icono('camion')}"/>
+      <p th:text="#{logistica.beneficiaria.vacio}">No hay entregas programadas hacia tu organización.</p>
+    </div>
+
+    <section class="tarjeta pila" th:each="e : ${envios}" th:attr="aria-labelledby='envio-' + ${e.idRuta} + '-titulo'">
+      <div class="fila fila--separada">
+        <h2 class="tarjeta__titulo" th:id="'envio-' + ${e.idRuta} + '-titulo'"
+            th:text="#{logistica.beneficiaria.envio(${e.idRuta}, ${@fechas.fecha(e.fecha)})}">Ruta 1 · 11/11/2026</h2>
+        <span class="insignia-estado" th:classappend="${@vistaLogistica.claseRuta(e.estadoRuta)}"
+              th:text="#{'logistica.ruta.estado.' + ${e.estadoRuta}}">Estado</span>
+      </div>
+      <p class="texto-secundario">
+        <span th:text="#{logistica.beneficiaria.parada(${e.numeroParada}, ${e.totalParadas})}">Parada 2 de 5</span>
+        <span th:if="${e.patente != null}" th:text="'· ' + #{logistica.beneficiaria.camion(${e.patente})}">· Camión AA123BB</span>
+      </p>
+
+      <ul class="pila pila--chica">
+        <li th:each="x : ${e.entregas}">
+          <a th:href="@{/beneficiaria/donaciones/{id}(id=${x.idDonacionAsociada})}"
+             th:text="#{logistica.seguimiento.donacion-n(${x.idDonacionAsociada})}">Donación 1</a>
+          <span class="insignia-estado" th:classappend="${@vistaLogistica.claseEntrega(x.estadoEntrega)}"
+                th:text="#{'logistica.entrega.estado.' + ${x.estadoEntrega}}">Estado</span>
+          <span class="texto-chico texto-secundario" th:if="${x.fechaHoraEntrega != null}"
+                th:text="${@fechas.fechaHora(x.fechaHoraEntrega)}">11/11/2026 14:30</span>
+          <th:block th:each="f, i : ${x.fotos()}">
+            <a th:if="${@vistaLogistica.urlSegura(f.url) != null}" th:href="${@vistaLogistica.urlSegura(f.url)}"
+               target="_blank" rel="noopener noreferrer"
+               th:text="#{logistica.seguimiento.foto-n(${i.count})}">Foto 1</a>
+          </th:block>
+        </li>
+      </ul>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

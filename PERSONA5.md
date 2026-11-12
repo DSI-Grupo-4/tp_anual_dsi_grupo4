@@ -1,39 +1,27 @@
-# Persona 5 — entrega 1: portal de la entidad beneficiaria (parte 1)
+# Persona 5 — parte 2: camiones y seguimiento de rutas
 
-Archivos nuevos y modificados de `servicio-web`, listos para copiar encima de la rama `feat/servicio-web`.
-Descomprimir en la raíz del repo.
+Se copia encima de la rama `feat/servicio-web` (después de la parte 1). Descomprimir en la raíz del repo.
 
 ## Qué incluye
 
 | Pantalla | Ruta | Estado |
 |---|---|---|
-| Panel de la entidad | `/beneficiaria` | Hecha |
-| Necesidades: lista, alta, edición y baja (recurrentes y extraordinarias) | `/beneficiaria/necesidades[/nueva\|/{id}]` | Hecha |
-| Donaciones asignadas, con filtro y detalle con historial | `/beneficiaria/donaciones[/{id}]` | Hecha |
-| Confirmación de recepción con fotos | `/beneficiaria/donaciones/{id}` | Falta (parte 2) |
-| Seguimiento | `/beneficiaria/seguimiento` | Falta (parte 3) |
+| ABM de camiones (lista con cifras, alta, edición, baja) | `/admin/camiones[/nuevo\|/{id}]` | Hecha |
+| Seguimiento de rutas: lista con filtro y cifras, «Planificar ahora» | `/admin/seguimiento` | Hecha |
+| Detalle de una ruta con sus paradas y entregas, «Iniciar ruta» | `/admin/seguimiento/{id}` | Hecha |
+| Seguimiento de las entregas de la entidad | `/beneficiaria/seguimiento` | Hecha (sin mapa) |
 
-## Archivos modificados (pueden tener conflicto con otras ramas: quedarse con ambos cambios)
+## Archivos modificados
 
-- `client/donaciones/DonacionesClient.java`: se agregaron `donacion(id)` e `historial(id)` al final. Si la Persona 3 o 4 ya los agregó, quedarse con uno solo.
-- `src/main/resources/application.properties`: `spring.messages.basename=messages,messages-beneficiaria` y la propiedad `donatrack.web.beneficiaria.entidad-id`.
-- `src/test/.../navegacion/NavegacionWebTest.java`: ahora simula los clientes de Donaciones, porque el panel y las necesidades de la entidad dejaron de ser «en construcción».
+- `src/main/resources/application.properties`: el `basename` de mensajes suma `messages-logistica` (ya incluye `messages-beneficiaria` de la parte 1).
 
-## Piezas que hay que reemplazar al integrar la autenticación (Persona 2)
+Todo lo demás es nuevo. Los textos están en `messages-logistica.properties`.
 
-`beneficiaria/EntidadActual` es la interfaz que dice con qué entidad opera quien usa el portal. Hoy la implementa
-`EntidadActualConfigurada`, que lee el id de `donatrack.web.beneficiaria.entidad-id` (por defecto 1). Con la autenticación
-hay que borrar esa clase y aportar una que tome el id de la cuenta del usuario. Ninguna pantalla cambia.
+## Cosas para saber
 
-## Cómo probarlo
-
-1. Levantar Donaciones y tener una entidad con id 1 (o definir `BENEFICIARIA_ENTIDAD_ID`).
-2. `mvn -pl servicio-web spring-boot:run -Dspring-boot.run.profiles=dev` y abrir `http://localhost:8085/beneficiaria`.
-3. Tests: `mvn -pl servicio-web test`.
-
-## Decisiones de esta parte
-
-- Los textos están en `messages-beneficiaria.properties` y no en `messages.properties`, para no pisarse con las otras ramas.
-- Una entidad solo ve y modifica lo suyo: el detalle de una donación de otra entidad responde 404, y toda llamada a Donaciones lleva el id de `EntidadActual`.
-- Donaciones no filtra por entidad ni trae fechas, así que el panel filtra en el cliente y no muestra cifras «de este mes» del boceto.
-- Urgentes: son las necesidades extraordinarias que todavía no se cubrieron.
+- **Estado de un camión:** el administrador solo elige entre «Disponible» y «Fuera de servicio». ASIGNADO y EN_RUTA los maneja el planificador: si el camión está en uno de esos estados, el formulario no deja cambiarlo y el controlador no envía el estado aunque lo manden a mano.
+- **Baja de un camión:** Logística rechaza la baja si tiene entregas activas o figura en rutas anteriores; el rechazo se muestra como toast con su mensaje.
+- **Lo que ve la entidad:** solo su parada de cada ruta (número de parada, camión, entregas y fotos). Nunca las otras paradas, direcciones ni el chofer.
+- **Fotos:** solo se enlazan las URL que empiezan con http:// o https://.
+- **Nombres de entidades:** Logística guarda el id; el seguimiento de la administración los pide a Donaciones y, si no responde, muestra «Entidad N».
+- **Pendiente en estas pantallas:** el mapa (parte de ubicación del camión) y la confirmación de recepción con fotos (parte 2 del plan: depende de dónde se guardan las fotos).
