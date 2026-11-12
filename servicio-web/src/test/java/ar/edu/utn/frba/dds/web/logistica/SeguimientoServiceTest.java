@@ -107,4 +107,27 @@ class SeguimientoServiceTest {
         assertThat(enCamino.ubicacionSimulada()).isTrue();
         assertThat(envios.get(1).tieneUbicacion()).isFalse();
     }
+
+    @Test
+    void elEnvioDeUnaRutaSoloSeEncuentraSiLeLlevaAlgoALaEntidad() {
+        when(rutasClient.rutas()).thenReturn(List.of(
+                ruta(2, "INICIADA", parada(1, 5, entrega(1, "EN_TRASLADO"))),
+                ruta(3, "INICIADA", parada(1, 9, entrega(2, "EN_TRASLADO")))));
+
+        assertThat(seguimiento.envioDe(5L, 2)).isPresent();
+        assertThat(seguimiento.envioDe(5L, 3)).isEmpty();
+        assertThat(seguimiento.envioDe(5L, 99)).isEmpty();
+    }
+
+    @Test
+    void sePuedeConfirmarSoloConLaRutaEnCursoYEntregasEnTraslado() {
+        when(rutasClient.rutas()).thenReturn(List.of(
+                ruta(1, "INICIADA", parada(1, 5, entrega(1, "EN_TRASLADO"))),
+                ruta(2, "INICIADA", parada(1, 5, entrega(2, "ENTREGADA"))),
+                ruta(3, "PLANIFICADA", parada(1, 5, entrega(3, "ASIGNADA_A_RUTA")))));
+
+        assertThat(seguimiento.envioDe(5L, 1).orElseThrow().puedeConfirmarRecepcion()).isTrue();
+        assertThat(seguimiento.envioDe(5L, 2).orElseThrow().puedeConfirmarRecepcion()).isFalse();
+        assertThat(seguimiento.envioDe(5L, 3).orElseThrow().puedeConfirmarRecepcion()).isFalse();
+    }
 }

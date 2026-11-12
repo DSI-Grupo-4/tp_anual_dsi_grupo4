@@ -75,6 +75,13 @@
           </th:block>
         </li>
       </ul>
+
+      <div th:if="${e.puedeConfirmarRecepcion()}">
+        <a class="boton boton--primario" th:href="@{/beneficiaria/seguimiento/{id}(id=${e.idRuta})}">
+          <span th:text="#{logistica.recepcion.confirmar}">Confirmar recepción</span>
+          <span class="solo-lector" th:text="#{logistica.beneficiaria.envio(${e.idRuta}, ${@fechas.fecha(e.fecha)})}"></span>
+        </a>
+      </div>
     </section>
   </div>
 </th:block>

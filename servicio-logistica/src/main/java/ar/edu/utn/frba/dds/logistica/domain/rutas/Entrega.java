@@ -112,6 +112,19 @@ public class Entrega {
         cambiarEstado(EstadoEntrega.ENTREGADA);
     }
 
+    /**
+     * Confirma la entrega con una o varias fotos (cada entrega guarda su propia copia de cada foto).
+     * Primero cambia el estado y recién después agrega las fotos: si algo falla, no queda nada a medias.
+     * Se llama distinto de {@link #confirmarEntrega(FotoEntrega)} para no volver ambiguas las llamadas con null.
+     */
+    public void confirmarEntregaConFotos(List<FotoEntrega> nuevas) {
+        cambiarEstado(EstadoEntrega.ENTREGADA);
+        this.fechaHoraEntrega = LocalDateTime.now();
+        for (FotoEntrega foto : nuevas) {
+            this.fotos.add(new FotoEntrega(foto.getUrl(), foto.getFecha() != null ? foto.getFecha() : LocalDate.now()));
+        }
+    }
+
     public void marcarNoRecibida(String justificacion) {
         this.justificacionFallo = justificacion;
         cambiarEstado(EstadoEntrega.NO_RECIBIDA);

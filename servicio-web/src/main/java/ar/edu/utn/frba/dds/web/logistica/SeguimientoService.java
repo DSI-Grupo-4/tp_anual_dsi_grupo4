@@ -88,6 +88,11 @@ public class SeguimientoService {
         return envios;
     }
 
+    /** El envío de la entidad en una ruta (su parada), o vacío si esa ruta no le lleva nada. */
+    public java.util.Optional<EnvioEntidad> envioDe(Long entidadId, Integer idRuta) {
+        return enviosDe(entidadId).stream().filter(e -> idRuta.equals(e.idRuta())).findFirst();
+    }
+
     public ResumenSeguimiento resumenDe(List<EnvioEntidad> envios) {
         int planificadas = (int) envios.stream().filter(e -> "PLANIFICADA".equals(e.estadoRuta())).count();
         int iniciadas = (int) envios.stream().filter(e -> "INICIADA".equals(e.estadoRuta())).count();

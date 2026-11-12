@@ -22,9 +22,12 @@ import ar.edu.utn.frba.dds.web.client.donaciones.HistorialEstadoApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadRequest;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadesClient;
+import ar.edu.utn.frba.dds.web.client.logistica.EntregaApi;
+import ar.edu.utn.frba.dds.web.client.logistica.LogisticaClient;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +56,9 @@ class BeneficiariaWebTest {
 
     @MockitoBean
     private DonacionesClient donaciones;
+
+    @MockitoBean
+    private LogisticaClient logistica;
 
     private static DonacionApi donacion(long id, String estado, Long entidad) {
         return new DonacionApi(id, "Arroz " + id, new BigDecimal("20.00"), "KILOGRAMO", "ALIMENTOS", "ARROZ", estado, entidad);
@@ -235,5 +241,48 @@ class BeneficiariaWebTest {
         when(donaciones.donacion(3L)).thenReturn(donacion(3, "EN_TRASLADO", 2L));
 
         mvc.perform(get("/beneficiaria/donaciones/3")).andExpect(status().isNotFound());
+    }
+
+    // ---- fotos de una donación recibida ----
+
+    @Test
+    void elDetalleDeUnaDonacionRecibidaMuestraLasFotosDeSuEntregaSoloSiSonUrlsWeb() throws Exception {
+        when(donaciones.donacion(1L)).thenReturn(donacion(1, "ENTREGADA", 1L));
+        when(donaciones.historial(1L)).thenReturn(List.of());
+        when(logistica.entregas()).thenReturn(List.of(
+                new EntregaApi(7, 1, 1, "ENTREGADA", LocalDate.of(2026, 11, 12), LocalDateTime.of(2026, 11, 12, 17, 30),
+                        List.of(new EntregaApi.FotoApi("https://f.org/1.jpg", null), new EntregaApi.FotoApi("javascript:alert(1)", null))),
+                new EntregaApi(8, 2, 1, "ENTREGADA", LocalDate.of(2026, 11, 12), null,
+                        List.of(new EntregaApi.FotoApi("https://f.org/otra.jpg", null)))));
+
+        mvc.perform(get("/beneficiaria/donaciones/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("Fotos de la entrega"),
+                        containsString("href=\"https://f.org/1.jpg\""),
+                        not(containsString("javascript:alert")),
+                        not(containsString("otra.jpg")))));
+    }
+
+    @Test
+    void siLogisticaNoRespondeElDetalleSeVeIgualSinFotos() throws Exception {
+        when(donaciones.donacion(1L)).thenReturn(donacion(1, "ENTREGADA", 1L));
+        when(donaciones.historial(1L)).thenReturn(List.of());
+        when(logistica.entregas()).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
+                ServicioBackend.LOGISTICA, 0, null));
+
+        mvc.perform(get("/beneficiaria/donaciones/1"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(not(containsString("Fotos de la entrega"))));
+    }
+
+    @Test
+    void unaDonacionQueTodaviaNoSeRecibioNoConsultaFotos() throws Exception {
+        when(donaciones.donacion(2L)).thenReturn(donacion(2, "EN_TRASLADO", 1L));
+        when(donaciones.historial(2L)).thenReturn(List.of());
+
+        mvc.perform(get("/beneficiaria/donaciones/2")).andExpect(status().isOk());
+
+        verify(logistica, never()).entregas();
     }
 }

@@ -1,7 +1,6 @@
 <!--
-BORRADOR para pegar en decisiones.md. La numeración se asigna al integrar (D-044 en adelante está libre en la rama
-feat/servicio-web, pero las otras personas también agregan entradas). Formato: el de las entradas existentes.
-Todas figuran como «propuesta» hasta que las confirme el equipo.
+BORRADOR para pegar en decisiones.md (reemplaza al de la parte 3: incluye sus cuatro entradas actualizadas y suma una).
+La numeración se asigna al integrar. Formato: el de las entradas existentes. Todas figuran como «propuesta» salvo la indicada.
 -->
 
 ## [D-???] Ubicación del camión: campos propios en Logística y consulta por REST
@@ -46,12 +45,29 @@ Todas figuran como «propuesta» hasta que las confirme el equipo.
 - **Consecuencias:** El filtro se hace hoy en el cliente web, porque Logística no sabe quién es el usuario. Cuando la Persona 2 restrinja las APIs por usuario, hay que hacerlo también en Logística: el filtro del cliente web es una protección de la pantalla, no de los datos.
 - **Definida por:** propuesta — pendiente de confirmar por el equipo
 
-## [D-???] Fotos de entrega guardadas en MongoDB (GridFS) — a implementar
+## [D-???] Fotos de entrega guardadas en MongoDB (GridFS)
 - **Fecha:** 2026-11-11
-- **Servicio(s) afectado(s):** Logística (endpoint nuevo), cliente web (carga desde el navegador)
+- **Servicio(s) afectado(s):** Logística (`POST /api/fotos`, `GET /api/fotos/{id}`), cliente web (carga desde el navegador)
 - **Entrega vigente al momento:** Entrega 6
-- **Contexto:** `FotoEntrega` recibe hoy una URL, pero la entidad sube un archivo desde el navegador.
-- **Opciones consideradas:** A) Guardar el archivo en MongoDB con GridFS y servirlo desde Logística. B) Guardarlo en el disco del cliente web. C) Un servicio externo de almacenamiento.
-- **Decisión tomada:** Opción A, elegida por el equipo. Logística recibe el archivo (`POST /api/fotos`, multipart), lo guarda en GridFS y devuelve la URL con la que se arma `FotoEntrega`. Se validan el tipo y el tamaño.
-- **Consecuencias:** Las fotos viven en la misma base que el resto de los datos y no se pierden al reiniciar el servicio, a diferencia del disco de Render. Las instancias que comparten la base comparten las fotos.
+- **Contexto:** `FotoEntrega` recibe una URL, pero la entidad elige un archivo en el navegador.
+- **Fuentes revisadas:** `servicio-web/README.md` (Persona 5) / D-038 (persistencia de Logística en MongoDB).
+- **Opciones consideradas:**
+  - A) Guardar el archivo en MongoDB con GridFS y servirlo desde Logística.
+  - B) Guardarlo en el disco del cliente web.
+  - C) Un servicio externo de almacenamiento.
+- **Decisión tomada:** Opción A, elegida por el equipo. El cliente web recibe el archivo y se lo manda a Logística (`POST /api/fotos`, multipart); Logística lo guarda en GridFS y devuelve la URL pública (`LOGISTICA_PUBLIC_BASE_URL` + `/api/fotos/{id}`), que es la que se guarda en `FotoEntrega`. Solo se aceptan JPEG, PNG y WebP de hasta 5 MB, y se verifica el contenido real del archivo (los primeros bytes), no solo el tipo que declara quien lo sube. Al servirla se envían `X-Content-Type-Options: nosniff`, `Content-Disposition: inline` y una política que impide ejecutar cualquier cosa.
+- **Consecuencias:** Las fotos viven en la misma base que el resto de los datos y no se pierden al reiniciar el servicio, a diferencia del disco de Render. Las instancias que comparten la base comparten las fotos. En producción `LOGISTICA_PUBLIC_BASE_URL` tiene que apuntar a una dirección que alcancen los navegadores: con el valor por defecto (`localhost`) las fotos no se ven fuera de la máquina local. Si falla la confirmación después de subir las fotos, quedan fotos sin usar en la base.
 - **Definida por:** usuario (persona 5)
+
+## [D-???] Confirmación de recepción con fotos: endpoint propio y chequeos de estado
+- **Fecha:** 2026-11-11
+- **Servicio(s) afectado(s):** Logística (`POST /api/rutas/{id}/paradas/{id}/recepcion`), cliente web (`/beneficiaria/seguimiento/{idRuta}`)
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** `POST .../confirmar` acepta una sola foto, no valida el estado de la ruta ni de las entregas (se podía confirmar dos veces o antes de que el camión saliera) y exige una foto en el cuerpo. La consigna pide confirmar con fotos.
+- **Fuentes revisadas:** `ParadaController`, `Entrega`, `Parada`, `Ruta` y `servicio-web/README.md`.
+- **Opciones consideradas:**
+  - A) Modificar `POST .../confirmar` para aceptar varias fotos y validar estados.
+  - B) Un endpoint nuevo, dejando el anterior como está.
+- **Decisión tomada:** Opción B, para no romper la colección de Postman ni las pruebas existentes. `POST .../recepcion` recibe de 1 a 5 URL de fotos y exige que la ruta esté `INICIADA` y que la parada tenga entregas en traslado (si no, responde 409). Solo confirma las entregas que estaban en traslado, les agrega las fotos, genera `ENTREGA_CONFIRMADA` por cada una y, si era la última pendiente, finaliza la ruta y libera el camión. Las URL deben empezar con `http://` o `https://`.
+- **Consecuencias:** El cliente web nunca acepta la parada del pedido: la busca entre los envíos de la entidad, así que no se puede confirmar la de otra. `POST .../confirmar` sigue disponible y sin esos chequeos, pensado para el chofer; conviene revisarlo cuando se defina el rol de cada uno.
+- **Definida por:** propuesta — pendiente de confirmar por el equipo

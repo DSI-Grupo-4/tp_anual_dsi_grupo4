@@ -30,4 +30,13 @@ public record EnvioEntidad(
     public boolean tieneUbicacion() {
         return latitud != null && longitud != null;
     }
+
+    /** La entidad puede confirmar la recepción cuando la ruta salió y todavía hay entregas suyas en traslado. */
+    public boolean puedeConfirmarRecepcion() {
+        return "INICIADA".equals(estadoRuta) && entregasEnTraslado() > 0;
+    }
+
+    public long entregasEnTraslado() {
+        return entregas.stream().filter(e -> "EN_TRASLADO".equals(e.estadoEntrega())).count();
+    }
 }

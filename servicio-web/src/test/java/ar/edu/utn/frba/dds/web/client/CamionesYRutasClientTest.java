@@ -213,4 +213,28 @@ class CamionesYRutasClientTest {
         assertThatThrownBy(() -> rutas.simularAvance(7))
                 .isInstanceOf(BackendRechazoException.class).hasMessageContaining("no está en curso");
     }
+
+    @Test
+    void confirmarLaRecepcionEnviaLasUrlsDeLasFotosALaParadaCorrecta() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/paradas/2/recepcion"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(jsonPath("$.fotos.length()").value(2))
+                .andExpect(jsonPath("$.fotos[0].url").value("http://l/api/fotos/1"))
+                .andExpect(jsonPath("$.fotos[1].url").value("http://l/api/fotos/2"))
+                .andRespond(withSuccess());
+
+        rutas.confirmarRecepcion(7, 2, List.of("http://l/api/fotos/1", "http://l/api/fotos/2"));
+
+        servidor.verify();
+    }
+
+    @Test
+    void siLaRutaNoEstaEnCursoLaConfirmacionLlegaComoRechazo() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/paradas/2/recepcion"))
+                .andRespond(withStatus(HttpStatus.CONFLICT).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"error\": \"La ruta 7 no está en curso: no se puede confirmar la recepción\"}"));
+
+        assertThatThrownBy(() -> rutas.confirmarRecepcion(7, 2, List.of("http://l/1")))
+                .isInstanceOf(BackendRechazoException.class).hasMessageContaining("no está en curso");
+    }
 }

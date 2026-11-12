@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.web.controller.beneficiaria;
 
 import ar.edu.utn.frba.dds.web.beneficiaria.EntidadActual;
+import ar.edu.utn.frba.dds.web.beneficiaria.FotosDeDonacion;
 import ar.edu.utn.frba.dds.web.beneficiaria.PortalBeneficiariaService;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
@@ -27,12 +28,14 @@ public class DonacionesAsignadasController {
     private final EntidadActual entidadActual;
     private final DonacionesClient donaciones;
     private final PortalBeneficiariaService portal;
+    private final FotosDeDonacion fotosDeDonacion;
 
     public DonacionesAsignadasController(EntidadActual entidadActual, DonacionesClient donaciones,
-                                         PortalBeneficiariaService portal) {
+                                         PortalBeneficiariaService portal, FotosDeDonacion fotosDeDonacion) {
         this.entidadActual = entidadActual;
         this.donaciones = donaciones;
         this.portal = portal;
+        this.fotosDeDonacion = fotosDeDonacion;
     }
 
     @GetMapping
@@ -59,6 +62,7 @@ public class DonacionesAsignadasController {
         }
         model.addAttribute("donacion", donacion);
         model.addAttribute("historial", donaciones.historial(id));
+        model.addAttribute("fotos", "ENTREGADA".equals(donacion.estadoActual()) ? fotosDeDonacion.de(id) : List.of());
         model.addAttribute("migas", List.of(
                 Miga.clave("nav.beneficiaria.panel", "/beneficiaria"),
                 Miga.clave("nav.beneficiaria.donaciones", "/beneficiaria/donaciones"),

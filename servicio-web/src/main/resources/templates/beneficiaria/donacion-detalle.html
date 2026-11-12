@@ -36,6 +36,18 @@
       </div>
     </section>
 
+    <section class="tarjeta pila" aria-labelledby="fotos-titulo" th:unless="${#lists.isEmpty(fotos)}">
+      <h2 id="fotos-titulo" class="tarjeta__titulo" th:text="#{beneficiaria.donaciones.detalle.fotos}">Fotos de la entrega</h2>
+      <ul class="pila pila--chica">
+        <th:block th:each="f, i : ${fotos}">
+          <li th:if="${@vistaLogistica.urlSegura(f.url) != null}">
+            <a th:href="${@vistaLogistica.urlSegura(f.url)}" target="_blank" rel="noopener noreferrer"
+               th:text="#{logistica.seguimiento.foto-n(${i.count})}">Foto 1</a>
+          </li>
+        </th:block>
+      </ul>
+    </section>
+
     <section class="tarjeta pila" aria-labelledby="historial-titulo">
       <h2 id="historial-titulo" class="tarjeta__titulo" th:text="#{beneficiaria.donaciones.detalle.historial}">Historial de estados</h2>
 

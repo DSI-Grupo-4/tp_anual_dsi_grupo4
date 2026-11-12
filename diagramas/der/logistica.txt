@@ -123,3 +123,12 @@ FotoEntrega {
   _id   : String   // "camion" | "chofer" | "entrega" | "ruta"
   valor : Long      // incrementado atómicamente con $inc + findAndModify antes de cada primer guardado
 }
+
+// ---------------------------------------------------------------------
+// fs.files / fs.chunks  (GridFS: fotos de las entregas)
+// ---------------------------------------------------------------------
+// Las maneja GridFsTemplate, no son clases @Document. Cada foto subida con POST /api/fotos queda en fs.files
+// { _id: ObjectId, filename, length, uploadDate, metadata._contentType } y sus bloques en fs.chunks.
+// Solo se aceptan JPEG, PNG y WebP de hasta 5 MB (se verifica el contenido real del archivo).
+// La entrega NO referencia la foto por id: guarda la URL (http://.../api/fotos/{_id}) en entregas.fotos[].url.
+

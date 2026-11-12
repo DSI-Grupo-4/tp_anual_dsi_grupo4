@@ -53,6 +53,23 @@ public class Parada {
         entregas.forEach(entrega -> entrega.confirmarEntrega(foto));
     }
 
+    /** Las entregas de la parada que todavía no se recibieron (siguen en traslado). */
+    public List<Entrega> entregasEnTraslado() {
+        return entregas.stream().filter(e -> e.getEstadoEntrega() == EstadoEntrega.EN_TRASLADO).toList();
+    }
+
+    /**
+     * La entidad confirma la recepción con una o varias fotos. Solo se confirman las entregas que estaban en traslado:
+     * las que ya tenían un resultado (recibidas, no recibidas o fallidas) no se tocan.
+     *
+     * @return las entregas que se confirmaron, para generar sus eventos
+     */
+    public List<Entrega> confirmarRecepcionConFotos(List<FotoEntrega> fotos) {
+        List<Entrega> confirmadas = entregasEnTraslado();
+        confirmadas.forEach(entrega -> entrega.confirmarEntregaConFotos(fotos));
+        return confirmadas;
+    }
+
     public void marcarNoRecibida(String justificacion) {
         if (justificacion == null || justificacion.isBlank()) {
             throw new IllegalArgumentException("La justificación de la entrega no recibida es obligatoria");

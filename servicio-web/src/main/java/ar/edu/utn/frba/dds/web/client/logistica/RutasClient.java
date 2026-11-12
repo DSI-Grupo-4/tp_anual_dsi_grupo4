@@ -43,4 +43,14 @@ public class RutasClient {
     public SimulacionApi simularAvance(Integer id) {
         return http.post().uri("/api/rutas/{id}/simular-avance", id).retrieve().body(SimulacionApi.class);
     }
+
+    /**
+     * POST /api/rutas/{idRuta}/paradas/{idParada}/recepcion: la entidad confirma la recepción con 1 a 5 fotos (por URL).
+     * 409 si la ruta no está en curso o la parada no tiene entregas en traslado; 400 si las fotos no son válidas.
+     */
+    public void confirmarRecepcion(Integer idRuta, Integer idParada, java.util.List<String> urlsDeFotos) {
+        http.post().uri("/api/rutas/{ruta}/paradas/{parada}/recepcion", idRuta, idParada)
+                .body(ConfirmacionRecepcionRequest.de(urlsDeFotos))
+                .retrieve().toBodilessEntity();
+    }
 }

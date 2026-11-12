@@ -132,7 +132,7 @@ class LogisticaWebTest {
                         .param("patente", "").param("capacidadCargaKg", "0").param("capacidadVolumenM3", "abc"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("Completá este campo."),
-                        containsString("Ingresá un número mayor a 0."), containsString("Ingresá un número entero"))));
+                        containsString("Ingresá una cantidad mayor a 0."), containsString("Ingresá un número entero"))));
 
         verify(camiones, never()).crear(any());
     }
