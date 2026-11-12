@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout('Cuenta sin donante vinculado', ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+  <section class="tarjeta vacio" aria-labelledby="t-no-vinculado">
+    <th:block th:replace="~{fragments/comunes :: icono('usuarios')}"/>
+    <h1 id="t-no-vinculado">Tu cuenta todavía no está vinculada a un donante</h1>
+    <p class="texto-secundario">
+      Para ver tus donaciones e incentivos, tu cuenta tiene que estar asociada a tu registro de donante.
+      Si ya donaste, pedile al equipo de DonaTrack que vincule tu cuenta con el correo que usaste al donar.
+    </p>
+    <div class="fila">
+      <a class="boton boton--primario" th:href="@{/ayuda}">Ver la ayuda</a>
+      <a class="boton boton--secundario" th:href="@{/}">Ir al inicio</a>
+    </div>
+  </section>
+</div>
+</th:block>
+</body>
+</html>

@@ -5,8 +5,10 @@ import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient;
 import ar.edu.utn.frba.dds.web.donante.DonanteActual;
+import ar.edu.utn.frba.dds.web.donante.DonanteNoVinculadoException;
 import ar.edu.utn.frba.dds.web.donante.DonanteVista;
 import ar.edu.utn.frba.dds.web.error.BackendException;
+import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +42,12 @@ public class PanelDonanteController {
     @GetMapping("/donante")
     public String panel(Model model) {
         long id = donanteActual.id();
-        Perfil perfil = donaciones.perfil(id);
+        Perfil perfil;
+        try {
+            perfil = donaciones.perfil(id);
+        } catch (RecursoNoEncontradoException e) {
+            throw new DonanteNoVinculadoException(id, e);
+        }
         Map<String, Long> porEstado = donaciones.resumenPorEstado(id);
 
         long total = porEstado.values().stream().mapToLong(Long::longValue).sum();

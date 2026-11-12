@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(${titulo}, ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina fila fila--separada">
+    <div>
+      <h1 th:text="${donacion.descripcionItem()}">Arroz 1 kg</h1>
+      <p class="texto-secundario" th:text="${titulo}">Donación #9</p>
+    </div>
+    <span th:replace="~{donante/fragmentos :: estado(${donacion.estadoActual()})}"></span>
+  </div>
+
+  <div class="donante-grilla">
+    <section class="tarjeta pila" aria-labelledby="t-datos">
+      <h2 id="t-datos">Datos de la donación</h2>
+      <dl class="donante-datos">
+        <div>
+          <dt>Categoría</dt>
+          <dd>
+            <span th:text="${@donanteVista.bien('categoria', donacion.categoria())}">Alimentos</span>
+            <span th:if="${donacion.subcategoria() != null}"
+                  th:text="|· ${@donanteVista.bien('subcategoria', donacion.subcategoria())}|">· Arroz</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Cantidad</dt>
+          <dd th:text="|${@donanteVista.numero(donacion.cantidadAsignada())} ${@donanteVista.bien('unidad', donacion.unidadMedida())}|">20 kg</dd>
+        </div>
+        <div>
+          <dt>Registrada</dt>
+          <dd>
+            <time th:if="${donacion.fechaCreacion() != null}" th:datetime="${@fechas.iso(donacion.fechaCreacion())}"
+                  th:text="${@fechas.fechaHora(donacion.fechaCreacion())}">10/11/2026 12:00</time>
+            <span th:if="${donacion.fechaCreacion() == null}">Sin informar</span>
+          </dd>
+        </div>
+        <div>
+          <dt>Destino</dt>
+          <dd th:if="${entidad != null}" th:text="${entidad.nombre()}">Comedor Sonrisas</dd>
+          <dd th:if="${entidad == null and donacion.entidadBeneficiariaId() != null}"
+              th:text="|Entidad #${donacion.entidadBeneficiariaId()}|">Entidad #4</dd>
+          <dd th:if="${donacion.entidadBeneficiariaId() == null}" class="texto-secundario">
+            Todavía no se asignó a una entidad.
+          </dd>
+        </div>
+      </dl>
+
+      <th:block th:if="${!donacion.items().isEmpty()}">
+        <h3>Bienes</h3>
+        <ul class="donante-recientes">
+          <li th:each="b : ${donacion.items()}">
+            <div class="donante-recientes__item">
+              <span class="donante-recientes__datos">
+                <strong th:text="${b.descripcion()}">Arroz largo fino</strong>
+                <span class="texto-chico texto-secundario">
+                  <span th:text="|${@donanteVista.numero(b.cantidad())} ${@donanteVista.bien('unidad', b.unidadMedida())}|">20 kg</span>
+                  <th:block th:if="${@donanteVista.condicion(b.condicion()) != null}">· <span th:text="${@donanteVista.condicion(b.condicion())}">Nuevo</span></th:block>
+                  <th:block th:if="${b.fechaVencimiento() != null}">· Vence <span th:text="${b.fechaVencimiento()}">2027-01-10</span></th:block>
+                </span>
+              </span>
+            </div>
+          </li>
+        </ul>
+      </th:block>
+    </section>
+
+    <section class="tarjeta pila" aria-labelledby="t-historial">
+      <h2 id="t-historial">Historial de estados</h2>
+      <ol class="donante-historial" th:if="${!historial.isEmpty()}">
+        <li th:each="c, i : ${historial}" th:classappend="${i.first} ? 'donante-historial__paso--actual'">
+          <span th:replace="~{donante/fragmentos :: estado(${c.estado()})}"></span>
+          <time class="texto-chico texto-secundario" th:if="${c.fecha() != null}"
+                th:datetime="${@fechas.iso(c.fecha())}" th:text="${@fechas.fechaHora(c.fecha())}">10/11/2026 12:00</time>
+          <p class="texto-chico" th:if="${c.justificacion() != null and !c.justificacion().isBlank()}"
+             th:text="${c.justificacion()}">Recibida en el depósito</p>
+        </li>
+      </ol>
+      <p class="texto-secundario" th:if="${historial.isEmpty()}">Todavía no hay cambios de estado registrados.</p>
+      <a class="boton boton--secundario" th:href="@{/donante/seguimiento}"
+         th:if="${enCamino}">Ver en el mapa de seguimiento</a>
+    </section>
+  </div>
+
+  <p><a class="boton boton--fantasma" th:href="@{/donante/donaciones}">← Volver a mis donaciones</a></p>
+
+</div>
+</th:block>
+</body>
+</html>

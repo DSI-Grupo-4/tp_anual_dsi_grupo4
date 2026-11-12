@@ -20,6 +20,7 @@ import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
+import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -113,5 +114,21 @@ class PanelDonanteWebTest {
         mvc.perform(get("/donante"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("<script>x</script>"))));
+    }
+
+    @Test
+    void sinDonanteVinculadoExplicaQuePasaEnLugarDelError404Generico() throws Exception {
+        when(donaciones.perfil(1)).thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe el donante 1"));
+        mvc.perform(get("/donante"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Tu cuenta todavía no está vinculada a un donante")))
+                .andExpect(content().string(containsString("href=\"/donante/incentivos\"")))
+                .andExpect(content().string(not(containsString("No encontramos esta página"))));
+    }
+
+    @Test
+    void lasDonacionesRecientesEnlazanAlDetalle() throws Exception {
+        mvc.perform(get("/donante"))
+                .andExpect(content().string(containsString("href=\"/donante/donaciones/9\"")));
     }
 }

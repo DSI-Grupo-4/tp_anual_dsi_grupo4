@@ -35,6 +35,17 @@ public class DonanteVista {
         ESTADOS = java.util.Collections.unmodifiableMap(estados);
     }
 
+    /**
+     * Subcategorías de cada categoría, como las valida Donaciones (ItemDonado).
+     * Se usan para agrupar el filtro de subcategoría y para descartar combinaciones imposibles.
+     */
+    public static final Map<String, List<String>> SUBCATEGORIAS = Map.of(
+            "ALIMENTOS", List.of("FIDEOS_SECOS", "ARROZ", "LEGUMBRES_SECAS", "ACEITE_VEGETAL", "TOMATE", "FRUTA"),
+            "MOBILIARIO", List.of("SILLA", "MESA", "BANCO", "COLCHON"),
+            "VESTIMENTA", List.of("CAMPERA", "REMERA", "PANTALON", "ROPA_INFANTIL", "FRAZADA"));
+
+    public static final List<String> CATEGORIAS = List.of("ALIMENTOS", "MOBILIARIO", "VESTIMENTA");
+
     /** Estados en los que la donación ya salió del depósito y todavía no llegó. */
     public static final List<String> EN_CAMINO = List.of("ASIGNACION_REALIZADA", "LISTA_PARA_ENTREGAR", "EN_TRASLADO");
 
@@ -72,6 +83,25 @@ public class DonanteVista {
             return "Sin informar";
         }
         return mensajes.getMessage(prefijo + "." + codigo, null, codigo, ES_AR);
+    }
+
+    /** Categoría a la que pertenece una subcategoría, o null si no es una subcategoría conocida. */
+    public static String categoriaDe(String subcategoria) {
+        if (subcategoria == null) {
+            return null;
+        }
+        return SUBCATEGORIAS.entrySet().stream()
+                .filter(e -> e.getValue().contains(subcategoria))
+                .map(Map.Entry::getKey).findFirst().orElse(null);
+    }
+
+    /** Condición de un bien (NUEVO, USADO…), legible. */
+    public String condicion(String condicion) {
+        if (condicion == null || condicion.isBlank()) {
+            return null;
+        }
+        String texto = condicion.toLowerCase(ES_AR).replace('_', ' ');
+        return Character.toUpperCase(texto.charAt(0)) + texto.substring(1);
     }
 
     /** Cantidad con formato argentino, sin decimales innecesarios: 1.250 o 2,5. */

@@ -272,10 +272,11 @@ Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas 
 
 ### Persona 4 (portal del donante, Incentivos y reportes)
 - **Qué donante usa el portal:** la interfaz `donante/DonanteActual`. Hasta que exista autenticación, `DonanteActualProvisorio` devuelve el donante de `DONANTE_PROVISORIO_ID` (por defecto, el 1). La Persona 2 la reemplaza con un `@Component @Primary` que lea el donante del usuario autenticado.
-- **Endpoints nuevos en Donaciones** (`DonacionesDelDonanteController`): `GET /api/donantes/{id}/donaciones` (paginado, filtros `estado`, `categoria`, `subcategoria`) y `GET /api/donantes/{id}/donaciones/resumen` (cantidad por estado). Con autenticación, alcanza con verificar que `{id}` sea el del usuario.
+- **Endpoints nuevos en Donaciones** (`DonacionesDelDonanteController`), todos bajo `/api/donantes/{id}/donaciones`: la lista (paginada, filtros `q`, `estado`, `categoria`, `subcategoria`), `/resumen` (cantidad por estado), `/{donacionId}` y `/{donacionId}/historial` (404 si la donación es de otro donante). Con autenticación, alcanza con verificar que `{id}` sea el del usuario.
+- **Cuenta sin donante:** si el donante no existe, el portal muestra "Tu cuenta todavía no está vinculada a un donante" (`donante/no-vinculado`) en lugar del 404 genérico.
 - [ ] Pantallas `/donante/**` y `/admin/reportes`:
   - [x] panel del donante (`/donante`);
-  - sus donaciones, con filtros por estado, categoría y subcategoría;
+  - [x] sus donaciones, con filtros por estado, categoría y subcategoría (`/donante/donaciones` y `/donante/donaciones/{id}` con el historial);
   - navegación por entidades beneficiarias;
   - métricas, misiones e insignias, con el cambio de visibilidad de insignias;
   - ranking mensual e historial de rankings.

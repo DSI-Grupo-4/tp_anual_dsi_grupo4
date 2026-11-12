@@ -30,6 +30,41 @@ public final class PortalDonanteApi {
                                      String subcategoria, String estadoActual, Long entidadBeneficiariaId) {
     }
 
+    /** DonacionDTO completo, para el detalle: incluye los bienes. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record DetalleDonacion(Long id, Long donanteId, LocalDateTime fechaCreacion, String descripcionItem,
+                                  BigDecimal cantidadAsignada, String unidadMedida, String categoria,
+                                  String subcategoria, String estadoActual, Long entidadBeneficiariaId,
+                                  List<Bien> items) {
+        public List<Bien> items() {
+            return items == null ? List.of() : items;
+        }
+    }
+
+    /** ItemDonadoDTO. condicion es null en Alimentos. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Bien(String descripcion, String categoria, String subcategoria, String unidadMedida,
+                       BigDecimal cantidad, String condicion, String fechaVencimiento) {
+    }
+
+    /** TimeStampDTO: un cambio de estado. fecha en UTC (D-037). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CambioEstado(String estado, LocalDateTime fecha, String justificacion) {
+    }
+
+    /** EntidadBeneficiariaDTO: solo el nombre, para mostrar a quién fue la donación. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Entidad(Long id, String descripcion, PersonaJuridica personaJuridica) {
+        public String nombre() {
+            return personaJuridica != null && personaJuridica.razonSocial() != null
+                    ? personaJuridica.razonSocial() : "Entidad #" + id;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record PersonaJuridica(String razonSocial) {
+    }
+
     /** PaginaDTO. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Pagina<T>(List<T> content, long totalElements, int totalPages, int number) {

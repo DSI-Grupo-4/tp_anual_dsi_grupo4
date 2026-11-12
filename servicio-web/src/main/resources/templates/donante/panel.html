@@ -93,7 +93,7 @@
       </div>
       <ul class="donante-recientes" th:if="${!recientes.isEmpty()}">
         <li th:each="d : ${recientes}">
-          <div class="donante-recientes__item">
+          <a class="donante-recientes__item donante-recientes__item--enlace" th:href="@{/donante/donaciones/{id}(id=${d.id()})}">
             <span class="donante-recientes__datos">
               <strong th:text="${d.descripcionItem()}">Arroz</strong>
               <span class="texto-chico texto-secundario">
@@ -103,7 +103,7 @@
               </span>
             </span>
             <span th:replace="~{donante/fragmentos :: estado(${d.estadoActual()})}"></span>
-          </div>
+          </a>
         </li>
       </ul>
       <div class="vacio" th:if="${recientes.isEmpty()}">
