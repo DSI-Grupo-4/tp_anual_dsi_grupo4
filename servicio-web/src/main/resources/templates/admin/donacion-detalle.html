@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Detalle de donación', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.56}">
+</p>
+<h1 th:text="#{admin.ui.57}">Detalle de donación</h1>
+<p class="texto-secundario" th:text="#{admin.ui.58}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<section class="admin-tarjeta">
+<div class="admin-acciones">
+<h2 th:text="|Donación #${donacion.id} · ${@adminVista.texto(donacion.subcategoria)}|">
+</h2>
+<span class="etiqueta" th:text="${@adminVista.texto(donacion.estadoActual)}">
+</span>
+</div>
+<p th:text="${donacion.descripcionItem}">
+</p>
+<dl class="admin-datos">
+<div>
+<dt>Fecha de recepción</dt>
+<dd th:text="${@fechas.fechaHora(donacion.fechaCreacion)}">
+</dd>
+</div>
+<div>
+<dt>Cantidad</dt>
+<dd th:text="|${donacion.cantidadAsignada} ${@adminVista.texto(donacion.unidadMedida)}|">
+</dd>
+</div>
+<div>
+<dt>Carga original</dt>
+<dd th:text="|#${donacion.solicitudOrigenId}|">
+</dd>
+</div>
+<div>
+<dt>Persona donante</dt>
+<dd>
+<a class="boton boton--fantasma" th:href="@{'/admin/donantes/'+${donacion.donanteId}}" th:text="|Ver donante #${donacion.donanteId}|">
+</a>
+</dd>
+</div>
+<div th:if="${donacion.entidadBeneficiariaId!=null}">
+<dt>Destino</dt>
+<dd>
+<a class="boton boton--fantasma" th:href="@{'/admin/entidades/'+${donacion.entidadBeneficiariaId}}" th:text="|Ver entidad #${donacion.entidadBeneficiariaId}|">
+</a>
+</dd>
+</div>
+</dl>
+<div class="admin-acciones" th:if="${donacion.editable()}">
+<a class="boton boton--primario" th:href="@{'/admin/asignaciones/'+${donacion.id}}" th:text="#{admin.textos.13}">Elegir destino</a>
+<a class="boton boton--secundario" th:href="@{'/admin/donaciones/'+${donacion.id}(editar=true)}" th:text="#{admin.textos.14}">Editar bienes</a>
+</div>
+</section>
+<section class="admin-tarjeta">
+<h2>Bienes incluidos</h2>
+<div class="admin-grid">
+<article class="admin-renglon" th:each="i:${donacion.items}">
+<h3 th:text="${i.descripcion}">
+</h3>
+<p th:text="|${i.cantidad} ${@adminVista.texto(i.unidadMedida)} · ${@adminVista.texto(i.categoria)}|">
+</p>
+<p th:if="${i.condicion!=null}" th:text="|Condición: ${@adminVista.texto(i.condicion)}|">
+</p>
+<p th:if="${i.fechaVencimiento!=null}" th:text="|Vencimiento: ${i.fechaVencimiento}|">
+</p>
+<p th:text="|Peso: ${i.pesoKg ?: 'Sin informar'} kg · Volumen: ${i.volumenM3 ?: 'Sin informar'} m³ · Altura: ${i.alturaM ?: 'Sin informar'} m|">
+</p>
+<p th:if="${i.foto!=null and !#strings.isEmpty(i.foto)}">Foto: <span th:text="${i.foto}">
+</span>
+</p>
+</article>
+</div>
+</section>
+<section class="admin-tarjeta">
+<h2>Historial de estados</h2>
+<ol class="admin-historial">
+<li th:each="h:${historial}">
+<strong th:text="${@adminVista.texto(h.estado)}">
+</strong>
+<time th:text="${@fechas.fechaHora(h.fecha)}">
+</time>
+<p th:text="${h.justificacion}">
+</p>
+</li>
+</ol>
+</section>
+<section class="admin-tarjeta" th:if="${donacion.editable()}">
+<h2>Acciones sobre el depósito</h2>
+<form method="post" th:action="@{'/admin/donaciones/'+${donacion.id}+'/vencer'}" data-confirmar="La donación dejará de estar disponible para asignar. ¿Marcarla como vencida?">
+<div class="campo">
+<label for="justificacion" th:text="#{admin.textos.15}">Motivo del vencimiento</label>
+<input class="control" id="justificacion" name="justificacion" required maxlength="255" placeholder="Por ejemplo, se alcanzó la fecha de vencimiento">
+</div>
+<button class="boton boton--peligro" type="submit" th:text="#{admin.textos.16}">Marcar como vencida</button>
+</form>
+<hr>
+<p>Solo se puede eliminar mientras permanece en depósito. La carga original se conserva.</p>
+<form method="post" th:action="@{'/admin/donaciones/'+${donacion.id}+'/eliminar'}" data-confirmar="Se eliminará esta donación del depósito. Esta acción no se puede deshacer. ¿Continuar?">
+<button class="boton boton--peligro" type="submit" th:text="#{admin.textos.17}">Eliminar donación</button>
+</form>
+</section>
+</div>
+</th:block>
+</body>
+</html>

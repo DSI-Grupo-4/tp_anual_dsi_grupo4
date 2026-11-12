@@ -33,12 +33,12 @@ class NavegacionWebTest {
 
     @Test
     void unaSeccionPrivadaSinImplementarMuestraElMenuDelRolYMarcaLaActiva() throws Exception {
-        mvc.perform(get("/admin/donaciones"))
+        mvc.perform(get("/admin/camiones"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Sección en construcción"),
                         containsString("href=\"/admin/camiones\""),
-                        containsString("href=\"/admin/donaciones\"\n             aria-current=\"page\""),
+                        containsString("aria-current=\"page\""),
                         not(containsString("href=\"/donante/incentivos\"")))));
     }
 

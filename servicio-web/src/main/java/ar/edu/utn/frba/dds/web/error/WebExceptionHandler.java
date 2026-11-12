@@ -18,6 +18,11 @@ public class WebExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(WebExceptionHandler.class);
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ModelAndView archivoGrande(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
+        return vista(HttpStatus.PAYLOAD_TOO_LARGE);
+    }
+
     @ExceptionHandler(BackendNoDisponibleException.class)
     public ModelAndView noDisponible(BackendNoDisponibleException e) {
         log.warn("{} (status {})", e.getMessage(), e.getStatus(), e.getCause());

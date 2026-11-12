@@ -60,6 +60,7 @@ public class EntidadBeneficiariaService {
                         dto.getDescripcion()
                 );
         entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
+        personaJuridica.setRepresentantes(DatosPersonaMapper.representantes(personaJuridicaDTO.getRepresentantes()));
         entidad = entidadBeneficiariaRepository.save(entidad);
 
         return convertirADTO(entidad);
@@ -142,6 +143,7 @@ public class EntidadBeneficiariaService {
         );
 
         personaDTO.setMediosContacto(ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO.desde(entidad.getEntidad()));
+        personaDTO.setRepresentantes(DatosPersonaMapper.representantesDTO(entidad.getEntidad().getRepresentantes()));
         dto.setPersonaJuridica(personaDTO);
         dto.setDescripcion(entidad.getDescripcion());
         dto.setId(entidad.getId());
@@ -151,7 +153,7 @@ public class EntidadBeneficiariaService {
         return dto;
     }
 
-    private Direccion convertirDireccionDominio(DireccionDTO direccionDTO) {
+    public static Direccion convertirDireccionDominio(DireccionDTO direccionDTO) {
         if (direccionDTO == null) {
             return null;
         }
@@ -168,7 +170,7 @@ public class EntidadBeneficiariaService {
         return new Direccion(direccionDTO.getCalle(), direccionDTO.getNumero(), ciudad);
     }
 
-    private DireccionDTO convertirDireccionADTO(Direccion direccion) {
+    public static DireccionDTO convertirDireccionADTO(Direccion direccion) {
         if (direccion == null) {
             return null;
         }
@@ -193,6 +195,7 @@ public class EntidadBeneficiariaService {
         return dto;
     }
 
+    @Transactional
     public EntidadBeneficiariaDTO actualizar(
             Long id,
             EntidadBeneficiariaDTO dto) {
@@ -229,8 +232,9 @@ public class EntidadBeneficiariaService {
         );
 
         entidad.setDireccion(convertirDireccionDominio(dto.getDireccion()));
-
-        return convertirADTO(entidad);
+        if (dto.getPersonaJuridica().getRepresentantes() != null)
+            persona.setRepresentantes(DatosPersonaMapper.actualizarRepresentantes(dto.getPersonaJuridica().getRepresentantes(), persona.getRepresentantes()));
+        return convertirADTO(entidadBeneficiariaRepository.save(entidad));
     }
 
         /**

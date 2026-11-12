@@ -20,6 +20,18 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class ClientesApiConfig {
 
+    /** La importación síncrona de 20.000 filas no comparte el timeout de las lecturas. */
+    @Bean
+    @Qualifier("importacionDonantes")
+    RestClient restClientImportacion(RestClient.Builder builder, ApiProperties props,
+            ObjectProvider<PropagadorCredenciales> credenciales,
+            @org.springframework.beans.factory.annotation.Value("${api.timeout-importacion:10m}") java.time.Duration timeout) {
+        var fabrica = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(props.timeoutConexion()).build());
+        fabrica.setReadTimeout(timeout);
+        return ManejoErroresApi.configurar(builder.clone().baseUrl(props.donaciones().url()).requestFactory(fabrica),
+                ServicioBackend.DONACIONES, credenciales.getIfAvailable(() -> PropagadorCredenciales.NINGUNO)).build();
+    }
+
     @Bean
     @Qualifier("donaciones")
     RestClient restClientDonaciones(RestClient.Builder builder, ApiProperties props, ObjectProvider<PropagadorCredenciales> credenciales) {

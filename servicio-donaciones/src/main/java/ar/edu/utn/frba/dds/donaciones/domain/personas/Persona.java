@@ -42,6 +42,13 @@ public abstract class Persona {
         this.mediosContacto = new ArrayList<>();
     }
 
+    /** Conserva la colección administrada por JPA y su orphanRemoval al editar contactos. */
+    public void setMediosContacto(List<MedioContacto> contactos) {
+        var nuevos = new ArrayList<>(contactos);
+        this.mediosContacto.clear();
+        this.mediosContacto.addAll(nuevos);
+    }
+
     public void agregarMedio(MedioContacto medio) {
         mediosContacto.add(medio);
     }

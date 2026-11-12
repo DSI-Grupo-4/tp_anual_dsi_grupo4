@@ -60,6 +60,10 @@ CREATE TABLE persona_humana (
   edad      INT NULL,
   documento VARCHAR(20) NULL,
   genero    ENUM('MASCULINO','FEMENINO','X') NULL,
+  calle VARCHAR(255) NULL,
+  numero VARCHAR(255) NULL,
+  nombre_ciudad VARCHAR(255) NULL,
+  nombre_provincia VARCHAR(255) NULL,
   PRIMARY KEY (id),
   CONSTRAINT fk_persona_humana_persona FOREIGN KEY (id) REFERENCES persona (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

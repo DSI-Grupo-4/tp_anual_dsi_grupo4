@@ -27,5 +27,7 @@ public class PersonaJuridicaDTO {
     private TipoOrganizacion tipo;
     private String rubro;
     @jakarta.validation.Valid
+    private java.util.List<@jakarta.validation.constraints.NotNull PersonaHumanaDTO> representantes;
+    @jakarta.validation.Valid
     private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;
 }

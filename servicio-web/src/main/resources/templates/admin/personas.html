@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Personas y organizaciones', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.6}">
+</p>
+<h1 th:text="#{admin.ui.7}">Personas y organizaciones</h1>
+<p class="texto-secundario" th:text="#{admin.ui.8}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<div class="admin-acciones">
+<h2 th:text="${entidad ? 'Entidades beneficiarias' : 'Personas donantes'}">
+</h2>
+<a class="boton boton--primario" th:href="@{'/admin/'+${seccion}+'/nuevo'}" th:text="${entidad ? 'Registrar entidad' : 'Registrar donante'}">
+</a>
+<a th:unless="${entidad}" class="boton boton--secundario" href="/admin/donantes/importar" th:text="#{admin.textos.108}">Importar CSV</a>
+</div>
+<form class="admin-filtros admin-tarjeta" method="get" th:action="@{'/admin/'+${seccion}}">
+<div class="campo">
+<label for="q" th:text="#{admin.textos.109}">Buscar</label>
+<input class="control" id="q" name="q" type="search" th:value="${filtros['q']}" th:placeholder="${entidad ? 'Razón social o descripción' : 'Nombre, documento o correo'}">
+</div>
+<div class="campo">
+<label for="activo" th:text="#{admin.textos.110}">Estado</label>
+<select class="control" id="activo" th:name="${entidad?'activa':'activo'}">
+<option value="" th:text="#{admin.textos.111}">Todos</option>
+<option value="true" th:selected="${filtros[entidad?'activa':'activo']=='true'}" th:text="#{admin.textos.112}">Activos</option>
+<option value="false" th:selected="${filtros[entidad?'activa':'activo']=='false'}" th:text="#{admin.textos.113}">Inactivos</option>
+</select>
+</div>
+<button class="boton boton--marca" type="submit" th:text="#{admin.textos.114}">Buscar</button>
+<a class="boton boton--fantasma" th:href="@{'/admin/'+${seccion}}" th:text="#{admin.textos.115}">Limpiar</a>
+</form>
+<section class="admin-tarjeta" th:unless="${pagina.content.isEmpty()}">
+<div class="tabla-contenedor" tabindex="0" role="region" aria-label="Resultados de personas">
+<table class="tabla">
+<thead>
+<tr>
+<th scope="col" th:text="#{admin.textos.116}">Nombre</th>
+<th scope="col" th:text="#{admin.textos.117}">Tipo</th>
+<th scope="col" th:text="#{admin.textos.118}">Correo</th>
+<th scope="col" th:text="#{admin.textos.119}">Estado</th>
+<th scope="col" th:text="#{admin.textos.120}">Acciones</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="p:${pagina.content}">
+<th scope="row" th:text="${p.nombre}">
+</th>
+<td th:text="${@adminVista.texto(p.tipo)}">
+</td>
+<td th:text="${p.email}">
+</td>
+<td>
+<span class="etiqueta" th:text="${p.activa ? 'Activo' : 'Inactivo'}">
+</span>
+</td>
+<td>
+<a class="boton boton--fantasma" th:href="@{'/admin/'+${seccion}+'/'+${p.id}}" th:aria-label="|Ver ficha de ${p.nombre}|" th:text="#{admin.textos.121}">Ver ficha</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<th:block th:replace="~{admin/fragmentos :: vacio}"/>
+<th:block th:replace="~{admin/fragmentos :: paginacion}"/>
+</div>
+</th:block>
+</body>
+</html>
