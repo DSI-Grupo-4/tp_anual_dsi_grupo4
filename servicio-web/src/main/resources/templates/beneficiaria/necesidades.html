@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.necesidades}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:text="#{beneficiaria.necesidades.titulo}">Necesidades materiales</h1>
+      <p th:text="#{beneficiaria.necesidades.bajada}">Registrá las necesidades de tu organización</p>
+    </div>
+    <div class="fila">
+      <a class="boton boton--primario" th:href="@{/beneficiaria/necesidades/nueva(tipo=RECURRENTE)}"
+         th:text="#{beneficiaria.necesidades.nueva-recurrente}">Nueva necesidad recurrente</a>
+      <a class="boton boton--secundario" th:href="@{/beneficiaria/necesidades/nueva(tipo=EXTRAORDINARIA)}"
+         th:text="#{beneficiaria.necesidades.nueva-extraordinaria}">Nueva necesidad extraordinaria</a>
+    </div>
+  </div>
+
+  <div class="pila pila--grande">
+    <div class="grilla grilla--ajustada">
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.necesidades.total}">Total</span>
+          <th:block th:replace="~{fragments/comunes :: icono('portapapeles')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.total()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.necesidades.total.detalle}">Necesidades registradas</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.necesidades.activas}">Activas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.activas()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.necesidades.activas.detalle}">Pendientes de cubrir</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.necesidades.satisfechas}">Satisfechas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('exito')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.satisfechas()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.necesidades.satisfechas.detalle}">Ya cubiertas</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.necesidades.urgentes}">Urgentes</span>
+          <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.urgentes()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.necesidades.urgentes.detalle}">Extraordinarias sin cubrir</span>
+      </div>
+    </div>
+
+    <div class="tarjeta vacio" th:if="${#lists.isEmpty(necesidades)}">
+      <th:block th:replace="~{fragments/comunes :: icono('portapapeles')}"/>
+      <p th:text="#{beneficiaria.necesidades.vacio}">Aún no registraste necesidades.</p>
+      <a class="boton boton--primario" th:href="@{/beneficiaria/necesidades/nueva}"
+         th:text="#{beneficiaria.necesidades.primera}">Registrar la primera necesidad</a>
+    </div>
+
+    <section class="tarjeta pila" aria-labelledby="lista-titulo" th:unless="${#lists.isEmpty(necesidades)}">
+      <h2 id="lista-titulo" class="tarjeta__titulo" th:text="#{beneficiaria.necesidades.lista}">Tus necesidades</h2>
+      <div class="tabla-contenedor" tabindex="0" role="region" th:attr="aria-label=#{beneficiaria.necesidades.lista}">
+        <table class="tabla">
+          <caption class="solo-lector" th:text="#{beneficiaria.necesidades.lista}">Tus necesidades</caption>
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{beneficiaria.necesidades.col.necesidad}">Necesidad</th>
+              <th scope="col" th:text="#{beneficiaria.necesidades.col.tipo}">Tipo</th>
+              <th scope="col" th:text="#{beneficiaria.necesidades.col.progreso}">Recibido / requerido</th>
+              <th scope="col" th:text="#{beneficiaria.tabla.estado}">Estado</th>
+              <th scope="col"><span class="solo-lector" th:text="#{beneficiaria.tabla.acciones}">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="n : ${necesidades}">
+              <td>
+                <span th:text="${n.descripcion}">Leche en polvo</span><br>
+                <span class="texto-chico texto-secundario" th:text="#{'subcategoria.' + ${n.subcategoria}}">Lácteos</span>
+              </td>
+              <td>
+                <span th:if="${n.recurrente()}"
+                      th:text="#{beneficiaria.tipo.RECURRENTE} + ' · ' + #{'beneficiaria.periodicidad.' + ${n.periodicidad}}">Recurrente · Mensual</span>
+                <span th:unless="${n.recurrente()}"
+                      th:text="#{beneficiaria.tipo.EXTRAORDINARIA} + ' · ' + #{'beneficiaria.extraordinario.' + ${n.tipoExtraordinario}}">Extraordinaria · Inundación</span>
+              </td>
+              <td>
+                <span th:text="${@vistaBeneficiaria.cantidad(n.cantidadRecibida)} + ' / ' + ${@vistaBeneficiaria.cantidad(n.cantidadRequerida)}">0 / 50</span>
+                <span th:text="#{'unidad.' + ${n.unidadMedida}}">kg</span>
+              </td>
+              <td>
+                <span class="insignia-estado insignia-estado--exito" th:if="${n.satisfechaOk()}"
+                      th:text="#{beneficiaria.necesidades.estado.satisfecha}">Satisfecha</span>
+                <span class="insignia-estado insignia-estado--advertencia" th:unless="${n.satisfechaOk()}"
+                      th:text="#{beneficiaria.necesidades.estado.pendiente}">Pendiente</span>
+              </td>
+              <td>
+                <div class="fila">
+                  <a class="boton boton--secundario" th:href="@{/beneficiaria/necesidades/{id}(id=${n.id})}">
+                    <span th:text="#{beneficiaria.necesidades.editar}">Editar</span>
+                    <span class="solo-lector" th:text="${n.descripcion}"></span>
+                  </a>
+                  <button type="button" class="boton boton--peligro" th:attr="data-abrir-modal='modal-eliminar-' + ${n.id}">
+                    <span th:text="#{beneficiaria.necesidades.eliminar}">Eliminar</span>
+                    <span class="solo-lector" th:text="${n.descripcion}"></span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Confirmación de baja: un diálogo por necesidad (cierra con Esc y devuelve el foco) -->
+      <dialog class="modal" th:each="n : ${necesidades}" th:id="'modal-eliminar-' + ${n.id}"
+              th:attr="aria-labelledby='modal-eliminar-' + ${n.id} + '-titulo'">
+        <form th:action="@{/beneficiaria/necesidades/{id}/eliminar(id=${n.id})}" method="post">
+          <div class="modal__cuerpo">
+            <h2 th:id="'modal-eliminar-' + ${n.id} + '-titulo'" th:text="#{beneficiaria.necesidades.eliminar.titulo}">¿Eliminar la necesidad?</h2>
+            <p th:text="#{beneficiaria.necesidades.eliminar.texto(${n.descripcion})}">Se va a eliminar.</p>
+          </div>
+          <div class="modal__acciones">
+            <button type="button" class="boton boton--secundario" data-cerrar-modal th:text="#{accion.cancelar}">Cancelar</button>
+            <button type="submit" class="boton boton--peligro" th:text="#{beneficiaria.necesidades.eliminar}">Eliminar</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

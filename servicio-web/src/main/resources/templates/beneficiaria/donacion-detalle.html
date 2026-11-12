@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.donaciones}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:text="${donacion.descripcionItem}">Arroz 1 kg</h1>
+      <p><span class="insignia-estado" th:classappend="${@vistaBeneficiaria.claseEstado(donacion.estadoActual)}"
+               th:text="#{'beneficiaria.estado.' + ${donacion.estadoActual}}">Estado</span></p>
+    </div>
+    <a class="boton boton--secundario" th:href="@{/beneficiaria/donaciones}" th:text="#{accion.volver}">Volver</a>
+  </div>
+
+  <div class="pila pila--grande">
+    <section class="tarjeta pila" aria-labelledby="datos-titulo">
+      <h2 id="datos-titulo" class="tarjeta__titulo" th:text="#{beneficiaria.donaciones.detalle.datos}">Datos de la donación</h2>
+      <div class="tabla-contenedor" tabindex="0" role="region" th:attr="aria-label=#{beneficiaria.donaciones.detalle.datos}">
+        <table class="tabla">
+          <caption class="solo-lector" th:text="#{beneficiaria.donaciones.detalle.datos}">Datos de la donación</caption>
+          <tbody>
+            <tr>
+              <th scope="row" th:text="#{beneficiaria.tabla.categoria}">Categoría</th>
+              <td>
+                <span th:if="${donacion.categoria != null}" th:text="#{'categoria.' + ${donacion.categoria}}">Alimentos</span>
+                <span th:if="${donacion.subcategoria != null}" th:text="'· ' + #{'subcategoria.' + ${donacion.subcategoria}}">Arroz</span>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row" th:text="#{beneficiaria.tabla.cantidad}">Cantidad</th>
+              <td><span th:text="${@vistaBeneficiaria.cantidad(donacion.cantidadAsignada)}">20</span>
+                  <span th:if="${donacion.unidadMedida != null}" th:text="#{'unidad.' + ${donacion.unidadMedida}}">kg</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="tarjeta pila" aria-labelledby="historial-titulo">
+      <h2 id="historial-titulo" class="tarjeta__titulo" th:text="#{beneficiaria.donaciones.detalle.historial}">Historial de estados</h2>
+
+      <p class="texto-secundario" th:if="${#lists.isEmpty(historial)}" th:text="#{beneficiaria.donaciones.detalle.sin-historial}">Todavía no hay cambios de estado.</p>
+
+      <div class="tabla-contenedor" tabindex="0" role="region" th:attr="aria-label=#{beneficiaria.donaciones.detalle.historial}"
+           th:unless="${#lists.isEmpty(historial)}">
+        <table class="tabla">
+          <caption class="solo-lector" th:text="#{beneficiaria.donaciones.detalle.historial}">Historial de estados</caption>
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{beneficiaria.donaciones.detalle.fecha}">Fecha</th>
+              <th scope="col" th:text="#{beneficiaria.tabla.estado}">Estado</th>
+              <th scope="col" th:text="#{beneficiaria.donaciones.detalle.motivo}">Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="h : ${historial}">
+              <td th:text="${@fechas.fechaHora(h.fecha)}">03/11/2026 14:30</td>
+              <td><span class="insignia-estado" th:classappend="${@vistaBeneficiaria.claseEstado(h.estado)}"
+                        th:text="#{'beneficiaria.estado.' + ${h.estado}}">Estado</span></td>
+              <td th:text="${h.justificacion}">Motivo</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>
