@@ -102,6 +102,13 @@ public class HistorialRanking {
         return Optional.empty();
     }
 
+    /** Ranking del mes en curso, todavía sin cerrar: todos los donantes con misiones este mes, de más a menos. */
+    public List<ActividadMensualDonante> obtenerRankingEnCurso() {
+        return donantesMisionesMensuales.stream()
+                .sorted(Comparator.comparingInt(ActividadMensualDonante::getCantidad).reversed())
+                .toList();
+    }
+
     public List<Ranking> obtenerHistorial() {
         return List.copyOf(rankings);
     }

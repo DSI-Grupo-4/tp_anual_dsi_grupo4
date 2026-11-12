@@ -9,4 +9,6 @@ public class ActividadMensualDonanteDTO {
     private Long donanteId;
     private int cantidad;
     private int puesto;
+    /** Nombre del donante en Incentivos, para mostrar el ranking sin otra consulta. */
+    private String donanteNombre;
 }

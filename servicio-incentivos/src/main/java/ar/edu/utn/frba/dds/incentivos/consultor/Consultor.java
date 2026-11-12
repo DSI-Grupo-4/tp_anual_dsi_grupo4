@@ -271,6 +271,10 @@ public class Consultor {
         rankings.generarRanking();
     }
 
+    public List<ar.edu.utn.frba.dds.incentivos.ranking.ActividadMensualDonante> obtenerRankingEnCurso() {
+        return rankings.obtenerRankingEnCurso();
+    }
+
     public List<Ranking> obtenerHistorialRanking() {
         return rankings.obtenerHistorial();
     }
