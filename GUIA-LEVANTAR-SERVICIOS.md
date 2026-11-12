@@ -172,7 +172,60 @@ Invoke-RestMethod http://localhost:8180/realms/donatrack/.well-known/openid-conf
 
 El `issuer` tiene que ser `http://localhost:8180/realms/donatrack`.
 
-El realm se importa desde `keycloak/import/donatrack-realm.json` solo si todavía no existe en la base `keycloak`. Si se cambia ese archivo y la base ya tiene el realm, Keycloak no lo vuelve a importar: hay que aplicar el cambio desde la consola.
+El realm se importa desde `keycloak/import/donatrack-realm.json` solo si todavía no existe en la base `keycloak`. Si se cambia ese archivo y la base ya tiene el realm, Keycloak no lo vuelve a importar. No hay que borrar el realm ni la base: el cliente, el tema y los usuarios de prueba se cargan desde la consola, como está más abajo.
+
+## Login del cliente web (realm que ya existe)
+
+Esta configuración deja funcionando el flujo: `http://localhost:8085/admin` redirige a Keycloak, el usuario entra, vuelve a `servicio-web` con sesión y "Cerrar sesión" cierra también la sesión de Keycloak. No incluye Google ni la protección de las APIs.
+
+El contenedor que ya está corriendo no ve el tema hasta recrearlo. Este comando no borra volúmenes:
+
+```powershell
+docker compose --env-file keycloak/.env --profile auth -f docker-compose.integration.yml up -d keycloak
+```
+
+En la consola (http://localhost:8180, realm `master`, y después cambiar a `donatrack`):
+
+1. **Realm settings → Themes.** Login theme: `donatrack`. Save.
+2. **Realm settings → Localization.** Internationalization ON, supported locale `es`, default locale `es`. Save. El registro de usuarios queda desactivado.
+3. **Clients → Create client.**
+   - Client type: OpenID Connect. Client ID: `servicio-web`.
+   - Client authentication: On. Standard flow: On. Direct access grants: Off.
+   - Root URL: `http://localhost:8085`.
+   - Valid redirect URIs: `http://localhost:8085/login/oauth2/code/keycloak`.
+   - Valid post logout redirect URIs: `http://localhost:8085`.
+   - Web origins: `http://localhost:8085`.
+   - Save.
+4. **Client scopes.** El cliente tiene que tener, como default, `roles`, `profile` y `email`. En Client scopes → `roles` → mapper `realm roles`, "Add to ID token" tiene que estar en On. Sin eso el usuario entra pero las zonas privadas responden 403.
+5. **Clients → servicio-web → Credentials.** Copiar el client secret. No va a Git.
+6. **Users → Add user**, uno por rol, con contraseña no temporal (Credentials → Temporary Off) y el rol de realm en Role mapping:
+   - uno con `ADMIN`, otro con `DONANTE` y otro con `BENEFICIARIA`.
+
+En el repo, copiar el ejemplo y pegar ahí el secret (ese archivo no se versiona):
+
+```powershell
+Copy-Item servicio-web\.env.example servicio-web\.env
+```
+
+`run-servicios.ps1` lee `servicio-web\.env` antes de levantar el cliente web. Si se arranca a mano, en esa misma terminal:
+
+```powershell
+$env:KEYCLOAK_CLIENT_SECRET = "<el secret de la consola>"
+mvn -pl servicio-web spring-boot:run
+```
+
+Usar siempre `localhost`, no `127.0.0.1`: el redirect y la cookie tienen que coincidir. La cookie de sesión se llama `DONATRACK_SESSION` para que Swagger, en el puerto 8080, no la pise.
+
+Prueba:
+
+1. Abrir http://localhost:8085/admin. Tiene que ir a Keycloak, con el tema de DonaTrack, no con la pantalla violeta por defecto.
+2. Entrar con el usuario ADMIN. Vuelve a `/admin` y el encabezado muestra su nombre. Si Donaciones está apagado, el panel avisa que el servicio no está disponible: el login igual funcionó. http://localhost:8085/admin/camiones no llama a las APIs y alcanza para ver la sesión.
+3. Abrir http://localhost:8085/donante con ese usuario. Tiene que responder 403.
+4. "Cerrar sesión". Vuelve a http://localhost:8085. Entrar de nuevo a `/admin` tiene que pedir usuario otra vez. Si entra solo, la sesión de Keycloak no se cerró: revisar el post logout redirect del cliente.
+
+El botón "Crear cuenta" sigue yendo a `/ingresar`, que ahora inicia el login. El registro en Keycloak queda para la fase siguiente.
+
+En una instalación nueva el JSON ya crea el cliente `servicio-web`, sin secret. Keycloak genera uno al importar el realm: igual hay que copiarlo de Credentials. Si ese import fallara, no borres la base; creá el cliente en la consola con los mismos datos de arriba.
 
 Para bajarlo sin tocar el resto de la infraestructura:
 

@@ -131,7 +131,7 @@ services:
     profiles: ["auth"]
     image: quay.io/keycloak/keycloak:26.8.2
     container_name: donatrack-keycloak
-    command: ["start-dev", "--import-realm"]
+    command: ["start-dev", "--import-realm", "--spi-theme--cache-themes=false", "--spi-theme--cache-templates=false"]
     depends_on:
       mysql:
         condition: service_healthy
@@ -152,6 +152,7 @@ services:
       - "8180:8080"
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import:ro
+      - ./keycloak/themes/donatrack:/opt/keycloak/themes/donatrack:ro
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep -q '200'"]
       interval: 15s

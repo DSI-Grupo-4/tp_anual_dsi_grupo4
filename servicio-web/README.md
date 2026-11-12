@@ -162,10 +162,7 @@ El login y el registro los muestra Keycloak, no `servicio-web`. Para que se vean
 - agrega fondo lavanda, tarjeta blanca, botón oscuro, enlaces violeta, logo de DonaTrack, Fira Sans y controles de 48 px;
 - traduce al español los textos que el tema base deja en inglés.
 
-**Para la Persona 2, al integrarlo en la rama `iam`:**
-1. En `docker-compose.integration.yml`, agregar al servicio `keycloak` el volumen `./keycloak/themes/donatrack:/opt/keycloak/themes/donatrack:ro`.
-2. En `keycloak/import/donatrack-realm.json`, agregar `"loginTheme": "donatrack"`, `"internationalizationEnabled": true`, `"supportedLocales": ["es"]` y `"defaultLocale": "es"`. Si el realm ya existe en la base, el import no lo pisa: hay que cambiarlo en la consola (Realm settings → Themes → Login theme).
-3. Para ver cambios de CSS sin reiniciar Keycloak, arrancarlo con `--spi-theme--cache-themes=false --spi-theme--cache-templates=false`.
+En la rama `iam` el volumen del tema, `loginTheme`, el idioma `es` y los flags `--spi-theme--cache-themes=false --spi-theme--cache-templates=false` ya están en el compose y en el JSON del realm. Si el realm ya existe en MySQL, el import no lo pisa: hay que elegir el tema en la consola. Los pasos están en [GUIA-LEVANTAR-SERVICIOS.md](../GUIA-LEVANTAR-SERVICIOS.md), sección "Login del cliente web".
 
 **Regla:** `resources/css/tokens.css` del tema es una copia de [static/css/tokens.css](src/main/resources/static/css/tokens.css), porque Keycloak no puede pedírselo a `servicio-web`. Si cambiás los tokens, copiá el archivo al tema. Si te olvidás, `TemaKeycloakTest` falla.
 

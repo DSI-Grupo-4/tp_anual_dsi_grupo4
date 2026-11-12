@@ -9,6 +9,10 @@
   "duplicateEmailsAllowed": false,
   "resetPasswordAllowed": false,
   "editUsernameAllowed": false,
+  "loginTheme": "donatrack",
+  "internationalizationEnabled": true,
+  "supportedLocales": ["es"],
+  "defaultLocale": "es",
   "roles": {
     "realm": [
       {
@@ -30,5 +34,29 @@
         "clientRole": false
       }
     ]
-  }
+  },
+  "clients": [
+    {
+      "clientId": "servicio-web",
+      "name": "Cliente web de DonaTrack",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "rootUrl": "http://localhost:8085",
+      "redirectUris": [
+        "http://localhost:8085/login/oauth2/code/keycloak"
+      ],
+      "webOrigins": [
+        "http://localhost:8085"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8085##http://localhost:8085/"
+      }
+    }
+  ]
 }

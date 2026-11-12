@@ -4,7 +4,6 @@ import ar.edu.utn.frba.dds.web.mapa.Marcador;
 import ar.edu.utn.frba.dds.web.publico.FuentePublica;
 import ar.edu.utn.frba.dds.web.publico.MapaPublico;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -24,10 +23,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class PublicoController {
 
     static final int FOTOS_POR_PAGINA = 12;
-
-    /** Ruta pública → clave del título. Se van quitando a medida que cada página se implementa. */
-    private static final Map<String, String> EN_CONSTRUCCION = Map.of(
-            "ingresar", "nav.ingresar");
 
     private static final Set<String> LEGALES = Set.of("privacidad", "terminos");
 
@@ -91,9 +86,9 @@ public class PublicoController {
         return "publico/legal/" + pagina;
     }
 
-    @GetMapping("/{pagina:ingresar}")
-    public String enConstruccion(@PathVariable String pagina, Model model) {
-        model.addAttribute("tituloClave", EN_CONSTRUCCION.get(pagina));
-        return "publico/en-construccion";
+    /** Inicia el authorization code contra Keycloak. Spring vuelve a la página que se había pedido. */
+    @GetMapping("/ingresar")
+    public String ingresar() {
+        return "redirect:/oauth2/authorization/keycloak";
     }
 }

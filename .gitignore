@@ -11,6 +11,7 @@ logs/
 
 servicio-incentivos/credentials.env
 keycloak/.env
+servicio-web/.env
 servicio-notificaciones/.env
 servicio-logistica/.env
 .cli-venv/

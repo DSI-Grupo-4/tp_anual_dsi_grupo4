@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,7 +34,7 @@ class NavegacionWebTest {
 
     @Test
     void unaSeccionPrivadaSinImplementarMuestraElMenuDelRolYMarcaLaActiva() throws Exception {
-        mvc.perform(get("/admin/camiones"))
+        mvc.perform(get("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Sección en construcción"),
@@ -44,18 +45,18 @@ class NavegacionWebTest {
 
     @Test
     void elPanelDeCadaRolMuestraSuMenu() throws Exception {
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("href=\"/donante/incentivos\""),
                         containsString("Donante"),
                         not(containsString("href=\"/admin/camiones\"")))));
-        mvc.perform(get("/beneficiaria")).andExpect(status().isOk());
+        mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isOk());
     }
 
     @Test
     void lasMigasLlevanAlPanelYMarcanLaPaginaActual() throws Exception {
-        mvc.perform(get("/beneficiaria/necesidades"))
+        mvc.perform(get("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(content().string(allOf(
                         containsString("<a href=\"/beneficiaria\">Panel</a>"),
                         containsString("<span aria-current=\"page\">Necesidades</span>"))));
@@ -63,7 +64,7 @@ class NavegacionWebTest {
 
     @Test
     void unaSeccionQueNoEstaEnElMenuDa404() throws Exception {
-        mvc.perform(get("/admin/inexistente")).andExpect(status().isNotFound());
+        mvc.perform(get("/admin/inexistente").with(SesionDePrueba.conRol("ADMIN"))).andExpect(status().isNotFound());
         mvc.perform(get("/legal/inexistente")).andExpect(status().isNotFound());
     }
 
