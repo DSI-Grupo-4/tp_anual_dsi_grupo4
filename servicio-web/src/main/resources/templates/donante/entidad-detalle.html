@@ -27,7 +27,9 @@
         <p class="texto-chico texto-secundario">Por emergencias, como inundaciones u olas polares.</p>
       </div>
       <ul class="donante-necesidades" th:if="${!extraordinarias.isEmpty()}">
-        <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}" th:each="n : ${extraordinarias}"></li>
+        <th:block th:each="n : ${extraordinarias}">
+          <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}"></li>
+        </th:block>
       </ul>
       <p class="texto-secundario" th:if="${extraordinarias.isEmpty()}">No tiene necesidades urgentes ahora.</p>
     </section>
@@ -38,7 +40,9 @@
         <p class="texto-chico texto-secundario">Lo que necesita de forma periódica.</p>
       </div>
       <ul class="donante-necesidades" th:if="${!recurrentes.isEmpty()}">
-        <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}" th:each="n : ${recurrentes}"></li>
+        <th:block th:each="n : ${recurrentes}">
+          <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}"></li>
+        </th:block>
       </ul>
       <p class="texto-secundario" th:if="${recurrentes.isEmpty()}">No tiene necesidades habituales abiertas.</p>
     </section>
