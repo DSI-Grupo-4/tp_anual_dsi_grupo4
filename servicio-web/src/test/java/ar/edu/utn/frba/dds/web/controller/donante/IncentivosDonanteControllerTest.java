@@ -2,29 +2,12 @@ package ar.edu.utn.frba.dds.web.controller.donante;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.EvolucionMes;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Mision;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class IncentivosDonanteControllerTest {
-
-    @Test
-    void laEvolucionDescartaMesesIlegiblesYEscalaContraElMaximo() {
-        var filas = IncentivosDonanteController.evolucion(List.of(
-                new EvolucionMes("2026-10", 2, null),
-                new EvolucionMes("mal", 9, null),
-                new EvolucionMes("2026-11", 4, BigDecimal.ONE)));
-        assertThat(filas).hasSize(2);
-        assertThat(filas.get(0).mes()).isEqualTo(LocalDate.of(2026, 10, 1));
-        assertThat(filas.get(0).porcentaje()).isEqualTo(50);
-        assertThat(filas.get(1).porcentaje()).isEqualTo(100);
-        assertThat(filas.get(0).impacto()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(IncentivosDonanteController.evolucion(List.of(new EvolucionMes("2026-11", 0, null))).get(0).porcentaje())
-                .isZero();
-    }
 
     @Test
     void laEscaleraMarcaLasCategoriasAlcanzadasYLaActual() {

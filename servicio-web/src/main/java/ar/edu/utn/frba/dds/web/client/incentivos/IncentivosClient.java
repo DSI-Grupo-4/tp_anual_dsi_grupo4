@@ -3,7 +3,10 @@ package ar.edu.utn.frba.dds.web.client.incentivos;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Insignia;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.InsigniaObtenida;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
+import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.MetricasSistema;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Mision;
+import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.PosicionRanking;
+import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.RankingMensual;
 import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -53,5 +56,20 @@ public class IncentivosClient {
     public void cambiarVisibilidad(long donanteId, String insignia, boolean visible) {
         http.patch().uri("/api/donantes/{id}/insignias/{nombre}/visibilidad", donanteId, insignia)
                 .body(Map.of("visible", visible)).retrieve().toBodilessEntity();
+    }
+
+    /** GET /api/admin/metricas: totales del sistema y evolución mensual. */
+    public MetricasSistema metricasSistema() {
+        return http.get().uri("/api/admin/metricas").retrieve().body(MetricasSistema.class);
+    }
+
+    /** GET /api/ranking/actual: ranking del mes en curso, todavía sin cerrar. */
+    public List<PosicionRanking> rankingEnCurso() {
+        return http.get().uri("/api/ranking/actual").retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/ranking/historial: rankings mensuales ya cerrados, del más viejo al más nuevo. */
+    public List<RankingMensual> historialRankings() {
+        return http.get().uri("/api/ranking/historial").retrieve().body(new ParameterizedTypeReference<>() { });
     }
 }

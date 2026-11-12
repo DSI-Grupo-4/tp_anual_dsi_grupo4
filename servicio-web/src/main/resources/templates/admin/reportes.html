@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<!-- Reportes del admin (Persona 4). Usa los fragmentos y estilos de incentivos/. -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.admin.reportes}, ~{::contenido}, ~{incentivos/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="pila pila--grande">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="#{nav.admin.reportes}">Reportes</h1>
+    <p class="texto-secundario">Actividad de los donantes en Incentivos: totales, evolución y rankings mensuales.</p>
+  </div>
+
+  <div class="banner banner--advertencia" role="status" th:if="${incentivosNoDisponible}">
+    <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+    <div class="banner__contenido">Ahora no pudimos consultar Incentivos. Probá de nuevo en unos minutos.</div>
+  </div>
+
+  <th:block th:if="${metricas != null}">
+
+  <section class="pila" aria-labelledby="t-totales">
+    <h2 id="t-totales">Estadísticas</h2>
+    <div class="grilla">
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Donantes activos</span><th:block th:replace="~{fragments/comunes :: icono('usuarios')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.donantesActivos()}">0</span>
+        <span class="metrica__detalle">Hicieron al menos una donación</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Donaciones</span><th:block th:replace="~{fragments/comunes :: icono('corazon')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.solicitudesDonacionTotales()}">0</span>
+        <span class="metrica__detalle">Registradas en total</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Misiones</span><th:block th:replace="~{fragments/comunes :: icono('exito')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.misionesCompletadasTotales()}">0</span>
+        <span class="metrica__detalle">Completadas por todos los donantes</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Insignias</span><th:block th:replace="~{fragments/comunes :: icono('premio')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.insigniasOtorgadasTotales()}">0</span>
+        <span class="metrica__detalle">Otorgadas</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-evolucion">
+    <div>
+      <h2 id="t-evolucion">Evolución mensual</h2>
+      <p class="texto-chico texto-secundario">Donaciones registradas por mes, de todos los donantes.</p>
+    </div>
+    <th:block th:replace="~{incentivos/fragmentos :: evolucion(${evolucion}, 't-evolucion')}"></th:block>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-ranking">
+    <div>
+      <h2 id="t-ranking" th:text="|Ranking de ${@fechas.mes(mesEnCurso)}|">Ranking de noviembre 2026</h2>
+      <p class="texto-chico texto-secundario">
+        Mes en curso, por misiones completadas. Se cierra el día 1 y quedan los 3 primeros en el historial.
+      </p>
+    </div>
+    <ol class="ranking" th:if="${!rankingEnCurso.isEmpty()}">
+      <li th:each="p : ${rankingEnCurso}">
+        <span class="ranking__puesto" th:text="${p.puesto()}">1</span>
+        <span class="ranking__nombre" th:text="${p.nombre()}">Ana Pérez</span>
+        <span class="ranking__misiones" th:text="${p.cantidadMisiones() == 1} ? '1 misión' : |${p.cantidadMisiones()} misiones|">2 misiones</span>
+      </li>
+    </ol>
+    <p class="texto-chico texto-secundario" th:if="${totalEnCurso > rankingEnCurso.size()}"
+       th:text="|Se muestran los primeros ${rankingEnCurso.size()} de ${totalEnCurso} donantes.|">Se muestran los primeros 10 de 14 donantes.</p>
+    <div class="vacio" th:if="${rankingEnCurso.isEmpty()}">
+      <p>Todavía nadie completó misiones este mes.</p>
+    </div>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-historial">
+    <h2 id="t-historial">Historial de rankings</h2>
+    <div class="reportes-historial" th:if="${!historial.isEmpty()}">
+      <article class="reportes-historial__mes" th:each="r : ${historial}">
+        <h3 th:text="${@fechas.mes(r.mes())}">octubre 2026</h3>
+        <p class="texto-chico texto-secundario" th:text="|Cerrado el ${@fechas.fecha(r.emitido())}|">Cerrado el 01/11/2026</p>
+        <ol class="ranking" th:if="${!r.puestos().isEmpty()}">
+          <li th:each="p : ${r.puestos()}">
+            <span class="ranking__puesto" th:text="${p.puesto()}">1</span>
+            <span class="ranking__nombre" th:text="${p.nombre()}">Ana Pérez</span>
+            <span class="ranking__misiones" th:text="${p.cantidad() == 1} ? '1 misión' : |${p.cantidad()} misiones|">3 misiones</span>
+          </li>
+        </ol>
+        <p class="texto-chico texto-secundario" th:if="${r.puestos().isEmpty()}">Ese mes nadie completó misiones.</p>
+      </article>
+    </div>
+    <div class="vacio" th:if="${historial.isEmpty()}">
+      <p>Todavía no se cerró ningún ranking mensual.</p>
+      <p class="texto-chico texto-secundario">El primero se genera el día 1 del mes que viene.</p>
+    </div>
+  </section>
+
+  </th:block>
+</div>
+</th:block>
+</body>
+</html>

@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.web.controller.donante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi;
-import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.EvolucionMes;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.InsigniaObtenida;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Mision;
@@ -12,11 +11,8 @@ import ar.edu.utn.frba.dds.web.donante.DonanteActual;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
+import ar.edu.utn.frba.dds.web.incentivos.GraficoEvolucion;
 import ar.edu.utn.frba.dds.web.mensajes.Toasts;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,10 +54,6 @@ public class IncentivosDonanteController extends PortalDonanteBase {
                                        IncentivosClient incentivos) {
         super(donanteActual, donaciones);
         this.incentivos = incentivos;
-    }
-
-    /** Un mes del gráfico de evolución. porcentaje es relativo al mes con más donaciones. */
-    public record MesEvolucion(LocalDate mes, int solicitudes, BigDecimal impacto, int porcentaje) {
     }
 
     /** Un escalón de la escalera de categorías. */
@@ -106,7 +98,7 @@ public class IncentivosDonanteController extends PortalDonanteBase {
         model.addAttribute("misionesCompletadas", misiones.stream().filter(Mision::completada).count());
         model.addAttribute("misionActiva", misiones.stream().filter(Mision::activa).findFirst().orElse(null));
         model.addAttribute("insignias", insignias);
-        model.addAttribute("evolucion", evolucion(metricas.evolucionMensual()));
+        model.addAttribute("evolucion", GraficoEvolucion.filas(metricas.evolucionMensual()));
         model.addAttribute("escalera", escalera(metricas.categoriaActual()));
         model.addAttribute("siguienteCategoria", siguienteCategoria(metricas.categoriaActual()));
         return "donante/incentivos";
@@ -135,29 +127,6 @@ public class IncentivosDonanteController extends PortalDonanteBase {
         return IncentivosApi.PERIODOS.stream().map(valor -> new OpcionPeriodo(valor, ETIQUETAS_PERIODO.get(valor),
                 UriComponentsBuilder.fromPath(RUTA).queryParam("periodo", valor).build().toUriString(),
                 valor.equals(elegido))).toList();
-    }
-
-    static List<MesEvolucion> evolucion(List<EvolucionMes> meses) {
-        // Primero se descartan los meses ilegibles, así no cuentan para la escala.
-        List<EvolucionMes> validos = new ArrayList<>();
-        List<LocalDate> inicios = new ArrayList<>();
-        for (EvolucionMes mes : meses) {
-            try {
-                inicios.add(YearMonth.parse(mes.mes()).atDay(1));
-                validos.add(mes);
-            } catch (DateTimeParseException | NullPointerException e) {
-                log.debug("Mes ilegible en la evolución de Incentivos: {}", mes.mes());
-            }
-        }
-        int maximo = validos.stream().mapToInt(EvolucionMes::solicitudes).max().orElse(0);
-        List<MesEvolucion> filas = new ArrayList<>();
-        for (int i = 0; i < validos.size(); i++) {
-            EvolucionMes mes = validos.get(i);
-            int porcentaje = maximo == 0 ? 0 : Math.round(mes.solicitudes() * 100f / maximo);
-            filas.add(new MesEvolucion(inicios.get(i), mes.solicitudes(),
-                    mes.impacto() == null ? BigDecimal.ZERO : mes.impacto(), porcentaje));
-        }
-        return filas;
     }
 
     static List<Escalon> escalera(String actual) {

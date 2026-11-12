@@ -1,0 +1,33 @@
+/* Piezas de Incentivos compartidas por el portal del donante y los reportes del admin (Persona 4). */
+/* Evolución mensual: columnas de una sola serie; los datos también están en la tabla. */
+.donante-columnas {
+  list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: var(--espacio-3);
+  min-height: 12rem; overflow-x: auto; border-bottom: var(--borde);
+}
+.donante-columnas li { flex: 1 0 3rem; max-width: 6rem; display: flex; flex-direction: column; align-items: center; gap: var(--espacio-1); }
+.donante-columnas__valor { font-size: var(--texto-sm); font-weight: var(--peso-medio); }
+.donante-columnas__pista { flex: 1; width: 100%; display: flex; align-items: flex-end; min-height: 8rem; }
+.donante-columnas__barra { display: block; width: 100%; min-height: 2px; background: var(--color-primario); border-radius: 4px 4px 0 0; }
+.donante-columnas__mes { text-align: center; padding-bottom: var(--espacio-2); }
+.donante-tabla-datos summary { cursor: pointer; min-height: var(--area-tactil); display: flex; align-items: center; color: var(--color-primario); }
+
+
+/* Ranking: puesto, nombre y misiones. */
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-2); }
+.ranking li {
+  display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto; align-items: center; gap: var(--espacio-3);
+  min-height: var(--area-tactil); padding: var(--espacio-2) var(--espacio-3); border: var(--borde); border-radius: var(--radio-md);
+}
+.ranking__puesto {
+  display: grid; place-items: center; width: 2rem; height: 2rem; border-radius: 50%;
+  background: var(--color-superficie-alt); font-weight: var(--peso-fuerte);
+}
+.ranking li:first-child .ranking__puesto { background: var(--color-primario); color: var(--color-sobre-primario); }
+.ranking__nombre { overflow-wrap: anywhere; }
+.ranking__misiones { font-size: var(--texto-sm); color: var(--color-texto-secundario); white-space: nowrap; }
+
+/* Reportes del admin: historial de rankings en columnas. */
+.reportes-historial { display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); }
+.reportes-historial__mes { display: grid; gap: var(--espacio-2); align-content: start; padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
+.reportes-historial__mes h3, .reportes-historial__mes p { margin: 0; }
+.reportes-historial__mes h3::first-letter { text-transform: uppercase; }

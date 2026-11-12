@@ -68,4 +68,37 @@ public final class IncentivosApi {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Insignia(String nombre, String imagenUrl) {
     }
+
+    /** MetricasSistemaDTO: totales de todo el sistema, para los reportes del admin. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record MetricasSistema(int donantesActivos, int solicitudesDonacionTotales, int misionesCompletadasTotales,
+                                  int insigniasOtorgadasTotales, List<EvolucionMes> evolucionMensual) {
+        public List<EvolucionMes> evolucionMensual() {
+            return evolucionMensual == null ? List.of() : evolucionMensual;
+        }
+    }
+
+    /** RankingPosicionDTO: un puesto del ranking del mes en curso. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record PosicionRanking(int puesto, Long donanteId, String donanteNombre, int cantidadMisiones, String mes) {
+        public String nombre() {
+            return donanteNombre == null || donanteNombre.isBlank() ? "Donante #" + donanteId : donanteNombre;
+        }
+    }
+
+    /** RankingDTO: un ranking mensual ya cerrado (top 3). */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record RankingMensual(LocalDate fechaEmision, List<PuestoRanking> topDonantes) {
+        public List<PuestoRanking> topDonantes() {
+            return topDonantes == null ? List.of() : topDonantes;
+        }
+    }
+
+    /** ActividadMensualDonanteDTO: un puesto de un ranking cerrado. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record PuestoRanking(Long donanteId, String donanteNombre, int cantidad, int puesto) {
+        public String nombre() {
+            return donanteNombre == null || donanteNombre.isBlank() ? "Donante #" + donanteId : donanteNombre;
+        }
+    }
 }
