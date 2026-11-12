@@ -20,6 +20,7 @@
 ├── NOTIFICACIONES.md
 ├── PERSONA5-parte3.md
 ├── PERSONA5-parte4.md
+├── PERSONA5-parte5.md
 ├── PERSONA5.md
 ├── README.md
 ├── assets_md
@@ -30,6 +31,7 @@
 │   ├── entrega4-requerimientos.md
 │   └── entrega5-requerimientos.md
 ├── contrato-ubicacion-para-persona4.md
+├── decisiones-persona5-borrador-parte5.md
 ├── decisiones-persona5-borrador.md
 ├── decisiones.md
 ├── diagramas
@@ -123,7 +125,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-42 directories, 66 files
+42 directories, 68 files
 ```
 <!-- TREE_END -->
 
