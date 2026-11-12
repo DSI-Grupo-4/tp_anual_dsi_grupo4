@@ -278,12 +278,13 @@ Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas 
   - [x] panel del donante (`/donante`);
   - [x] sus donaciones, con filtros por estado, categoría y subcategoría (`/donante/donaciones` y `/donante/donaciones/{id}` con el historial);
   - navegación por entidades beneficiarias;
-  - métricas, misiones e insignias, con el cambio de visibilidad de insignias;
+  - [x] métricas, misiones e insignias, con el cambio de visibilidad de insignias (`/donante/incentivos`);
   - ranking mensual e historial de rankings.
-- [ ] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): ocultarla y bloquearla para personas jurídicas.
+- [x] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): `PortalDonanteBase` la saca del menú y la ruta redirige al panel. Mientras `/donante/entidades` y `/donante/seguimiento` sigan en construcción, en esas dos el menú todavía la muestra.
 - [ ] Agregar los métodos de `IncentivosClient`: ya están métricas, misiones, insignias y visibilidad; falta el ranking.
 - [ ] `/donante/seguimiento`: usar el [componente de mapa](#componente-de-mapa) con marcadores de tipo `camion` y un endpoint propio con refresco, con los datos de ubicación que expone la Persona 5.
-- [ ] Usar las categorías de misiones del dominio (Colaborador, Sostenedor, Transformador). Los mockups dicen "Bronze" y "Donor", y eso quedó desactualizado.
+- [x] Usar las categorías de misiones del dominio (Colaborador, Sostenedor, Transformador). Los mockups dicen "Bronze" y "Donor", y eso quedó desactualizado.
+- **Endpoints nuevos en Incentivos:** `GET /api/donantes/{id}/insignias/obtenidas` (todas, con su visibilidad; `/insignias` sigue devolviendo solo las visibles) y, en `/misiones`, los campos `meta` y `objetivo`.
 
 ### Persona 5 (portal beneficiario y operación logística)
 - [ ] Pantallas `/beneficiaria/**`, `/admin/camiones` y `/admin/seguimiento`:

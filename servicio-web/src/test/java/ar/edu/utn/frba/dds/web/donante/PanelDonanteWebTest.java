@@ -85,7 +85,10 @@ class PanelDonanteWebTest {
         mvc.perform(get("/donante"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("¡Hola, Panadería El Sol!")))
-                .andExpect(content().string(not(containsString("Impacto acumulado"))));
+                .andExpect(content().string(not(containsString("Impacto acumulado"))))
+                // Requerimiento 7: Incentivos no aparece en el menú de una persona jurídica.
+                .andExpect(content().string(not(containsString("href=\"/donante/incentivos\""))))
+                .andExpect(content().string(containsString("href=\"/donante/donaciones\"")));
         verify(incentivos, never()).metricas(anyLong(), anyString());
     }
 

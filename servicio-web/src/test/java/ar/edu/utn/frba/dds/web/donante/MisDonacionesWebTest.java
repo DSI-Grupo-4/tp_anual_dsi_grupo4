@@ -18,6 +18,7 @@ import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDon
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Entidad;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.PersonaJuridica;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
@@ -49,6 +50,7 @@ class MisDonacionesWebTest {
 
     @BeforeEach
     void datos() {
+        when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "HUMANA", "Ana", "Pérez", null));
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(arroz), 23, 3, 0));
     }
 
@@ -113,7 +115,7 @@ class MisDonacionesWebTest {
 
     @Test
     void donanteInexistenteMuestraLaCuentaSinVincular() throws Exception {
-        when(donaciones.donaciones(eq(1L), anyMap()))
+        when(donaciones.perfil(1))
                 .thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe el donante 1"));
         mvc.perform(get("/donante/donaciones"))
                 .andExpect(status().isNotFound())

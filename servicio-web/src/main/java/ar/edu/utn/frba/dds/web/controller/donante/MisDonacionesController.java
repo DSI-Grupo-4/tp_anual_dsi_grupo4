@@ -30,19 +30,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 /** "Mis donaciones": lista con filtros y detalle con historial de estados (Persona 4). */
 @Controller
 @RequestMapping("/donante/donaciones")
-public class MisDonacionesController {
+public class MisDonacionesController extends PortalDonanteBase {
 
     private static final Logger log = LoggerFactory.getLogger(MisDonacionesController.class);
     static final int POR_PAGINA = 10;
     private static final int LARGO_MAXIMO_BUSQUEDA = 100;
     private static final String RUTA = "/donante/donaciones";
 
-    private final DonanteActual donanteActual;
-    private final PortalDonanteClient donaciones;
-
     public MisDonacionesController(DonanteActual donanteActual, PortalDonanteClient donaciones) {
-        this.donanteActual = donanteActual;
-        this.donaciones = donaciones;
+        super(donanteActual, donaciones);
     }
 
     /**

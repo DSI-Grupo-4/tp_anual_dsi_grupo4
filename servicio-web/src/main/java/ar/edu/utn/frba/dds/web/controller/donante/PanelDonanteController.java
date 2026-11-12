@@ -5,10 +5,8 @@ import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient;
 import ar.edu.utn.frba.dds.web.donante.DonanteActual;
-import ar.edu.utn.frba.dds.web.donante.DonanteNoVinculadoException;
 import ar.edu.utn.frba.dds.web.donante.DonanteVista;
 import ar.edu.utn.frba.dds.web.error.BackendException;
-import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -17,21 +15,19 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 
 /** Panel del donante: resumen de sus donaciones y de sus incentivos (Persona 4). */
 @Controller
-public class PanelDonanteController {
+public class PanelDonanteController extends PortalDonanteBase {
 
     private static final Logger log = LoggerFactory.getLogger(PanelDonanteController.class);
     static final int RECIENTES = 5;
 
-    private final DonanteActual donanteActual;
-    private final PortalDonanteClient donaciones;
     private final IncentivosClient incentivos;
 
     public PanelDonanteController(DonanteActual donanteActual, PortalDonanteClient donaciones, IncentivosClient incentivos) {
-        this.donanteActual = donanteActual;
-        this.donaciones = donaciones;
+        super(donanteActual, donaciones);
         this.incentivos = incentivos;
     }
 
@@ -40,14 +36,8 @@ public class PanelDonanteController {
     }
 
     @GetMapping("/donante")
-    public String panel(Model model) {
+    public String panel(@ModelAttribute(name = "perfil", binding = false) Perfil perfil, Model model) {
         long id = donanteActual.id();
-        Perfil perfil;
-        try {
-            perfil = donaciones.perfil(id);
-        } catch (RecursoNoEncontradoException e) {
-            throw new DonanteNoVinculadoException(id, e);
-        }
         Map<String, Long> porEstado = donaciones.resumenPorEstado(id);
 
         long total = porEstado.values().stream().mapToLong(Long::longValue).sum();
@@ -60,7 +50,6 @@ public class PanelDonanteController {
             }
         });
 
-        model.addAttribute("perfil", perfil);
         model.addAttribute("total", total);
         model.addAttribute("enCamino", enCamino);
         model.addAttribute("entregadas", porEstado.getOrDefault("ENTREGADA", 0L));

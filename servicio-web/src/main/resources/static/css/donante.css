@@ -69,6 +69,58 @@
 .donante-historial__paso--actual::before { background: var(--color-primario); border-color: var(--color-primario); }
 .donante-historial p { margin: 0; overflow-wrap: anywhere; }
 
+/* Incentivos: categoría, progreso y escalera. */
+.donante-categoria { background: var(--color-primario-suave); border-color: var(--color-primario-suave); }
+.donante-categoria p { margin: 0; }
+.donante-categoria__nombre { margin: 0; font-size: var(--texto-2xl); }
+.donante-categoria__ranking { display: inline-flex; align-items: center; gap: var(--espacio-2); font-weight: var(--peso-medio); }
+.donante-progreso { display: block; height: var(--espacio-3); border-radius: var(--radio-pildora); background: var(--color-superficie); border: var(--borde); overflow: hidden; }
+.donante-progreso__barra { display: block; height: 100%; background: var(--color-primario); border-radius: inherit; }
+.donante-escalera { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espacio-3); }
+.donante-escalera li {
+  display: grid; gap: var(--espacio-1); padding: var(--espacio-3) var(--espacio-4);
+  border: var(--borde); border-radius: var(--radio-md); background: var(--color-superficie);
+}
+.donante-escalera__nombre { font-weight: var(--peso-fuerte); }
+.donante-escalera__paso--alcanzada { border-color: var(--color-primario); }
+.donante-escalera__paso--actual { border: 2px solid var(--color-primario); }
+.donante-escalera__paso--actual .donante-escalera__nombre { color: var(--color-primario); }
+
+/* Selector de período: enlaces tipo píldora; el elegido lleva aria-current. */
+.donante-periodos { display: flex; flex-wrap: wrap; gap: var(--espacio-2); }
+.donante-periodos__opcion {
+  display: inline-flex; align-items: center; min-height: var(--area-tactil); padding: 0 var(--espacio-4);
+  border: var(--borde); border-radius: var(--radio-pildora); color: var(--color-texto); text-decoration: none;
+  font-size: var(--texto-sm); background: var(--color-superficie);
+}
+.donante-periodos__opcion:hover { background: var(--color-superficie-alt); }
+.donante-periodos__opcion[aria-current="page"] { background: var(--color-primario); border-color: var(--color-primario); color: var(--color-sobre-primario); }
+
+/* Evolución mensual: columnas de una sola serie; los datos también están en la tabla. */
+.donante-columnas {
+  list-style: none; margin: 0; padding: 0; display: flex; align-items: stretch; gap: var(--espacio-3);
+  min-height: 12rem; overflow-x: auto; border-bottom: var(--borde);
+}
+.donante-columnas li { flex: 1 0 3rem; max-width: 6rem; display: flex; flex-direction: column; align-items: center; gap: var(--espacio-1); }
+.donante-columnas__valor { font-size: var(--texto-sm); font-weight: var(--peso-medio); }
+.donante-columnas__pista { flex: 1; width: 100%; display: flex; align-items: flex-end; min-height: 8rem; }
+.donante-columnas__barra { display: block; width: 100%; min-height: 2px; background: var(--color-primario); border-radius: 4px 4px 0 0; }
+.donante-columnas__mes { text-align: center; padding-bottom: var(--espacio-2); }
+.donante-tabla-datos summary { cursor: pointer; min-height: var(--area-tactil); display: flex; align-items: center; color: var(--color-primario); }
+
+/* Misiones e insignias. */
+.donante-misiones { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-3); }
+.donante-misiones li { display: grid; gap: var(--espacio-2); padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
+.donante-misiones li p { margin: 0; }
+.donante-misiones__item--activa { border-color: var(--color-primario); box-shadow: var(--sombra-sm); }
+.donante-misiones__item--completada { background: var(--color-superficie-alt); }
+.donante-insignias { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+.donante-insignia { display: grid; justify-items: center; text-align: center; gap: var(--espacio-2); padding: var(--espacio-5) var(--espacio-4); border: var(--borde); border-radius: var(--radio-lg); }
+.donante-insignia__icono { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--color-primario-suave); color: var(--color-primario); }
+.donante-insignia__icono .icono { width: 1.75rem; height: 1.75rem; }
+.donante-insignia--oculta { border-style: dashed; }
+.donante-insignia--oculta .donante-insignia__icono { background: var(--color-superficie-alt); color: var(--color-texto-secundario); }
+
 @media (max-width: 959px) {
   .donante-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .donante-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -80,4 +132,5 @@
   .donante-recientes__item { flex-direction: column; align-items: flex-start; }
   .donante-filtros, .donante-datos { grid-template-columns: 1fr; }
   .donante-filtros__acciones .boton { width: 100%; }
+  .donante-escalera { grid-template-columns: 1fr; }
 }

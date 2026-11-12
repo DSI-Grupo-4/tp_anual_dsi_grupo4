@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.web.client.incentivos;
 
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Insignia;
+import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.InsigniaObtenida;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Metricas;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.Mision;
 import java.util.List;
@@ -39,6 +40,12 @@ public class IncentivosClient {
     /** GET /api/donantes/{id}/insignias: solo las visibles. */
     public List<Insignia> insignias(long donanteId) {
         return http.get().uri("/api/donantes/{id}/insignias", donanteId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/donantes/{id}/insignias/obtenidas: todas, visibles u ocultas. */
+    public List<InsigniaObtenida> insigniasObtenidas(long donanteId) {
+        return http.get().uri("/api/donantes/{id}/insignias/obtenidas", donanteId)
                 .retrieve().body(new ParameterizedTypeReference<>() { });
     }
 
