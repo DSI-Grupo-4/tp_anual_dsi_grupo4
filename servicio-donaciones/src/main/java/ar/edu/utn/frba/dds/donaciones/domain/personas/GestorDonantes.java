@@ -116,9 +116,10 @@ public class GestorDonantes {
     }
 
     public void actualizarContactos(Donante donante, List<MedioContacto> contactos) {
-        donantesPorEmail.remove(claveEmail(emailDe(donante.getPersona())), donante);
+        String emailAnterior = emailDe(donante.getPersona());
         donante.getPersona().setMediosContacto(new ArrayList<>(contactos));
         donante = donanteRepository.save(donante);
+        donantesPorEmail.remove(claveEmail(emailAnterior), donante);
         indexarEmail(donante);
     }
 
