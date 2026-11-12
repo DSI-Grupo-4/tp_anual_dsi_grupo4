@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.donante.panel}, ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="|¡Hola, ${perfil.nombreVisible()}!|">¡Hola, Ana!</h1>
+    <p class="texto-secundario">Este es el resumen de tus donaciones y de tu impacto.</p>
+  </div>
+
+  <div class="banner banner--advertencia" role="status" th:if="${incentivosNoDisponible}">
+    <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+    <div class="banner__contenido">
+      Ahora no pudimos consultar tus incentivos. El resto del panel está actualizado; probá de nuevo en unos minutos.
+    </div>
+  </div>
+
+  <section class="donante-metricas" aria-label="Resumen de tu actividad">
+    <a class="tarjeta metrica donante-metrica" th:href="@{/donante/donaciones}">
+      <span class="metrica__cabecera"><span>Mis donaciones</span><th:block th:replace="~{fragments/comunes :: icono('corazon')}"/></span>
+      <span class="metrica__valor" th:text="${total}">0</span>
+      <span class="metrica__detalle" th:text="|${enCamino} en camino|">0 en camino</span>
+    </a>
+    <a class="tarjeta metrica donante-metrica" th:href="@{/donante/donaciones(estado='ENTREGADA')}">
+      <span class="metrica__cabecera"><span>Entregadas</span><th:block th:replace="~{fragments/comunes :: icono('caja')}"/></span>
+      <span class="metrica__valor" th:text="${entregadas}">0</span>
+      <span class="metrica__detalle">Llegaron a una entidad</span>
+    </a>
+
+    <th:block th:if="${metricas != null}">
+      <a class="tarjeta metrica donante-metrica" th:href="@{/donante/incentivos}">
+        <span class="metrica__cabecera"><span>Categoría</span><th:block th:replace="~{fragments/comunes :: icono('premio')}"/></span>
+        <span class="metrica__valor donante-metrica__texto"
+              th:text="${metricas.categoriaActual() != null} ? ${metricas.categoriaActual()} : 'Sin categoría'">Colaborador</span>
+        <span class="metrica__detalle"
+              th:text="|Impacto acumulado: ${@donanteVista.numero(metricas.impactoAcumulado())}|">Impacto acumulado: 0</span>
+      </a>
+      <a class="tarjeta metrica donante-metrica" th:href="@{/donante/incentivos}">
+        <span class="metrica__cabecera"><span>Insignias</span><th:block th:replace="~{fragments/comunes :: icono('exito')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.insigniasObtenidas()}">0</span>
+        <span class="metrica__detalle" th:text="${metricas.posicionRanking() != null} ? |Puesto ${metricas.posicionRanking()} en el ranking| : 'Logros obtenidos'">Logros obtenidos</span>
+      </a>
+    </th:block>
+
+    <a class="tarjeta metrica donante-metrica" th:href="@{/donante/entidades}" th:if="${metricas == null}">
+      <span class="metrica__cabecera"><span>Entidades</span><th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></span>
+      <span class="metrica__valor donante-metrica__texto">Conocelas</span>
+      <span class="metrica__detalle">Organizaciones que reciben donaciones</span>
+    </a>
+    <a class="tarjeta metrica donante-metrica" th:href="@{/donante/seguimiento}" th:if="${metricas == null}">
+      <span class="metrica__cabecera"><span>Seguimiento</span><th:block th:replace="~{fragments/comunes :: icono('ubicacion')}"/></span>
+      <span class="metrica__valor" th:text="${enCamino}">0</span>
+      <span class="metrica__detalle">Donaciones que podés seguir</span>
+    </a>
+  </section>
+
+  <div class="donante-grilla">
+    <section class="tarjeta pila" aria-labelledby="t-estados">
+      <div>
+        <h2 id="t-estados">Estado de tus donaciones</h2>
+        <p class="texto-secundario texto-chico">Cuántas donaciones hay en cada estado.</p>
+      </div>
+      <ul class="donante-barras" th:if="${!distribucion.isEmpty()}">
+        <li th:each="fila : ${distribucion}">
+          <a class="donante-barras__fila" th:href="@{/donante/donaciones(estado=${fila.estado()})}">
+            <span class="donante-barras__etiqueta">
+              <span th:text="${@donanteVista.estado(fila.estado())}">Entregada</span>
+              <strong th:text="${fila.cantidad()}">3</strong>
+            </span>
+            <span class="donante-barras__pista" aria-hidden="true">
+              <span class="donante-barras__barra" th:classappend="|donante-barras__barra--${fila.estado()}|"
+                    th:style="|width: ${fila.porcentaje()}%|"></span>
+            </span>
+            <span class="solo-lector" th:text="|(${fila.porcentaje()} % del total)|"></span>
+          </a>
+        </li>
+      </ul>
+      <div class="vacio" th:if="${distribucion.isEmpty()}">
+        <p>Todavía no registraste donaciones.</p>
+        <p class="texto-chico texto-secundario">Cuando acerques bienes al depósito, vas a ver acá en qué estado está cada uno.</p>
+      </div>
+    </section>
+
+    <section class="tarjeta pila" aria-labelledby="t-recientes">
+      <div class="fila fila--separada">
+        <div>
+          <h2 id="t-recientes">Donaciones recientes</h2>
+          <p class="texto-secundario texto-chico" th:text="|Tus últimas ${cantidadRecientes} donaciones.|">Tus últimas 5 donaciones.</p>
+        </div>
+        <a class="boton boton--secundario" th:href="@{/donante/donaciones}" th:if="${!recientes.isEmpty()}">Ver todas</a>
+      </div>
+      <ul class="donante-recientes" th:if="${!recientes.isEmpty()}">
+        <li th:each="d : ${recientes}">
+          <div class="donante-recientes__item">
+            <span class="donante-recientes__datos">
+              <strong th:text="${d.descripcionItem()}">Arroz</strong>
+              <span class="texto-chico texto-secundario">
+                <span th:text="|${@donanteVista.numero(d.cantidadAsignada())} ${@donanteVista.bien('unidad', d.unidadMedida())}|">20 kg</span>
+                · <span th:text="${@donanteVista.bien('categoria', d.categoria())}">Alimentos</span>
+                <th:block th:if="${d.fechaCreacion() != null}">· <time th:datetime="${@fechas.iso(d.fechaCreacion())}" th:text="${@fechas.fecha(d.fechaCreacion())}">10/11/2026</time></th:block>
+              </span>
+            </span>
+            <span th:replace="~{donante/fragmentos :: estado(${d.estadoActual()})}"></span>
+          </div>
+        </li>
+      </ul>
+      <div class="vacio" th:if="${recientes.isEmpty()}">
+        <p>No hay donaciones registradas.</p>
+      </div>
+    </section>
+  </div>
+
+</div>
+</th:block>
+</body>
+</html>

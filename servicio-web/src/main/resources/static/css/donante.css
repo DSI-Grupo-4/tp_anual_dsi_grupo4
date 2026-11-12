@@ -1,0 +1,49 @@
+/* Portal del donante (Persona 4). Usa solo tokens de tokens.css y se carga desde donante/fragmentos :: recursos. */
+.donante-contenido { display: grid; gap: var(--espacio-5); min-width: 0; }
+.donante-contenido .cabecera-pagina h1 { margin-bottom: var(--espacio-1); }
+
+/* Tarjetas de métricas: 4 columnas en escritorio, 2 en tablet, 1 en celular. */
+.donante-metricas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--espacio-4); }
+.donante-metrica { color: var(--color-texto); text-decoration: none; min-height: var(--area-tactil); }
+.donante-metrica:hover { background: var(--color-primario-suave); }
+.donante-metrica__texto { font-size: var(--texto-xl); overflow-wrap: anywhere; }
+
+.donante-grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espacio-5); align-items: start; }
+.donante-grilla h2 { margin: 0; }
+
+/* Distribución por estado: barras horizontales; el número también está en texto. */
+.donante-barras { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-2); }
+.donante-barras__fila {
+  display: grid; gap: var(--espacio-2); padding: var(--espacio-2) var(--espacio-3);
+  min-height: var(--area-tactil); border-radius: var(--radio-md);
+  color: var(--color-texto); text-decoration: none;
+}
+.donante-barras__fila:hover { background: var(--color-superficie-alt); }
+.donante-barras__etiqueta { display: flex; justify-content: space-between; gap: var(--espacio-3); }
+.donante-barras__pista { display: block; height: var(--espacio-2); border-radius: var(--radio-pildora); background: var(--color-superficie-alt); overflow: hidden; }
+.donante-barras__barra { display: block; height: 100%; min-width: var(--espacio-1); border-radius: inherit; background: var(--color-texto-secundario); }
+.donante-barras__barra--EN_DEPOSITO { background: var(--color-info); }
+.donante-barras__barra--ASIGNACION_REALIZADA,
+.donante-barras__barra--LISTA_PARA_ENTREGAR { background: var(--color-primario); }
+.donante-barras__barra--EN_TRASLADO { background: var(--color-advertencia); }
+.donante-barras__barra--ENTREGADA { background: var(--color-exito); }
+.donante-barras__barra--ENTREGA_FALLIDA { background: var(--color-error); }
+
+/* Donaciones recientes. */
+.donante-recientes { list-style: none; margin: 0; padding: 0; display: grid; }
+.donante-recientes > li + li { border-top: var(--borde); }
+.donante-recientes__item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--espacio-3);
+  padding: var(--espacio-3) 0; min-height: var(--area-tactil);
+}
+.donante-recientes__datos { display: grid; gap: var(--espacio-1); min-width: 0; overflow-wrap: anywhere; }
+.donante-recientes__item .insignia-estado { flex-shrink: 0; }
+
+@media (max-width: 959px) {
+  .donante-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donante-grilla { grid-template-columns: 1fr; }
+}
+@media (max-width: 599px) {
+  .donante-metricas { grid-template-columns: 1fr; }
+  .donante-recientes__item { flex-direction: column; align-items: flex-start; }
+}

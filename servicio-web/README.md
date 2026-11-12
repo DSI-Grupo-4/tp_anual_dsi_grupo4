@@ -271,14 +271,16 @@ La dirección humana agrega cuatro columnas anulables a `persona_humana`. El arr
 Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas MVC, contratos HTTP, persistencia H2, importación de 10.001 filas y consulta pública sin datos personales. Las comprobaciones no envían correos reales. La revisión en navegador usa un backend aislado; todavía corresponde realizar la prueba final con todos los servicios y la autenticación integrados.
 
 ### Persona 4 (portal del donante, Incentivos y reportes)
+- **Qué donante usa el portal:** la interfaz `donante/DonanteActual`. Hasta que exista autenticación, `DonanteActualProvisorio` devuelve el donante de `DONANTE_PROVISORIO_ID` (por defecto, el 1). La Persona 2 la reemplaza con un `@Component @Primary` que lea el donante del usuario autenticado.
+- **Endpoints nuevos en Donaciones** (`DonacionesDelDonanteController`): `GET /api/donantes/{id}/donaciones` (paginado, filtros `estado`, `categoria`, `subcategoria`) y `GET /api/donantes/{id}/donaciones/resumen` (cantidad por estado). Con autenticación, alcanza con verificar que `{id}` sea el del usuario.
 - [ ] Pantallas `/donante/**` y `/admin/reportes`:
-  - panel del donante;
+  - [x] panel del donante (`/donante`);
   - sus donaciones, con filtros por estado, categoría y subcategoría;
   - navegación por entidades beneficiarias;
   - métricas, misiones e insignias, con el cambio de visibilidad de insignias;
   - ranking mensual e historial de rankings.
 - [ ] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): ocultarla y bloquearla para personas jurídicas.
-- [ ] Agregar los métodos de `IncentivosClient`, que hoy está vacío.
+- [ ] Agregar los métodos de `IncentivosClient`: ya están métricas, misiones, insignias y visibilidad; falta el ranking.
 - [ ] `/donante/seguimiento`: usar el [componente de mapa](#componente-de-mapa) con marcadores de tipo `camion` y un endpoint propio con refresco, con los datos de ubicación que expone la Persona 5.
 - [ ] Usar las categorías de misiones del dominio (Colaborador, Sostenedor, Transformador). Los mockups dicen "Bronze" y "Donor", y eso quedó desactualizado.
 

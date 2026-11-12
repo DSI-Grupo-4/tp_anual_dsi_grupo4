@@ -44,7 +44,7 @@ class NavegacionWebTest {
 
     @Test
     void elPanelDeCadaRolMuestraSuMenu() throws Exception {
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante/seguimiento")) // /donante ya consulta las APIs: lo cubre PanelDonanteWebTest
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("href=\"/donante/incentivos\""),

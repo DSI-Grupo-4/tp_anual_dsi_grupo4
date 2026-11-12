@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<!-- Fragmentos comunes del portal del donante (Persona 4). -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="recursos">
+  <link rel="stylesheet" th:href="@{/css/donante.css}">
+</th:block>
+
+<!-- Insignia de estado de una donación. -->
+<span th:fragment="estado(estado)" th:class="${@donanteVista.claseEstado(estado)}"
+      th:text="${@donanteVista.estado(estado)}">En depósito</span>
+</body>
+</html>
