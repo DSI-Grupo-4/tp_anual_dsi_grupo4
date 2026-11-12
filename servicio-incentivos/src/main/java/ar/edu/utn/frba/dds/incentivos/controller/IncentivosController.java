@@ -137,6 +137,15 @@ public class IncentivosController {
                 .toList();
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Obtener insignias obtenidas con su visibilidad", description = "Todas las insignias del donante, visibles u ocultas, con su fecha de obtención. GET /insignias sigue devolviendo solo las visibles.")
+    @GetMapping("/{id}/insignias/obtenidas")
+    public List<ProgresoInsigniaDTO> obtenerInsigniasObtenidas(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Long id) {
+        Donante donante = resolverDonante(id);
+        return consultor.obtenerInsigniasObtenidas(donante).stream()
+                .map(this::convertirADTO)
+                .toList();
+    }
+
     @io.swagger.v3.oas.annotations.Operation(summary = "Registrar actividad donacion", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @PostMapping("/{id}/actividad-donacion")
     public ResponseEntity<ProgresoInsigniaDTO> registrarActividadDonacion(
@@ -223,7 +232,35 @@ public class IncentivosController {
         dto.setDistanciaRestante(progresoMision.distanciaRestante());
         dto.setCompletada(progresoMision.getInsigniaObtenida() != null);
         dto.setActiva(progresoMision == misionActual);
+        dto.setMeta(metaDe(mision));
+        dto.setObjetivo(objetivoDe(mision));
         return dto;
+    }
+
+    /** Cantidad que pide la misión, en la unidad de progresoActual. */
+    private static java.math.BigDecimal metaDe(Mision mision) {
+        int meta;
+        if (mision instanceof Mision.Racha racha) meta = racha.getMesesRequeridos();
+        else if (mision instanceof Mision.Completitud completitud) meta = completitud.getCategoriasRequeridas();
+        else if (mision instanceof Mision.HabilDonador habil) meta = habil.getCantidadBienesRequerida();
+        else if (mision instanceof Mision.DonacionesExitosas exitosas) meta = exitosas.getDonacionesRequeridas();
+        else return null;
+        return java.math.BigDecimal.valueOf(meta);
+    }
+
+    /** Qué tiene que hacer el donante, en una frase para mostrar en el portal. */
+    private static String objetivoDe(Mision mision) {
+        if (mision instanceof Mision.Racha racha)
+            return racha.getMesesRequeridos() == 1 ? "Doná en un mes"
+                    : "Doná " + racha.getMesesRequeridos() + " meses seguidos";
+        if (mision instanceof Mision.Completitud completitud)
+            return "Doná bienes de " + completitud.getCategoriasRequeridas() + " categorías distintas";
+        if (mision instanceof Mision.HabilDonador habil)
+            return "Doná " + habil.getCantidadBienesRequerida() + " bienes en total";
+        if (mision instanceof Mision.DonacionesExitosas exitosas)
+            return exitosas.getDonacionesRequeridas() == 1 ? "Lográ que una donación llegue a destino"
+                    : "Lográ que " + exitosas.getDonacionesRequeridas() + " donaciones lleguen a destino";
+        return null;
     }
 
     private InsigniaDTO convertirADTO(Insignia insignia) {

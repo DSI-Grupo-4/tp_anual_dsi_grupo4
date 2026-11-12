@@ -200,6 +200,15 @@ public class Consultor {
                 .toList();
     }
 
+    /** Todas las insignias obtenidas, visibles u ocultas, para que el donante pueda cambiar su visibilidad. */
+    public List<ProgresoInsignia> obtenerInsigniasObtenidas(Donante donante) {
+        return donante.getProgresoAsociado().getCategoriasObtenidas().stream()
+                .flatMap(categoria -> categoria.getMisiones().stream())
+                .map(ProgresoMision::getInsigniaObtenida)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
     public void marcarInsigniaVisible(Donante donante, String insigniaNombre) {
         buscarProgresoInsignia(donante, insigniaNombre).marcarVisible();
         donantes.guardar(donante);
