@@ -97,10 +97,18 @@ public class DonanteVista {
 
     /** Condición de un bien (NUEVO, USADO…), legible. */
     public String condicion(String condicion) {
-        if (condicion == null || condicion.isBlank()) {
+        return legible(condicion);
+    }
+
+    /** Un valor de enum (ONG, OLA_POLAR, SEMANAL…) como texto: "Ong", "Ola polar". null si viene vacío. */
+    public String legible(String valor) {
+        if (valor == null || valor.isBlank()) {
             return null;
         }
-        String texto = condicion.toLowerCase(ES_AR).replace('_', ' ');
+        if ("ONG".equals(valor)) {
+            return "ONG";
+        }
+        String texto = valor.toLowerCase(ES_AR).replace('_', ' ');
         return Character.toUpperCase(texto.charAt(0)) + texto.substring(1);
     }
 

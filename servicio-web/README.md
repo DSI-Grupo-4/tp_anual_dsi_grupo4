@@ -272,15 +272,15 @@ Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas 
 
 ### Persona 4 (portal del donante, Incentivos y reportes)
 - **Qué donante usa el portal:** la interfaz `donante/DonanteActual`. Hasta que exista autenticación, `DonanteActualProvisorio` devuelve el donante de `DONANTE_PROVISORIO_ID` (por defecto, el 1). La Persona 2 la reemplaza con un `@Component @Primary` que lea el donante del usuario autenticado.
-- **Endpoints nuevos en Donaciones** (`DonacionesDelDonanteController`), todos bajo `/api/donantes/{id}/donaciones`: la lista (paginada, filtros `q`, `estado`, `categoria`, `subcategoria`), `/resumen` (cantidad por estado), `/{donacionId}` y `/{donacionId}/historial` (404 si la donación es de otro donante). Con autenticación, alcanza con verificar que `{id}` sea el del usuario.
+- **Endpoints nuevos en Donaciones** (`DonacionesDelDonanteController`), todos bajo `/api/donantes/{id}/donaciones`: la lista (paginada, filtros `q`, `estado`, `categoria`, `subcategoria`, `entidadId`), `/resumen` (cantidad por estado), `/{donacionId}` y `/{donacionId}/historial` (404 si la donación es de otro donante). Con autenticación, alcanza con verificar que `{id}` sea el del usuario.
 - **Cuenta sin donante:** si el donante no existe, el portal muestra "Tu cuenta todavía no está vinculada a un donante" (`donante/no-vinculado`) en lugar del 404 genérico.
 - [ ] Pantallas `/donante/**` y `/admin/reportes`:
   - [x] panel del donante (`/donante`);
   - [x] sus donaciones, con filtros por estado, categoría y subcategoría (`/donante/donaciones` y `/donante/donaciones/{id}` con el historial);
-  - navegación por entidades beneficiarias;
+  - [x] navegación por entidades beneficiarias (`/donante/entidades` y la ficha `/donante/entidades/{id}`, con necesidades abiertas y las donaciones del donante a esa entidad);
   - [x] métricas, misiones e insignias, con el cambio de visibilidad de insignias (`/donante/incentivos`);
   - ranking mensual e historial de rankings.
-- [x] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): `PortalDonanteBase` la saca del menú y la ruta redirige al panel. Mientras `/donante/entidades` y `/donante/seguimiento` sigan en construcción, en esas dos el menú todavía la muestra.
+- [x] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): `PortalDonanteBase` la saca del menú y la ruta redirige al panel. Mientras `/donante/seguimiento` siga en construcción, ahí el menú todavía la muestra.
 - [ ] Agregar los métodos de `IncentivosClient`: ya están métricas, misiones, insignias y visibilidad; falta el ranking.
 - [ ] `/donante/seguimiento`: usar el [componente de mapa](#componente-de-mapa) con marcadores de tipo `camion` y un endpoint propio con refresco, con los datos de ubicación que expone la Persona 5.
 - [x] Usar las categorías de misiones del dominio (Colaborador, Sostenedor, Transformador). Los mockups dicen "Bronze" y "Donor", y eso quedó desactualizado.

@@ -130,7 +130,7 @@ class MisDonacionesWebTest {
         when(donaciones.historial(1, 9)).thenReturn(List.of(
                 new CambioEstado("EN_DEPOSITO", LocalDateTime.of(2026, 11, 10, 15, 0), "Recibida en el depósito"),
                 new CambioEstado("EN_TRASLADO", LocalDateTime.of(2026, 11, 11, 9, 0), null)));
-        when(donaciones.entidad(4)).thenReturn(new Entidad(4L, "Comedor", new PersonaJuridica("Comedor Sonrisas")));
+        when(donaciones.entidad(4)).thenReturn(new Entidad(4L, true, "Comedor", new PersonaJuridica("Comedor Sonrisas", "ONG", "Alimentos"), null));
 
         String html = mvc.perform(get("/donante/donaciones/9"))
                 .andExpect(status().isOk())

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.donante.entidades}, ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="#{nav.donante.entidades}">Entidades beneficiarias</h1>
+    <p class="texto-secundario">Conocé las organizaciones que reciben donaciones y qué necesitan hoy.</p>
+  </div>
+
+  <form class="tarjeta donante-filtros donante-filtros--entidades" method="get" th:action="@{/donante/entidades}" role="search"
+        aria-labelledby="t-buscar">
+    <h2 id="t-buscar" class="donante-filtros__titulo">Buscar entidades</h2>
+    <div class="campo donante-filtros__busqueda">
+      <label class="campo__etiqueta" for="e-q">Nombre, rubro o ubicación</label>
+      <input class="control" type="search" id="e-q" name="q" maxlength="100" th:value="${q}"
+             aria-describedby="e-q-ayuda">
+      <span class="campo__ayuda" id="e-q-ayuda">Por ejemplo "comedor" o "Córdoba".</span>
+    </div>
+    <div class="campo">
+      <label class="campo__etiqueta" for="e-tipo">Tipo de organización</label>
+      <select class="control" id="e-tipo" name="tipo">
+        <option value="">Todos</option>
+        <option th:each="t : ${tipos}" th:value="${t}" th:selected="${tipo == t}" th:text="${@donanteVista.legible(t)}">ONG</option>
+      </select>
+    </div>
+    <div class="donante-filtros__acciones">
+      <button class="boton boton--primario" type="submit">Buscar</button>
+      <a class="boton boton--fantasma" th:href="@{/donante/entidades}" th:if="${hayFiltros}">Quitar filtros</a>
+    </div>
+  </form>
+
+  <section class="grilla" aria-label="Resumen de entidades">
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>Entidades activas</span><th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></span>
+      <span class="metrica__valor" th:text="${totalActivas}">0</span>
+      <span class="metrica__detalle">Reciben donaciones</span>
+    </div>
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>Tipos</span><th:block th:replace="~{fragments/comunes :: icono('lista')}"/></span>
+      <span class="metrica__valor" th:text="${totalTipos}">0</span>
+      <span class="metrica__detalle">De organización</span>
+    </div>
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>Ubicaciones</span><th:block th:replace="~{fragments/comunes :: icono('ubicacion')}"/></span>
+      <span class="metrica__valor" th:text="${totalUbicaciones}">0</span>
+      <span class="metrica__detalle">Ciudades distintas</span>
+    </div>
+  </section>
+
+  <section class="pila" aria-labelledby="t-entidades" th:if="${!entidades.isEmpty()}">
+    <div class="fila fila--separada">
+      <h2 id="t-entidades" th:text="${hayFiltros} ? 'Resultados' : 'Todas las entidades'">Todas las entidades</h2>
+      <p class="texto-chico texto-secundario" role="status"
+         th:text="${totalFiltradas == 1} ? '1 entidad' : |${totalFiltradas} entidades|">3 entidades</p>
+    </div>
+    <ul class="donante-entidades">
+      <li th:each="e : ${entidades}">
+        <a class="tarjeta donante-entidad" th:href="@{/donante/entidades/{id}(id=${e.id()})}">
+          <span class="donante-entidad__icono"><th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></span>
+          <strong class="donante-entidad__nombre" th:text="${e.nombre()}">Comedor Sonrisas</strong>
+          <span class="texto-chico texto-secundario">
+            <span th:if="${e.tipo() != null}" th:text="${@donanteVista.legible(e.tipo())}">ONG</span>
+            <th:block th:if="${e.rubro() != null}"> · <span th:text="${e.rubro()}">Alimentos</span></th:block>
+          </span>
+          <span class="texto-chico donante-entidad__ubicacion" th:if="${e.ubicacion() != null}">
+            <th:block th:replace="~{fragments/comunes :: icono('ubicacion')}"/>
+            <span th:text="${e.ubicacion()}">Córdoba</span>
+          </span>
+          <span class="texto-chico donante-entidad__descripcion" th:if="${e.descripcion() != null}" th:text="${e.descripcion()}">Comedor comunitario</span>
+        </a>
+      </li>
+    </ul>
+    <nav class="paginacion" aria-label="Páginas de entidades" th:if="${totalPaginas > 1}">
+      <span class="texto-chico texto-secundario" th:text="|Página ${pagina + 1} de ${totalPaginas}|">Página 1 de 2</span>
+      <div class="fila">
+        <a class="boton boton--secundario" th:if="${anterior != null}" th:href="${anterior}">Anterior</a>
+        <a class="boton boton--secundario" th:if="${siguiente != null}" th:href="${siguiente}">Siguiente</a>
+      </div>
+    </nav>
+  </section>
+
+  <section class="tarjeta vacio" th:if="${entidades.isEmpty() and hayFiltros}">
+    <th:block th:replace="~{fragments/comunes :: icono('edificio')}"/>
+    <h2>No encontramos entidades con esa búsqueda</h2>
+    <p class="texto-secundario">Probá con otras palabras o quitá el filtro de tipo.</p>
+    <a class="boton boton--secundario" th:href="@{/donante/entidades}">Quitar filtros</a>
+  </section>
+
+  <section class="tarjeta vacio" th:if="${entidades.isEmpty() and !hayFiltros}">
+    <th:block th:replace="~{fragments/comunes :: icono('edificio')}"/>
+    <h2>Todavía no hay entidades beneficiarias registradas</h2>
+  </section>
+
+</div>
+</th:block>
+</body>
+</html>

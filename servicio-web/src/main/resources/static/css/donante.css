@@ -121,6 +121,20 @@
 .donante-insignia--oculta { border-style: dashed; }
 .donante-insignia--oculta .donante-insignia__icono { background: var(--color-superficie-alt); color: var(--color-texto-secundario); }
 
+/* Entidades: filtros de dos campos, tarjetas y necesidades. */
+.donante-filtros--entidades { grid-template-columns: 2fr minmax(0, 1fr); }
+.donante-entidades { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.donante-entidades > li { display: grid; }
+.donante-entidad { display: grid; align-content: start; gap: var(--espacio-2); color: var(--color-texto); text-decoration: none; min-width: 0; }
+.donante-entidad:hover { background: var(--color-primario-suave); }
+.donante-entidad__icono { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: var(--radio-md); background: var(--color-primario-suave); color: var(--color-primario); }
+.donante-entidad__nombre { color: var(--color-primario); font-size: var(--texto-lg); overflow-wrap: anywhere; }
+.donante-entidad__ubicacion { display: inline-flex; align-items: center; gap: var(--espacio-1); }
+.donante-entidad__descripcion { color: var(--color-texto-secundario); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.donante-necesidades { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-3); }
+.donante-necesidad { display: grid; gap: var(--espacio-2); padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
+.donante-necesidad strong { overflow-wrap: anywhere; }
+
 @media (max-width: 959px) {
   .donante-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .donante-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -130,7 +144,7 @@
 @media (max-width: 599px) {
   .donante-metricas { grid-template-columns: 1fr; }
   .donante-recientes__item { flex-direction: column; align-items: flex-start; }
-  .donante-filtros, .donante-datos { grid-template-columns: 1fr; }
+  .donante-filtros, .donante-filtros--entidades, .donante-datos { grid-template-columns: 1fr; }
   .donante-filtros__acciones .boton { width: 100%; }
   .donante-escalera { grid-template-columns: 1fr; }
 }

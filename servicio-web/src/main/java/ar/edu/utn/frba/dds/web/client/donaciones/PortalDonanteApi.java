@@ -52,17 +52,81 @@ public final class PortalDonanteApi {
     public record CambioEstado(String estado, LocalDateTime fecha, String justificacion) {
     }
 
-    /** EntidadBeneficiariaDTO: solo el nombre, para mostrar a quién fue la donación. */
+    /**
+     * EntidadBeneficiariaDTO, en el portal del donante. Solo datos que puede ver un donante:
+     * sin contactos, representantes ni calle.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Entidad(Long id, String descripcion, PersonaJuridica personaJuridica) {
+    public record Entidad(Long id, Boolean activa, String descripcion, PersonaJuridica personaJuridica, Direccion direccion) {
         public String nombre() {
             return personaJuridica != null && personaJuridica.razonSocial() != null
                     ? personaJuridica.razonSocial() : "Entidad #" + id;
         }
+
+        public boolean estaActiva() {
+            return !Boolean.FALSE.equals(activa);
+        }
+
+        public String tipo() {
+            return personaJuridica == null ? null : personaJuridica.tipo();
+        }
+
+        public String rubro() {
+            return personaJuridica == null ? null : personaJuridica.rubro();
+        }
+
+        /** "Ciudad, Provincia", o null si no hay datos. */
+        public String ubicacion() {
+            if (direccion == null || direccion.ciudad() == null) {
+                return null;
+            }
+            String ciudad = direccion.ciudad().nombre();
+            String provincia = direccion.ciudad().provincia() == null ? null : direccion.ciudad().provincia().nombre();
+            if (ciudad == null || ciudad.isBlank()) {
+                return provincia;
+            }
+            return provincia == null || provincia.isBlank() || provincia.equalsIgnoreCase(ciudad)
+                    ? ciudad : ciudad + ", " + provincia;
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record PersonaJuridica(String razonSocial) {
+    public record PersonaJuridica(String razonSocial, String tipo, String rubro) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Direccion(Ciudad ciudad) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Ciudad(String nombre, Provincia provincia) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Provincia(String nombre) {
+    }
+
+    /** NecesidadDTO. tipo es RECURRENTE o EXTRAORDINARIA. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record Necesidad(Long id, String tipo, String descripcion, String subcategoria, String unidadMedida,
+                            BigDecimal cantidadRequerida, BigDecimal cantidadRecibida, Boolean satisfecha,
+                            String periodicidad, String tipoExtraordinario) {
+        public boolean esExtraordinaria() {
+            return "EXTRAORDINARIA".equalsIgnoreCase(tipo);
+        }
+
+        public boolean abierta() {
+            return !Boolean.TRUE.equals(satisfecha);
+        }
+
+        /** Porcentaje cubierto, entre 0 y 100. */
+        public int porcentaje() {
+            if (cantidadRequerida == null || cantidadRequerida.signum() <= 0 || cantidadRecibida == null) {
+                return 0;
+            }
+            return Math.min(100, cantidadRecibida.multiply(BigDecimal.valueOf(100))
+                    .divide(cantidadRequerida, 0, java.math.RoundingMode.DOWN).intValue());
+        }
     }
 
     /** PaginaDTO. */

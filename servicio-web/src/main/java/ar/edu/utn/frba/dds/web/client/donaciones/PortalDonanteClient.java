@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CambioEstado;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DetalleDonacion;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Entidad;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Necesidad;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class PortalDonanteClient {
         return http.get().uri("/api/donantes/{id}", donanteId).retrieve().body(Perfil.class);
     }
 
-    /** GET /api/donantes/{id}/donaciones?q=&estado=&categoria=&subcategoria=&page=&size= (filtros vacíos se omiten) */
+    /** GET /api/donantes/{id}/donaciones?q=&estado=&categoria=&subcategoria=&entidadId=&page=&size= (filtros vacíos se omiten) */
     public Pagina<DonacionDelDonante> donaciones(long donanteId, Map<String, String> filtros) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("donanteId", donanteId);
@@ -70,5 +71,16 @@ public class PortalDonanteClient {
     /** GET /api/entidades/{id} */
     public Entidad entidad(long entidadId) {
         return http.get().uri("/api/entidades/{id}", entidadId).retrieve().body(Entidad.class);
+    }
+
+    /** GET /api/entidades: todas, activas e inactivas. */
+    public List<Entidad> entidades() {
+        return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/entidades/{id}/necesidades */
+    public List<Necesidad> necesidades(long entidadId) {
+        return http.get().uri("/api/entidades/{id}/necesidades", entidadId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
     }
 }
