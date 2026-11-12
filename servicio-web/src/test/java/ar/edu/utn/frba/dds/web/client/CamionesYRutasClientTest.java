@@ -159,4 +159,58 @@ class CamionesYRutasClientTest {
 
         assertThat(rutas.planificar()).hasSize(1);
     }
+
+    @Test
+    void leeLaUbicacionDelCamionDentroDeLaRuta() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7"))
+                .andRespond(withSuccess("""
+                        {"idRuta": 7, "estadoRuta": "INICIADA",
+                         "camionAsociado": {"idCamion": 1, "patente": "AA123BB", "estadoCamion": "EN_RUTA",
+                                            "latitud": -34.61, "longitud": -58.39,
+                                            "ubicacionActualizadaEn": "2026-11-12T17:30:00.123", "ubicacionSimulada": true},
+                         "paradas": [{"idParada": 1, "numeroParada": 1, "idEntidadBeneficiariaAsociada": 3,
+                                      "direccion": {"calle": "Calle", "numero": "1", "latitud": -34.5, "longitud": -58.3},
+                                      "entregas": []}]}
+                        """, MediaType.APPLICATION_JSON));
+
+        RutaApi ruta = rutas.ruta(7);
+
+        assertThat(ruta.camionAsociado().tieneUbicacion()).isTrue();
+        assertThat(ruta.camionAsociado().simulada()).isTrue();
+        assertThat(ruta.camionAsociado().ubicacionActualizadaEn()).isEqualTo(java.time.LocalDateTime.of(2026, 11, 12, 17, 30, 0, 123_000_000));
+        assertThat(ruta.paradas().get(0).direccion().tieneCoordenadas()).isTrue();
+    }
+
+    @Test
+    void unCamionSinUbicacionNoTieneUbicacion() {
+        assertThat(new CamionApi(1, "AA123BB", 20, 3, 1500, "DISPONIBLE").tieneUbicacion()).isFalse();
+    }
+
+    @Test
+    void simularElAvanceDevuelveDondeQuedoElCamionYCuantoFalta() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/simular-avance"))
+                .andExpect(method(HttpMethod.POST))
+                .andRespond(withSuccess("""
+                        {"ubicacion": {"idCamion": 1, "patente": "AA123BB", "latitud": -34.61, "longitud": -58.39,
+                                       "actualizadaEn": "2026-11-12T17:30:00", "simulada": true},
+                         "numeroParadaDestino": 2, "distanciaRestanteKm": 7.5, "llegoAlDestino": false, "destinoDeEjemplo": true}
+                        """, MediaType.APPLICATION_JSON));
+
+        var paso = rutas.simularAvance(7);
+
+        assertThat(paso.numeroParadaDestino()).isEqualTo(2);
+        assertThat(paso.distanciaRestanteKm()).isEqualTo(7.5);
+        assertThat(paso.llegoAlDestino()).isFalse();
+        assertThat(paso.ubicacion().simulada()).isTrue();
+    }
+
+    @Test
+    void simularUnaRutaQueNoEstaEnCursoLlegaComoRechazo() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/simular-avance"))
+                .andRespond(withStatus(HttpStatus.CONFLICT).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"error\": \"La ruta 7 no está en curso\"}"));
+
+        assertThatThrownBy(() -> rutas.simularAvance(7))
+                .isInstanceOf(BackendRechazoException.class).hasMessageContaining("no está en curso");
+    }
 }

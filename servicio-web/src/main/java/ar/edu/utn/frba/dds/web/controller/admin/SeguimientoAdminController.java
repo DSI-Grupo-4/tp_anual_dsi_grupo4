@@ -2,9 +2,12 @@ package ar.edu.utn.frba.dds.web.controller.admin;
 
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
+import ar.edu.utn.frba.dds.web.client.logistica.SimulacionApi;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
+import ar.edu.utn.frba.dds.web.logistica.MarcadoresSeguimiento;
 import ar.edu.utn.frba.dds.web.logistica.NombresEntidades;
 import ar.edu.utn.frba.dds.web.logistica.SeguimientoService;
+import ar.edu.utn.frba.dds.web.mapa.Marcador;
 import ar.edu.utn.frba.dds.web.mensajes.Toasts;
 import ar.edu.utn.frba.dds.web.navegacion.Miga;
 import java.util.List;
@@ -18,9 +21,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-/** Seguimiento de rutas y entregas de la administración (/admin/seguimiento): lista, detalle, iniciar y planificar. */
+/**
+ * Seguimiento de rutas y entregas de la administración (/admin/seguimiento): lista, detalle, mapa,
+ * iniciar, planificar y simular el avance del camión (solo demo).
+ */
 @Controller
 @RequestMapping("/admin/seguimiento")
 public class SeguimientoAdminController {
@@ -30,13 +37,15 @@ public class SeguimientoAdminController {
 
     private final RutasClient rutas;
     private final SeguimientoService seguimiento;
+    private final MarcadoresSeguimiento marcadores;
     private final NombresEntidades nombres;
     private final MessageSource mensajes;
 
-    public SeguimientoAdminController(RutasClient rutas, SeguimientoService seguimiento, NombresEntidades nombres,
-                                      MessageSource mensajes) {
+    public SeguimientoAdminController(RutasClient rutas, SeguimientoService seguimiento, MarcadoresSeguimiento marcadores,
+                                      NombresEntidades nombres, MessageSource mensajes) {
         this.rutas = rutas;
         this.seguimiento = seguimiento;
+        this.marcadores = marcadores;
         this.nombres = nombres;
         this.mensajes = mensajes;
     }
@@ -48,18 +57,36 @@ public class SeguimientoAdminController {
         model.addAttribute("rutas", filtro == null ? todas : todas.stream().filter(r -> filtro.equals(r.estadoRuta())).toList());
         model.addAttribute("resumen", seguimiento.resumen(todas));
         model.addAttribute("filtro", filtro);
+        model.addAttribute("marcadores", marcadores.camionesEnCurso(todas));
         return "admin/seguimiento";
+    }
+
+    /** Datos para refrescar el mapa de la lista: los camiones de las rutas en curso. */
+    @GetMapping(value = "/ubicaciones.json", produces = "application/json")
+    @ResponseBody
+    public List<Marcador> ubicaciones() {
+        return marcadores.camionesEnCurso(rutas.rutas());
     }
 
     @GetMapping("/{id}")
     public String detalle(@PathVariable Integer id, Model model) {
-        model.addAttribute("ruta", rutas.ruta(id));
-        model.addAttribute("nombres", nombres.porId());
+        RutaApi ruta = rutas.ruta(id);
+        var nombresPorId = nombres.porId();
+        model.addAttribute("ruta", ruta);
+        model.addAttribute("nombres", nombresPorId);
+        model.addAttribute("marcadores", marcadores.deRuta(ruta, nombresPorId));
         model.addAttribute("migas", List.of(
                 Miga.clave("nav.admin.panel", "/admin"),
                 Miga.clave("nav.admin.seguimiento", LISTA),
                 Miga.texto(texto("logistica.seguimiento.ruta-n", id), null)));
         return "admin/seguimiento-detalle";
+    }
+
+    /** Datos para refrescar el mapa del detalle de una ruta. */
+    @GetMapping(value = "/{id}/ubicaciones.json", produces = "application/json")
+    @ResponseBody
+    public List<Marcador> ubicacionesDeRuta(@PathVariable Integer id) {
+        return marcadores.deRuta(rutas.ruta(id), nombres.porId());
     }
 
     @PostMapping("/{id}/iniciar")
@@ -69,6 +96,23 @@ public class SeguimientoAdminController {
             Toasts.exito(attrs, texto("logistica.seguimiento.toast.iniciada", id));
         } catch (BackendRechazoException e) {
             // Por ejemplo, la ruta ya no está planificada: Logística lo explica.
+            Toasts.error(attrs, e.getMessage());
+        }
+        return "redirect:" + LISTA + "/" + id;
+    }
+
+    /** Simulador de la demo: mueve el camión un paso hacia la próxima parada. */
+    @PostMapping("/{id}/simular")
+    public String simular(@PathVariable Integer id, RedirectAttributes attrs) {
+        try {
+            SimulacionApi paso = rutas.simularAvance(id);
+            if (paso.llegoAlDestino()) {
+                Toasts.exito(attrs, texto("logistica.seguimiento.toast.simulado-llego", paso.numeroParadaDestino()));
+            } else {
+                Toasts.info(attrs, texto("logistica.seguimiento.toast.simulado", paso.numeroParadaDestino(), paso.distanciaRestanteKm()));
+            }
+        } catch (BackendRechazoException e) {
+            // Por ejemplo, la ruta no está en curso o no hay paradas pendientes: Logística lo explica.
             Toasts.error(attrs, e.getMessage());
         }
         return "redirect:" + LISTA + "/" + id;

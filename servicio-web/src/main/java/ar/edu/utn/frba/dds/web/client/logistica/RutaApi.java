@@ -74,7 +74,16 @@ public record RutaApi(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record DireccionApi(String calle, String numero, CiudadApi ciudad) {
+    public record DireccionApi(String calle, String numero, CiudadApi ciudad, Double latitud, Double longitud) {
+
+        /** Dirección sin coordenadas. */
+        public DireccionApi(String calle, String numero, CiudadApi ciudad) {
+            this(calle, numero, ciudad, null, null);
+        }
+
+        public boolean tieneCoordenadas() {
+            return latitud != null && longitud != null;
+        }
 
         /** «Calle 123, Ciudad» sin los datos que falten. */
         public String texto() {

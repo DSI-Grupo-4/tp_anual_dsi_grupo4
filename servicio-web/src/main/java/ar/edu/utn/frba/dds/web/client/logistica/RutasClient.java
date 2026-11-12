@@ -35,4 +35,12 @@ public class RutasClient {
     public List<RutaApi> planificar() {
         return http.post().uri("/api/planificador/ejecutar").retrieve().body(new ParameterizedTypeReference<>() { });
     }
+
+    /**
+     * POST /api/rutas/{id}/simular-avance: mueve el camión de una ruta en curso hacia su próxima parada (solo demo).
+     * 409 si la ruta no está en curso, no tiene paradas pendientes o la parada no tiene coordenadas.
+     */
+    public SimulacionApi simularAvance(Integer id) {
+        return http.post().uri("/api/rutas/{id}/simular-avance", id).retrieve().body(SimulacionApi.class);
+    }
 }

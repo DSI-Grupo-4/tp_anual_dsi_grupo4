@@ -70,9 +70,15 @@ public class SeguimientoService {
                 Integer entidadDeLaParada = parada.idEntidadBeneficiariaAsociada();
                 if (entidadDeLaParada != null && entidadId.equals(entidadDeLaParada.longValue())) {
                     CamionApi camion = ruta.camionAsociado();
+                    boolean conUbicacion = camion != null && camion.tieneUbicacion();
                     envios.add(new EnvioEntidad(ruta.idRuta(), parada.idParada(), parada.numeroParada(),
                             ruta.paradas().size(), ruta.fecha(), ruta.estadoRuta(),
-                            camion == null ? null : camion.patente(), parada.entregas()));
+                            camion == null ? null : camion.patente(),
+                            conUbicacion ? camion.latitud() : null,
+                            conUbicacion ? camion.longitud() : null,
+                            conUbicacion ? camion.ubicacionActualizadaEn() : null,
+                            conUbicacion && camion.simulada(),
+                            parada.entregas()));
                 }
             }
         }

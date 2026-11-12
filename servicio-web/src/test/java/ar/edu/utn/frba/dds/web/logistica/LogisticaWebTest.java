@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.flash;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -30,6 +31,7 @@ import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.DireccionApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.EntregaDeRutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ParadaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
+import ar.edu.utn.frba.dds.web.client.logistica.SimulacionApi;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.RecursoNoEncontradoException;
@@ -316,5 +318,135 @@ class LogisticaWebTest {
 
         mvc.perform(get("/beneficiaria/seguimiento"))
                 .andExpect(content().string(containsString("No hay entregas programadas hacia tu organización.")));
+    }
+
+    // ================= mapa y simulador =================
+
+    private static RutaApi rutaConCamionUbicado(int id, String estado, boolean simulada, ParadaApi... paradas) {
+        CamionApi camion = new CamionApi(1, "AA123BB", 20, 3, 1500, "EN_RUTA", -34.61, -58.39,
+                LocalDateTime.of(2026, 11, 12, 17, 30), simulada);
+        return new RutaApi(id, LocalDate.of(2026, 11, 12), estado, camion, new ChoferApi(1, "Juan Pérez"), List.of(paradas));
+    }
+
+    private static ParadaApi paradaUbicada(int numero, int entidad, double lat, double lng, EntregaDeRutaApi... entregas) {
+        return new ParadaApi(numero, numero, entidad,
+                new DireccionApi("Calle Dos", "10", new CiudadApi("Escobar"), lat, lng), List.of(entregas));
+    }
+
+    @Test
+    void laListaDeSeguimientoMuestraElMapaConLosCamionesEnRuta() throws Exception {
+        when(rutas.rutas()).thenReturn(List.of(
+                rutaConCamionUbicado(2, "INICIADA", true, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null)))));
+
+        mvc.perform(get("/admin/seguimiento"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(
+                        containsString("data-mapa"),
+                        containsString("Camión AA123BB"),
+                        containsString("Ubicación simulada"),
+                        containsString("/admin/seguimiento/ubicaciones.json"))));
+    }
+
+    @Test
+    void elEndpointDeUbicacionesDevuelveSoloLosCamionesDeRutasEnCurso() throws Exception {
+        when(rutas.rutas()).thenReturn(List.of(
+                rutaConCamionUbicado(1, "FINALIZADA", false, parada(1, 1, "Calle Uno", entrega(1, "ENTREGADA", null))),
+                rutaConCamionUbicado(2, "INICIADA", false, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null)))));
+
+        mvc.perform(get("/admin/seguimiento/ubicaciones.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].tipo").value("camion"))
+                .andExpect(jsonPath("$[0].titulo").value("Camión AA123BB"))
+                .andExpect(jsonPath("$[0].lat").value(-34.61))
+                .andExpect(jsonPath("$[0].actualizadoEn").value("2026-11-12T17:30Z"));
+    }
+
+    @Test
+    void elMapaDelDetalleIncluyeElCamionYLasParadasConCoordenadas() throws Exception {
+        when(rutas.ruta(2)).thenReturn(rutaConCamionUbicado(2, "INICIADA", false,
+                paradaUbicada(1, 1, -34.5, -58.3, entrega(2, "EN_TRASLADO", null))));
+
+        mvc.perform(get("/admin/seguimiento/2/ubicaciones.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].tipo").value("camion"))
+                .andExpect(jsonPath("$[1].tipo").value("sede"))
+                .andExpect(jsonPath("$[1].titulo").value("Parada 1: Fundación Demo"));
+    }
+
+    @Test
+    void elBotonDeSimulacionSoloApareceEnUnaRutaEnCurso() throws Exception {
+        when(rutas.ruta(2)).thenReturn(rutaConCamionUbicado(2, "INICIADA", false, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null))));
+        when(rutas.ruta(3)).thenReturn(ruta(3, "PLANIFICADA", parada(1, 1, "Calle Dos", entrega(3, "ASIGNADA_A_RUTA", null))));
+
+        mvc.perform(get("/admin/seguimiento/2")).andExpect(content().string(containsString("Simular avance del camión")));
+        mvc.perform(get("/admin/seguimiento/3")).andExpect(content().string(not(containsString("Simular avance del camión"))));
+    }
+
+    @Test
+    void simularUnPasoAvisaCuantoFaltaYVuelveAlDetalle() throws Exception {
+        when(rutas.simularAvance(2)).thenReturn(new SimulacionApi(
+                new SimulacionApi.UbicacionApi(1, "AA123BB", -34.61, -58.39, LocalDateTime.of(2026, 11, 12, 17, 30), true),
+                2, 7.5, false, true));
+
+        mvc.perform(post("/admin/seguimiento/2/simular"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/seguimiento/2"))
+                .andExpect(flash().attributeExists("toasts"));
+
+        verify(rutas).simularAvance(2);
+    }
+
+    @Test
+    void siElCamionLlegoALaParadaSeAvisa() throws Exception {
+        when(rutas.simularAvance(2)).thenReturn(new SimulacionApi(
+                new SimulacionApi.UbicacionApi(1, "AA123BB", -34.5, -58.3, LocalDateTime.of(2026, 11, 12, 17, 30), true),
+                2, 0.0, true, false));
+
+        mvc.perform(post("/admin/seguimiento/2/simular"))
+                .andExpect(redirectedUrl("/admin/seguimiento/2"))
+                .andExpect(flash().attributeExists("toasts"));
+    }
+
+    @Test
+    void siLaRutaNoEstaEnCursoElRechazoDeLogisticaSeMuestraComoToast() throws Exception {
+        when(rutas.simularAvance(2)).thenThrow(new BackendRechazoException(
+                ServicioBackend.LOGISTICA, 409, "La ruta 2 no está en curso", Map.of()));
+
+        mvc.perform(post("/admin/seguimiento/2/simular"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/admin/seguimiento/2"))
+                .andExpect(flash().attributeExists("toasts"));
+    }
+
+    @Test
+    void laEntidadVeElMapaSoloConElCamionQueLeLlevaAlgoYSinElChofer() throws Exception {
+        when(rutas.rutas()).thenReturn(List.of(
+                rutaConCamionUbicado(2, "INICIADA", false,
+                        parada(1, 9, "Calle Ajena", entrega(1, "EN_TRASLADO", null)),
+                        parada(2, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null))),
+                rutaConCamionUbicado(3, "INICIADA", false, parada(1, 9, "Calle Ajena", entrega(3, "EN_TRASLADO", null)))));
+
+        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].detalle").value(containsString("parada 2 de 2")))
+                .andExpect(content().string(not(containsString("Juan Pérez"))))
+                .andExpect(content().string(not(containsString("Calle Ajena"))));
+
+        mvc.perform(get("/beneficiaria/seguimiento"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(allOf(containsString("data-mapa"), containsString("Dónde está el camión"))));
+    }
+
+    @Test
+    void sinCamionesUbicadosElMapaDeLaEntidadQuedaVacioEnVezDeInventarPosiciones() throws Exception {
+        when(rutas.rutas()).thenReturn(List.of(
+                ruta(2, "INICIADA", parada(1, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null)))));
+
+        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

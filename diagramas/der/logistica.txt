@@ -23,6 +23,11 @@ GeneradorIds (no participa del contrato de ids enteros).
   alturaM               : Int
   capacidadCargaKg      : Int
   estadoCamion          : String            [index]  // DISPONIBLE | ASIGNADO | EN_RUTA | FUERA_DE_SERVICIO
+  // Última ubicación informada (null hasta que el camión informe una). La informa el chofer o el simulador de la demo.
+  latitud               : Double | null
+  longitud              : Double | null
+  ubicacionActualizadaEn: DateTime(UTC) | null
+  ubicacionSimulada     : Boolean | null    // true si la generó el simulador y no el chofer
 }
 
 // ---------------------------------------------------------------------
@@ -81,6 +86,8 @@ Direccion {
   calle    : String
   numero   : String
   ciudad   : Ciudad   // embebido
+  latitud  : Double | null   // opcional: la sede de la entidad ubicada en el mapa
+  longitud : Double | null
 }
 Ciudad {
   nombre     : String

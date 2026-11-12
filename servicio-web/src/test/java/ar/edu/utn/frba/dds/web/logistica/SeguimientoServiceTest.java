@@ -89,4 +89,22 @@ class SeguimientoServiceTest {
 
         assertThat(resumen).isEqualTo(new ResumenFlota(4, 1, 2, 1));
     }
+
+    @Test
+    void losEnviosDeLaEntidadLlevanLaUbicacionDelCamionSiLaInformo() {
+        CamionApi conUbicacion = new CamionApi(1, "AA123BB", 20, 3, 1500, "EN_RUTA", -34.61, -58.39,
+                java.time.LocalDateTime.of(2026, 11, 12, 17, 30), true);
+        when(rutasClient.rutas()).thenReturn(List.of(
+                new RutaApi(1, LocalDate.of(2026, 11, 12), "INICIADA", conUbicacion, new ChoferApi(1, "Juan"),
+                        List.of(parada(1, 5, entrega(1, "EN_TRASLADO")))),
+                ruta(2, "PLANIFICADA", parada(1, 5, entrega(2, "ASIGNADA_A_RUTA")))));
+
+        List<EnvioEntidad> envios = seguimiento.enviosDe(5L);
+
+        EnvioEntidad enCamino = envios.get(0);
+        assertThat(enCamino.tieneUbicacion()).isTrue();
+        assertThat(enCamino.latitud()).isEqualTo(-34.61);
+        assertThat(enCamino.ubicacionSimulada()).isTrue();
+        assertThat(envios.get(1).tieneUbicacion()).isFalse();
+    }
 }

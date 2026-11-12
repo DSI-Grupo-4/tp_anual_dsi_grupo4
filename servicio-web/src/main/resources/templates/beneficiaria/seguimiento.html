@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.seguimiento}, ~{::contenido}, _)}">
+      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.seguimiento}, ~{::contenido}, ~{fragments/mapa :: recursos})}">
 <body>
 <th:block th:fragment="contenido">
   <div class="cabecera-pagina">
@@ -37,6 +37,11 @@
         <span class="metrica__detalle" th:text="#{logistica.beneficiaria.completadas.detalle}">Rutas terminadas</span>
       </div>
     </div>
+
+    <section class="tarjeta pila" aria-labelledby="mapa-titulo">
+      <h2 id="mapa-titulo" class="tarjeta__titulo" th:text="#{logistica.mapa.titulo-entidad}">Dónde está el camión</h2>
+      <section th:replace="~{fragments/mapa :: mapa('mapa-entidad', #{logistica.mapa.titulo-entidad}, ${marcadores}, @{/beneficiaria/seguimiento/ubicaciones.json}, 15)}"></section>
+    </section>
 
     <div class="tarjeta vacio" th:if="${#lists.isEmpty(envios)}">
       <th:block th:replace="~{fragments/comunes :: icono('camion')}"/>

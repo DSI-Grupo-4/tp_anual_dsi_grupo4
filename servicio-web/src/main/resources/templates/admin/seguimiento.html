@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/privado :: layout(#{nav.admin.seguimiento}, ~{::contenido}, _)}">
+      th:replace="~{layout/privado :: layout(#{nav.admin.seguimiento}, ~{::contenido}, ~{fragments/mapa :: recursos})}">
 <body>
 <th:block th:fragment="contenido">
   <div class="cabecera-pagina">
@@ -48,6 +48,11 @@
         <span class="metrica__detalle" th:text="#{logistica.seguimiento.pendientes.detalle}">Sin resultado todavía</span>
       </div>
     </div>
+
+    <section class="tarjeta pila" aria-labelledby="mapa-titulo">
+      <h2 id="mapa-titulo" class="tarjeta__titulo" th:text="#{logistica.mapa.titulo-admin}">Camiones en ruta</h2>
+      <section th:replace="~{fragments/mapa :: mapa('mapa-seguimiento', #{logistica.mapa.titulo-admin}, ${marcadores}, @{/admin/seguimiento/ubicaciones.json}, 15)}"></section>
+    </section>
 
     <nav class="fila" th:attr="aria-label=#{logistica.seguimiento.filtrar}">
       <a class="boton boton--secundario" th:href="@{/admin/seguimiento}" th:aria-current="${filtro == null} ? 'true'"
