@@ -3,14 +3,21 @@ package ar.edu.utn.frba.dds.web.navegacion;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
+import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
+import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadesClient;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
@@ -19,6 +26,21 @@ class NavegacionWebTest {
 
     @Autowired
     private MockMvc mvc;
+
+    // El panel y las necesidades de la entidad (Persona 5) ya consultan Donaciones: se simula para probar solo la navegación.
+    @MockitoBean
+    private NecesidadesClient necesidades;
+
+    @MockitoBean
+    private DonacionesClient donaciones;
+
+    @BeforeEach
+    void clientesSimulados() {
+        when(necesidades.entidad(1L)).thenReturn(
+                new EntidadApi(1L, true, "Comedor", new EntidadApi.PersonaJuridica("Fundación Demo")));
+        when(necesidades.necesidades(1L)).thenReturn(List.of());
+        when(donaciones.donaciones()).thenReturn(List.of());
+    }
 
     @Test
     void laPortadaUsaElLayoutPublicoConEnlaceParaSaltarAlContenido() throws Exception {
@@ -33,12 +55,12 @@ class NavegacionWebTest {
 
     @Test
     void unaSeccionPrivadaSinImplementarMuestraElMenuDelRolYMarcaLaActiva() throws Exception {
-        mvc.perform(get("/admin/camiones"))
+        mvc.perform(get("/admin/donaciones"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Sección en construcción"),
                         containsString("href=\"/admin/camiones\""),
-                        containsString("aria-current=\"page\""),
+                        containsString("href=\"/admin/donaciones\"\n             aria-current=\"page\""),
                         not(containsString("href=\"/donante/incentivos\"")))));
     }
 

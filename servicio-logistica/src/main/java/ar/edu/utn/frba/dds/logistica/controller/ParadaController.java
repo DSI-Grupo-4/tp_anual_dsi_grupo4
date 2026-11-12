@@ -75,9 +75,11 @@ public class ParadaController {
                                  @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Nadie respondió en el domicilio"))) @RequestBody String justificacion) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
-        parada.marcarNoRecibida(justificacion);
+        exigirRutaEnCurso(ruta);
+        // Solo las entregas que seguían en traslado: las que ya tenían un resultado no se pisan.
+        java.util.List<Entrega> afectadas = parada.marcarNoRecibidasLasEnTraslado(justificacion);
         liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
-        parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_NO_RECIBIDA, e));
+        afectadas.forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_NO_RECIBIDA, e));
     }
 
     @Operation(
@@ -103,9 +105,18 @@ public class ParadaController {
                               @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @io.swagger.v3.oas.annotations.media.Content(mediaType = "text/plain", examples = @io.swagger.v3.oas.annotations.media.ExampleObject(value = "Los bienes vencieron antes de llegar a destino"))) @RequestBody String motivo) {
         Ruta ruta = gestorRutas.buscarPorId(idRuta);
         Parada parada = buscarParada(ruta, idParada);
-        parada.marcarFallida(motivo);
+        exigirRutaEnCurso(ruta);
+        // Solo las entregas que seguían en traslado: las que ya tenían un resultado no se pisan.
+        java.util.List<Entrega> afectadas = parada.marcarFalladasLasEnTraslado(motivo);
         liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
-        parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_FALLIDA, e));
+        afectadas.forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_FALLIDA, e));
+    }
+
+    /** «No recibida» e incidente solo tienen sentido mientras el camión está en la calle. */
+    private void exigirRutaEnCurso(Ruta ruta) {
+        if (ruta.getEstadoRuta() != EstadoRuta.INICIADA) {
+            throw new IllegalStateException("La ruta " + ruta.getIdRuta() + " no está en curso: solo se pueden registrar resultados de una ruta INICIADA");
+        }
     }
 
     private Parada buscarParada(Ruta ruta, Integer idParada) {

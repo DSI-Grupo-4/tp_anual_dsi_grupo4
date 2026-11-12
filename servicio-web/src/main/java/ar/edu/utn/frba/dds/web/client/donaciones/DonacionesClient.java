@@ -30,4 +30,15 @@ public class DonacionesClient {
     public List<EntidadApi> entidades() {
         return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
     }
+
+    /** GET /api/donaciones/{id} */
+    public DonacionApi donacion(Long id) {
+        return http.get().uri("/api/donaciones/{id}", id).retrieve().body(DonacionApi.class);
+    }
+
+    /** GET /api/donaciones/{id}/historial (fechas en UTC) */
+    public List<HistorialEstadoApi> historial(Long id) {
+        return http.get().uri("/api/donaciones/{id}/historial", id)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
 }

@@ -18,6 +18,10 @@
 ├── Dockerfile
 ├── GUIA-LEVANTAR-SERVICIOS.md
 ├── NOTIFICACIONES.md
+├── PERSONA5-parte3.md
+├── PERSONA5-parte4.md
+├── PERSONA5-parte5.md
+├── PERSONA5.md
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -26,6 +30,9 @@
 │   ├── DDS-TP-Anual-2026 (1).pdf
 │   ├── entrega4-requerimientos.md
 │   └── entrega5-requerimientos.md
+├── contrato-ubicacion-para-persona4.md
+├── decisiones-persona5-borrador-parte5.md
+├── decisiones-persona5-borrador.md
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
@@ -118,7 +125,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-42 directories, 61 files
+42 directories, 68 files
 ```
 <!-- TREE_END -->
 
