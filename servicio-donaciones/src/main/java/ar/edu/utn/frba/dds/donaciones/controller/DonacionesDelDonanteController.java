@@ -47,18 +47,19 @@ public class DonacionesDelDonanteController {
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Donaciones del donante",
-            description = "Paginadas, de la más reciente a la más antigua. Filtros opcionales: texto en la descripción de los bienes (q), estado, categoría y subcategoría. 404 si el donante no existe.")
+            description = "Paginadas, de la más reciente a la más antigua. Filtros opcionales: texto en la descripción de los bienes (q), estado, categoría, subcategoría y entidad destino (entidadId). 404 si el donante no existe.")
     @GetMapping
     public PaginaDTO<DonacionDTO> listar(@PathVariable Long id,
             @RequestParam(defaultValue = "") String q,
             @RequestParam(required = false) EstadoTrack estado,
             @RequestParam(required = false) Categoria categoria,
             @RequestParam(required = false) Subcategoria subcategoria,
+            @RequestParam(required = false) Long entidadId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         donantes.buscarPorId(id);
         int tamanio = Math.max(1, Math.min(size, TAMANIO_MAXIMO));
-        return consultas.donaciones(q.strip(), estado, categoria, subcategoria, id, null, Math.max(0, page), tamanio);
+        return consultas.donaciones(q.strip(), estado, categoria, subcategoria, id, entidadId, Math.max(0, page), tamanio);
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Cantidad de donaciones del donante por estado",

@@ -131,4 +131,12 @@ class DonacionesDelDonanteControllerTest {
         mvc.perform(get("/api/donantes/3/donaciones/7/historial")).andExpect(status().isNotFound());
         verify(donacionService, never()).obtenerHistorial(anyLong());
     }
+
+    @Test
+    void filtraPorEntidadDestino() throws Exception {
+        when(consultas.donaciones(any(), any(), any(), any(), anyLong(), any(), anyInt(), anyInt()))
+                .thenReturn(new PaginaDTO<>(List.<DonacionDTO>of(), 0, 0, 0));
+        mvc.perform(get("/api/donantes/3/donaciones").param("entidadId", "4").param("size", "5")).andExpect(status().isOk());
+        verify(consultas).donaciones("", null, null, null, 3L, 4L, 0, 5);
+    }
 }
