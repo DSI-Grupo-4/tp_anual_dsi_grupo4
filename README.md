@@ -47,8 +47,10 @@
 ├── docker-compose.integration.yml
 ├── endpoints.md
 ├── keycloak
+│   ├── config
+│   │   └── configurar-realm.sh
 │   ├── import
-│   │   └── donatrack-realm.json
+│   │   └── donatrack-realm.json
 │   └── themes
 │       └── donatrack
 ├── mockups
@@ -120,7 +122,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-42 directories, 61 files
+44 directories, 63 files
 ```
 <!-- TREE_END -->
 
