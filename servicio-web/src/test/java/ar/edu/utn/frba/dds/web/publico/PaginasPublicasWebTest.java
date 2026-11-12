@@ -106,7 +106,7 @@ class PaginasPublicasWebTest {
                 .andExpect(content().string(allOf(
                         containsString("role=\"tablist\""),
                         containsString("Para entidades beneficiarias"),
-                        containsString("ubicación de la sede"),
+                        containsString("dirección de la sede"),
                         containsString("<a class=\"boton boton--primario\" href=\"/oauth2/authorization/keycloak?registro\">Crear cuenta</a>"),
                         containsString("href=\"/legal/terminos\""))));
     }
