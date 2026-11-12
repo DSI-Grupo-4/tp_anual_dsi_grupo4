@@ -11,10 +11,13 @@ import ar.edu.utn.frba.dds.donaciones.domain.necesidades.Necesidad;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.EntidadBeneficiaria;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaHumana;
 import ar.edu.utn.frba.dds.donaciones.domain.personas.PersonaJuridica;
+import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto;
 import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadCandidataDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaJuridicaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ProvinciaDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.ResultadoMatchmakingDTO;
@@ -23,6 +26,7 @@ import ar.edu.utn.frba.dds.donaciones.repository.EntidadBeneficiariaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -243,6 +247,63 @@ public class EntidadBeneficiariaService {
         EntidadBeneficiaria guardada = entidadBeneficiariaRepository.save(entidad);
         sincronizarCuentas(guardada);
         return convertirADTO(guardada);
+    }
+
+    /**
+     * Suma un representante y deja a los que ya estaban.
+     * Lo usa un representante de esa entidad o un ADMIN: no reemplaza la lista,
+     * así nadie se borra a sí mismo ni a los demás para quedar solo.
+     * El correo queda en minúsculas y es el único medio que se guarda de esta ficha:
+     * CuentasKeycloak le crea o le vincula la cuenta, igual que en el alta.
+     */
+    public EntidadBeneficiariaDTO agregarRepresentante(Long id, PersonaHumanaDTO dto) {
+        if (dto == null) {
+            throw new IllegalArgumentException("Indicá los datos del representante");
+        }
+        EntidadBeneficiaria entidad = buscarEntidad(id);
+        if (!entidad.isActiva()) {
+            throw new IllegalStateException(
+                    "No se puede modificar la entidad " + id + ": está inactiva. Reactívela primero.");
+        }
+        String email = dejarUnCorreo(dto);
+        List<PersonaHumana> actuales = entidad.getEntidad().getRepresentantes() == null
+                ? new ArrayList<>()
+                : new ArrayList<>(entidad.getEntidad().getRepresentantes());
+        if (actuales.stream().anyMatch(r -> tieneCorreo(r, email))) {
+            throw new IllegalStateException("Esa persona ya representa a la entidad");
+        }
+        String documento = dto.getDocumento() == null ? "" : dto.getDocumento().trim();
+        if (!documento.isEmpty() && actuales.stream().anyMatch(r -> documento.equals(r.getDocumento()))) {
+            throw new IllegalStateException("Ya hay un representante con ese documento");
+        }
+        actuales.addAll(DatosPersonaMapper.representantes(List.of(dto)));
+        entidad.getEntidad().setRepresentantes(actuales);
+        EntidadBeneficiaria guardada = entidadBeneficiariaRepository.save(entidad);
+        sincronizarCuentas(guardada);
+        return convertirADTO(guardada);
+    }
+
+    /** Deja un único EMAIL, en minúsculas y preferido. El resto de los correos del body se descarta. */
+    private static String dejarUnCorreo(PersonaHumanaDTO dto) {
+        String email = dto.getMediosContacto() == null ? "" : dto.getMediosContacto().stream()
+                .filter(c -> c != null && c.getTipo() == TipoContacto.EMAIL && c.getValor() != null && !c.getValor().isBlank())
+                .map(c -> c.getValor().trim().toLowerCase())
+                .findFirst()
+                .orElse("");
+        if (email.isEmpty() || !email.matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+")) {
+            throw new IllegalArgumentException("El correo del representante es obligatorio");
+        }
+        MedioContactoDTO mail = new MedioContactoDTO();
+        mail.setTipo(TipoContacto.EMAIL);
+        mail.setValor(email);
+        mail.setEsPreferido(true);
+        dto.setMediosContacto(List.of(mail));
+        return email;
+    }
+
+    private static boolean tieneCorreo(PersonaHumana persona, String email) {
+        return persona.getMediosContacto() != null && persona.getMediosContacto().stream()
+                .anyMatch(m -> m.getTipo() == TipoContacto.EMAIL && email.equalsIgnoreCase(m.getValor()));
     }
 
         /**

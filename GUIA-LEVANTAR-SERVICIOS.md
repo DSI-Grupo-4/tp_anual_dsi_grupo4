@@ -304,7 +304,15 @@ Con la seguridad habilitada, cada alta o edición de un donante o una entidad (d
 
 Nunca se asigna `ADMIN`: las cuentas administradoras se crean a mano en la consola. Para los donantes y entidades cargados antes de habilitar la seguridad, un ADMIN puede llamar a `POST /api/cuentas/sincronizar` de Donaciones.
 
-Quien se registra por su cuenta (o entra con Google) y todavía no tiene rol cae en http://localhost:8085/cuenta. "Buscar mis datos" llama a `POST /api/cuentas/vincular`: si su email verificado figura en un donante o una entidad, se vincula y vuelve a pedir el login para traer el rol nuevo.
+Quien se registra por su cuenta (o entra con Google) y todavía no tiene rol cae en http://localhost:8085/cuenta.
+
+- "Buscar mis datos" llama a `POST /api/cuentas/vincular`: si su email verificado ya figura en un donante o en un representante, se vincula. No alcanza para adjudicarse una entidad que no lo tiene cargado.
+- "Registrarme como donante" crea un donante humano con ese correo (`POST /api/cuentas/registro/donante`). Si el correo o el documento ya existen, no crea otro.
+- "Registrar una organización donante" crea un donante jurídico y deja a esa persona como único representante (`POST /api/cuentas/registro/donante-juridico`). Si la razón social ya existe, no se crea otra.
+- "Registrar una entidad beneficiaria" la da de alta con esa persona como primer representante (`POST /api/cuentas/registro/entidad`). Si la razón social o el correo ya están en una entidad, hay que usar "Buscar mis datos" o que un representante autorizado sume el correo.
+- Un representante (o un ADMIN) suma a otra persona en "Sumar un representante" (`POST /api/entidades/{id}/representantes`). Esa persona entra con su propio correo. No hay un sistema de invitaciones aparte: se reutiliza el mail de acceso de Keycloak.
+
+En todos los casos hay que volver a ingresar para que el token traiga el rol. Nunca se asigna ADMIN por este camino. La organización donante admite un solo representante, el mismo límite que el alta administrativa.
 
 Prueba con Docker:
 
@@ -321,7 +329,7 @@ Prueba con Docker:
    ```
 
    La pertenencia (un DONANTE ve su `/api/donantes/{id}` y recibe 403 en el de otro) necesita un token de usuario; las pantallas de donante y entidad todavía no llaman a la API, así que hoy se prueba con los tests o desde la consola de Keycloak (Clients → servicio-web → Client scopes → Evaluate → Generated access token, para ver `donante_id`).
-4. Desde "Crear cuenta" en `/registro`, registrar un email que no figura en ningún donante. Después de verificarlo en Mailpit, el ingreso lleva a `/cuenta` y "Buscar mis datos" avisa que no encontró nada.
+4. Desde "Crear cuenta" en `/registro`, registrar un email que no figura en ningún donante. Después de verificarlo en Mailpit, el ingreso lleva a `/cuenta`. "Buscar mis datos" avisa que no encontró nada. Completar "Registrarme como donante": al volver a ingresar tiene que entrar a `/donante`. Con otro correo, registrar una entidad y comprobar que entra a `/beneficiaria`. Desde esa cuenta, sumar un representante con un correo nuevo y ver en Mailpit el mail de acceso. Intentar registrar una entidad con una razón social que ya existe: tiene que rechazarlo.
 5. Con Google configurado, entrar con una cuenta de Google de prueba. La primera vez cae en `/cuenta`.
 6. Cerrar sesión y volver a `/admin`: tiene que pedir usuario. En la pestaña de cookies, `DONATRACK_SESSION` ya no está.
 7. Sesión vencida: en Keycloak, Users → el usuario → Sessions → Sign out. El access token que ya tiene la web sigue valiendo hasta que vence (5 minutos por defecto); la primera acción que llama a una API después de eso no puede renovarlo y vuelve al login con el aviso "Tu sesión venció". Si se borra la sesión de la web (cookie vieja tras reiniciar `servicio-web`), entrar a una zona privada muestra el mismo aviso.

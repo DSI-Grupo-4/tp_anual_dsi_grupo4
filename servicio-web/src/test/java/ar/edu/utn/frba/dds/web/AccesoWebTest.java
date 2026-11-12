@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -73,10 +74,20 @@ class AccesoWebTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Tu cuenta todavía no está vinculada"),
-                        containsString("action=\"/cuenta/vincular\""))));
+                        containsString("action=\"/cuenta/vincular\""),
+                        containsString("action=\"/cuenta/donante\""),
+                        containsString("action=\"/cuenta/donante-juridico\""),
+                        containsString("action=\"/cuenta/entidad\""))));
         mvc.perform(get("/cuenta").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("href=\"/donante\"")));
+                .andExpect(content().string(allOf(
+                        containsString("href=\"/donante\""),
+                        containsString("action=\"/cuenta/entidad\""),
+                        not(containsString("action=\"/cuenta/donante\"")),
+                        not(containsString("action=\"/cuenta/donante-juridico\"")))));
+        mvc.perform(post("/cuenta/donante").with(oidcLogin()).with(csrf()))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/cuenta"));
     }
 
     @Test

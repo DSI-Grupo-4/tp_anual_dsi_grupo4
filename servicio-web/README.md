@@ -229,7 +229,7 @@ Terminado: las fases 1 a 9 del plan (ver [Estado](#estado)). Queda:
 - [ ] Subir la rama: `git push -u origin feat/servicio-web` y abrir el PR.
 
 ### Persona 2 (autenticación, SSO, social login y permisos)
-Implementado en la rama `iam` (D-044 a D-046; pasos y pruebas en [GUIA-LEVANTAR-SERVICIOS.md](../GUIA-LEVANTAR-SERVICIOS.md)), sin compilar ni probar todavía en Docker:
+Implementado en la rama `iam` (D-044 a D-047; pasos y pruebas en [GUIA-LEVANTAR-SERVICIOS.md](../GUIA-LEVANTAR-SERVICIOS.md)). En esta máquina no se compiló ni se probó en Docker:
 
 - Login con Keycloak (authorization code), registro con `prompt=create`, ingreso con Google configurable, logout con `end_session` y borrado de `DONATRACK_SESSION`.
 - `/admin/**`, `/donante/**` y `/beneficiaria/**` por rol; `/cuenta` para usuarios sin rol, que pueden pedir la vinculación con su email verificado.
@@ -237,11 +237,12 @@ Implementado en la rama `iam` (D-044 a D-046; pasos y pruebas en [GUIA-LEVANTAR-
 - 401 de las APIs: se cierra la sesión y vuelve al login con el aviso "Tu sesión venció". 403: página de acceso denegado.
 - Las cuatro APIs como resource servers, con reglas por endpoint y pertenencia (`donante_id`, `entidad_ids`), detrás de `SEGURIDAD_HABILITADA`. Llamadas entre servicios con client_credentials.
 - Cuentas creadas y vinculadas desde Donaciones al dar de alta o importar donantes y entidades (varios representantes por entidad).
+- Autorregistro en `/cuenta` (D-047): donante humano, organización donante con un único representante, y entidad nueva con el primer representante. No reclama un registro ya cargado.
 
 Pendiente:
 
 - [ ] Compilar, correr los tests y probar en Docker con la guía.
-- [ ] Con la Persona 1: autoregistro de una entidad o un donante que todavía no existe en la base. Falta decidir si un administrador aprueba antes de dar el rol BENEFICIARIA o DONANTE; hasta entonces, el usuario sin datos queda en `/cuenta`.
+- [ ] Con la Persona 1: la sede se carga como dirección de texto. El dominio no tiene un punto en el mapa (D-042).
 - [ ] Endpoint "mis donaciones" para la vista del donante: hoy solo existe el acceso a una donación por id.
 
 ### Persona 3 (administración y gestión de Donaciones)

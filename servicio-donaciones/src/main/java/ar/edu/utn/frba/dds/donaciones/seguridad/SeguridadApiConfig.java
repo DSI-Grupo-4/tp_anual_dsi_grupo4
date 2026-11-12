@@ -65,6 +65,8 @@ public class SeguridadApiConfig {
                         "/api/publico/**").permitAll()
                 .requestMatchers("/api/administracion/**").hasRole(ADMIN)
                 .requestMatchers(HttpMethod.POST, "/api/cuentas/vincular").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/cuentas/registro/donante", "/api/cuentas/registro/donante-juridico",
+                        "/api/cuentas/registro/entidad").authenticated()
 
                 .requestMatchers(HttpMethod.GET, "/api/donantes").hasAnyRole(ADMIN, SERVICIO)
                 .requestMatchers(HttpMethod.GET, "/api/donantes/{id}").access(AuthorizationManagers.anyOf(ES_ADMIN, ES_SERVICIO, donantePropio))
@@ -77,6 +79,8 @@ public class SeguridadApiConfig {
                         .access(AuthorizationManagers.anyOf(ES_ADMIN, ES_SERVICIO, entidadPropia))
                 .requestMatchers(HttpMethod.PUT, "/api/entidades/{id}").access(AuthorizationManagers.anyOf(ES_ADMIN, entidadPropia))
                 .requestMatchers("/api/entidades/{id}/necesidades", "/api/entidades/{id}/necesidades/**")
+                        .access(AuthorizationManagers.anyOf(ES_ADMIN, entidadPropia))
+                .requestMatchers(HttpMethod.POST, "/api/entidades/{id}/representantes")
                         .access(AuthorizationManagers.anyOf(ES_ADMIN, entidadPropia))
                 .requestMatchers("/api/entidades/**").hasRole(ADMIN)
 

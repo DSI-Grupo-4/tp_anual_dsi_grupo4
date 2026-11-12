@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.controller;
 
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
 import ar.edu.utn.frba.dds.donaciones.service.EntidadBeneficiariaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -37,6 +38,15 @@ public class EntidadBeneficiariaController {
     @ResponseStatus(HttpStatus.CREATED)
     public EntidadBeneficiariaDTO crear(@Valid @RequestBody EntidadBeneficiariaDTO dto) {
         return entidadService.crear(dto);
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Agregar representante",
+            description = "Suma un representante con su propio correo, sin reemplazar a los actuales. "
+                    + "Lo puede pedir un ADMIN o un representante de esta entidad. No otorga ADMIN.")
+    @PostMapping("/{id}/representantes")
+    public EntidadBeneficiariaDTO agregarRepresentante(
+            @PathVariable Long id, @Valid @RequestBody PersonaHumanaDTO dto) {
+        return entidadService.agregarRepresentante(id, dto);
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Actualizar", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")

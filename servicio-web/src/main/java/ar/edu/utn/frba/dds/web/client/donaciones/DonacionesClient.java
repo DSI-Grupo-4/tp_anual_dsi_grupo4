@@ -36,6 +36,31 @@ public class DonacionesClient {
         return http.post().uri("/api/cuentas/vincular").retrieve().body(Vinculacion.class);
     }
 
+    /** POST /api/cuentas/registro/donante. El correo asociado lo impone la API con el token. */
+    public void registrarDonante(Object datos) {
+        http.post().uri("/api/cuentas/registro/donante").body(datos).retrieve().toBodilessEntity();
+    }
+
+    /** POST /api/cuentas/registro/donante-juridico. Un único representante: el correo del token. */
+    public void registrarDonanteJuridico(Object datos) {
+        http.post().uri("/api/cuentas/registro/donante-juridico").body(datos).retrieve().toBodilessEntity();
+    }
+
+    /** POST /api/cuentas/registro/entidad. El primer representante es el correo del token. */
+    public void registrarEntidad(Object datos) {
+        http.post().uri("/api/cuentas/registro/entidad").body(datos).retrieve().toBodilessEntity();
+    }
+
+    /** POST /api/entidades/{id}/representantes. */
+    public void agregarRepresentante(Long id, Object datos) {
+        http.post().uri("/api/entidades/{id}/representantes", id).body(datos).retrieve().toBodilessEntity();
+    }
+
+    /** GET /api/entidades/{id}, para mostrar el nombre en el alta de representantes. */
+    public EntidadApi entidad(Long id) {
+        return http.get().uri("/api/entidades/{id}", id).retrieve().body(EntidadApi.class);
+    }
+
     public record Vinculacion(Long donanteId, List<Long> entidadIds) {
         public boolean vinculo() {
             return donanteId != null || (entidadIds != null && !entidadIds.isEmpty());

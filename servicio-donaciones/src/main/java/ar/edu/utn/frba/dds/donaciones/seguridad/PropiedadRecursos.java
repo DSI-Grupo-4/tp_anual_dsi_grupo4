@@ -41,6 +41,15 @@ public interface PropiedadRecursos extends Repository<Donante, Long> {
             + " where m.tipo = :tipo and lower(m.valor) = :email")
     List<Long> entidadesConRepresentanteEmail(@Param("tipo") TipoContacto tipo, @Param("email") String email);
 
+    @Query("select d.id from Donante d, PersonaHumana h where d.persona = h and h.documento = :documento")
+    List<Long> donantesConDocumento(@Param("documento") String documento);
+
+    @Query("select d.id from Donante d, PersonaJuridica pj where d.persona = pj and lower(pj.razonSocial) = lower(:razon)")
+    List<Long> donantesConRazonSocial(@Param("razon") String razon);
+
+    @Query("select e.id from EntidadBeneficiaria e where lower(e.entidad.razonSocial) = lower(:razon)")
+    List<Long> entidadesConRazonSocial(@Param("razon") String razon);
+
     @Query("select d.id from Donante d")
     List<Long> idsDonantes();
 
