@@ -34,12 +34,21 @@ class NavegacionWebTest {
     @MockitoBean
     private DonacionesClient donaciones;
 
+    // El portal del donante (Persona 4) consulta Donaciones e Incentivos.
+    @MockitoBean
+    private ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient portalDonante;
+
+    @MockitoBean
+    private ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient incentivos;
+
     @BeforeEach
     void clientesSimulados() {
         when(necesidades.entidad(1L)).thenReturn(
                 new EntidadApi(1L, true, "Comedor", new EntidadApi.PersonaJuridica("Fundación Demo")));
         when(necesidades.necesidades(1L)).thenReturn(List.of());
         when(donaciones.donaciones()).thenReturn(List.of());
+        when(portalDonante.perfil(1L)).thenReturn(new ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil(
+                1L, true, "HUMANA", "Ana", "Pérez", null));
     }
 
     @Test
@@ -66,7 +75,7 @@ class NavegacionWebTest {
 
     @Test
     void elPanelDeCadaRolMuestraSuMenu() throws Exception {
-        mvc.perform(get("/donante/seguimiento")) // /donante ya consulta las APIs: lo cubre PanelDonanteWebTest
+        mvc.perform(get("/donante"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("href=\"/donante/incentivos\""),

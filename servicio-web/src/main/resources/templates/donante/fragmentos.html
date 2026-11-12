@@ -7,6 +7,12 @@
   <link rel="stylesheet" th:href="@{/css/donante.css}">
 </th:block>
 
+<!-- Recursos de una pantalla del portal con mapa (seguimiento): el componente de mapa más los estilos del portal. -->
+<th:block th:fragment="recursosConMapa">
+  <th:block th:replace="~{fragments/mapa :: recursos}"></th:block>
+  <th:block th:replace="~{donante/fragmentos :: recursos}"></th:block>
+</th:block>
+
 <!-- Insignia de estado de una donación. -->
 <span th:fragment="estado(estado)" th:class="${@donanteVista.claseEstado(estado)}"
       th:text="${@donanteVista.estado(estado)}">En depósito</span>

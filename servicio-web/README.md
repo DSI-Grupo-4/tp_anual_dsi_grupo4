@@ -280,9 +280,9 @@ Verificación: `mvn -pl servicio-web,servicio-donaciones -am test`. Hay pruebas 
   - [x] navegación por entidades beneficiarias (`/donante/entidades` y la ficha `/donante/entidades/{id}`, con necesidades abiertas y las donaciones del donante a esa entidad);
   - [x] métricas, misiones e insignias, con el cambio de visibilidad de insignias (`/donante/incentivos`);
   - [x] ranking mensual e historial de rankings (`/admin/reportes`, con las estadísticas de Incentivos).
-- [x] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): `PortalDonanteBase` la saca del menú y la ruta redirige al panel. Mientras `/donante/seguimiento` siga en construcción, ahí el menú todavía la muestra.
+- [x] La sección de Incentivos es solo para donantes personas humanas (requerimiento 7): `PortalDonanteBase` la saca del menú y la ruta redirige al panel.
 - [x] Agregar los métodos de `IncentivosClient`: métricas, misiones, insignias, visibilidad, métricas del sistema y rankings.
-- [ ] `/donante/seguimiento`: usar el [componente de mapa](#componente-de-mapa) con marcadores de tipo `camion` y un endpoint propio con refresco, con los datos de ubicación que expone la Persona 5.
+- [x] `/donante/seguimiento`: [componente de mapa](#componente-de-mapa) con los camiones que llevan donaciones del donante en traslado (`MarcadoresSeguimiento.paraDonaciones` de la Persona 5) y `/donante/seguimiento/ubicaciones.json` para el refresco cada 30 segundos.
 - [x] Usar las categorías de misiones del dominio (Colaborador, Sostenedor, Transformador). Los mockups dicen "Bronze" y "Donor", y eso quedó desactualizado.
 - **Gráfico de evolución compartido:** `incentivos/fragmentos :: evolucion` y `GraficoEvolucion`, con los estilos en `incentivos.css`.
 - **Endpoints nuevos en Incentivos:** `GET /api/ranking/actual` (ranking del mes en curso, con `donanteNombre`; los rankings cerrados también lo traen), `GET /api/donantes/{id}/insignias/obtenidas` (todas, con su visibilidad; `/insignias` sigue devolviendo solo las visibles) y, en `/misiones`, los campos `meta` y `objetivo`.
