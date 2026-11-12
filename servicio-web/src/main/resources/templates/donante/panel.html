@@ -70,7 +70,7 @@
               <strong th:text="${fila.cantidad()}">3</strong>
             </span>
             <span class="donante-barras__pista" aria-hidden="true">
-              <span class="donante-barras__barra" th:classappend="|donante-barras__barra--${fila.estado()}|"
+              <span class="donante-barras__barra" th:classappend="|estado-${fila.estado()}|"
                     th:style="|width: ${fila.porcentaje()}%|"></span>
             </span>
             <span class="solo-lector" th:text="|(${fila.porcentaje()} % del total)|"></span>

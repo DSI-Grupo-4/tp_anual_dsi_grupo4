@@ -22,12 +22,12 @@
 .donante-barras__etiqueta { display: flex; justify-content: space-between; gap: var(--espacio-3); }
 .donante-barras__pista { display: block; height: var(--espacio-2); border-radius: var(--radio-pildora); background: var(--color-superficie-alt); overflow: hidden; }
 .donante-barras__barra { display: block; height: 100%; min-width: var(--espacio-1); border-radius: inherit; background: var(--color-texto-secundario); }
-.donante-barras__barra--EN_DEPOSITO { background: var(--color-info); }
-.donante-barras__barra--ASIGNACION_REALIZADA,
-.donante-barras__barra--LISTA_PARA_ENTREGAR { background: var(--color-primario); }
-.donante-barras__barra--EN_TRASLADO { background: var(--color-advertencia); }
-.donante-barras__barra--ENTREGADA { background: var(--color-exito); }
-.donante-barras__barra--ENTREGA_FALLIDA { background: var(--color-error); }
+.donante-barras__barra.estado-EN_DEPOSITO { background: var(--color-info); }
+.donante-barras__barra.estado-ASIGNACION_REALIZADA,
+.donante-barras__barra.estado-LISTA_PARA_ENTREGAR { background: var(--color-primario); }
+.donante-barras__barra.estado-EN_TRASLADO { background: var(--color-advertencia); }
+.donante-barras__barra.estado-ENTREGADA { background: var(--color-exito); }
+.donante-barras__barra.estado-ENTREGA_FALLIDA { background: var(--color-error); }
 
 /* Donaciones recientes. */
 .donante-recientes { list-style: none; margin: 0; padding: 0; display: grid; }
@@ -66,7 +66,7 @@
   width: var(--espacio-3); height: var(--espacio-3); border-radius: 50%;
   background: var(--color-superficie); border: 2px solid var(--color-borde-control);
 }
-.donante-historial__paso--actual::before { background: var(--color-primario); border-color: var(--color-primario); }
+.donante-historial li.es-actual::before { background: var(--color-primario); border-color: var(--color-primario); }
 .donante-historial p { margin: 0; overflow-wrap: anywhere; }
 
 /* Incentivos: categoría, progreso y escalera. */
@@ -82,9 +82,9 @@
   border: var(--borde); border-radius: var(--radio-md); background: var(--color-superficie);
 }
 .donante-escalera__nombre { font-weight: var(--peso-fuerte); }
-.donante-escalera__paso--alcanzada { border-color: var(--color-primario); }
-.donante-escalera__paso--actual { border: 2px solid var(--color-primario); }
-.donante-escalera__paso--actual .donante-escalera__nombre { color: var(--color-primario); }
+.donante-escalera li.es-alcanzada { border-color: var(--color-primario); }
+.donante-escalera li.es-actual { border: 2px solid var(--color-primario); }
+.donante-escalera li.es-actual .donante-escalera__nombre { color: var(--color-primario); }
 
 /* Selector de período: enlaces tipo píldora; el elegido lleva aria-current. */
 .donante-periodos { display: flex; flex-wrap: wrap; gap: var(--espacio-2); }
@@ -112,8 +112,8 @@
 .donante-misiones { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-3); }
 .donante-misiones li { display: grid; gap: var(--espacio-2); padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
 .donante-misiones li p { margin: 0; }
-.donante-misiones__item--activa { border-color: var(--color-primario); box-shadow: var(--sombra-sm); }
-.donante-misiones__item--completada { background: var(--color-superficie-alt); }
+.donante-misiones li.es-activa { border-color: var(--color-primario); box-shadow: var(--sombra-sm); }
+.donante-misiones li.es-completada { background: var(--color-superficie-alt); }
 .donante-insignias { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
 .donante-insignia { display: grid; justify-items: center; text-align: center; gap: var(--espacio-2); padding: var(--espacio-5) var(--espacio-4); border: var(--borde); border-radius: var(--radio-lg); }
 .donante-insignia__icono { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--color-primario-suave); color: var(--color-primario); }

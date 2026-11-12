@@ -76,7 +76,8 @@ class PanelDonanteWebTest {
                 .andExpect(content().string(containsString("Impacto acumulado: 1.250")))
                 .andExpect(content().string(containsString("Puesto 3 en el ranking")))
                 // Los estados con 0 donaciones no se dibujan.
-                .andExpect(content().string(not(containsString("donante-barras__barra--VENCIDA"))));
+                .andExpect(content().string(not(containsString("estado-VENCIDA"))))
+                .andExpect(content().string(containsString("estado-ENTREGADA")));
     }
 
     @Test

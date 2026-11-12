@@ -49,7 +49,7 @@
     </div>
 
     <ol class="donante-escalera" aria-label="Categorías de donante">
-      <li th:each="e : ${escalera}" th:classappend="${e.actual()} ? 'donante-escalera__paso--actual' : (${e.alcanzada()} ? 'donante-escalera__paso--alcanzada' : '')">
+      <li th:each="e : ${escalera}" th:classappend="${e.actual()} ? 'es-actual' : (${e.alcanzada()} ? 'es-alcanzada' : '')">
         <span class="donante-escalera__nombre" th:text="${e.nombre()}">Colaborador</span>
         <span class="texto-chico texto-secundario"
               th:text="${e.actual()} ? 'Tu categoría' : (${e.alcanzada()} ? 'Alcanzada' : 'Por alcanzar')">Tu categoría</span>
@@ -145,7 +145,7 @@
       <p class="texto-chico texto-secundario">Las misiones se completan en orden: al terminar una, empieza la siguiente.</p>
       <ol class="donante-misiones" th:if="${!misiones.isEmpty()}">
         <li th:each="m : ${misiones}"
-            th:classappend="${m.completada()} ? 'donante-misiones__item--completada' : (${m.activa()} ? 'donante-misiones__item--activa' : '')">
+            th:classappend="${m.completada()} ? 'es-completada' : (${m.activa()} ? 'es-activa' : '')">
           <div class="fila fila--separada">
             <strong th:text="${m.nombreMision()}">Racha Colaborador</strong>
             <span class="insignia-estado insignia-estado--exito" th:if="${m.completada()}">Completada</span>

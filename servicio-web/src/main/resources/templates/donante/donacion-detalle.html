@@ -70,7 +70,7 @@
     <section class="tarjeta pila" aria-labelledby="t-historial">
       <h2 id="t-historial">Historial de estados</h2>
       <ol class="donante-historial" th:if="${!historial.isEmpty()}">
-        <li th:each="c, i : ${historial}" th:classappend="${i.first} ? 'donante-historial__paso--actual'">
+        <li th:each="c, i : ${historial}" th:classappend="${i.first} ? 'es-actual'">
           <span th:replace="~{donante/fragmentos :: estado(${c.estado()})}"></span>
           <time class="texto-chico texto-secundario" th:if="${c.fecha() != null}"
                 th:datetime="${@fechas.iso(c.fecha())}" th:text="${@fechas.fechaHora(c.fecha())}">10/11/2026 12:00</time>
