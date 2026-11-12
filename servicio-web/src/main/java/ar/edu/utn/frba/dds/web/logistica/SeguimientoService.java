@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.web.logistica;
 
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
+import ar.edu.utn.frba.dds.web.client.logistica.EntregaAdminApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ParadaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
@@ -101,6 +102,24 @@ public class SeguimientoService {
                 .mapToInt(e -> (int) e.entregas().stream().filter(x -> SIN_RESULTADO.contains(x.estadoEntrega())).count())
                 .sum();
         return new ResumenSeguimiento(planificadas, iniciadas, finalizadas, pendientes);
+    }
+
+    /** Cifras del listado de entregas de la administración. */
+    public ResumenEntregas resumenEntregas(List<EntregaAdminApi> entregas) {
+        int sinSalir = 0;
+        int enCamino = 0;
+        int entregadas = 0;
+        int requierenAtencion = 0;
+        for (EntregaAdminApi entrega : entregas) {
+            switch (entrega.estadoEntrega() == null ? "" : entrega.estadoEntrega()) {
+                case "PENDIENTE", "REPLANIFICABLE" -> sinSalir++;
+                case "ASIGNADA_A_RUTA", "EN_TRASLADO" -> enCamino++;
+                case "ENTREGADA" -> entregadas++;
+                case "NO_RECIBIDA", "FALLIDA" -> requierenAtencion++;
+                default -> { }
+            }
+        }
+        return new ResumenEntregas(sinSalir, enCamino, entregadas, requierenAtencion);
     }
 
     public ResumenFlota resumenFlota(List<CamionApi> camiones) {

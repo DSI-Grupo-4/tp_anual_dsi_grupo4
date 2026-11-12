@@ -237,4 +237,42 @@ class CamionesYRutasClientTest {
         assertThatThrownBy(() -> rutas.confirmarRecepcion(7, 2, List.of("http://l/1")))
                 .isInstanceOf(BackendRechazoException.class).hasMessageContaining("no está en curso");
     }
+
+    @Test
+    void registrarNoRecibidaEnviaLaJustificacionEnTextoPlanoYUtf8() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/paradas/2/no-recibida"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.content()
+                        .contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.header("Content-Type",
+                        org.hamcrest.Matchers.containsString("UTF-8")))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.content().string("Nadie atendió"))
+                .andRespond(withSuccess());
+
+        rutas.registrarNoRecibida(7, 2, "Nadie atendió");
+
+        servidor.verify();
+    }
+
+    @Test
+    void registrarUnIncidenteEnviaElMotivoEnTextoPlano() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/paradas/2/incidente"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(org.springframework.test.web.client.match.MockRestRequestMatchers.content().string("Calle cortada por obras"))
+                .andRespond(withSuccess());
+
+        rutas.registrarIncidente(7, 2, "Calle cortada por obras");
+
+        servidor.verify();
+    }
+
+    @Test
+    void siLaRutaNoEstaEnCursoElRegistroLlegaComoRechazo() {
+        servidor.expect(requestTo("http://logistica/api/rutas/7/paradas/2/no-recibida"))
+                .andRespond(withStatus(HttpStatus.CONFLICT).contentType(MediaType.APPLICATION_JSON)
+                        .body("{\"error\": \"La ruta 7 no está en curso: solo se pueden registrar resultados de una ruta INICIADA\"}"));
+
+        assertThatThrownBy(() -> rutas.registrarNoRecibida(7, 2, "Nadie atendió"))
+                .isInstanceOf(BackendRechazoException.class).hasMessageContaining("no está en curso");
+    }
 }

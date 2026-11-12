@@ -53,6 +53,48 @@ public class Parada {
         entregas.forEach(entrega -> entrega.confirmarEntrega(foto));
     }
 
+    /**
+     * «No recibida»: nadie atendió en la parada. Solo afecta a las entregas que seguían en traslado; las que ya tenían
+     * un resultado (por ejemplo, ya recibidas) no se tocan. A diferencia de {@link #marcarNoRecibida(String)}, que marca
+     * todas las entregas de la parada sin mirar su estado.
+     *
+     * @return las entregas afectadas, para generar sus eventos
+     * @throws IllegalArgumentException si falta la justificación
+     * @throws IllegalStateException    si la parada no tiene entregas en traslado
+     */
+    public List<Entrega> marcarNoRecibidasLasEnTraslado(String justificacion) {
+        if (justificacion == null || justificacion.isBlank()) {
+            throw new IllegalArgumentException("La justificación de la entrega no recibida es obligatoria");
+        }
+        List<Entrega> afectadas = entregasEnTrasladoOFalla();
+        afectadas.forEach(entrega -> entrega.marcarNoRecibida(justificacion));
+        return afectadas;
+    }
+
+    /**
+     * Incidente: el camión no pudo entregar (calle cortada, avería). Solo afecta a las entregas que seguían en traslado.
+     *
+     * @return las entregas afectadas, para generar sus eventos
+     * @throws IllegalArgumentException si falta el motivo
+     * @throws IllegalStateException    si la parada no tiene entregas en traslado
+     */
+    public List<Entrega> marcarFalladasLasEnTraslado(String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new IllegalArgumentException("El motivo de la entrega fallida es obligatorio");
+        }
+        List<Entrega> afectadas = entregasEnTrasladoOFalla();
+        afectadas.forEach(entrega -> entrega.marcarFallida(motivo));
+        return afectadas;
+    }
+
+    private List<Entrega> entregasEnTrasladoOFalla() {
+        List<Entrega> enTraslado = entregasEnTraslado();
+        if (enTraslado.isEmpty()) {
+            throw new IllegalStateException("La parada " + numeroParada + " no tiene entregas en traslado");
+        }
+        return enTraslado;
+    }
+
     /** Las entregas de la parada que todavía no se recibieron (siguen en traslado). */
     public List<Entrega> entregasEnTraslado() {
         return entregas.stream().filter(e -> e.getEstadoEntrega() == EstadoEntrega.EN_TRASLADO).toList();

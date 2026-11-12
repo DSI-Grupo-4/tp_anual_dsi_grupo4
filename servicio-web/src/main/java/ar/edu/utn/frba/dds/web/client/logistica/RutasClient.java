@@ -10,6 +10,10 @@ import org.springframework.web.client.RestClient;
 @Component
 public class RutasClient {
 
+    /** El texto va en UTF-8 y lo dice: sin charset, «ó» o «ñ» podrían leerse mal del otro lado. */
+    private static final org.springframework.http.MediaType TEXTO_UTF8 =
+            new org.springframework.http.MediaType("text", "plain", java.nio.charset.StandardCharsets.UTF_8);
+
     private final RestClient http;
 
     public RutasClient(@Qualifier("logistica") RestClient http) {
@@ -51,6 +55,25 @@ public class RutasClient {
     public void confirmarRecepcion(Integer idRuta, Integer idParada, java.util.List<String> urlsDeFotos) {
         http.post().uri("/api/rutas/{ruta}/paradas/{parada}/recepcion", idRuta, idParada)
                 .body(ConfirmacionRecepcionRequest.de(urlsDeFotos))
+                .retrieve().toBodilessEntity();
+    }
+
+    /**
+     * POST .../paradas/{idParada}/no-recibida: nadie atendió en la parada. El cuerpo es la justificación, en texto plano.
+     * Solo afecta a las entregas que seguían en traslado. 409 si la ruta no está en curso o no quedan entregas en traslado.
+     */
+    public void registrarNoRecibida(Integer idRuta, Integer idParada, String justificacion) {
+        http.post().uri("/api/rutas/{ruta}/paradas/{parada}/no-recibida", idRuta, idParada)
+                .contentType(TEXTO_UTF8)
+                .body(justificacion)
+                .retrieve().toBodilessEntity();
+    }
+
+    /** POST .../paradas/{idParada}/incidente: el camión no pudo entregar. El cuerpo es el motivo, en texto plano. */
+    public void registrarIncidente(Integer idRuta, Integer idParada, String motivo) {
+        http.post().uri("/api/rutas/{ruta}/paradas/{parada}/incidente", idRuta, idParada)
+                .contentType(TEXTO_UTF8)
+                .body(motivo)
                 .retrieve().toBodilessEntity();
     }
 }

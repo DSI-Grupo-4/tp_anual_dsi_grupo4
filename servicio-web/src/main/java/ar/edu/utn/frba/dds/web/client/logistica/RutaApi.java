@@ -57,6 +57,11 @@ public record RutaApi(
         public List<EntregaDeRutaApi> entregas() {
             return entregas == null ? List.of() : entregas;
         }
+
+        /** Solo una parada con entregas en traslado admite registrar «no recibida» o un incidente. */
+        public boolean tieneEntregasEnTraslado() {
+            return entregas().stream().anyMatch(e -> "EN_TRASLADO".equals(e.estadoEntrega()));
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)

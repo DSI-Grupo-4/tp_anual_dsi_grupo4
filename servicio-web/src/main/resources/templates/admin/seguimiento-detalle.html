@@ -65,6 +65,7 @@
               <th scope="col" th:text="#{logistica.seguimiento.col.entidad}">Entidad</th>
               <th scope="col" th:text="#{logistica.seguimiento.col.direccion}">Dirección</th>
               <th scope="col" th:text="#{logistica.seguimiento.col.entregas}">Entregas</th>
+              <th scope="col" th:if="${ruta.estadoRuta == 'INICIADA'}"><span class="solo-lector" th:text="#{logistica.col.acciones}">Acciones</span></th>
             </tr>
           </thead>
           <tbody>
@@ -90,10 +91,63 @@
                   </li>
                 </ul>
               </td>
+              <td th:if="${ruta.estadoRuta == 'INICIADA'}">
+                <div class="fila" th:if="${p.tieneEntregasEnTraslado()}">
+                  <button type="button" class="boton boton--secundario" th:attr="data-abrir-modal='modal-nr-' + ${p.idParada}">
+                    <span th:text="#{logistica.entregas.accion.no-recibida}">Registrar no recibida</span>
+                    <span class="solo-lector" th:text="#{logistica.seguimiento.parada-n(${p.numeroParada})}"></span>
+                  </button>
+                  <button type="button" class="boton boton--peligro" th:attr="data-abrir-modal='modal-inc-' + ${p.idParada}">
+                    <span th:text="#{logistica.entregas.accion.incidente}">Registrar incidente</span>
+                    <span class="solo-lector" th:text="#{logistica.seguimiento.parada-n(${p.numeroParada})}"></span>
+                  </button>
+                </div>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <!-- «No recibida» e incidente: un diálogo por parada con entregas en traslado, con su campo de texto obligatorio -->
+      <th:block th:each="p : ${ruta.paradas()}" th:if="${ruta.estadoRuta == 'INICIADA' and p.tieneEntregasEnTraslado()}">
+        <dialog class="modal" th:id="'modal-nr-' + ${p.idParada}" th:attr="aria-labelledby='modal-nr-' + ${p.idParada} + '-titulo'">
+          <form th:action="@{/admin/seguimiento/{id}/paradas/{parada}/no-recibida(id=${ruta.idRuta}, parada=${p.idParada})}" method="post">
+            <div class="modal__cuerpo">
+              <h2 th:id="'modal-nr-' + ${p.idParada} + '-titulo'" th:text="#{logistica.entregas.no-recibida.titulo}">Registrar entrega no recibida</h2>
+              <p th:text="#{logistica.entregas.no-recibida.texto(${p.numeroParada})}">Nadie atendió en la parada.</p>
+              <div class="campo">
+                <label class="campo__etiqueta" th:for="'nr-motivo-' + ${p.idParada}" th:text="#{logistica.entregas.no-recibida.campo}">Justificación</label>
+                <textarea class="control" name="motivo" required maxlength="300" rows="3"
+                          th:id="'nr-motivo-' + ${p.idParada}" th:attr="aria-describedby='nr-ayuda-' + ${p.idParada}"></textarea>
+                <span class="campo__ayuda" th:id="'nr-ayuda-' + ${p.idParada}" th:text="#{logistica.entregas.campo.ayuda(300)}">Hasta 300 caracteres.</span>
+              </div>
+            </div>
+            <div class="modal__acciones">
+              <button type="button" class="boton boton--secundario" data-cerrar-modal th:text="#{accion.cancelar}">Cancelar</button>
+              <button type="submit" class="boton boton--primario" th:text="#{logistica.entregas.accion.no-recibida}">Registrar no recibida</button>
+            </div>
+          </form>
+        </dialog>
+
+        <dialog class="modal" th:id="'modal-inc-' + ${p.idParada}" th:attr="aria-labelledby='modal-inc-' + ${p.idParada} + '-titulo'">
+          <form th:action="@{/admin/seguimiento/{id}/paradas/{parada}/incidente(id=${ruta.idRuta}, parada=${p.idParada})}" method="post">
+            <div class="modal__cuerpo">
+              <h2 th:id="'modal-inc-' + ${p.idParada} + '-titulo'" th:text="#{logistica.entregas.incidente.titulo}">Registrar incidente</h2>
+              <p th:text="#{logistica.entregas.incidente.texto(${p.numeroParada})}">El camión no pudo entregar.</p>
+              <div class="campo">
+                <label class="campo__etiqueta" th:for="'inc-motivo-' + ${p.idParada}" th:text="#{logistica.entregas.incidente.campo}">Motivo</label>
+                <textarea class="control" name="motivo" required maxlength="300" rows="3"
+                          th:id="'inc-motivo-' + ${p.idParada}" th:attr="aria-describedby='inc-ayuda-' + ${p.idParada}"></textarea>
+                <span class="campo__ayuda" th:id="'inc-ayuda-' + ${p.idParada}" th:text="#{logistica.entregas.campo.ayuda(300)}">Hasta 300 caracteres.</span>
+              </div>
+            </div>
+            <div class="modal__acciones">
+              <button type="button" class="boton boton--secundario" data-cerrar-modal th:text="#{accion.cancelar}">Cancelar</button>
+              <button type="submit" class="boton boton--peligro" th:text="#{logistica.entregas.accion.incidente}">Registrar incidente</button>
+            </div>
+          </form>
+        </dialog>
+      </th:block>
     </section>
   </div>
 </th:block>

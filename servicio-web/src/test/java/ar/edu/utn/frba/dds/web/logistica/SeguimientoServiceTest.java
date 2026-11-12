@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
+import ar.edu.utn.frba.dds.web.client.logistica.EntregaAdminApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ChoferApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.DireccionApi;
@@ -129,5 +130,19 @@ class SeguimientoServiceTest {
         assertThat(seguimiento.envioDe(5L, 1).orElseThrow().puedeConfirmarRecepcion()).isTrue();
         assertThat(seguimiento.envioDe(5L, 2).orElseThrow().puedeConfirmarRecepcion()).isFalse();
         assertThat(seguimiento.envioDe(5L, 3).orElseThrow().puedeConfirmarRecepcion()).isFalse();
+    }
+
+    @Test
+    void elResumenDeEntregasAgrupaLosEstadosEnCuatroCifras() {
+        List<EntregaAdminApi> entregas = List.of(
+                new EntregaAdminApi(1, 1, 5, "PENDIENTE", null, null, null),
+                new EntregaAdminApi(2, 2, 5, "REPLANIFICABLE", null, null, null),
+                new EntregaAdminApi(3, 3, 5, "ASIGNADA_A_RUTA", null, null, null),
+                new EntregaAdminApi(4, 4, 5, "EN_TRASLADO", null, null, null),
+                new EntregaAdminApi(5, 5, 5, "ENTREGADA", null, null, null),
+                new EntregaAdminApi(6, 6, 5, "NO_RECIBIDA", null, null, "Nadie atendió"),
+                new EntregaAdminApi(7, 7, 5, "FALLIDA", null, null, "Calle cortada"));
+
+        assertThat(seguimiento.resumenEntregas(entregas)).isEqualTo(new ResumenEntregas(2, 2, 1, 2));
     }
 }

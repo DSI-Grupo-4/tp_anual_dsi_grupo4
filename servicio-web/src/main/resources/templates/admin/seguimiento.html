@@ -8,9 +8,12 @@
       <h1 th:text="#{logistica.seguimiento.titulo}">Seguimiento de rutas</h1>
       <p th:text="#{logistica.seguimiento.bajada}">Rutas, paradas y entregas en curso</p>
     </div>
-    <form th:action="@{/admin/seguimiento/planificar}" method="post">
-      <button type="submit" class="boton boton--primario" th:text="#{logistica.seguimiento.planificar}">Planificar ahora</button>
-    </form>
+    <div class="fila">
+      <a class="boton boton--secundario" th:href="@{/admin/seguimiento/entregas}" th:text="#{logistica.entregas.ver}">Ver entregas</a>
+      <form th:action="@{/admin/seguimiento/planificar}" method="post">
+        <button type="submit" class="boton boton--primario" th:text="#{logistica.seguimiento.planificar}">Planificar ahora</button>
+      </form>
+    </div>
   </div>
 
   <div class="pila pila--grande">

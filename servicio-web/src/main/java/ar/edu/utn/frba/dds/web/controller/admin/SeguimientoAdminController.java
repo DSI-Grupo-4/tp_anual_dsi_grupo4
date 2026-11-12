@@ -34,6 +34,7 @@ public class SeguimientoAdminController {
 
     private static final String LISTA = "/admin/seguimiento";
     private static final Set<String> ESTADOS = Set.of("PLANIFICADA", "INICIADA", "FINALIZADA", "CANCELADA");
+    static final int LARGO_MAXIMO_MOTIVO = 300;
 
     private final RutasClient rutas;
     private final SeguimientoService seguimiento;
@@ -116,6 +117,53 @@ public class SeguimientoAdminController {
             Toasts.error(attrs, e.getMessage());
         }
         return "redirect:" + LISTA + "/" + id;
+    }
+
+    /** «No recibida»: nadie atendió en la parada. Solo afecta a las entregas que seguían en traslado. */
+    @PostMapping("/{id}/paradas/{idParada}/no-recibida")
+    public String noRecibida(@PathVariable Integer id, @PathVariable Integer idParada,
+                             @RequestParam(defaultValue = "") String motivo, RedirectAttributes attrs) {
+        String texto = motivo.trim();
+        if (!motivoValido(texto, attrs)) {
+            return "redirect:" + LISTA + "/" + id;
+        }
+        try {
+            rutas.registrarNoRecibida(id, idParada, texto);
+            Toasts.exito(attrs, texto("logistica.entregas.toast.no-recibida", idParada));
+        } catch (BackendRechazoException e) {
+            Toasts.error(attrs, e.getMessage());
+        }
+        return "redirect:" + LISTA + "/" + id;
+    }
+
+    /** Incidente: el camión no pudo entregar en la parada (calle cortada, avería). */
+    @PostMapping("/{id}/paradas/{idParada}/incidente")
+    public String incidente(@PathVariable Integer id, @PathVariable Integer idParada,
+                            @RequestParam(defaultValue = "") String motivo, RedirectAttributes attrs) {
+        String texto = motivo.trim();
+        if (!motivoValido(texto, attrs)) {
+            return "redirect:" + LISTA + "/" + id;
+        }
+        try {
+            rutas.registrarIncidente(id, idParada, texto);
+            Toasts.exito(attrs, texto("logistica.entregas.toast.incidente", idParada));
+        } catch (BackendRechazoException e) {
+            Toasts.error(attrs, e.getMessage());
+        }
+        return "redirect:" + LISTA + "/" + id;
+    }
+
+    /** El motivo es obligatorio y no puede ser desmedido; si no sirve se avisa con un toast y no se llama a Logística. */
+    private boolean motivoValido(String motivo, RedirectAttributes attrs) {
+        if (motivo.isEmpty()) {
+            Toasts.error(attrs, texto("logistica.entregas.error.motivo-vacio"));
+            return false;
+        }
+        if (motivo.length() > LARGO_MAXIMO_MOTIVO) {
+            Toasts.error(attrs, texto("logistica.entregas.error.motivo-largo", LARGO_MAXIMO_MOTIVO));
+            return false;
+        }
+        return true;
     }
 
     @PostMapping("/planificar")
