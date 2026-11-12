@@ -42,11 +42,48 @@ public abstract class Persona {
         this.mediosContacto = new ArrayList<>();
     }
 
-    /** Conserva la colección administrada por JPA y su orphanRemoval al editar contactos. */
+    /**
+     * Conserva la colección administrada por JPA y reutiliza los contactos
+     * que mantienen tipo y valor. Si se reemplazaban todos por instancias
+     * nuevas, Hibernate intentaba insertar antes de borrar los anteriores y
+     * chocaba falsamente con el UNIQUE (persona_id, tipo, valor).
+     */
     public void setMediosContacto(List<MedioContacto> contactos) {
-        var nuevos = new ArrayList<>(contactos);
-        this.mediosContacto.clear();
-        this.mediosContacto.addAll(nuevos);
+        var actualesPorClave = new java.util.HashMap<String, MedioContacto>();
+        this.mediosContacto.forEach(contacto ->
+                actualesPorClave.put(claveContacto(contacto), contacto));
+
+        var reconciliados = new ArrayList<MedioContacto>();
+        var clavesRecibidas = new java.util.HashSet<String>();
+        for (MedioContacto recibido : contactos) {
+            String clave = claveContacto(recibido);
+            if (!clavesRecibidas.add(clave)) {
+                throw new IllegalArgumentException(
+                        "No puede repetir un medio de contacto con el mismo tipo y valor");
+            }
+
+            MedioContacto existente = actualesPorClave.get(clave);
+            if (existente == null) {
+                reconciliados.add(recibido);
+            } else {
+                existente.setTipo(recibido.getTipo());
+                existente.setValor(recibido.getValor());
+                existente.setEsPreferido(recibido.getEsPreferido());
+                reconciliados.add(existente);
+            }
+        }
+
+        this.mediosContacto.removeIf(contacto -> !reconciliados.contains(contacto));
+        reconciliados.stream()
+                .filter(contacto -> !this.mediosContacto.contains(contacto))
+                .forEach(this.mediosContacto::add);
+    }
+
+    private String claveContacto(MedioContacto contacto) {
+        String valor = contacto.getValor() == null
+                ? ""
+                : contacto.getValor().trim().toLowerCase(java.util.Locale.ROOT);
+        return contacto.getTipo() + "\u0000" + valor;
     }
 
     public void agregarMedio(MedioContacto medio) {

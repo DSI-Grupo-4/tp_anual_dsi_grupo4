@@ -44,11 +44,27 @@ class AdministracionPersistenciaTest {
         assertThat(consulta.donantes("no existe",true,0,20).content()).isEmpty();
         assertThatThrownBy(()->consulta.donantes("",true,0,101)).isInstanceOf(IllegalArgumentException.class);
     }
+    @Test void editarDonanteConservandoElEmailReutilizaElContactoPersistido() throws Exception {
+        var creado=ds.crearDonanteHumano(humana()); em.flush(); em.clear();
+        var contactoOriginal=donantes.findById(creado.getId()).orElseThrow()
+                .getPersona().getMediosContacto().get(0).getId();
+
+        var cambios=humana();
+        cambios.setNombre("Ana actualizada");
+        ds.actualizarHumano(creado.getId(),cambios); em.flush(); em.clear();
+
+        var actualizado=donantes.findById(creado.getId()).orElseThrow();
+        assertThat(((PersonaHumana) actualizado.getPersona()).getNombre()).isEqualTo("Ana actualizada");
+        assertThat(actualizado.getPersona().getMediosContacto()).singleElement()
+                .satisfies(contacto -> assertThat(contacto.getId()).isEqualTo(contactoOriginal));
+    }
     @Test void editarEntidadPersisteYConservaDatosNoEditadosDelRepresentante() throws Exception {
         var p=new PersonaJuridicaDTO(); p.setRazonSocial("Comedor Sonrisas"); p.setTipo(TipoOrganizacion.ONG);
         p.setMediosContacto(humana().getMediosContacto()); p.setRepresentantes(java.util.List.of(humana()));
         var dto=new EntidadBeneficiariaDTO(); dto.setPersonaJuridica(p); dto.setDescripcion("Comedor");
         var creado=es.crear(dto); em.flush(); em.clear();
+        var contactoEntidadOriginal=entidades.findById(creado.getId()).orElseThrow()
+                .getEntidad().getMediosContacto().get(0).getId();
         // Un representante histórico puede tener teléfono preferido y todavía no tener correo.
         var historico=entidades.findById(creado.getId()).orElseThrow().getEntidad().getRepresentantes().get(0);
         historico.setMediosContacto(java.util.List.of(new MedioContacto(TipoContacto.TELEFONO,"3515551234",true)));
@@ -58,6 +74,9 @@ class AdministracionPersistenciaTest {
         es.actualizar(creado.getId(),dto); em.flush(); em.clear();
         var leido=es.obtenerPorId(creado.getId());
         assertThat(leido.getDescripcion()).isEqualTo("Comedor actualizado");
+        assertThat(entidades.findById(creado.getId()).orElseThrow().getEntidad().getMediosContacto())
+                .singleElement().satisfies(contacto ->
+                        assertThat(contacto.getId()).isEqualTo(contactoEntidadOriginal));
         assertThat(leido.getPersonaJuridica().getRepresentantes()).singleElement().satisfies(rep->{
             assertThat(rep.getNombre()).isEqualTo("Ana María"); assertThat(rep.getEdad()).isEqualTo(30);
             assertThat(rep.getDireccion().getCalle()).isEqualTo("San Martín");
