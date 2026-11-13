@@ -140,4 +140,45 @@ class EntidadBeneficiariaServiceTest {
         entidadBeneficiariaService.actualizar(entidad.getId(),entidad);
         assertThat(entidadBeneficiariaService.buscarEntidad(entidad.getId()).getEntidad().medioPreferido().orElseThrow().getValor()).isEqualTo("nuevo@example.org");
     }
+
+    @Test
+    void agregarRepresentanteSumaSinBorrarYRechazaElMismoCorreo() {
+        var entidad = crearEntidad(null, "Comedor Sonrisas");
+
+        var actualizada = entidadBeneficiariaService.agregarRepresentante(entidad.getId(), representante("Ana@Correo.com", "30111222"));
+
+        assertThat(actualizada.getPersonaJuridica().getRepresentantes()).hasSize(1);
+        assertThat(actualizada.getPersonaJuridica().getRepresentantes().get(0).getMediosContacto())
+                .extracting(c -> c.getValor())
+                .containsExactly("ana@correo.com");
+
+        assertThatThrownBy(() -> entidadBeneficiariaService.agregarRepresentante(
+                entidad.getId(), representante("ana@correo.com", "30999888")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("ya representa");
+    }
+
+    @Test
+    void agregarRepresentanteRechazaUnaEntidadInactiva() {
+        var entidad = crearEntidad(null, "Comedor Sonrisas");
+        entidadBeneficiariaService.eliminar(entidad.getId());
+
+        assertThatThrownBy(() -> entidadBeneficiariaService.agregarRepresentante(
+                entidad.getId(), representante("ana@correo.com", "30111222")))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("inactiva");
+    }
+
+    private static ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO representante(String email, String documento) {
+        var dto = new ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO();
+        dto.setNombre("Ana");
+        dto.setApellido("Perez");
+        dto.setDocumento(documento);
+        var mail = new ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO();
+        mail.setTipo(ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto.EMAIL);
+        mail.setValor(email);
+        mail.setEsPreferido(true);
+        dto.setMediosContacto(java.util.List.of(mail));
+        return dto;
+    }
 }

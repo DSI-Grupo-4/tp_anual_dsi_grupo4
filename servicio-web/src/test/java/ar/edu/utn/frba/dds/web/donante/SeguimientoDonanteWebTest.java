@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
@@ -74,7 +75,7 @@ class SeguimientoDonanteWebTest {
 
     @Test
     void muestraElCamionQueLlevaLaDonacionYSusDatos() throws Exception {
-        mvc.perform(get("/donante/seguimiento"))
+        mvc.perform(get("/donante/seguimiento").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
                 .andExpect(content().string(containsString("Camión AA123BB")))
@@ -87,7 +88,7 @@ class SeguimientoDonanteWebTest {
 
     @Test
     void elJsonDeRefrescoDevuelveSoloElCamionDelDonante() throws Exception {
-        mvc.perform(get("/donante/seguimiento/ubicaciones.json"))
+        mvc.perform(get("/donante/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].tipo").value("camion"))
@@ -99,14 +100,14 @@ class SeguimientoDonanteWebTest {
     @Test
     void unCamionSinUbicacionNoSeDibuja() throws Exception {
         when(rutas.rutas()).thenReturn(List.of(rutaQueLleva(15, null, null)));
-        mvc.perform(get("/donante/seguimiento/ubicaciones.json"))
+        mvc.perform(get("/donante/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
     void sinDonacionesEnCaminoNoConsultaLogistica() throws Exception {
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(), 0, 0, 0));
-        mvc.perform(get("/donante/seguimiento"))
+        mvc.perform(get("/donante/seguimiento").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ahora no hay donaciones tuyas en camino")))
                 .andExpect(content().string(containsString("Tenés 2 donaciones asignadas que todavía no salieron")));
@@ -116,17 +117,17 @@ class SeguimientoDonanteWebTest {
     @Test
     void siLogisticaNoRespondeMuestraLaListaConUnAviso() throws Exception {
         when(rutas.rutas()).thenThrow(new BackendNoDisponibleException(ServicioBackend.LOGISTICA, 503, null));
-        mvc.perform(get("/donante/seguimiento"))
+        mvc.perform(get("/donante/seguimiento").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("no pudimos consultar la ubicación de los camiones")))
                 .andExpect(content().string(containsString("Arroz 1 kg")));
-        mvc.perform(get("/donante/seguimiento/ubicaciones.json")).andExpect(status().isServiceUnavailable());
+        mvc.perform(get("/donante/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("DONANTE"))).andExpect(status().isServiceUnavailable());
     }
 
     @Test
     void unaPersonaJuridicaTampocoVeIncentivosEnElMenuDeSeguimiento() throws Exception {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "JURIDICA", null, null, "Panadería El Sol"));
-        mvc.perform(get("/donante/seguimiento"))
+        mvc.perform(get("/donante/seguimiento").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(content().string(not(containsString("href=\"/donante/incentivos\""))));
     }
 }

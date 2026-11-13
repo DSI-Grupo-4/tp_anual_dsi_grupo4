@@ -1,0 +1,147 @@
+#!/bin/bash
+# Deja el realm donatrack con la configuración de la Entrega 6 aunque ya
+# exista en la base (el import de donatrack-realm.json solo corre la primera vez).
+# Es idempotente: se puede correr en cada "up" del perfil auth.
+# No borra usuarios, clientes ni el realm. Los secrets salen del entorno
+# (keycloak/.env) y nunca se imprimen.
+set -euo pipefail
+# Sin esto, un error dentro de $(...) no corta el script.
+shopt -s inherit_errexit
+
+KCADM=/opt/keycloak/bin/kcadm.sh
+CONFIG=/tmp/kcadm.config
+REALM=donatrack
+SERVIDOR=${KEYCLOAK_SERVIDOR_INTERNO:-http://keycloak:8080}
+WEB_URL=${DONATRACK_WEB_URL:-http://localhost:8085}
+
+kc() { "$KCADM" "$@" --config "$CONFIG"; }
+
+falla() { echo "configurar-realm: $*" >&2; exit 1; }
+
+validar_secret() {
+  # $1 nombre de la variable, $2 valor. Vacío = no se toca el secret actual.
+  if [ -n "$2" ] && ! [[ "$2" =~ ^[A-Za-z0-9._~-]{16,}$ ]]; then
+    falla "$1 tiene que tener al menos 16 caracteres entre letras, números y . _ ~ -"
+  fi
+}
+
+[ -n "${KEYCLOAK_ADMIN_PASSWORD:-}" ] || falla "falta KEYCLOAK_ADMIN_PASSWORD en keycloak/.env"
+validar_secret KEYCLOAK_WEB_CLIENT_SECRET "${KEYCLOAK_WEB_CLIENT_SECRET:-}"
+validar_secret KEYCLOAK_DONACIONES_CLIENT_SECRET "${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}"
+validar_secret KEYCLOAK_INCENTIVOS_CLIENT_SECRET "${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}"
+
+kc config credentials --server "$SERVIDOR" --realm master \
+  --user "${KEYCLOAK_ADMIN_USERNAME:-admin}" --password "$KEYCLOAK_ADMIN_PASSWORD" >/dev/null
+
+# --- Realm: tema, idioma, registro con verificación de email (Mailpit) ---
+kc update "realms/$REALM" \
+  -s loginTheme=donatrack \
+  -s internationalizationEnabled=true \
+  -s 'supportedLocales=["es"]' \
+  -s defaultLocale=es \
+  -s registrationAllowed=true \
+  -s registrationEmailAsUsername=true \
+  -s verifyEmail=true \
+  -s resetPasswordAllowed=true \
+  -s loginWithEmailAllowed=true \
+  -s duplicateEmailsAllowed=false \
+  -s 'smtpServer={"host":"mailpit","port":"1025","from":"no-responder@donatrack.local","fromDisplayName":"DonaTrack","auth":"false","ssl":"false","starttls":"false"}'
+
+# donante_id y entidad_ids los escribe servicio-donaciones por la API de
+# administración; el usuario no los ve ni los puede editar.
+kc update "realms/$REALM/users/profile" -s unmanagedAttributePolicy=ADMIN_EDIT
+
+for rol in ADMIN DONANTE BENEFICIARIA; do
+  if ! kc get "roles/$rol" -r "$REALM" >/dev/null 2>&1; then
+    kc create roles -r "$REALM" -s name="$rol" >/dev/null
+  fi
+done
+
+# --- Clientes ---
+id_cliente() {
+  kc get clients -r "$REALM" -q clientId="$1" --fields id --format csv --noquotes
+}
+
+# $1 clientId, $2 JSON del cliente, $3 secret (opcional)
+asegurar_cliente() {
+  local json="$2" id
+  if [ -n "$3" ]; then
+    json="${json%\}},\"secret\":\"$3\"}"
+  fi
+  id=$(id_cliente "$1")
+  if [ -z "$id" ]; then
+    id=$(printf '%s' "$json" | kc create clients -r "$REALM" -f - -i)
+  else
+    printf '%s' "$json" | kc update "clients/$id" -r "$REALM" --merge -f - >/dev/null
+  fi
+  printf '%s' "$id"
+}
+
+# $1 id interno del cliente, $2 nombre del mapper, $3 JSON del mapper
+asegurar_mapper() {
+  if kc get "clients/$1/protocol-mappers/models" -r "$REALM" --fields name --format csv --noquotes | grep -xF "$2" >/dev/null; then
+    return 0
+  fi
+  printf '%s' "$3" | kc create "clients/$1/protocol-mappers/models" -r "$REALM" -f - >/dev/null
+}
+
+WEB_ID=$(asegurar_cliente servicio-web "{
+  \"clientId\":\"servicio-web\",\"name\":\"Cliente web de DonaTrack\",\"enabled\":true,
+  \"protocol\":\"openid-connect\",\"publicClient\":false,
+  \"standardFlowEnabled\":true,\"implicitFlowEnabled\":false,\"directAccessGrantsEnabled\":false,
+  \"serviceAccountsEnabled\":true,\"frontchannelLogout\":true,
+  \"rootUrl\":\"$WEB_URL\",
+  \"redirectUris\":[\"$WEB_URL/login/oauth2/code/keycloak\",\"$WEB_URL/ingresar\"],
+  \"webOrigins\":[\"$WEB_URL\"],
+  \"attributes\":{\"post.logout.redirect.uris\":\"$WEB_URL##$WEB_URL/\"}
+}" "${KEYCLOAK_WEB_CLIENT_SECRET:-}")
+
+asegurar_mapper "$WEB_ID" "roles de realm" '{
+  "name":"roles de realm","protocol":"openid-connect","protocolMapper":"oidc-usermodel-realm-role-mapper",
+  "config":{"claim.name":"realm_access.roles","multivalued":"true","jsonType.label":"String",
+    "id.token.claim":"true","access.token.claim":"true","userinfo.token.claim":"true"}}'
+asegurar_mapper "$WEB_ID" "donante_id" '{
+  "name":"donante_id","protocol":"openid-connect","protocolMapper":"oidc-usermodel-attribute-mapper",
+  "config":{"user.attribute":"donante_id","claim.name":"donante_id","jsonType.label":"String","multivalued":"false",
+    "id.token.claim":"true","access.token.claim":"true","userinfo.token.claim":"true"}}'
+asegurar_mapper "$WEB_ID" "entidad_ids" '{
+  "name":"entidad_ids","protocol":"openid-connect","protocolMapper":"oidc-usermodel-attribute-mapper",
+  "config":{"user.attribute":"entidad_ids","claim.name":"entidad_ids","jsonType.label":"String","multivalued":"true",
+    "id.token.claim":"true","access.token.claim":"true","userinfo.token.claim":"true"}}'
+
+SERVICIO='"protocol":"openid-connect","publicClient":false,"standardFlowEnabled":false,"implicitFlowEnabled":false,"directAccessGrantsEnabled":false,"serviceAccountsEnabled":true'
+asegurar_cliente servicio-donaciones "{\"clientId\":\"servicio-donaciones\",\"name\":\"Servicio de Donaciones\",\"enabled\":true,$SERVICIO}" \
+  "${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}" >/dev/null
+asegurar_cliente servicio-incentivos "{\"clientId\":\"servicio-incentivos\",\"name\":\"Servicio de Incentivos\",\"enabled\":true,$SERVICIO}" \
+  "${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}" >/dev/null
+
+# Donaciones crea o completa las cuentas de donantes y representantes.
+kc add-roles -r "$REALM" --uusername service-account-servicio-donaciones --cclientid realm-management \
+  --rolename manage-users --rolename view-users --rolename query-users --rolename view-realm
+
+# --- Google (opcional) ---
+if [ -n "${GOOGLE_CLIENT_ID:-}" ] && [ -n "${GOOGLE_CLIENT_SECRET:-}" ]; then
+  [[ "$GOOGLE_CLIENT_ID" =~ ^[A-Za-z0-9._-]+$ ]] || falla "GOOGLE_CLIENT_ID tiene caracteres inesperados"
+  [[ "$GOOGLE_CLIENT_SECRET" =~ ^[A-Za-z0-9._-]+$ ]] || falla "GOOGLE_CLIENT_SECRET tiene caracteres inesperados"
+  GOOGLE="{
+    \"alias\":\"google\",\"providerId\":\"google\",\"displayName\":\"Google\",\"enabled\":true,
+    \"trustEmail\":true,\"storeToken\":false,\"linkOnly\":false,
+    \"firstBrokerLoginFlowAlias\":\"first broker login\",
+    \"config\":{\"clientId\":\"$GOOGLE_CLIENT_ID\",\"clientSecret\":\"$GOOGLE_CLIENT_SECRET\",
+      \"defaultScope\":\"openid profile email\",\"syncMode\":\"IMPORT\"}}"
+  if kc get identity-provider/instances/google -r "$REALM" >/dev/null 2>&1; then
+    printf '%s' "$GOOGLE" | kc update identity-provider/instances/google -r "$REALM" -f - >/dev/null
+  else
+    printf '%s' "$GOOGLE" | kc create identity-provider/instances -r "$REALM" -f - >/dev/null
+  fi
+  echo "Google configurado como proveedor de identidad."
+else
+  echo "Sin GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET: no se configura el ingreso con Google."
+fi
+
+for variable in KEYCLOAK_WEB_CLIENT_SECRET KEYCLOAK_DONACIONES_CLIENT_SECRET KEYCLOAK_INCENTIVOS_CLIENT_SECRET; do
+  if [ -z "${!variable:-}" ]; then
+    echo "Sin $variable: el cliente conserva el secret que ya tenía (verlo en la consola, pestaña Credentials)."
+  fi
+done
+echo "Realm $REALM configurado."

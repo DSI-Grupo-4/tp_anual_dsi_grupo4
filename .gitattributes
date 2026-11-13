@@ -1,0 +1,2 @@
+# Scripts que corren dentro de contenedores Linux: con CRLF bash falla.
+keycloak/config/*.sh text eol=lf

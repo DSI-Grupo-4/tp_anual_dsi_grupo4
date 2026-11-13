@@ -10,6 +10,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
@@ -97,7 +99,7 @@ class LogisticaWebTest {
     void laListaMuestraLaFlotaYSusCifras() throws Exception {
         when(camiones.camiones()).thenReturn(List.of(camion(1, "AA123BB", "DISPONIBLE"), camion(2, "CC456DD", "EN_RUTA")));
 
-        mvc.perform(get("/admin/camiones"))
+        mvc.perform(get("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("AA123BB"), containsString("CC456DD"),
                         containsString("En ruta"), containsString("1500 kg"))));
@@ -107,13 +109,13 @@ class LogisticaWebTest {
     void sinCamionesInvitaARegistrarElPrimero() throws Exception {
         when(camiones.camiones()).thenReturn(List.of());
 
-        mvc.perform(get("/admin/camiones"))
+        mvc.perform(get("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(content().string(containsString("Registrar el primer camión")));
     }
 
     @Test
     void crearNormalizaLaPatenteYLlamaALogistica() throws Exception {
-        mvc.perform(post("/admin/camiones")
+        mvc.perform(post("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")).with(csrf())
                         .param("patente", " aa 123 bb ").param("capacidadCargaKg", "1500")
                         .param("capacidadVolumenM3", "20").param("alturaM", "3").param("estadoCamion", "DISPONIBLE"))
                 .andExpect(status().is3xxRedirection())
@@ -128,7 +130,7 @@ class LogisticaWebTest {
 
     @Test
     void conDatosInvalidosVuelveAlFormularioYNoLlamaALogistica() throws Exception {
-        mvc.perform(post("/admin/camiones")
+        mvc.perform(post("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")).with(csrf())
                         .param("patente", "").param("capacidadCargaKg", "0").param("capacidadVolumenM3", "abc"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("Completá este campo."),
@@ -142,7 +144,7 @@ class LogisticaWebTest {
         when(camiones.crear(any())).thenThrow(new BackendRechazoException(
                 ServicioBackend.LOGISTICA, 409, "El dato viola una restricción de la base (valor duplicado)", Map.of()));
 
-        mvc.perform(post("/admin/camiones")
+        mvc.perform(post("/admin/camiones").with(SesionDePrueba.conRol("ADMIN")).with(csrf())
                         .param("patente", "AA123BB").param("capacidadCargaKg", "1500")
                         .param("capacidadVolumenM3", "20").param("alturaM", "3"))
                 .andExpect(status().isOk())
@@ -153,11 +155,11 @@ class LogisticaWebTest {
     void unCamionEnRutaNoPermiteCambiarElEstadoNiAunqueLoManden() throws Exception {
         when(camiones.camiones()).thenReturn(List.of(camion(2, "CC456DD", "EN_RUTA")));
 
-        mvc.perform(get("/admin/camiones/2"))
+        mvc.perform(get("/admin/camiones/2").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(not(containsString("id=\"estadoCamion\"")), containsString("En ruta"))));
 
-        mvc.perform(post("/admin/camiones/2")
+        mvc.perform(post("/admin/camiones/2").with(SesionDePrueba.conRol("ADMIN")).with(csrf())
                         .param("patente", "CC456DD").param("capacidadCargaKg", "1500")
                         .param("capacidadVolumenM3", "20").param("alturaM", "3").param("estadoCamion", "DISPONIBLE"))
                 .andExpect(status().is3xxRedirection());
@@ -171,7 +173,7 @@ class LogisticaWebTest {
     void unCamionDisponibleSiPermiteElegirElEstado() throws Exception {
         when(camiones.camiones()).thenReturn(List.of(camion(1, "AA123BB", "DISPONIBLE")));
 
-        mvc.perform(get("/admin/camiones/1"))
+        mvc.perform(get("/admin/camiones/1").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(content().string(containsString("id=\"estadoCamion\"")));
     }
 
@@ -179,7 +181,7 @@ class LogisticaWebTest {
     void editarUnCamionInexistenteDaNotFound() throws Exception {
         when(camiones.camiones()).thenReturn(List.of(camion(1, "AA123BB", "DISPONIBLE")));
 
-        mvc.perform(get("/admin/camiones/99")).andExpect(status().isNotFound());
+        mvc.perform(get("/admin/camiones/99").with(SesionDePrueba.conRol("ADMIN"))).andExpect(status().isNotFound());
     }
 
     @Test
@@ -188,7 +190,7 @@ class LogisticaWebTest {
                 "No se puede eliminar el camión 1: figura en rutas o entregas anteriores", Map.of()))
                 .when(camiones).eliminar(1);
 
-        mvc.perform(post("/admin/camiones/1/eliminar"))
+        mvc.perform(post("/admin/camiones/1/eliminar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/camiones"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -202,7 +204,7 @@ class LogisticaWebTest {
                 ruta(1, "FINALIZADA", parada(1, 1, "Calle Uno", entrega(1, "ENTREGADA", null))),
                 ruta(2, "INICIADA", parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null), entrega(3, "ENTREGADA", null)))));
 
-        mvc.perform(get("/admin/seguimiento"))
+        mvc.perform(get("/admin/seguimiento").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("#2"), containsString("#1"),
                         containsString("Juan Pérez"), containsString("1 de 2"))));
@@ -214,7 +216,7 @@ class LogisticaWebTest {
                 ruta(1, "FINALIZADA", parada(1, 1, "Calle Uno", entrega(1, "ENTREGADA", null))),
                 ruta(2, "INICIADA", parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/admin/seguimiento").param("estado", "INICIADA"))
+        mvc.perform(get("/admin/seguimiento").with(SesionDePrueba.conRol("ADMIN")).param("estado", "INICIADA"))
                 .andExpect(content().string(allOf(containsString("#2"), not(containsString(">#1<")))));
     }
 
@@ -224,7 +226,7 @@ class LogisticaWebTest {
                 parada(1, 1, "Calle Dos", entrega(2, "ENTREGADA", "https://ejemplo.org/f.jpg"),
                         entrega(3, "ENTREGADA", "javascript:alert(1)"))));
 
-        mvc.perform(get("/admin/seguimiento/2"))
+        mvc.perform(get("/admin/seguimiento/2").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Fundación Demo"),
@@ -239,7 +241,7 @@ class LogisticaWebTest {
         when(donaciones.entidades()).thenThrow(new BackendNoDisponibleException(ServicioBackend.DONACIONES, 0, null));
         when(rutas.ruta(2)).thenReturn(ruta(2, "PLANIFICADA", parada(1, 5, "Calle Dos", entrega(2, "ASIGNADA_A_RUTA", null))));
 
-        mvc.perform(get("/admin/seguimiento/2"))
+        mvc.perform(get("/admin/seguimiento/2").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Entidad 5")));
     }
@@ -249,20 +251,20 @@ class LogisticaWebTest {
         when(rutas.ruta(2)).thenReturn(ruta(2, "PLANIFICADA", parada(1, 1, "Calle Dos", entrega(2, "ASIGNADA_A_RUTA", null))));
         when(rutas.ruta(3)).thenReturn(ruta(3, "INICIADA", parada(1, 1, "Calle Dos", entrega(3, "EN_TRASLADO", null))));
 
-        mvc.perform(get("/admin/seguimiento/2")).andExpect(content().string(containsString("Iniciar ruta")));
-        mvc.perform(get("/admin/seguimiento/3")).andExpect(content().string(not(containsString("Iniciar ruta"))));
+        mvc.perform(get("/admin/seguimiento/2").with(SesionDePrueba.conRol("ADMIN"))).andExpect(content().string(containsString("Iniciar ruta")));
+        mvc.perform(get("/admin/seguimiento/3").with(SesionDePrueba.conRol("ADMIN"))).andExpect(content().string(not(containsString("Iniciar ruta"))));
     }
 
     @Test
     void unaRutaInexistenteDaNotFound() throws Exception {
         when(rutas.ruta(99)).thenThrow(new RecursoNoEncontradoException(ServicioBackend.LOGISTICA, "No existe la ruta 99"));
 
-        mvc.perform(get("/admin/seguimiento/99")).andExpect(status().isNotFound());
+        mvc.perform(get("/admin/seguimiento/99").with(SesionDePrueba.conRol("ADMIN"))).andExpect(status().isNotFound());
     }
 
     @Test
     void iniciarUnaRutaVuelveAlDetalleConUnToast() throws Exception {
-        mvc.perform(post("/admin/seguimiento/2/iniciar"))
+        mvc.perform(post("/admin/seguimiento/2/iniciar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -275,7 +277,7 @@ class LogisticaWebTest {
         when(rutas.iniciar(2)).thenThrow(new BackendRechazoException(
                 ServicioBackend.LOGISTICA, 409, "La ruta 2 no puede iniciarse estando en estado INICIADA", Map.of()));
 
-        mvc.perform(post("/admin/seguimiento/2/iniciar"))
+        mvc.perform(post("/admin/seguimiento/2/iniciar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -285,10 +287,10 @@ class LogisticaWebTest {
     void planificarAvisaCuantasRutasSeCrearonOQueNoHabiaPendientes() throws Exception {
         when(rutas.planificar()).thenReturn(List.of(ruta(8, "PLANIFICADA")), List.of());
 
-        mvc.perform(post("/admin/seguimiento/planificar"))
+        mvc.perform(post("/admin/seguimiento/planificar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/seguimiento"))
                 .andExpect(flash().attributeExists("toasts"));
-        mvc.perform(post("/admin/seguimiento/planificar"))
+        mvc.perform(post("/admin/seguimiento/planificar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/seguimiento"))
                 .andExpect(flash().attributeExists("toasts"));
     }
@@ -301,7 +303,7 @@ class LogisticaWebTest {
                 parada(1, 9, "Calle Ajena", entrega(1, "EN_TRASLADO", null)),
                 parada(2, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/beneficiaria/seguimiento"))
+        mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Parada 2 de 2"),
@@ -316,7 +318,7 @@ class LogisticaWebTest {
     void sinEnviosLaEntidadVeUnMensaje() throws Exception {
         when(rutas.rutas()).thenReturn(List.of());
 
-        mvc.perform(get("/beneficiaria/seguimiento"))
+        mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(content().string(containsString("No hay entregas programadas hacia tu organización.")));
     }
 
@@ -338,7 +340,7 @@ class LogisticaWebTest {
         when(rutas.rutas()).thenReturn(List.of(
                 rutaConCamionUbicado(2, "INICIADA", true, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/admin/seguimiento"))
+        mvc.perform(get("/admin/seguimiento").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("data-mapa"),
@@ -353,7 +355,7 @@ class LogisticaWebTest {
                 rutaConCamionUbicado(1, "FINALIZADA", false, parada(1, 1, "Calle Uno", entrega(1, "ENTREGADA", null))),
                 rutaConCamionUbicado(2, "INICIADA", false, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/admin/seguimiento/ubicaciones.json"))
+        mvc.perform(get("/admin/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].tipo").value("camion"))
@@ -367,7 +369,7 @@ class LogisticaWebTest {
         when(rutas.ruta(2)).thenReturn(rutaConCamionUbicado(2, "INICIADA", false,
                 paradaUbicada(1, 1, -34.5, -58.3, entrega(2, "EN_TRASLADO", null))));
 
-        mvc.perform(get("/admin/seguimiento/2/ubicaciones.json"))
+        mvc.perform(get("/admin/seguimiento/2/ubicaciones.json").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].tipo").value("camion"))
@@ -380,8 +382,8 @@ class LogisticaWebTest {
         when(rutas.ruta(2)).thenReturn(rutaConCamionUbicado(2, "INICIADA", false, parada(1, 1, "Calle Dos", entrega(2, "EN_TRASLADO", null))));
         when(rutas.ruta(3)).thenReturn(ruta(3, "PLANIFICADA", parada(1, 1, "Calle Dos", entrega(3, "ASIGNADA_A_RUTA", null))));
 
-        mvc.perform(get("/admin/seguimiento/2")).andExpect(content().string(containsString("Simular avance del camión")));
-        mvc.perform(get("/admin/seguimiento/3")).andExpect(content().string(not(containsString("Simular avance del camión"))));
+        mvc.perform(get("/admin/seguimiento/2").with(SesionDePrueba.conRol("ADMIN"))).andExpect(content().string(containsString("Simular avance del camión")));
+        mvc.perform(get("/admin/seguimiento/3").with(SesionDePrueba.conRol("ADMIN"))).andExpect(content().string(not(containsString("Simular avance del camión"))));
     }
 
     @Test
@@ -390,7 +392,7 @@ class LogisticaWebTest {
                 new SimulacionApi.UbicacionApi(1, "AA123BB", -34.61, -58.39, LocalDateTime.of(2026, 11, 12, 17, 30), true),
                 2, 7.5, false, true));
 
-        mvc.perform(post("/admin/seguimiento/2/simular"))
+        mvc.perform(post("/admin/seguimiento/2/simular").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -404,7 +406,7 @@ class LogisticaWebTest {
                 new SimulacionApi.UbicacionApi(1, "AA123BB", -34.5, -58.3, LocalDateTime.of(2026, 11, 12, 17, 30), true),
                 2, 0.0, true, false));
 
-        mvc.perform(post("/admin/seguimiento/2/simular"))
+        mvc.perform(post("/admin/seguimiento/2/simular").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
     }
@@ -414,7 +416,7 @@ class LogisticaWebTest {
         when(rutas.simularAvance(2)).thenThrow(new BackendRechazoException(
                 ServicioBackend.LOGISTICA, 409, "La ruta 2 no está en curso", Map.of()));
 
-        mvc.perform(post("/admin/seguimiento/2/simular"))
+        mvc.perform(post("/admin/seguimiento/2/simular").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -428,14 +430,14 @@ class LogisticaWebTest {
                         parada(2, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null))),
                 rutaConCamionUbicado(3, "INICIADA", false, parada(1, 9, "Calle Ajena", entrega(3, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json"))
+        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].detalle").value(containsString("parada 2 de 2")))
                 .andExpect(content().string(not(containsString("Juan Pérez"))))
                 .andExpect(content().string(not(containsString("Calle Ajena"))));
 
-        mvc.perform(get("/beneficiaria/seguimiento"))
+        mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("data-mapa"), containsString("Dónde está el camión"))));
     }
@@ -445,7 +447,7 @@ class LogisticaWebTest {
         when(rutas.rutas()).thenReturn(List.of(
                 ruta(2, "INICIADA", parada(1, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null)))));
 
-        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json"))
+        mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
     }

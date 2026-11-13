@@ -9,12 +9,14 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.EvolucionMes;
@@ -67,7 +69,7 @@ class IncentivosDonanteWebTest {
 
     @Test
     void muestraCategoriaMisionesEInsignias() throws Exception {
-        mvc.perform(get("/donante/incentivos"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
                 .andExpect(content().string(containsString("Progreso hacia Sostenedor")))
@@ -89,25 +91,25 @@ class IncentivosDonanteWebTest {
     @Test
     void cambiaDePeriodoYDescartaPeriodosInvalidos() throws Exception {
         when(incentivos.metricas(1, "MENSUAL")).thenReturn(metricas("MENSUAL", 4));
-        mvc.perform(get("/donante/incentivos").param("periodo", "MENSUAL"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE")).param("periodo", "MENSUAL"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Tu actividad · Este mes")))
                 .andExpect(content().string(containsString("aria-current=\"page\">Este mes</a>")));
-        mvc.perform(get("/donante/incentivos").param("periodo", "SIEMPRE"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE")).param("periodo", "SIEMPRE"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Tu actividad · Histórico")));
     }
 
     @Test
     void laPestanaDeInsigniasSePuedeAbrirDesdeLaUrl() throws Exception {
-        mvc.perform(get("/donante/incentivos").param("pestana", "insignias"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE")).param("pestana", "insignias"))
                 .andExpect(content().string(containsString("aria-labelledby=\"tab-misiones\" hidden")))
                 .andExpect(content().string(not(containsString("aria-labelledby=\"tab-insignias\" hidden"))));
     }
 
     @Test
     void cambiarLaVisibilidadVuelveALasInsigniasConUnMensaje() throws Exception {
-        mvc.perform(post("/donante/incentivos/insignias/visibilidad").param("insignia", "Primer Paso").param("visible", "false"))
+        mvc.perform(post("/donante/incentivos/insignias/visibilidad").with(SesionDePrueba.conRol("DONANTE")).with(csrf()).param("insignia", "Primer Paso").param("visible", "false"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/donante/incentivos?pestana=insignias"));
         verify(incentivos).cambiarVisibilidad(1, "Primer Paso", false);
@@ -117,7 +119,7 @@ class IncentivosDonanteWebTest {
     void siFallaElCambioDeVisibilidadAvisaSinRomper() throws Exception {
         doThrow(new RecursoNoEncontradoException(ServicioBackend.INCENTIVOS, "El donante no tiene la insignia"))
                 .when(incentivos).cambiarVisibilidad(1, "Inventada", true);
-        mvc.perform(post("/donante/incentivos/insignias/visibilidad").param("insignia", "Inventada").param("visible", "true"))
+        mvc.perform(post("/donante/incentivos/insignias/visibilidad").with(SesionDePrueba.conRol("DONANTE")).with(csrf()).param("insignia", "Inventada").param("visible", "true"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/donante/incentivos?pestana=insignias"));
     }
@@ -125,8 +127,8 @@ class IncentivosDonanteWebTest {
     @Test
     void unaPersonaJuridicaNoPuedeEntrarNiCambiarInsignias() throws Exception {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "JURIDICA", null, null, "Panadería El Sol"));
-        mvc.perform(get("/donante/incentivos")).andExpect(redirectedUrl("/donante"));
-        mvc.perform(post("/donante/incentivos/insignias/visibilidad").param("insignia", "Primer Paso").param("visible", "false"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE"))).andExpect(redirectedUrl("/donante"));
+        mvc.perform(post("/donante/incentivos/insignias/visibilidad").with(SesionDePrueba.conRol("DONANTE")).with(csrf()).param("insignia", "Primer Paso").param("visible", "false"))
                 .andExpect(redirectedUrl("/donante"));
         verify(incentivos, never()).metricas(anyLong(), anyString());
         verify(incentivos, never()).cambiarVisibilidad(anyLong(), anyString(), anyBoolean());
@@ -135,7 +137,7 @@ class IncentivosDonanteWebTest {
     @Test
     void siIncentivosNoRespondeMuestraUnAviso() throws Exception {
         when(incentivos.metricas(1, "HISTORICO")).thenThrow(new BackendNoDisponibleException(ServicioBackend.INCENTIVOS, 503, null));
-        mvc.perform(get("/donante/incentivos"))
+        mvc.perform(get("/donante/incentivos").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ahora no pudimos consultar tus incentivos")));
     }

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.EvolucionMes;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.MetricasSistema;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosApi.PosicionRanking;
@@ -51,7 +52,7 @@ class ReportesAdminWebTest {
 
     @Test
     void muestraEstadisticasRankingEnCursoEHistorial() throws Exception {
-        String html = mvc.perform(get("/admin/reportes"))
+        String html = mvc.perform(get("/admin/reportes").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
                 .andExpect(content().string(containsString("Donantes activos")))
@@ -76,7 +77,7 @@ class ReportesAdminWebTest {
     void sinRankingsCerradosNiActividadMuestraEstadosVacios() throws Exception {
         when(incentivos.rankingEnCurso()).thenReturn(List.of());
         when(incentivos.historialRankings()).thenReturn(List.of());
-        mvc.perform(get("/admin/reportes"))
+        mvc.perform(get("/admin/reportes").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Todavía nadie completó misiones este mes.")))
                 .andExpect(content().string(containsString("Todavía no se cerró ningún ranking mensual.")));
@@ -89,7 +90,7 @@ class ReportesAdminWebTest {
             muchos.add(new PosicionRanking(i, (long) i, "Donante " + i, 15 - i, "2026-11"));
         }
         when(incentivos.rankingEnCurso()).thenReturn(muchos);
-        mvc.perform(get("/admin/reportes"))
+        mvc.perform(get("/admin/reportes").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(content().string(containsString("Se muestran los primeros 10 de 14 donantes.")))
                 .andExpect(content().string(not(containsString("Donante 11<"))));
     }
@@ -97,7 +98,7 @@ class ReportesAdminWebTest {
     @Test
     void siIncentivosNoRespondeMuestraUnAviso() throws Exception {
         when(incentivos.metricasSistema()).thenThrow(new BackendNoDisponibleException(ServicioBackend.INCENTIVOS, 503, null));
-        mvc.perform(get("/admin/reportes"))
+        mvc.perform(get("/admin/reportes").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ahora no pudimos consultar Incentivos")));
     }

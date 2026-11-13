@@ -10,8 +10,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.mock.web.MockMultipartFile;
 import static org.mockito.Mockito.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -20,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.*;
 
 @SpringBootTest @AutoConfigureMockMvc
+@WithMockUser(roles = "ADMIN")
 class AdministracionWebTest {
     @Autowired MockMvc mvc;
     @MockitoBean AdminDonacionesClient api;
@@ -47,21 +50,21 @@ class AdministracionWebTest {
                 .andExpect(content().string(not(containsString("Sección en construcción"))));
     }
     @Test void formularioInvalidoConservaDatosYNoInvocaAlta() throws Exception {
-        mvc.perform(post("/admin/donantes/nuevo").param("nombre","Nombre conservado").param("contactos[0].tipo","EMAIL").param("contactos[0].valor","incorrecto"))
+        mvc.perform(post("/admin/donantes/nuevo").with(csrf()).param("nombre","Nombre conservado").param("contactos[0].tipo","EMAIL").param("contactos[0].valor","incorrecto"))
                 .andExpect(status().isOk()).andExpect(model().attributeHasFieldErrors("form","apellido","contactos[0].valor"))
                 .andExpect(content().string(containsString("Nombre conservado")));
         verify(api,never()).crearDonante(anyString(),any());
     }
     @Test void altaValidaRedirigeALaFicha() throws Exception {
         when(api.crearDonante(eq("HUMANA"),any())).thenReturn(donante);
-        mvc.perform(post("/admin/donantes/nuevo").param("nombre","Ana").param("apellido","Pérez").param("edad","30").param("genero","FEMENINO")
+        mvc.perform(post("/admin/donantes/nuevo").with(csrf()).param("nombre","Ana").param("apellido","Pérez").param("edad","30").param("genero","FEMENINO")
                 .param("documento","30123456").param("calle","San Martín").param("numero","120").param("ciudad","Córdoba").param("provincia","Córdoba")
                 .param("contactos[0].tipo","EMAIL").param("contactos[0].valor","ana@example.org"))
                 .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/admin/donantes/1"));
     }
     @Test void rechazosDelBackendSeMuestranSinBorrarElFormulario() throws Exception {
         when(api.crearDonacion(any())).thenThrow(new BackendRechazoException(ServicioBackend.DONACIONES,400,"SILLA pertenece a MOBILIARIO",Map.of()));
-        mvc.perform(post("/admin/donaciones/nueva").param("donanteId","1").param("descripcion","Carga conservada")
+        mvc.perform(post("/admin/donaciones/nueva").with(csrf()).param("donanteId","1").param("descripcion","Carga conservada")
                 .param("items[0].descripcion","Sillas").param("items[0].categoria","ALIMENTOS").param("items[0].subcategoria","SILLA")
                 .param("items[0].unidadMedida","UNIDAD").param("items[0].cantidad","3"))
                 .andExpect(status().isOk()).andExpect(content().string(containsString("SILLA pertenece a MOBILIARIO")))
@@ -77,11 +80,11 @@ class AdministracionWebTest {
     @Test void consultarNoEjecutaYPostSiEjecutaLosAlgoritmos() throws Exception {
         mvc.perform(get("/admin/asignaciones/3")).andExpect(status().isOk()); verify(api,never()).ejecutar(anyLong());
         when(api.ejecutar(3)).thenReturn(new Resultado(List.of(),List.of(),List.of()));
-        mvc.perform(post("/admin/asignaciones/3/ejecutar")).andExpect(redirectedUrl("/admin/asignaciones/3")); verify(api).ejecutar(3);
+        mvc.perform(post("/admin/asignaciones/3/ejecutar").with(csrf())).andExpect(redirectedUrl("/admin/asignaciones/3")); verify(api).ejecutar(3);
     }
     @Test void importacionValidaMuestraCantidadSinInventarDesglose() throws Exception {
         when(api.importar(any())).thenReturn(new Importacion(12000));
-        mvc.perform(multipart("/admin/donantes/importar").file(new MockMultipartFile("archivo","donantes.csv","text/csv","cabecera\nregistro".getBytes())))
+        mvc.perform(multipart("/admin/donantes/importar").file(new MockMultipartFile("archivo","donantes.csv","text/csv","cabecera\nregistro".getBytes())).with(csrf()))
                 .andExpect(redirectedUrl("/admin/donantes")).andExpect(flash().attributeExists("toasts"));
     }
     @Test void listadosVaciosOfrecenRecuperacion() throws Exception {

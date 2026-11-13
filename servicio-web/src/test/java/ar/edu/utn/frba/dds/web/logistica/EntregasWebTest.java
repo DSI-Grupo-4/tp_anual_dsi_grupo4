@@ -10,6 +10,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -17,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
@@ -83,7 +85,7 @@ class EntregasWebTest {
     void unaRutaEnCursoConEntregasEnTrasladoOfreceRegistrarNoRecibidaEIncidente() throws Exception {
         when(rutas.ruta(2)).thenReturn(ruta(2, "INICIADA", entregaDeRuta(1, "EN_TRASLADO")));
 
-        mvc.perform(get("/admin/seguimiento/2"))
+        mvc.perform(get("/admin/seguimiento/2").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Registrar no recibida"),
@@ -100,7 +102,7 @@ class EntregasWebTest {
         when(rutas.ruta(4)).thenReturn(ruta(4, "FINALIZADA", entregaDeRuta(3, "ENTREGADA")));
 
         for (int id : new int[] {2, 3, 4}) {
-            mvc.perform(get("/admin/seguimiento/" + id))
+            mvc.perform(get("/admin/seguimiento/" + id).with(SesionDePrueba.conRol("ADMIN")))
                     .andExpect(status().isOk())
                     .andExpect(content().string(not(containsString("Registrar no recibida"))));
         }
@@ -108,7 +110,7 @@ class EntregasWebTest {
 
     @Test
     void registrarNoRecibidaLimpiaElTextoLlamaALogisticaYVuelveAlDetalle() throws Exception {
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").param("motivo", "   Nadie atendió  "))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").with(SesionDePrueba.conRol("ADMIN")).with(csrf()).param("motivo", "   Nadie atendió  "))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -118,7 +120,7 @@ class EntregasWebTest {
 
     @Test
     void registrarUnIncidenteTambienLlamaALogistica() throws Exception {
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente").param("motivo", "Calle cortada por obras"))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente").with(SesionDePrueba.conRol("ADMIN")).with(csrf()).param("motivo", "Calle cortada por obras"))
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
 
@@ -127,12 +129,12 @@ class EntregasWebTest {
 
     @Test
     void sinMotivoOConUnoDemasiadoLargoSeAvisaYNoSeLlamaALogistica() throws Exception {
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").param("motivo", "   "))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").with(SesionDePrueba.conRol("ADMIN")).with(csrf()).param("motivo", "   "))
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente"))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/seguimiento/2"));
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente").param("motivo", "x".repeat(301)))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/incidente").with(SesionDePrueba.conRol("ADMIN")).with(csrf()).param("motivo", "x".repeat(301)))
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
 
@@ -146,7 +148,7 @@ class EntregasWebTest {
                 "La parada 1 no tiene entregas en traslado", Map.of()))
                 .when(rutas).registrarNoRecibida(2, 1, "Nadie atendió");
 
-        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").param("motivo", "Nadie atendió"))
+        mvc.perform(post("/admin/seguimiento/2/paradas/1/no-recibida").with(SesionDePrueba.conRol("ADMIN")).with(csrf()).param("motivo", "Nadie atendió"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/2"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -165,7 +167,7 @@ class EntregasWebTest {
     void elListadoMuestraEstadosMotivosYSoloOfreceReingresarLasQueNoSeConcretaron() throws Exception {
         when(entregas.entregas()).thenReturn(variasEntregas());
 
-        mvc.perform(get("/admin/seguimiento/entregas"))
+        mvc.perform(get("/admin/seguimiento/entregas").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Fundación Demo"),
@@ -181,9 +183,9 @@ class EntregasWebTest {
     void elFiltroPorEstadoMuestraSoloEsasEntregas() throws Exception {
         when(entregas.entregas()).thenReturn(variasEntregas());
 
-        mvc.perform(get("/admin/seguimiento/entregas").param("estado", "ENTREGADA"))
+        mvc.perform(get("/admin/seguimiento/entregas").with(SesionDePrueba.conRol("ADMIN")).param("estado", "ENTREGADA"))
                 .andExpect(content().string(allOf(containsString("#102"), not(containsString("#103")))));
-        mvc.perform(get("/admin/seguimiento/entregas").param("estado", "cualquiera"))
+        mvc.perform(get("/admin/seguimiento/entregas").with(SesionDePrueba.conRol("ADMIN")).param("estado", "cualquiera"))
                 .andExpect(content().string(allOf(containsString("#102"), containsString("#103"))));
     }
 
@@ -191,7 +193,7 @@ class EntregasWebTest {
     void reingresarUnaEntregaVuelveAlListadoConUnToast() throws Exception {
         when(entregas.reingresar(3)).thenReturn(new ReingresoApi(3, "REPLANIFICABLE"));
 
-        mvc.perform(post("/admin/seguimiento/entregas/3/reingresar"))
+        mvc.perform(post("/admin/seguimiento/entregas/3/reingresar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin/seguimiento/entregas"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -204,7 +206,7 @@ class EntregasWebTest {
         when(entregas.reingresar(2)).thenThrow(new BackendRechazoException(ServicioBackend.LOGISTICA, 409,
                 "La entrega 2 no puede reingresar al depósito estando en estado ENTREGADA", Map.of()));
 
-        mvc.perform(post("/admin/seguimiento/entregas/2/reingresar"))
+        mvc.perform(post("/admin/seguimiento/entregas/2/reingresar").with(SesionDePrueba.conRol("ADMIN")).with(csrf()))
                 .andExpect(redirectedUrl("/admin/seguimiento/entregas"))
                 .andExpect(flash().attributeExists("toasts"));
     }
@@ -213,7 +215,7 @@ class EntregasWebTest {
     void elSeguimientoEnlazaAlListadoDeEntregas() throws Exception {
         when(rutas.rutas()).thenReturn(List.of());
 
-        mvc.perform(get("/admin/seguimiento"))
+        mvc.perform(get("/admin/seguimiento").with(SesionDePrueba.conRol("ADMIN")))
                 .andExpect(content().string(containsString("href=\"/admin/seguimiento/entregas\"")));
     }
 }

@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Bien;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CambioEstado;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DetalleDonacion;
@@ -63,7 +64,7 @@ class MisDonacionesWebTest {
 
     @Test
     void listaConFiltrosYPaginacion() throws Exception {
-        mvc.perform(get("/donante/donaciones").param("estado", "EN_TRASLADO").param("categoria", "ALIMENTOS"))
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE")).param("estado", "EN_TRASLADO").param("categoria", "ALIMENTOS"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
                 .andExpect(content().string(containsString("Arroz 1 kg")))
@@ -78,7 +79,7 @@ class MisDonacionesWebTest {
 
     @Test
     void descartaFiltrosInvalidosEnLugarDeMandarlosALaApi() throws Exception {
-        mvc.perform(get("/donante/donaciones")
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE"))
                         .param("estado", "INVENTADO").param("categoria", "ALIMENTOS").param("subcategoria", "SILLA")
                         .param("page", "-3"))
                 .andExpect(status().isOk());
@@ -88,7 +89,7 @@ class MisDonacionesWebTest {
 
     @Test
     void buscaPorTexto() throws Exception {
-        mvc.perform(get("/donante/donaciones").param("q", "  arroz  ").param("page", "abc")).andExpect(status().isOk());
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE")).param("q", "  arroz  ").param("page", "abc")).andExpect(status().isOk());
         assertParametros(Map.of("q", "arroz", "page", "0", "size", "10"));
     }
 
@@ -99,7 +100,7 @@ class MisDonacionesWebTest {
     @Test
     void sinDonacionesNiFiltrosMuestraElEstadoVacio() throws Exception {
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(), 0, 0, 0));
-        mvc.perform(get("/donante/donaciones"))
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Todavía no registraste donaciones")))
                 .andExpect(content().string(not(containsString("Quitar filtros"))));
@@ -108,7 +109,7 @@ class MisDonacionesWebTest {
     @Test
     void sinResultadosConFiltrosOfreceQuitarlos() throws Exception {
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(), 0, 0, 0));
-        mvc.perform(get("/donante/donaciones").param("estado", "VENCIDA"))
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE")).param("estado", "VENCIDA"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("No encontramos donaciones con esos filtros")));
     }
@@ -117,7 +118,7 @@ class MisDonacionesWebTest {
     void donanteInexistenteMuestraLaCuentaSinVincular() throws Exception {
         when(donaciones.perfil(1))
                 .thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe el donante 1"));
-        mvc.perform(get("/donante/donaciones"))
+        mvc.perform(get("/donante/donaciones").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Tu cuenta todavía no está vinculada a un donante")));
     }
@@ -132,7 +133,7 @@ class MisDonacionesWebTest {
                 new CambioEstado("EN_TRASLADO", LocalDateTime.of(2026, 11, 11, 9, 0), null)));
         when(donaciones.entidad(4)).thenReturn(new Entidad(4L, true, "Comedor", new PersonaJuridica("Comedor Sonrisas", "ONG", "Alimentos"), null));
 
-        String html = mvc.perform(get("/donante/donaciones/9"))
+        String html = mvc.perform(get("/donante/donaciones/9").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Donación #9")))
                 .andExpect(content().string(containsString("Arroz largo fino")))
@@ -153,7 +154,7 @@ class MisDonacionesWebTest {
                 "KILOGRAMO", "ALIMENTOS", "ARROZ", "ENTREGADA", 4L, null));
         when(donaciones.historial(1, 9)).thenReturn(List.of());
         when(donaciones.entidad(anyLong())).thenThrow(new BackendNoDisponibleException(ServicioBackend.DONACIONES, 503, null));
-        mvc.perform(get("/donante/donaciones/9"))
+        mvc.perform(get("/donante/donaciones/9").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Entidad #4")))
                 .andExpect(content().string(not(containsString("Ver en el mapa de seguimiento"))));
@@ -163,6 +164,6 @@ class MisDonacionesWebTest {
     void unaDonacionAjenaOInexistenteDa404() throws Exception {
         when(donaciones.donacion(1, 77))
                 .thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe la donación 77 del donante 1"));
-        mvc.perform(get("/donante/donaciones/77")).andExpect(status().isNotFound());
+        mvc.perform(get("/donante/donaciones/77").with(SesionDePrueba.conRol("DONANTE"))).andExpect(status().isNotFound());
     }
 }

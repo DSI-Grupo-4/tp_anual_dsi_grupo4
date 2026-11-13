@@ -71,6 +71,126 @@ services:
     ports:
       - "1025:1025"   # SMTP: por acá entra el mail
       - "8025:8025"   # Bandeja web: http://localhost:8025
+  # Crea la base "keycloak" y su usuario en el MySQL existente. Corre en cada
+  # "up" de Keycloak y es idempotente: sirve igual con un mysql-data nuevo o
+  # ya inicializado (los scripts de docker-entrypoint-initdb.d solo corren
+  # con el volumen vacío). Solo toca la base keycloak y el usuario keycloak.
+  # El script va inline, y no en un .sh montado, para que un checkout de
+  # Windows con CRLF no lo rompa.
+  keycloak-db-init:
+    profiles: ["auth"]
+    image: mysql:8
+    container_name: donatrack-keycloak-db-init
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+    environment:
+      # Misma clave de root que el servicio mysql. Se toma de keycloak/.env para
+      # no repetir el literal en el bloque nuevo.
+      MYSQL_PWD: ${KEYCLOAK_DB_ROOT_PASSWORD:-}
+      KEYCLOAK_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-}
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        set -e
+        if [ -z "$$MYSQL_PWD" ]; then
+          echo "Falta KEYCLOAK_DB_ROOT_PASSWORD: completarla en keycloak/.env (la misma clave de root de MySQL) y usar --env-file keycloak/.env" >&2
+          exit 1
+        fi
+        if [ -z "$$KEYCLOAK_DB_PASSWORD" ]; then
+          echo "Falta KEYCLOAK_DB_PASSWORD: completarla en keycloak/.env y usar --env-file keycloak/.env" >&2
+          exit 1
+        fi
+        case "$$KEYCLOAK_DB_PASSWORD" in
+          *\'*|*\\*) echo "KEYCLOAK_DB_PASSWORD no puede tener comillas simples ni barras invertidas" >&2; exit 1 ;;
+        esac
+        # En un volumen nuevo el healthcheck puede dar OK antes de que MySQL
+        # acepte conexiones por red.
+        intentos=0
+        until mysqladmin ping -h mysql -u root --silent; do
+          intentos=$$((intentos + 1))
+          if [ "$$intentos" -ge 30 ]; then
+            echo "MySQL no respondió por red en mysql:3306" >&2
+            exit 1
+          fi
+          sleep 2
+        done
+        mysql -h mysql -u root <<SQL
+        CREATE DATABASE IF NOT EXISTS keycloak CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+        CREATE USER IF NOT EXISTS 'keycloak'@'%' IDENTIFIED BY '$$KEYCLOAK_DB_PASSWORD';
+        ALTER USER 'keycloak'@'%' IDENTIFIED BY '$$KEYCLOAK_DB_PASSWORD';
+        GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'%';
+        SQL
+        echo "Base keycloak y usuario keycloak listos."
+  # Identidad local (Entrega 6). Perfil "auth": no arranca con
+  # "docker compose up -d" ni con run-servicios. Persiste en la base
+  # "keycloak" del MySQL existente, con un usuario que solo ve esa base.
+  # El realm se importa solo si todavía no existe en esa base.
+  keycloak:
+    profiles: ["auth"]
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: donatrack-keycloak
+    command: ["start-dev", "--import-realm", "--spi-theme--cache-themes=false", "--spi-theme--cache-templates=false"]
+    depends_on:
+      mysql:
+        condition: service_healthy
+      keycloak-db-init:
+        condition: service_completed_successfully
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-}
+      KC_DB: mysql
+      KC_DB_URL_HOST: mysql
+      KC_DB_URL_PORT: "3306"
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-}
+      KC_HOSTNAME: http://localhost:8180
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+      - ./keycloak/themes/donatrack:/opt/keycloak/themes/donatrack:ro
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000; echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3; cat <&3 | grep -q '200'"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 90s
+    restart: unless-stopped
+  # Aplica keycloak/config/configurar-realm.sh sobre el realm, exista o no de
+  # antes: tema, registro, clientes de los servicios, mappers y Google.
+  # Corre una vez por "up" y termina. Se le sacan los CR antes de ejecutarlo
+  # por si el checkout de Windows lo dejó con CRLF.
+  keycloak-config:
+    profiles: ["auth"]
+    image: quay.io/keycloak/keycloak:26.8.2
+    container_name: donatrack-keycloak-config
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    restart: "no"
+    environment:
+      KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-}
+      KEYCLOAK_WEB_CLIENT_SECRET: ${KEYCLOAK_WEB_CLIENT_SECRET:-}
+      KEYCLOAK_DONACIONES_CLIENT_SECRET: ${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}
+      KEYCLOAK_INCENTIVOS_CLIENT_SECRET: ${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - ./keycloak/config:/opt/donatrack:ro
+    entrypoint: ["bash", "-c"]
+    command:
+      - |
+        while IFS= read -r linea || [ -n "$$linea" ]; do
+          printf '%s\n' "$${linea%$$'\r'}"
+        done < /opt/donatrack/configurar-realm.sh > /tmp/configurar-realm.sh
+        exec bash /tmp/configurar-realm.sh
 volumes:
   rabbitmq-data:
   mysql-data:

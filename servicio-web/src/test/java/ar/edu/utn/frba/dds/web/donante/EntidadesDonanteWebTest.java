@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Ciudad;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Direccion;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
@@ -61,7 +62,7 @@ class EntidadesDonanteWebTest {
 
     @Test
     void listaSoloEntidadesActivasOrdenadasYSinDatosDeContacto() throws Exception {
-        mvc.perform(get("/donante/entidades"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
                 .andExpect(content().string(containsString("Comedor Sonrisas")))
@@ -75,17 +76,17 @@ class EntidadesDonanteWebTest {
 
     @Test
     void buscaSinImportarTildesNiMayusculasYFiltraPorTipo() throws Exception {
-        mvc.perform(get("/donante/entidades").param("q", "CORDOBA"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")).param("q", "CORDOBA"))
                 .andExpect(content().string(containsString("Comedor Sonrisas")))
                 .andExpect(content().string(not(containsString("Escuela Rural"))))
                 .andExpect(content().string(containsString("1 entidad")));
-        mvc.perform(get("/donante/entidades").param("tipo", "GUBERNAMENTAL"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")).param("tipo", "GUBERNAMENTAL"))
                 .andExpect(content().string(containsString("Escuela Rural")))
                 .andExpect(content().string(not(containsString("Comedor Sonrisas"))));
         // Un tipo que no existe se ignora.
-        mvc.perform(get("/donante/entidades").param("tipo", "INVENTADO"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")).param("tipo", "INVENTADO"))
                 .andExpect(content().string(containsString("2 entidades")));
-        mvc.perform(get("/donante/entidades").param("q", "zzz"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")).param("q", "zzz"))
                 .andExpect(content().string(containsString("No encontramos entidades con esa búsqueda")));
     }
 
@@ -96,11 +97,11 @@ class EntidadesDonanteWebTest {
             muchas.add(entidad(100 + i, true, String.format("Entidad %02d", i), "ONG", "Rosario", "Santa Fe"));
         }
         when(donaciones.entidades()).thenReturn(muchas);
-        mvc.perform(get("/donante/entidades"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(content().string(containsString("Página 1 de 2")))
                 .andExpect(content().string(containsString("/donante/entidades?page=1")))
                 .andExpect(content().string(not(containsString("Entidad 13"))));
-        mvc.perform(get("/donante/entidades").param("page", "1"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")).param("page", "1"))
                 .andExpect(content().string(containsString("Entidad 13")));
     }
 
@@ -118,7 +119,7 @@ class EntidadesDonanteWebTest {
                 BigDecimal.valueOf(20), "KILOGRAMO", "ALIMENTOS", "ARROZ", "ENTREGADA", 4L);
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(arroz), 1, 1, 0));
 
-        mvc.perform(get("/donante/entidades/4"))
+        mvc.perform(get("/donante/entidades/4").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Frazadas por la ola polar")))
                 .andExpect(content().string(containsString("Ola polar")))
@@ -137,7 +138,7 @@ class EntidadesDonanteWebTest {
         when(donaciones.entidad(4)).thenReturn(entidad(4, true, "Comedor Sonrisas", "ONG", "Córdoba", "Córdoba"));
         when(donaciones.necesidades(4)).thenThrow(new BackendNoDisponibleException(ServicioBackend.DONACIONES, 503, null));
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(), 0, 0, 0));
-        mvc.perform(get("/donante/entidades/4"))
+        mvc.perform(get("/donante/entidades/4").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ahora no pudimos consultar las necesidades")))
                 .andExpect(content().string(containsString("Todavía no le llegó ninguna donación tuya.")));
@@ -147,14 +148,14 @@ class EntidadesDonanteWebTest {
     void unaEntidadInactivaOInexistenteDa404() throws Exception {
         when(donaciones.entidad(6)).thenReturn(entidad(6, false, "Entidad dada de baja", "ONG", "Salta", "Salta"));
         when(donaciones.entidad(99)).thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe"));
-        mvc.perform(get("/donante/entidades/6")).andExpect(status().isNotFound());
-        mvc.perform(get("/donante/entidades/99")).andExpect(status().isNotFound());
+        mvc.perform(get("/donante/entidades/6").with(SesionDePrueba.conRol("DONANTE"))).andExpect(status().isNotFound());
+        mvc.perform(get("/donante/entidades/99").with(SesionDePrueba.conRol("DONANTE"))).andExpect(status().isNotFound());
     }
 
     @Test
     void enEntidadesUnaPersonaJuridicaTampocoVeIncentivosEnElMenu() throws Exception {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "JURIDICA", null, null, "Panadería El Sol"));
-        mvc.perform(get("/donante/entidades"))
+        mvc.perform(get("/donante/entidades").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("href=\"/donante/incentivos\""))));
     }

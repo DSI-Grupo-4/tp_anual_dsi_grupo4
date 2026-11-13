@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
@@ -61,7 +62,7 @@ class PanelDonanteWebTest {
 
     @Test
     void muestraResumenDeDonacionesEIncentivos() throws Exception {
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("<main id=\"contenido\"")))
                 .andExpect(content().string(not(containsString("Sección en construcción"))))
@@ -83,7 +84,7 @@ class PanelDonanteWebTest {
     @Test
     void personaJuridicaNoVeIncentivos() throws Exception {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "JURIDICA", null, null, "Panadería El Sol"));
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("¡Hola, Panadería El Sol!")))
                 .andExpect(content().string(not(containsString("Impacto acumulado"))))
@@ -97,7 +98,7 @@ class PanelDonanteWebTest {
     void siIncentivosNoRespondeElPanelSeMuestraConAviso() throws Exception {
         when(incentivos.metricas(1, "HISTORICO"))
                 .thenThrow(new BackendNoDisponibleException(ServicioBackend.INCENTIVOS, 503, null));
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("no pudimos consultar tus incentivos")))
                 .andExpect(content().string(containsString("Arroz 1 kg")));
@@ -106,7 +107,7 @@ class PanelDonanteWebTest {
     @Test
     void sinDonacionesMuestraEstadoVacioYNoPideLaLista() throws Exception {
         when(donaciones.resumenPorEstado(1)).thenReturn(Map.of("EN_DEPOSITO", 0L));
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Todavía no registraste donaciones.")));
         verify(donaciones, never()).donaciones(anyLong(), anyMap());
@@ -115,7 +116,7 @@ class PanelDonanteWebTest {
     @Test
     void escapaTextosQueVienenDelBackend() throws Exception {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "HUMANA", "<script>x</script>", "Pérez", null));
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("<script>x</script>"))));
     }
@@ -123,7 +124,7 @@ class PanelDonanteWebTest {
     @Test
     void sinDonanteVinculadoExplicaQuePasaEnLugarDelError404Generico() throws Exception {
         when(donaciones.perfil(1)).thenThrow(new RecursoNoEncontradoException(ServicioBackend.DONACIONES, "No existe el donante 1"));
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Tu cuenta todavía no está vinculada a un donante")))
                 .andExpect(content().string(containsString("href=\"/donante/incentivos\"")))
@@ -132,7 +133,7 @@ class PanelDonanteWebTest {
 
     @Test
     void lasDonacionesRecientesEnlazanAlDetalle() throws Exception {
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(content().string(containsString("href=\"/donante/donaciones/9\"")));
     }
 }

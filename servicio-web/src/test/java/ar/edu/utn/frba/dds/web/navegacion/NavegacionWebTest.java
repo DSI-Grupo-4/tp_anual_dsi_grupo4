@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadesClient;
@@ -63,22 +64,23 @@ class NavegacionWebTest {
     }
 
     // El fallback "en construcción" se prueba aparte, en SeccionesPrivadasControllerTest:
-    // ya no queda ninguna sección del menú sin controller propio para pegarle acá.
+    // ya no queda ninguna sección del menú sin controller propio para pegarle acá
+    // (ni /admin/donaciones ni /admin/camiones, que era el otro candidato de iam).
 
     @Test
     void elPanelDeCadaRolMuestraSuMenu() throws Exception {
-        mvc.perform(get("/donante"))
+        mvc.perform(get("/donante").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("href=\"/donante/incentivos\""),
                         containsString("Donante"),
                         not(containsString("href=\"/admin/camiones\"")))));
-        mvc.perform(get("/beneficiaria")).andExpect(status().isOk());
+        mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isOk());
     }
 
     @Test
     void lasMigasLlevanAlPanelYMarcanLaPaginaActual() throws Exception {
-        mvc.perform(get("/beneficiaria/necesidades"))
+        mvc.perform(get("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(content().string(allOf(
                         containsString("<a href=\"/beneficiaria\">Panel</a>"),
                         containsString("<span aria-current=\"page\">Necesidades</span>"))));
@@ -86,7 +88,7 @@ class NavegacionWebTest {
 
     @Test
     void unaSeccionQueNoEstaEnElMenuDa404() throws Exception {
-        mvc.perform(get("/admin/inexistente")).andExpect(status().isNotFound());
+        mvc.perform(get("/admin/inexistente").with(SesionDePrueba.conRol("ADMIN"))).andExpect(status().isNotFound());
         mvc.perform(get("/legal/inexistente")).andExpect(status().isNotFound());
     }
 

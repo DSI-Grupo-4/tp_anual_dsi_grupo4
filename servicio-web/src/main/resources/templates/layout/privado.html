@@ -19,7 +19,7 @@
     </button>
     <a th:replace="~{fragments/comunes :: logo(${rolActual != null} ? ${rolActual.rutaInicio} : '/')}"></a>
     <div class="encabezado-privado__usuario">
-      <!-- usuarioActual (con "nombre") lo agrega la Persona 2 al integrar la autenticación. -->
+      <!-- usuarioActual lo agrega NavegacionModelAdvice desde el usuario OIDC. -->
       <span class="avatar" aria-hidden="true" th:if="${usuarioActual != null}"
             th:text="${#strings.substring(usuarioActual.nombre, 0, 1)}">A</span>
       <span class="encabezado-privado__datos">
@@ -40,7 +40,7 @@
           </a>
         </li>
       </ul>
-      <!-- POST a /logout: lo atiende Spring Security cuando la Persona 2 lo incorpore (incluye CSRF automáticamente). -->
+      <!-- POST a /logout: lo atiende Spring Security y cierra también la sesión de Keycloak. Thymeleaf agrega el CSRF. -->
       <form class="menu-lateral__salir" th:action="@{/logout}" method="post" data-sin-loader>
         <button type="submit" class="menu-lateral__enlace">
           <th:block th:replace="~{fragments/comunes :: icono('salir')}"/>

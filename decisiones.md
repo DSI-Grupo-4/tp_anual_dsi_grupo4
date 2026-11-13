@@ -526,6 +526,36 @@ Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente 
 - **Pendiente, fuera de este cambio:** no se migró Logística a Atlas para Render todavía (la URI de producción queda en `MONGODB_URI`, a configurar cuando se despliegue); no se tocó la configuración de despliegue existente de `render.yaml` más allá de lo que ya traía.
 - **Definida por:** equipo (implementación original en la rama `mongodb`) + agente (reconciliación con `main`, recuperación de las regresiones D-017/D-025, hallazgo y fix del bug de `seguimientoUrl` no persistido, reescritura de `RutaPersistenciaTest` contra Mongo real, actualización de DER/DDC, verificación end-to-end en vivo)
 
+## [D-039] Keycloak local como servidor de identidad, sin tocar las APIs
+
+- **Fecha:** 2026-11-07
+- **Servicio(s) afectado(s):** infraestructura. Ningún microservicio.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** La consigna pide un servicio de autenticación, SSO y Social Login, y un frontend que consuma las APIs con tokens. Hoy no hay autenticación en el código. El usuario pidió incorporar Keycloak al Docker local, reproducible por los cinco integrantes, sin activar todavía la seguridad de las APIs ni Social Login.
+- **Fuentes revisadas:** `docker-compose.integration.yml`, `servicio-incentivos/docker-compose.yml`, `run-servicios.ps1`/`run-servicios.sh`, `.gitignore`, guía de arranque. No había una decisión previa de identidad en esta bitácora. La versión de imagen se fijó contra el release 26.8.2 publicado por Keycloak el 2026-11-05.
+- **Opciones consideradas** (evaluadas en esta implementación, no discutidas antes por el equipo):
+  - A) Reusar el MySQL existente, con una base `keycloak` aparte.
+  - B) Base H2 de `start-dev`, en un volumen propio de Keycloak.
+  - C) Dejar Keycloak en el `up` general de la infraestructura.
+  - D) Dejarlo en el mismo compose, detrás del perfil `auth`, para que no arranque solo.
+- **Decisión tomada:** Keycloak `quay.io/keycloak/keycloak:26.8.2`, puerto del host 8180 (8080 ya lo usa Donaciones). Persistencia H2 en el volumen `keycloak-data` (opción B): los scripts de init de MySQL no corren si el volumen ya existe, y crear una base ahí habría escrito en `mysql-data`. El servicio usa el perfil `auth` (opción D), así `run-servicios` y `docker compose up -d` siguen levantando solo lo de antes. El realm `donatrack` y los roles `ADMIN`, `DONANTE` y `BENEFICIARIA` se importan desde `keycloak/import/donatrack-realm.json`. La contraseña del administrador de la consola sale de `keycloak/.env`, que no se versiona; el ejemplo está en `keycloak/.env.example`.
+- **Definida por:** usuario (Keycloak como proveedor local) + agente (H2 propio, perfil `auth`, puerto 8180, realm sin usuarios ni secretos)
+- **Enmendada por D-040:** la persistencia pasó de H2 a una base `keycloak` en el MySQL existente.
+
+## [D-040] Keycloak persiste en el MySQL existente, con base y usuario propios (enmienda D-039)
+
+- **Fecha:** 2026-11-07
+- **Servicio(s) afectado(s):** infraestructura. Ningún microservicio.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** D-039 usó H2 para no depender de los scripts de init de MySQL, que no corren sobre un `mysql-data` ya inicializado. El equipo prefirió reutilizar el motor relacional que ya tiene el proyecto en vez de una base embebida.
+- **Fuentes revisadas:** `docker-compose.integration.yml`, los tres `.sql` montados en `docker-entrypoint-initdb.d` (todos con `CREATE DATABASE IF NOT EXISTS`, ninguno con `DROP`), `stop-servicios.ps1`/`.sh`, `run-servicios.sh`, guía de bases de datos de Keycloak (MySQL 8.0 y 8.4 soportados, driver incluido, `utf8mb4`, `sql_generate_invisible_primary_key` en OFF) y documentación de la imagen `mysql`.
+- **Opciones consideradas:**
+  - A) Script nuevo en `docker-entrypoint-initdb.d`: no corre en volúmenes existentes, y en uno nuevo correría sin la contraseña, porque `run-servicios` no carga `keycloak/.env`.
+  - B) Contenedor de un solo uso, idempotente, en el perfil `auth`.
+  - C) PostgreSQL propio para Keycloak: aísla mejor, pero suma otro motor y otro volumen.
+- **Decisión tomada:** opción B. `keycloak-db-init` usa la misma imagen `mysql:8`, espera a que MySQL esté sano y responda por red, y ejecuta solo `CREATE DATABASE IF NOT EXISTS keycloak` (`utf8mb4_unicode_ci`), `CREATE USER IF NOT EXISTS 'keycloak'@'%'`, `ALTER USER` para que la contraseña siga a `keycloak/.env`, y `GRANT ALL ON keycloak.*`. Keycloak arranca después (`service_completed_successfully`) con `KC_DB=mysql`. La contraseña de root para el inicializador sale de `KEYCLOAK_DB_ROOT_PASSWORD` en `keycloak/.env`, así el bloque nuevo no repite el literal. El servicio `mysql` queda sin cambios. El volumen `keycloak-data` sale del compose y no se borra. `stop-servicios` y `run-servicios.sh down` agregan `--profile auth` para que Keycloak no quede corriendo sin MySQL. La versión de MySQL no cambia.
+- **Definida por:** usuario (MySQL compartido, base y usuario exclusivos, one-shot) + agente (detalles del inicializador y ajuste de los scripts de stop)
+
 ## [D-041] Cliente web `servicio-web`: stack, estructura e integración con las APIs
 
 - **Fecha:** 2026-11-10
@@ -586,3 +616,40 @@ Se sincroniza el perfil del donante al registrarlo/editarlo, independientemente 
   - **Despliegue local:** `servicio-web` se suma a `run-servicios`/`stop-servicios` (`.sh` y `.ps1`), sin contenedor y en el puerto 8085, último en el orden de arranque. No se despliega en la nube por ahora.
   - **Accesibilidad:** revisión automática con axe-core 4.10.2 (WCAG 2.0, 2.1 y 2.2 A/AA), recorrido con Tab, medición de áreas táctiles y pruebas de interacción, en escritorio y celular, incluidas las pantallas de Keycloak (`servicio-web/herramientas/accesibilidad`). Resultado final: 0 violaciones en 26 combinaciones de página y dispositivo, foco visible en todos los elementos y sin desborde horizontal. Excepciones aceptadas: los enlaces de atribución de Leaflet/OSM (texto en línea exigido por la licencia, excepción "inline" de WCAG 2.5.8) y el checkbox del catálogo (su `<label>` de 48 px también lo activa). La revisión encontró y corrigió: un overlay de carga que, por `display: grid`, quedaba tapando la página con `hidden` puesto (ahora `[hidden]` siempre oculta), un tooltip que no se abría con el foco ni se mantenía al pasar el mouse sobre su texto, regiones con desplazamiento que no se podían enfocar, y áreas táctiles menores a 48 px en `/registro` y en Keycloak.
 - **Definida por:** usuario (plan de fases, despliegue local, fuente provisoria, login como tema de Keycloak) + agente (detalles de implementación y verificación)
+
+## [D-044] servicio-web entra a Keycloak con authorization code, sin consultar el issuer al arrancar
+
+- **Fecha:** 2026-11-11
+- **Servicio(s) afectado(s):** `servicio-web`, `docker-compose.integration.yml`, `keycloak/import/donatrack-realm.json`. Ninguna API cambia.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** Keycloak ya corre en Docker con MySQL (D-040) y el cliente web ya tiene layouts, `/logout` y `PropagadorCredenciales` vacío (D-043). Faltaba el primer flujo comprobable: pedir una zona privada, autenticarse en Keycloak y volver con sesión. El realm de la instalación local ya existe, así que `--import-realm` no lo vuelve a cargar.
+- **Decisión tomada:** `servicio-web` es cliente OIDC confidencial (`servicio-web`, registration id `keycloak`) con authorization code. `/admin/**` exige ADMIN, `/donante/**` exige DONANTE y `/beneficiaria/**` exige BENEFICIARIA; el resto sigue público. `/ingresar` redirige a `/oauth2/authorization/keycloak`. El logout usa el `end_session` de Keycloak. Los roles se leen de `realm_access.roles` del ID token y solo se aceptan los tres del realm. Los endpoints se declaran en `SeguridadConfig` sin `issuer-uri`, para que el cliente web arranque con Keycloak apagado y los tests no lo necesiten. El client secret va en `servicio-web/.env` (`KEYCLOAK_CLIENT_SECRET`), fuera de Git. El tema `donatrack` queda montado en el contenedor. Quedan afuera de esta decisión Google, la protección de las APIs y la vinculación de cuentas.
+- **Definida por:** usuario (primer flujo de login/logout, sin Google ni APIs) + agente (endpoints explícitos, cookie `DONATRACK_SESSION`, mapper de roles)
+
+## [D-045] APIs como resource servers de Keycloak, con un rol SERVICIO derivado y seguridad detrás de una bandera
+
+- **Fecha:** 2026-11-12
+- **Servicio(s) afectado(s):** los cuatro servicios (`SeguridadApiConfig`, `UsuarioToken`, `TokenServicio`), `servicio-web` (`CredencialesKeycloak`, `SeguridadConfig`), `keycloak/config/configurar-realm.sh`, `docker-compose.integration.yml`, `keycloak/import/donatrack-realm.json`.
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** D-044 dejó el login del cliente web, pero las APIs seguían abiertas. Hay llamadas automáticas entre servicios (lotes y eventos a Logística, perfil y actividad a Incentivos, consulta de donantes desde Incentivos) que no tienen un usuario detrás. El realm local ya existe, así que los cambios del JSON no llegan a las instalaciones de los integrantes.
+- **Decisión tomada:** cada servicio valida el access token con la clave pública del realm (JWKS) y el issuer, sin consultarlo al arrancar. Las reglas por endpoint usan los roles ADMIN, DONANTE y BENEFICIARIA del token y, para la pertenencia, los claims `donante_id` y `entidad_ids`. Las llamadas automáticas usan client_credentials con un cliente por servicio; `SERVICIO` no es un rol de Keycloak: se reconoce cuando `azp` está en la lista `clientes-servicio` de quien recibe y el token es de la cuenta de servicio de ese cliente. `servicio-web` reenvía el token del usuario y, para la landing y las fotos públicas, usa su propia cuenta de servicio. Un 401 de las APIs se muestra como sesión vencida y un 403 como acceso denegado. Toda la seguridad de las APIs queda detrás de `SEGURIDAD_HABILITADA` (por defecto `false`), para no romper el desarrollo sin Keycloak, los tests existentes ni el despliegue de Logística en Render. El realm se ajusta con un script idempotente (`keycloak-config`) en lugar de reimportarlo. Google entra como proveedor de identidad de Keycloak, solo si sus credenciales están en `keycloak/.env`. Quedan públicos: health, Swagger, `/api/publico/**`, el ranking (n8n), el seguimiento de rutas y el callback del planificador. No se valida la audiencia del token.
+- **Definida por:** usuario (Google vía Keycloak, protección de las cuatro APIs, llamadas entre servicios sin romper procesos, propagación desde la web) + agente (SERVICIO derivado de `azp`, bandera, script idempotente, reglas por endpoint)
+
+## [D-046] Cuentas de donantes y representantes creadas desde Donaciones y vinculadas por email verificado
+
+- **Fecha:** 2026-11-12
+- **Servicio(s) afectado(s):** `servicio-donaciones` (`CuentasKeycloak`, `CuentaController`, `DonanteService`, `EntidadBeneficiariaService`), `servicio-web` (`/cuenta`).
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** los donantes y las entidades se cargan desde la administración y por CSV. Una entidad puede tener varios representantes. Hay que asociar cada cuenta de Keycloak con su `Donante` o `EntidadBeneficiaria` sin dar permisos de administración por registro público y sin que alguien se adjudique datos de un tercero.
+- **Decisión tomada:** Donaciones, después de cada alta, edición o importación, encola el registro en disco (`.datos/donaciones/cuentas-pendientes`, mismo patrón que la cola de Incentivos) y una tarea programada sincroniza con la Admin API de Keycloak. Por cada email de contacto del registro y de sus representantes: si no hay cuenta, la crea con el atributo, el rol DONANTE o BENEFICIARIA y le manda el mail de "Actualizá tu contraseña"; si hay cuenta, solo la vincula si su email está verificado. Un usuario que se registra solo, o entra con Google, queda sin rol y puede pedir la vinculación en `/cuenta`, que usa el email verificado del token. `donante_id` es uno por cuenta; `entidad_ids` admite varias entidades. Nunca se asigna ADMIN. La cuenta de servicio de Donaciones tiene solo permisos de usuarios y lectura del realm. El autorregistro de quien todavía no existe en la base quedó resuelto en D-047: no hace falta una aprobación administrativa.
+- **Definida por:** usuario (roles, varios representantes, respetar la carga administrativa y CSV, sin permisos por registro público) + agente (cola en disco, vinculación por email verificado, envío del mail de primer acceso)
+
+## [D-047] Autorregistro de donantes (humanos y jurídicos) y de entidades, sin aprobación y sin reclamar registros existentes
+
+- **Fecha:** 2026-11-12
+- **Servicio(s) afectado(s):** `servicio-donaciones` (`RegistroCuentaService`, `EntidadBeneficiariaService.agregarRepresentante`, `CuentaController`), `servicio-web` (`/cuenta`).
+- **Entrega vigente al momento:** Entrega 6
+- **Contexto:** D-046 vinculaba una cuenta solo si el correo verificado ya estaba cargado. Faltaba el alta de quien no existe. La consigna no pide que un administrador apruebe el registro. Una entidad puede tener varios representantes; un donante jurídico, uno solo (D-004).
+- **Decisión tomada:** quien ya verificó el correo puede crear desde `/cuenta` un donante humano, un donante jurídico o una entidad nueva. El alta jurídica reutiliza `crearDonanteJuridico`: la persona queda como único representante y, si esa razón social ya existe, no se crea otra. El único correo que queda asociado en el autorregistro es el de su cuenta: los demás correos del body se descartan. Si ese correo o el documento ya pertenecen a un donante, o si el correo o la razón social ya pertenecen a una entidad, no se crea otro registro y tiene que usar la vinculación. Un representante de la entidad, o un ADMIN, puede sumar otra persona (`POST /api/entidades/{id}/representantes`) sin borrar a las que ya están; esa persona usa su propio correo y el mail de acceso que ya manda Keycloak. No hay invitaciones ni aprobación aparte. El alta administrativa y el CSV no cambian. Nunca se asigna ADMIN por este camino. La sede de una entidad se carga como dirección (calle, número, ciudad y provincia): el dominio no guarda un punto en el mapa.
+- **Definida por:** usuario (sin aprobación, primer representante, no reclamar una entidad existente, representantes adicionales solo por alguien autorizado, sin sistema de invitaciones nuevo) + agente (reutilizar `crearDonanteHumano`, `crear` y la sincronización de cuentas; formulario en `/cuenta`)
+

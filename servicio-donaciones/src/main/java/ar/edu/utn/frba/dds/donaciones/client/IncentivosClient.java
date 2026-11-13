@@ -28,10 +28,18 @@ public class IncentivosClient {
 
     private final RestClient restClient;
 
-    public IncentivosClient(@Value("${incentivos.base-url:http://localhost:8081}") String baseUrl) {
+    public IncentivosClient(String baseUrl) {
+        this(baseUrl, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public IncentivosClient(@Value("${incentivos.base-url:http://localhost:8081}") String baseUrl,
+                            ar.edu.utn.frba.dds.donaciones.seguridad.TokenServicio tokenServicio) {
         var transporte = new org.springframework.http.client.SimpleClientHttpRequestFactory();
         transporte.setConnectTimeout(3000); transporte.setReadTimeout(5000);
-        this.restClient = RestClient.builder().requestFactory(transporte).baseUrl(baseUrl).build();
+        var builder = RestClient.builder().requestFactory(transporte).baseUrl(baseUrl);
+        if (tokenServicio != null) builder.requestInterceptor(tokenServicio.interceptor());
+        this.restClient = builder.build();
     }
 
     /** Sincroniza identidad y contacto sin contabilizar una donación ni completar misiones. */

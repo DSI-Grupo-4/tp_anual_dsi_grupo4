@@ -12,6 +12,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
 import ar.edu.utn.frba.dds.web.client.logistica.FotoSubidaApi;
@@ -91,7 +93,7 @@ class RecepcionWebTest {
 
     @Test
     void elFormularioMuestraLoQueSeConfirmaYElCampoDeFotosSinDatosAjenos() throws Exception {
-        mvc.perform(get("/beneficiaria/seguimiento/2"))
+        mvc.perform(get("/beneficiaria/seguimiento/2").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Confirmar recepción"),
@@ -106,15 +108,15 @@ class RecepcionWebTest {
 
     @Test
     void unaRutaQueNoLeLlevaNadaALaEntidadEsUn404() throws Exception {
-        mvc.perform(get("/beneficiaria/seguimiento/3")).andExpect(status().isNotFound());
-        mvc.perform(get("/beneficiaria/seguimiento/99")).andExpect(status().isNotFound());
+        mvc.perform(get("/beneficiaria/seguimiento/3").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isNotFound());
+        mvc.perform(get("/beneficiaria/seguimiento/99").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isNotFound());
     }
 
     @Test
     void siYaNoHayEntregasEnTrasladoNoSeOfreceElFormulario() throws Exception {
         when(rutas.rutas()).thenReturn(List.of(ruta(2, "INICIADA", parada(1, 1, entrega(2, "ENTREGADA")))));
 
-        mvc.perform(get("/beneficiaria/seguimiento/2"))
+        mvc.perform(get("/beneficiaria/seguimiento/2").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("No hay entregas en traslado para confirmar"),
@@ -128,7 +130,8 @@ class RecepcionWebTest {
 
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
                         .file(foto("a.jpg", "image/jpeg")).file(foto("b.png", "image/png"))
-                        .param("idParada", "1")) // un dato que mandan a mano: se ignora
+                        .param("idParada", "1") // un dato que mandan a mano: se ignora
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/beneficiaria/seguimiento"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -139,7 +142,8 @@ class RecepcionWebTest {
     @Test
     void unCampoDeArchivoVacioComoElQueEnviaElNavegadorSinElegirNadaCuentaComoSinFotos() throws Exception {
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
-                        .file(new MockMultipartFile("fotos", "", "application/octet-stream", new byte[0])))
+                        .file(new MockMultipartFile("fotos", "", "application/octet-stream", new byte[0]))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Elegí al menos una foto")));
 
@@ -154,7 +158,7 @@ class RecepcionWebTest {
             pedido.file(foto("f" + i + ".jpg", "image/jpeg"));
         }
 
-        mvc.perform(pedido)
+        mvc.perform(pedido.with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("hasta 5 fotos")));
 
@@ -164,7 +168,8 @@ class RecepcionWebTest {
     @Test
     void unArchivoQueNoEsImagenSeRechazaAntesDeSubirNada() throws Exception {
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
-                        .file(foto("a.jpg", "image/jpeg")).file(foto("virus.html", "text/html")))
+                        .file(foto("a.jpg", "image/jpeg")).file(foto("virus.html", "text/html"))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("virus.html"), containsString("no es una imagen JPEG, PNG o WebP"))));
 
@@ -176,7 +181,8 @@ class RecepcionWebTest {
         byte[] grande = new byte[5 * 1024 * 1024 + 1];
 
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
-                        .file(new MockMultipartFile("fotos", "grande.jpg", "image/jpeg", grande)))
+                        .file(new MockMultipartFile("fotos", "grande.jpg", "image/jpeg", grande))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("pesa más de 5 MB")));
 
@@ -188,7 +194,9 @@ class RecepcionWebTest {
         when(fotos.subir(anyString(), anyString(), any())).thenThrow(new BackendRechazoException(
                 ServicioBackend.LOGISTICA, 400, "El contenido del archivo no es una imagen JPEG, PNG o WebP válida", Map.of()));
 
-        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion").file(foto("a.jpg", "image/jpeg")))
+        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
+                        .file(foto("a.jpg", "image/jpeg"))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("El contenido del archivo no es una imagen")));
 
@@ -202,14 +210,18 @@ class RecepcionWebTest {
                         "La parada 2 no tiene entregas en traslado para confirmar", Map.of()))
                 .when(rutas).confirmarRecepcion(eq(2), eq(2), anyList());
 
-        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion").file(foto("a.jpg", "image/jpeg")))
+        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
+                        .file(foto("a.jpg", "image/jpeg"))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("no tiene entregas en traslado")));
     }
 
     @Test
     void noSePuedeConfirmarLaRutaDeOtraEntidadNiSubirFotos() throws Exception {
-        mvc.perform(multipart("/beneficiaria/seguimiento/3/recepcion").file(foto("a.jpg", "image/jpeg")))
+        mvc.perform(multipart("/beneficiaria/seguimiento/3/recepcion")
+                        .file(foto("a.jpg", "image/jpeg"))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().isNotFound());
 
         verifyNoInteractions(fotos);
@@ -220,7 +232,9 @@ class RecepcionWebTest {
     void siLaRutaYaNoTieneEntregasParaConfirmarVuelveAlSeguimientoConUnAviso() throws Exception {
         when(rutas.rutas()).thenReturn(List.of(ruta(2, "FINALIZADA", parada(1, 1, entrega(2, "ENTREGADA")))));
 
-        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion").file(foto("a.jpg", "image/jpeg")))
+        mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
+                        .file(foto("a.jpg", "image/jpeg"))
+                        .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/beneficiaria/seguimiento"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -234,7 +248,7 @@ class RecepcionWebTest {
                 ruta(2, "INICIADA", parada(1, 1, entrega(2, "EN_TRASLADO"))),
                 ruta(4, "FINALIZADA", parada(1, 1, entrega(4, "ENTREGADA")))));
 
-        mvc.perform(get("/beneficiaria/seguimiento"))
+        mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("href=\"/beneficiaria/seguimiento/2\""),
@@ -247,7 +261,8 @@ class RecepcionWebTest {
                 .thenReturn(new FotoSubidaApi("1", "http://l/1"), new FotoSubidaApi("2", "http://l/2"));
 
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
-                .file(foto("a.jpg", "image/jpeg")).file(foto("b.jpg", "image/jpeg")));
+                .file(foto("a.jpg", "image/jpeg")).file(foto("b.jpg", "image/jpeg"))
+                .with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()));
 
         @SuppressWarnings("unchecked")
         ArgumentCaptor<List<String>> urls = ArgumentCaptor.forClass(List.class);

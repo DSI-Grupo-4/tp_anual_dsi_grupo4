@@ -6,6 +6,8 @@ package ar.edu.utn.frba.dds.web.error;
  *   <li>{@link BackendNoDisponibleException}: el servicio no respondió → página 503.</li>
  *   <li>{@link RecursoNoEncontradoException}: 404 del backend → página 404.</li>
  *   <li>{@link BackendRechazoException}: 400/409/413/422 → el controller lo muestra en el formulario o como toast.</li>
+ *   <li>{@link SesionVencidaException}: 401 o token que no se pudo renovar → vuelve al login.</li>
+ *   <li>{@link AccesoDenegadoException}: 403 → página 403.</li>
  *   <li>Cualquier otro → página 500.</li>
  * </ul>
  */

@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -15,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import ar.edu.utn.frba.dds.web.SesionDePrueba;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.DonacionesClient;
 import ar.edu.utn.frba.dds.web.client.donaciones.EntidadApi;
@@ -81,7 +83,7 @@ class BeneficiariaWebTest {
 
     @Test
     void elPanelSaludaALaEntidadYCuentaSoloSusDonaciones() throws Exception {
-        mvc.perform(get("/beneficiaria"))
+        mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Fundación Demo"),
@@ -95,7 +97,7 @@ class BeneficiariaWebTest {
         when(donaciones.donaciones()).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
                 ServicioBackend.DONACIONES, 0, null));
 
-        mvc.perform(get("/beneficiaria")).andExpect(status().isServiceUnavailable());
+        mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isServiceUnavailable());
     }
 
     // ---- necesidades ----
@@ -104,7 +106,7 @@ class BeneficiariaWebTest {
     void laListaMuestraLasNecesidadesYLasCifras() throws Exception {
         when(necesidades.necesidades(1L)).thenReturn(List.of(necesidad(5, true, false), necesidad(6, false, false)));
 
-        mvc.perform(get("/beneficiaria/necesidades"))
+        mvc.perform(get("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Leche 5"),
@@ -117,22 +119,22 @@ class BeneficiariaWebTest {
     void sinNecesidadesInvitaARegistrarLaPrimera() throws Exception {
         when(necesidades.necesidades(1L)).thenReturn(List.of());
 
-        mvc.perform(get("/beneficiaria/necesidades"))
+        mvc.perform(get("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Registrar la primera necesidad")));
     }
 
     @Test
     void elFormularioDeUnaRecurrentePideLaPeriodicidadYElDeUnaExtraordinariaLaSituacion() throws Exception {
-        mvc.perform(get("/beneficiaria/necesidades/nueva").param("tipo", "RECURRENTE"))
+        mvc.perform(get("/beneficiaria/necesidades/nueva").with(SesionDePrueba.conRol("BENEFICIARIA")).param("tipo", "RECURRENTE"))
                 .andExpect(content().string(allOf(containsString("id=\"periodicidad\""), not(containsString("id=\"tipoExtraordinario\"")))));
-        mvc.perform(get("/beneficiaria/necesidades/nueva").param("tipo", "EXTRAORDINARIA"))
+        mvc.perform(get("/beneficiaria/necesidades/nueva").with(SesionDePrueba.conRol("BENEFICIARIA")).param("tipo", "EXTRAORDINARIA"))
                 .andExpect(content().string(allOf(containsString("id=\"tipoExtraordinario\""), not(containsString("id=\"periodicidad\"")))));
     }
 
     @Test
     void crearUnaNecesidadValidaLlamaADonacionesYVuelveALaListaConUnToast() throws Exception {
-        mvc.perform(post("/beneficiaria/necesidades")
+        mvc.perform(post("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf())
                         .param("tipo", "RECURRENTE").param("descripcion", "  Leche en polvo ")
                         .param("subcategoria", "FIDEOS_SECOS").param("unidadMedida", "KILOGRAMO")
                         .param("cantidadRequerida", "50").param("periodicidad", "MENSUAL"))
@@ -148,7 +150,7 @@ class BeneficiariaWebTest {
 
     @Test
     void siFaltanDatosVuelveAlFormularioMarcandoLosCamposYNoLlamaADonaciones() throws Exception {
-        mvc.perform(post("/beneficiaria/necesidades")
+        mvc.perform(post("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf())
                         .param("tipo", "RECURRENTE").param("descripcion", "").param("cantidadRequerida", "-3"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
@@ -161,7 +163,7 @@ class BeneficiariaWebTest {
 
     @Test
     void unaCantidadQueNoEsUnNumeroSeExplicaEnElCampo() throws Exception {
-        mvc.perform(post("/beneficiaria/necesidades")
+        mvc.perform(post("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf())
                         .param("tipo", "RECURRENTE").param("descripcion", "Leche").param("subcategoria", "FIDEOS_SECOS")
                         .param("unidadMedida", "KILOGRAMO").param("cantidadRequerida", "mucho").param("periodicidad", "MENSUAL"))
                 .andExpect(status().isOk())
@@ -173,7 +175,7 @@ class BeneficiariaWebTest {
         when(necesidades.crear(eq(1L), any())).thenThrow(new BackendRechazoException(
                 ServicioBackend.DONACIONES, 400, "Datos inválidos", Map.of("descripcion", "ya existe una necesidad igual")));
 
-        mvc.perform(post("/beneficiaria/necesidades")
+        mvc.perform(post("/beneficiaria/necesidades").with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf())
                         .param("tipo", "RECURRENTE").param("descripcion", "Leche").param("subcategoria", "FIDEOS_SECOS")
                         .param("unidadMedida", "KILOGRAMO").param("cantidadRequerida", "5").param("periodicidad", "MENSUAL"))
                 .andExpect(status().isOk())
@@ -184,14 +186,14 @@ class BeneficiariaWebTest {
     void editarUnaNecesidadAjenaOInexistenteDaNotFound() throws Exception {
         when(necesidades.necesidades(1L)).thenReturn(List.of(necesidad(5, true, false)));
 
-        mvc.perform(get("/beneficiaria/necesidades/99")).andExpect(status().isNotFound());
+        mvc.perform(get("/beneficiaria/necesidades/99").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isNotFound());
     }
 
     @Test
     void editarMuestraLosDatosActuales() throws Exception {
         when(necesidades.necesidades(1L)).thenReturn(List.of(necesidad(5, true, false)));
 
-        mvc.perform(get("/beneficiaria/necesidades/5"))
+        mvc.perform(get("/beneficiaria/necesidades/5").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("Leche 5"), containsString("Editar necesidad"))));
     }
@@ -202,7 +204,7 @@ class BeneficiariaWebTest {
                 ServicioBackend.DONACIONES, 409, "La necesidad tiene donaciones asignadas", Map.of()))
                 .when(necesidades).eliminar(1L, 5L);
 
-        mvc.perform(post("/beneficiaria/necesidades/5/eliminar"))
+        mvc.perform(post("/beneficiaria/necesidades/5/eliminar").with(SesionDePrueba.conRol("BENEFICIARIA")).with(csrf()))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/beneficiaria/necesidades"))
                 .andExpect(flash().attributeExists("toasts"));
@@ -212,14 +214,14 @@ class BeneficiariaWebTest {
 
     @Test
     void elFiltroDePendientesNoMuestraLasRecibidas() throws Exception {
-        mvc.perform(get("/beneficiaria/donaciones").param("filtro", "pendientes"))
+        mvc.perform(get("/beneficiaria/donaciones").with(SesionDePrueba.conRol("BENEFICIARIA")).param("filtro", "pendientes"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(containsString("Arroz 2"), not(containsString("Arroz 1")))));
     }
 
     @Test
     void unFiltroDesconocidoMuestraTodasLasDeLaEntidad() throws Exception {
-        mvc.perform(get("/beneficiaria/donaciones").param("filtro", "cualquiera"))
+        mvc.perform(get("/beneficiaria/donaciones").with(SesionDePrueba.conRol("BENEFICIARIA")).param("filtro", "cualquiera"))
                 .andExpect(content().string(allOf(containsString("Arroz 1"), containsString("Arroz 2"), not(containsString("Arroz 3")))));
     }
 
@@ -229,7 +231,7 @@ class BeneficiariaWebTest {
         when(donaciones.historial(2L)).thenReturn(List.of(
                 new HistorialEstadoApi("EN_TRASLADO", LocalDateTime.of(2026, 11, 3, 17, 30), "La ruta salió del depósito")));
 
-        mvc.perform(get("/beneficiaria/donaciones/2"))
+        mvc.perform(get("/beneficiaria/donaciones/2").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("La ruta salió del depósito"),
@@ -240,7 +242,7 @@ class BeneficiariaWebTest {
     void unaDonacionDeOtraEntidadSeTrataComoInexistente() throws Exception {
         when(donaciones.donacion(3L)).thenReturn(donacion(3, "EN_TRASLADO", 2L));
 
-        mvc.perform(get("/beneficiaria/donaciones/3")).andExpect(status().isNotFound());
+        mvc.perform(get("/beneficiaria/donaciones/3").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isNotFound());
     }
 
     // ---- fotos de una donación recibida ----
@@ -255,7 +257,7 @@ class BeneficiariaWebTest {
                 new EntregaApi(8, 2, 1, "ENTREGADA", LocalDate.of(2026, 11, 12), null,
                         List.of(new EntregaApi.FotoApi("https://f.org/otra.jpg", null)))));
 
-        mvc.perform(get("/beneficiaria/donaciones/1"))
+        mvc.perform(get("/beneficiaria/donaciones/1").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(allOf(
                         containsString("Fotos de la entrega"),
@@ -271,7 +273,7 @@ class BeneficiariaWebTest {
         when(logistica.entregas()).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
                 ServicioBackend.LOGISTICA, 0, null));
 
-        mvc.perform(get("/beneficiaria/donaciones/1"))
+        mvc.perform(get("/beneficiaria/donaciones/1").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(not(containsString("Fotos de la entrega"))));
     }
@@ -281,7 +283,7 @@ class BeneficiariaWebTest {
         when(donaciones.donacion(2L)).thenReturn(donacion(2, "EN_TRASLADO", 1L));
         when(donaciones.historial(2L)).thenReturn(List.of());
 
-        mvc.perform(get("/beneficiaria/donaciones/2")).andExpect(status().isOk());
+        mvc.perform(get("/beneficiaria/donaciones/2").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isOk());
 
         verify(logistica, never()).entregas();
     }

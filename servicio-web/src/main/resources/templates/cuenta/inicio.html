@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<!--
+  Primer acceso y autorregistro. La cuenta ya existe en Keycloak.
+  "Buscar mis datos" vincula un registro cargado por administración o CSV.
+  Los formularios crean un donante humano o una entidad nueva con este correo.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{cuenta.titulo}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+<div class="contenedor seccion--angosta">
+  <div class="documento pila">
+    <div>
+      <h1 th:text="#{cuenta.titulo}">Tu cuenta</h1>
+      <p class="texto-secundario" th:if="${usuarioActual != null}" th:text="${usuarioActual.nombre}">Nombre</p>
+      <p class="texto-secundario" th:if="${emailCuenta != null}">
+        <span th:text="#{cuenta.correo}">Correo de tu cuenta</span>:
+        <strong th:text="${emailCuenta}">ana@correo.com</strong>
+      </p>
+    </div>
+
+    <section class="tarjeta pila" th:if="${#lists.isEmpty(roles)}">
+      <h2 th:text="#{cuenta.sin-vincular.titulo}">Tu cuenta todavía no está vinculada</h2>
+      <p th:text="#{cuenta.sin-vincular.texto}">Explicación</p>
+      <form method="post" th:action="@{/cuenta/vincular}">
+        <button type="submit" class="boton boton--primario" th:text="#{cuenta.vincular}">Buscar mis datos</button>
+      </form>
+      <div class="pista">
+        <th:block th:replace="~{fragments/comunes :: icono('info')}"/>
+        <p style="margin: 0" th:text="#{cuenta.sin-vincular.pista}">Pista</p>
+      </div>
+    </section>
+
+    <section class="tarjeta pila" th:unless="${#lists.isEmpty(roles)}">
+      <h2 th:text="#{cuenta.vinculada.titulo}">Tu cuenta está lista</h2>
+      <div class="fila">
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'ADMIN')}" th:href="@{/admin}" th:text="#{cuenta.ir.admin}">Administración</a>
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'DONANTE')}" th:href="@{/donante}" th:text="#{cuenta.ir.donante}">Mis donaciones</a>
+        <a class="boton boton--primario" th:if="${#lists.contains(roles, 'BENEFICIARIA')}" th:href="@{/beneficiaria}" th:text="#{cuenta.ir.beneficiaria}">Mi entidad</a>
+      </div>
+    </section>
+
+    <form method="post" th:action="@{/cuenta/donante}" th:object="${donanteForm}" class="tarjeta pila"
+          th:if="${!#lists.contains(roles, 'DONANTE')}">
+      <h2 th:text="#{cuenta.donante.titulo}">Registrarme como donante</h2>
+      <p th:text="#{cuenta.donante.texto}">Explicación</p>
+      <section class="banner banner--error" role="alert" th:if="${#fields.hasErrors('*')}">
+        <ul>
+          <li th:each="e : ${#fields.errors('*')}" th:text="${e}">Error</li>
+        </ul>
+      </section>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-nombre" th:text="#{cuenta.campo.nombre}">Nombre</label>
+        <input class="control" id="donante-nombre" th:field="*{nombre}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-apellido" th:text="#{cuenta.campo.apellido}">Apellido</label>
+        <input class="control" id="donante-apellido" th:field="*{apellido}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-documento" th:text="#{cuenta.campo.documento}">Documento</label>
+        <input class="control" id="donante-documento" th:field="*{documento}" required maxlength="20">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-edad" th:text="#{cuenta.campo.edad}">Edad</label>
+        <input class="control" id="donante-edad" type="number" th:field="*{edad}" required min="0" max="130">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-genero" th:text="#{cuenta.campo.genero}">Género</label>
+        <select class="control" id="donante-genero" th:field="*{genero}" required>
+          <option value="">Elegí una opción</option>
+          <option value="MASCULINO">Masculino</option>
+          <option value="FEMENINO">Femenino</option>
+          <option value="X">X</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-calle" th:text="#{cuenta.campo.calle}">Calle</label>
+        <input class="control" id="donante-calle" th:field="*{calle}" required maxlength="150">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-numero" th:text="#{cuenta.campo.numero}">Número</label>
+        <input class="control" id="donante-numero" th:field="*{numero}" required maxlength="20">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-ciudad" th:text="#{cuenta.campo.ciudad}">Ciudad</label>
+        <input class="control" id="donante-ciudad" th:field="*{ciudad}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-provincia" th:text="#{cuenta.campo.provincia}">Provincia</label>
+        <input class="control" id="donante-provincia" th:field="*{provincia}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="donante-telefono" th:text="#{cuenta.campo.telefono}">Teléfono</label>
+        <input class="control" id="donante-telefono" th:field="*{telefono}" maxlength="40">
+      </div>
+      <button type="submit" class="boton boton--primario" th:text="#{cuenta.donante.enviar}">Guardar mis datos</button>
+    </form>
+
+    <form method="post" th:action="@{/cuenta/donante-juridico}" th:object="${donanteJuridicoForm}" class="tarjeta pila"
+          th:if="${!#lists.contains(roles, 'DONANTE')}">
+      <h2 th:text="#{cuenta.juridico.titulo}">Registrar una organización donante</h2>
+      <p th:text="#{cuenta.juridico.texto}">Explicación</p>
+      <section class="banner banner--error" role="alert" th:if="${#fields.hasErrors('*')}">
+        <ul>
+          <li th:each="e : ${#fields.errors('*')}" th:text="${e}">Error</li>
+        </ul>
+      </section>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-razon" th:text="#{cuenta.campo.razon}">Razón social</label>
+        <input class="control" id="org-razon" th:field="*{razonSocial}" required maxlength="150">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-tipo" th:text="#{cuenta.campo.tipo}">Tipo</label>
+        <select class="control" id="org-tipo" th:field="*{tipoOrganizacion}" required>
+          <option value="EMPRESA">Empresa</option>
+          <option value="ONG">ONG</option>
+          <option value="INSTITUCION">Institución</option>
+          <option value="GUBERNAMENTAL">Gubernamental</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-rubro" th:text="#{cuenta.campo.rubro}">Rubro</label>
+        <input class="control" id="org-rubro" th:field="*{rubro}" maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-telefono" th:text="#{cuenta.campo.telefono}">Teléfono</label>
+        <input class="control" id="org-telefono" th:field="*{telefono}" maxlength="40">
+      </div>
+      <h3 th:text="#{cuenta.campo.representante}">Tus datos como representante</h3>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-nombre" th:text="#{cuenta.campo.nombre}">Nombre</label>
+        <input class="control" id="org-nombre" th:field="*{nombre}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-apellido" th:text="#{cuenta.campo.apellido}">Apellido</label>
+        <input class="control" id="org-apellido" th:field="*{apellido}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="org-documento" th:text="#{cuenta.campo.documento}">Documento</label>
+        <input class="control" id="org-documento" th:field="*{documento}" required maxlength="20">
+      </div>
+      <button type="submit" class="boton boton--primario" th:text="#{cuenta.juridico.enviar}">Registrar la organización</button>
+    </form>
+
+    <form method="post" th:action="@{/cuenta/entidad}" th:object="${entidadForm}" class="tarjeta pila"
+          th:if="${!#lists.contains(roles, 'BENEFICIARIA')}">
+      <h2 th:text="#{cuenta.entidad.titulo}">Registrar una entidad</h2>
+      <p th:text="#{cuenta.entidad.texto}">Explicación</p>
+      <section class="banner banner--error" role="alert" th:if="${#fields.hasErrors('*')}">
+        <ul>
+          <li th:each="e : ${#fields.errors('*')}" th:text="${e}">Error</li>
+        </ul>
+      </section>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-razon" th:text="#{cuenta.campo.razon}">Razón social</label>
+        <input class="control" id="entidad-razon" th:field="*{razonSocial}" required maxlength="150">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-tipo" th:text="#{cuenta.campo.tipo}">Tipo</label>
+        <select class="control" id="entidad-tipo" th:field="*{tipoOrganizacion}" required>
+          <option value="ONG">ONG</option>
+          <option value="EMPRESA">Empresa</option>
+          <option value="INSTITUCION">Institución</option>
+          <option value="GUBERNAMENTAL">Gubernamental</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-rubro" th:text="#{cuenta.campo.rubro}">Rubro</label>
+        <input class="control" id="entidad-rubro" th:field="*{rubro}" maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-descripcion" th:text="#{cuenta.campo.descripcion}">Descripción</label>
+        <input class="control" id="entidad-descripcion" th:field="*{descripcion}" required maxlength="255">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-calle" th:text="#{cuenta.campo.calle}">Calle</label>
+        <input class="control" id="entidad-calle" th:field="*{calle}" required maxlength="150">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-numero" th:text="#{cuenta.campo.numero}">Número</label>
+        <input class="control" id="entidad-numero" th:field="*{numero}" required maxlength="20">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-ciudad" th:text="#{cuenta.campo.ciudad}">Ciudad</label>
+        <input class="control" id="entidad-ciudad" th:field="*{ciudad}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-provincia" th:text="#{cuenta.campo.provincia}">Provincia</label>
+        <input class="control" id="entidad-provincia" th:field="*{provincia}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="entidad-telefono" th:text="#{cuenta.campo.telefono}">Teléfono</label>
+        <input class="control" id="entidad-telefono" th:field="*{telefono}" required maxlength="40">
+      </div>
+      <h3 th:text="#{cuenta.campo.representante}">Tus datos como representante</h3>
+      <div class="campo">
+        <label class="campo__etiqueta" for="rep-nombre" th:text="#{cuenta.campo.nombre}">Nombre</label>
+        <input class="control" id="rep-nombre" th:field="*{nombre}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="rep-apellido" th:text="#{cuenta.campo.apellido}">Apellido</label>
+        <input class="control" id="rep-apellido" th:field="*{apellido}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="rep-documento" th:text="#{cuenta.campo.documento}">Documento</label>
+        <input class="control" id="rep-documento" th:field="*{documento}" required maxlength="20">
+      </div>
+      <button type="submit" class="boton boton--primario" th:text="#{cuenta.entidad.enviar}">Registrar la entidad</button>
+    </form>
+
+    <form method="post" th:action="@{/cuenta/representantes}" th:object="${representanteForm}" class="tarjeta pila"
+          th:if="${#lists.contains(roles, 'BENEFICIARIA') or #lists.contains(roles, 'ADMIN')}">
+      <h2 th:text="#{cuenta.rep.titulo}">Sumar un representante</h2>
+      <p th:text="#{cuenta.rep.texto}">Explicación</p>
+      <p class="texto-secundario" th:if="${entidadesPropias.isEmpty() and !#lists.contains(roles, 'ADMIN')}"
+         th:text="#{cuenta.rep.sin-datos}">Volvé a ingresar</p>
+      <section class="banner banner--error" role="alert" th:if="${#fields.hasErrors('*')}">
+        <ul>
+          <li th:each="e : ${#fields.errors('*')}" th:text="${e}">Error</li>
+        </ul>
+      </section>
+      <div class="campo" th:if="${!entidadesPropias.isEmpty()}">
+        <label class="campo__etiqueta" for="rep-entidad" th:text="#{cuenta.rep.entidad}">Entidad</label>
+        <select class="control" id="rep-entidad" th:field="*{entidadId}">
+          <option th:each="entidad : ${entidadesPropias}" th:value="${entidad.id}" th:text="${entidad.nombre}">Entidad</option>
+        </select>
+      </div>
+      <div class="campo" th:if="${entidadesPropias.isEmpty() and #lists.contains(roles, 'ADMIN')}">
+        <label class="campo__etiqueta" for="rep-entidad-id" th:text="#{cuenta.rep.entidad}">Entidad</label>
+        <input class="control" id="rep-entidad-id" type="number" th:field="*{entidadId}" min="1">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="nuevo-nombre" th:text="#{cuenta.campo.nombre}">Nombre</label>
+        <input class="control" id="nuevo-nombre" th:field="*{nombre}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="nuevo-apellido" th:text="#{cuenta.campo.apellido}">Apellido</label>
+        <input class="control" id="nuevo-apellido" th:field="*{apellido}" required maxlength="100">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="nuevo-documento" th:text="#{cuenta.campo.documento}">Documento</label>
+        <input class="control" id="nuevo-documento" th:field="*{documento}" required maxlength="20">
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="nuevo-email" th:text="#{cuenta.campo.correo-representante}">Correo</label>
+        <input class="control" id="nuevo-email" type="email" th:field="*{email}" required maxlength="150">
+      </div>
+      <button type="submit" class="boton boton--primario" th:text="#{cuenta.rep.enviar}">Agregar representante</button>
+    </form>
+
+    <form method="post" th:action="@{/logout}">
+      <button type="submit" class="boton boton--fantasma" th:text="#{cuenta.salir}">Cerrar sesión</button>
+    </form>
+  </div>
+</div>
+</th:block>
+</body>
+</html>
