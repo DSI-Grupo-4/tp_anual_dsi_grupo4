@@ -15,23 +15,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import ar.edu.utn.frba.dds.web.SesionDePrueba;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CamionEnCurso;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
 import ar.edu.utn.frba.dds.web.client.incentivos.IncentivosClient;
-import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ChoferApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.CiudadApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.DireccionApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.EntregaDeRutaApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ParadaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
 import ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -55,14 +48,9 @@ class SeguimientoDonanteWebTest {
     private final DonacionDelDonante arroz = new DonacionDelDonante(15L, LocalDateTime.of(2026, 11, 10, 15, 0), "Arroz 1 kg",
             BigDecimal.valueOf(20), "KILOGRAMO", "ALIMENTOS", "ARROZ", "EN_TRASLADO", 3L);
 
-    /** Ruta en curso cuyo camión lleva la donación indicada y otra ajena. */
-    private static RutaApi rutaQueLleva(long idDonacion, Double lat, Double lng) {
-        var camion = new CamionApi(1, "AA123BB", 20, 3, 1500, "EN_RUTA", lat, lng,
-                lat == null ? null : LocalDateTime.of(2026, 11, 12, 20, 30), lat == null ? null : true);
-        var parada = new ParadaApi(1, 1, 3, new DireccionApi("Calle", "1", new CiudadApi("Escobar"), null, null),
-                List.of(new EntregaDeRutaApi(9, (int) idDonacion, "EN_TRASLADO", null, null, List.of()),
-                        new EntregaDeRutaApi(10, 999, "EN_TRASLADO", null, null, List.of())));
-        return new RutaApi(7, LocalDate.of(2026, 11, 12), "INICIADA", camion, new ChoferApi(1, "Juan"), List.of(parada));
+    private static CamionEnCurso camion(Double lat, Double lng) {
+        return new CamionEnCurso("AA123BB", lat, lng,
+                lat == null ? null : LocalDateTime.of(2026, 11, 12, 20, 30), lat == null ? null : true, 1);
     }
 
     @BeforeEach
@@ -70,7 +58,7 @@ class SeguimientoDonanteWebTest {
         when(donaciones.perfil(1)).thenReturn(new Perfil(1L, true, "HUMANA", "Ana", "Pérez", null));
         when(donaciones.resumenPorEstado(1)).thenReturn(Map.of("EN_TRASLADO", 1L, "ASIGNACION_REALIZADA", 2L, "ENTREGADA", 4L));
         when(donaciones.donaciones(eq(1L), anyMap())).thenReturn(new Pagina<>(List.of(arroz), 1, 1, 0));
-        when(rutas.rutas()).thenReturn(List.of(rutaQueLleva(15, -34.35, -58.79)));
+        when(donaciones.camiones(1)).thenReturn(List.of(camion(-34.35, -58.79)));
     }
 
     @Test
@@ -99,7 +87,7 @@ class SeguimientoDonanteWebTest {
 
     @Test
     void unCamionSinUbicacionNoSeDibuja() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(rutaQueLleva(15, null, null)));
+        when(donaciones.camiones(1)).thenReturn(List.of(camion(null, null)));
         mvc.perform(get("/donante/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(jsonPath("$", hasSize(0)));
     }
@@ -111,12 +99,12 @@ class SeguimientoDonanteWebTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Ahora no hay donaciones tuyas en camino")))
                 .andExpect(content().string(containsString("Tenés 2 donaciones asignadas que todavía no salieron")));
-        verify(rutas, never()).rutas();
+        verify(donaciones, never()).camiones(1);
     }
 
     @Test
     void siLogisticaNoRespondeMuestraLaListaConUnAviso() throws Exception {
-        when(rutas.rutas()).thenThrow(new BackendNoDisponibleException(ServicioBackend.LOGISTICA, 503, null));
+        when(donaciones.camiones(1)).thenThrow(new BackendNoDisponibleException(ServicioBackend.LOGISTICA, 503, null));
         mvc.perform(get("/donante/seguimiento").with(SesionDePrueba.conRol("DONANTE")))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("no pudimos consultar la ubicación de los camiones")))

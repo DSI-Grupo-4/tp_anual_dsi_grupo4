@@ -22,7 +22,7 @@ class PortalBeneficiariaServiceTest {
 
     @Test
     void soloDevuelveLasDonacionesDeLaEntidadDeLaMasNuevaALaMasVieja() {
-        when(donaciones.donaciones()).thenReturn(List.of(
+        when(donaciones.donacionesDeEntidad(7L)).thenReturn(List.of(
                 donacion(1, "ENTREGADA", 7L), donacion(2, "EN_TRASLADO", 8L), donacion(3, "EN_TRASLADO", 7L)));
 
         List<DonacionApi> propias = portal.donacionesDe(7L);

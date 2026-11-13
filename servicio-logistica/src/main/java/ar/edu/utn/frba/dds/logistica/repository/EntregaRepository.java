@@ -20,6 +20,12 @@ public interface EntregaRepository extends MongoRepository<Entrega, Integer> {
 
     Optional<Entrega> findByIdDonacionAsociada(Integer idDonacionAsociada);
 
+    /** La foto ya está asociada a alguna entrega. */
+    boolean existsByFotosUrl(String url);
+
+    /** Alguna entrega en ese estado tiene una foto cuya URL termina así (para decidir si una foto es pública). */
+    boolean existsByEstadoEntregaAndFotosUrlEndingWith(EstadoEntrega estado, String sufijo);
+
     List<Entrega> findByEstadoEntregaInOrderByIdEntrega(Collection<EstadoEntrega> estados);
 
     List<Entrega> findByFechaOrderByIdEntrega(LocalDate fecha);

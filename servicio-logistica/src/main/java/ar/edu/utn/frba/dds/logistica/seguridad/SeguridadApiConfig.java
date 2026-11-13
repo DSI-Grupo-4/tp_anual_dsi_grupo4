@@ -6,6 +6,7 @@ import static ar.edu.utn.frba.dds.logistica.seguridad.UsuarioToken.SERVICIO;
 
 import ar.edu.utn.frba.dds.logistica.domain.rutas.Parada;
 import ar.edu.utn.frba.dds.logistica.repository.RutaRepository;
+import ar.edu.utn.frba.dds.logistica.service.ControlDeFotos;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,7 +40,7 @@ public class SeguridadApiConfig {
     private static final Logger log = LoggerFactory.getLogger(SeguridadApiConfig.class);
 
     @Bean
-    SecurityFilterChain filtroApi(HttpSecurity http, RutaRepository rutas,
+    SecurityFilterChain filtroApi(HttpSecurity http, RutaRepository rutas, ControlDeFotos controlDeFotos,
                                   @Value("${donatrack.seguridad.habilitada:false}") boolean habilitada,
                                   @Value("${donatrack.seguridad.keycloak-url:http://localhost:8180}") String keycloakUrl,
                                   @Value("${donatrack.seguridad.issuer:http://localhost:8180/realms/donatrack}") String issuer,
@@ -64,6 +65,9 @@ public class SeguridadApiConfig {
                     && UsuarioToken.entidadIds(auth).contains(entidad.get().longValue()));
         };
 
+        AuthorizationManager<RequestAuthorizationContext> fotoPublica = (autenticacion, contexto) ->
+                new AuthorizationDecision(controlDeFotos.esPublica(contexto.getVariables().get("id")));
+
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/rutas/{id}/seguimiento").permitAll()
@@ -74,8 +78,18 @@ public class SeguridadApiConfig {
                 .requestMatchers(HttpMethod.POST, "/api/eventos/{id}/marcar-publicado").hasAnyRole(ADMIN, SERVICIO)
                 // Landing pública de servicio-web (token de servicio).
                 .requestMatchers(HttpMethod.GET, "/api/entregas").hasAnyRole(ADMIN, SERVICIO)
+                // La foto se sube antes de confirmar la parada propia. La descarga sigue siendo de administración.
+                .requestMatchers(HttpMethod.POST, "/api/fotos").hasAnyRole(ADMIN, BENEFICIARIA)
+                // Sin login solo se ve una foto que ya está en una entrega ENTREGADA (galería pública). El resto, administración.
+                .requestMatchers(HttpMethod.GET, "/api/fotos/{id}")
+                        .access(AuthorizationManagers.anyOf(esAdmin, fotoPublica))
+                // Paradas de la entidad del token. El id se vuelve a verificar en el controller.
+                .requestMatchers(HttpMethod.GET, "/api/mis-envios").hasAnyRole(ADMIN, BENEFICIARIA)
+                // Lo llama Donaciones, después de quedarse solo con las donaciones de ese donante.
+                .requestMatchers(HttpMethod.POST, "/api/seguimiento/camiones").hasAnyRole(ADMIN, SERVICIO)
                 // La entidad confirma o rechaza la recepción en su parada.
                 .requestMatchers(HttpMethod.POST, "/api/rutas/{idRuta}/paradas/{idParada}/confirmar",
+                                "/api/rutas/{idRuta}/paradas/{idParada}/recepcion",
                                 "/api/rutas/{idRuta}/paradas/{idParada}/no-recibida")
                         .access(AuthorizationManagers.anyOf(esAdmin, paradaDeLaEntidad))
                 .anyRequest().hasRole(ADMIN))

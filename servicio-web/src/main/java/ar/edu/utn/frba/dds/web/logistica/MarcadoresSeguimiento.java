@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.web.logistica;
 
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CamionEnCurso;
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.DireccionApi;
@@ -72,10 +73,21 @@ public class MarcadoresSeguimiento {
                 .toList();
     }
 
-    /**
-     * Donante: los camiones de las rutas en curso que llevan alguna de sus donaciones (se identifican por el id de
-     * donación). Del resto de las entregas de la ruta no se muestra nada, ni siquiera cuántas son.
-     */
+    /** Donante: los camiones que Donaciones ya limitó a sus donaciones. */
+    public List<Marcador> deCamiones(List<CamionEnCurso> camiones) {
+        if (camiones == null) {
+            return List.of();
+        }
+        return camiones.stream()
+                .filter(c -> c.latitud() != null && c.longitud() != null)
+                .map(c -> Marcador.de(c.latitud(), c.longitud(),
+                        texto("logistica.mapa.camion", c.patente()),
+                        texto("logistica.mapa.detalle-donante", c.donacionesEnTraslado() == null ? 0 : c.donacionesEnTraslado())
+                                + (Boolean.TRUE.equals(c.ubicacionSimulada()) ? " · " + texto("logistica.mapa.simulada") : ""),
+                        c.ubicacionActualizadaEn(), Marcador.CAMION))
+                .toList();
+    }
+
     public List<Marcador> paraDonaciones(Collection<? extends Number> idsDeDonacion, List<RutaApi> rutas) {
         Set<Long> propias = new HashSet<>();
         idsDeDonacion.forEach(id -> propias.add(id.longValue()));

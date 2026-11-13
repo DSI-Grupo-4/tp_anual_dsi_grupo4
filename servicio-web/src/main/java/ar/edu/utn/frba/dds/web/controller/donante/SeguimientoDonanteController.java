@@ -2,7 +2,6 @@ package ar.edu.utn.frba.dds.web.controller.donante;
 
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteClient;
-import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
 import ar.edu.utn.frba.dds.web.donante.DonanteActual;
 import ar.edu.utn.frba.dds.web.error.BackendException;
 import ar.edu.utn.frba.dds.web.logistica.MarcadoresSeguimiento;
@@ -30,13 +29,11 @@ public class SeguimientoDonanteController extends PortalDonanteBase {
     /** Máximo que acepta GET /api/donantes/{id}/donaciones por página. */
     private static final int EN_TRASLADO_MAXIMO = 100;
 
-    private final RutasClient rutas;
     private final MarcadoresSeguimiento marcadores;
 
     public SeguimientoDonanteController(DonanteActual donanteActual, PortalDonanteClient donaciones,
-                                        RutasClient rutas, MarcadoresSeguimiento marcadores) {
+                                        MarcadoresSeguimiento marcadores) {
         super(donanteActual, donaciones);
-        this.rutas = rutas;
         this.marcadores = marcadores;
     }
 
@@ -84,7 +81,6 @@ public class SeguimientoDonanteController extends PortalDonanteBase {
         if (enTraslado.isEmpty()) {
             return List.of(); // Nada en camino: no hace falta consultar Logística.
         }
-        List<Long> ids = enTraslado.stream().map(DonacionDelDonante::id).toList();
-        return marcadores.paraDonaciones(ids, rutas.rutas());
+        return marcadores.deCamiones(donaciones.camiones(donanteActual.id()));
     }
 }

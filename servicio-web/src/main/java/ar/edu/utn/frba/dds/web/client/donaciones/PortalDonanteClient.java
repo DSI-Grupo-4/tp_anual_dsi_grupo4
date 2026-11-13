@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.web.client.donaciones;
 
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CamionEnCurso;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CambioEstado;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DetalleDonacion;
 import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
@@ -68,19 +69,24 @@ public class PortalDonanteClient {
                 .retrieve().body(new ParameterizedTypeReference<>() { });
     }
 
-    /** GET /api/entidades/{id} */
+    /** GET /api/catalogo/entidades/{id}: ficha sin calle, contactos ni representantes. */
     public Entidad entidad(long entidadId) {
-        return http.get().uri("/api/entidades/{id}", entidadId).retrieve().body(Entidad.class);
+        return http.get().uri("/api/catalogo/entidades/{id}", entidadId).retrieve().body(Entidad.class);
     }
 
-    /** GET /api/entidades: todas, activas e inactivas. */
+    /** GET /api/catalogo/entidades: solo las activas. */
     public List<Entidad> entidades() {
-        return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
+        return http.get().uri("/api/catalogo/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
     }
 
-    /** GET /api/entidades/{id}/necesidades */
+    /** GET /api/catalogo/entidades/{id}/necesidades: las que siguen abiertas. */
     public List<Necesidad> necesidades(long entidadId) {
-        return http.get().uri("/api/entidades/{id}/necesidades", entidadId)
+        return http.get().uri("/api/catalogo/entidades/{id}/necesidades", entidadId)
                 .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/donantes/{id}/camiones: solo los que llevan donaciones de ese donante. */
+    public List<CamionEnCurso> camiones(long donanteId) {
+        return http.get().uri("/api/donantes/{id}/camiones", donanteId).retrieve().body(new ParameterizedTypeReference<>() { });
     }
 }

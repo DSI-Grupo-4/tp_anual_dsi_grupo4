@@ -15,6 +15,7 @@ import ar.edu.utn.frba.dds.donaciones.domain.personas.TipoContacto;
 import ar.edu.utn.frba.dds.donaciones.dto.CiudadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DireccionDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadBeneficiariaDTO;
+import ar.edu.utn.frba.dds.donaciones.dto.FichaPublicaEntidadDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EntidadCandidataDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.MedioContactoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.PersonaHumanaDTO;
@@ -82,6 +83,19 @@ public class EntidadBeneficiariaService {
 
     public EntidadBeneficiariaDTO obtenerPorId(Long id) {
         return convertirADTO(buscarEntidad(id));
+    }
+
+    /** Catálogo del donante: solo entidades activas y sin datos de contacto. */
+    public List<FichaPublicaEntidadDTO> fichasActivas() {
+        return entidadBeneficiariaRepository.findAll().stream()
+                .filter(EntidadBeneficiaria::isActiva)
+                .map(FichaPublicaEntidadDTO::desde)
+                .toList();
+    }
+
+    /** La ficha de una entidad inactiva sigue disponible para el historial de quien ya le donó. */
+    public FichaPublicaEntidadDTO fichaPublica(Long id) {
+        return FichaPublicaEntidadDTO.desde(buscarEntidad(id));
     }
 
     public EntidadBeneficiaria buscarEntidad(Long id) {

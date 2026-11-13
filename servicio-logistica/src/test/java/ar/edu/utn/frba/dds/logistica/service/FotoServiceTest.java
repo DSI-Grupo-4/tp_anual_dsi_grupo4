@@ -17,9 +17,11 @@ import com.mongodb.client.gridfs.model.GridFSFile;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.NoSuchElementException;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.gridfs.GridFsResource;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
@@ -58,6 +60,43 @@ class FotoServiceTest {
         verify(gridFs).store(any(InputStream.class), eq("mi_foto__1_.jpg"), eq("image/jpeg"));
         verify(gridFs).store(any(InputStream.class), anyString(), eq("image/png"));
         verify(gridFs).store(any(InputStream.class), anyString(), eq("image/webp"));
+    }
+
+    @Test
+    void siSeConoceQuienSubeLaFotoLoAnotaEnLosMetadatos() {
+        when(gridFs.store(any(InputStream.class), anyString(), anyString(), any())).thenReturn(ID);
+
+        FotoSubidaDTO subida = servicio.guardar(archivo("image/png", PNG), "cuenta-1");
+
+        ArgumentCaptor<Object> metadatos = ArgumentCaptor.forClass(Object.class);
+        verify(gridFs).store(any(InputStream.class), anyString(), eq("image/png"), metadatos.capture());
+        assertThat(((Document) metadatos.getValue()).getString("subidaPor")).isEqualTo("cuenta-1");
+        assertThat(subida.getUrl()).isEqualTo("http://logistica.ejemplo.org/api/fotos/6730a1f2c3d4e5f607182930");
+    }
+
+    @Test
+    void soloReconoceComoPropiaLaUrlExactaQueDevuelveLaApi() {
+        assertThat(servicio.idDeUrl("http://logistica.ejemplo.org/api/fotos/6730a1f2c3d4e5f607182930"))
+                .contains("6730a1f2c3d4e5f607182930");
+        assertThat(servicio.idDeUrl("  http://logistica.ejemplo.org/api/fotos/6730a1f2c3d4e5f607182930 "))
+                .contains("6730a1f2c3d4e5f607182930");
+        assertThat(servicio.idDeUrl("https://sitio.externo/api/fotos/6730a1f2c3d4e5f607182930")).isEmpty();
+        assertThat(servicio.idDeUrl("http://logistica.ejemplo.org/api/fotos/no-es-un-id")).isEmpty();
+        assertThat(servicio.idDeUrl("http://logistica.ejemplo.org/api/fotos/6730a1f2c3d4e5f607182930/../x")).isEmpty();
+        assertThat(servicio.idDeUrl(null)).isEmpty();
+    }
+
+    @Test
+    void quienSubioLaFotoSeLeeDeSusMetadatos() {
+        GridFSFile conDueno = mock(GridFSFile.class);
+        when(conDueno.getMetadata()).thenReturn(new Document("subidaPor", "cuenta-1"));
+        GridFSFile sinMetadatos = mock(GridFSFile.class);
+        when(gridFs.findOne(any(Query.class))).thenReturn(conDueno, sinMetadatos, null);
+
+        assertThat(servicio.subidaPor("6730a1f2c3d4e5f607182930")).contains("cuenta-1");
+        assertThat(servicio.subidaPor("6730a1f2c3d4e5f607182930")).isEmpty();
+        assertThat(servicio.subidaPor("6730a1f2c3d4e5f607182930")).isEmpty();
+        assertThat(servicio.subidaPor("no-es-un-id")).isEmpty();
     }
 
     @Test

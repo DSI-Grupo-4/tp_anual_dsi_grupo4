@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -25,7 +26,9 @@ import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadApi;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadRequest;
 import ar.edu.utn.frba.dds.web.client.donaciones.NecesidadesClient;
 import ar.edu.utn.frba.dds.web.client.logistica.EntregaApi;
-import ar.edu.utn.frba.dds.web.client.logistica.LogisticaClient;
+import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.EntregaDeRutaApi;
+import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
+import ar.edu.utn.frba.dds.web.logistica.EnvioEntidad;
 import ar.edu.utn.frba.dds.web.error.BackendRechazoException;
 import ar.edu.utn.frba.dds.web.error.ServicioBackend;
 import java.math.BigDecimal;
@@ -60,7 +63,7 @@ class BeneficiariaWebTest {
     private DonacionesClient donaciones;
 
     @MockitoBean
-    private LogisticaClient logistica;
+    private RutasClient rutas;
 
     private static DonacionApi donacion(long id, String estado, Long entidad) {
         return new DonacionApi(id, "Arroz " + id, new BigDecimal("20.00"), "KILOGRAMO", "ALIMENTOS", "ARROZ", estado, entidad);
@@ -75,7 +78,8 @@ class BeneficiariaWebTest {
     @BeforeEach
     void datosBase() {
         when(necesidades.entidad(1L)).thenReturn(ENTIDAD);
-        when(donaciones.donaciones()).thenReturn(List.of(
+        // La API devuelve solo las de la entidad; la 3 es de otra y el portal igual la descarta.
+        when(donaciones.donacionesDeEntidad(1L)).thenReturn(List.of(
                 donacion(1, "ENTREGADA", 1L), donacion(2, "EN_TRASLADO", 1L), donacion(3, "EN_TRASLADO", 2L)));
     }
 
@@ -94,7 +98,7 @@ class BeneficiariaWebTest {
 
     @Test
     void siDonacionesNoRespondeElPanelMuestraLaPaginaDeServicioNoDisponible() throws Exception {
-        when(donaciones.donaciones()).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
+        when(donaciones.donacionesDeEntidad(1L)).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
                 ServicioBackend.DONACIONES, 0, null));
 
         mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isServiceUnavailable());
@@ -251,11 +255,14 @@ class BeneficiariaWebTest {
     void elDetalleDeUnaDonacionRecibidaMuestraLasFotosDeSuEntregaSoloSiSonUrlsWeb() throws Exception {
         when(donaciones.donacion(1L)).thenReturn(donacion(1, "ENTREGADA", 1L));
         when(donaciones.historial(1L)).thenReturn(List.of());
-        when(logistica.entregas()).thenReturn(List.of(
-                new EntregaApi(7, 1, 1, "ENTREGADA", LocalDate.of(2026, 11, 12), LocalDateTime.of(2026, 11, 12, 17, 30),
-                        List.of(new EntregaApi.FotoApi("https://f.org/1.jpg", null), new EntregaApi.FotoApi("javascript:alert(1)", null))),
-                new EntregaApi(8, 2, 1, "ENTREGADA", LocalDate.of(2026, 11, 12), null,
-                        List.of(new EntregaApi.FotoApi("https://f.org/otra.jpg", null)))));
+        // Lo que devuelve /api/mis-envios: solo la parada de la entidad. La entrega 8 es de otra donación.
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                1, 1, 1, 1, LocalDate.of(2026, 11, 12), "FINALIZADA", "AA123BB", null, null, null, false,
+                List.of(new EntregaDeRutaApi(7, 1, "ENTREGADA", LocalDateTime.of(2026, 11, 12, 17, 30), null,
+                                List.of(new EntregaApi.FotoApi("https://f.org/1.jpg", null),
+                                        new EntregaApi.FotoApi("javascript:alert(1)", null))),
+                        new EntregaDeRutaApi(8, 2, "ENTREGADA", null, null,
+                                List.of(new EntregaApi.FotoApi("https://f.org/otra.jpg", null)))))));
 
         mvc.perform(get("/beneficiaria/donaciones/1").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
@@ -270,7 +277,7 @@ class BeneficiariaWebTest {
     void siLogisticaNoRespondeElDetalleSeVeIgualSinFotos() throws Exception {
         when(donaciones.donacion(1L)).thenReturn(donacion(1, "ENTREGADA", 1L));
         when(donaciones.historial(1L)).thenReturn(List.of());
-        when(logistica.entregas()).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
+        when(rutas.enviosPropios(1L)).thenThrow(new ar.edu.utn.frba.dds.web.error.BackendNoDisponibleException(
                 ServicioBackend.LOGISTICA, 0, null));
 
         mvc.perform(get("/beneficiaria/donaciones/1").with(SesionDePrueba.conRol("BENEFICIARIA")))
@@ -285,6 +292,6 @@ class BeneficiariaWebTest {
 
         mvc.perform(get("/beneficiaria/donaciones/2").with(SesionDePrueba.conRol("BENEFICIARIA"))).andExpect(status().isOk());
 
-        verify(logistica, never()).entregas();
+        verify(rutas, never()).enviosPropios(anyLong());
     }
 }

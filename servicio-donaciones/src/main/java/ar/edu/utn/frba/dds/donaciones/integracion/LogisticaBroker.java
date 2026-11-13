@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.donaciones.integracion;
 
 import ar.edu.utn.frba.dds.donaciones.client.LogisticaClient;
+import ar.edu.utn.frba.dds.donaciones.dto.CamionEnCursoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
 import org.slf4j.Logger;
@@ -81,6 +82,22 @@ public class LogisticaBroker {
             }
         }
         return eventos;
+    }
+
+    /**
+     * Ubicación de los camiones que llevan esas donaciones. Solo la consulta el
+     * proveedor propio: el alternativo no tiene este recurso, y las donaciones
+     * ya se filtraron por el donante antes de llegar acá.
+     */
+    public List<CamionEnCursoDTO> camionesDe(List<Integer> idsDonacion) {
+        if (idsDonacion.isEmpty()) {
+            return List.of();
+        }
+        LogisticaClient propia = proveedores.stream()
+                .filter(proveedor -> "PROPIA".equals(proveedor.getNombre()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("No está configurado el proveedor logístico propio"));
+        return propia.camiones(idsDonacion);
     }
 
     public void marcarPublicado(UUID idEvento) {

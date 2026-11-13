@@ -135,7 +135,7 @@ class AccesoWebTest {
 
         org.mockito.Mockito.when(necesidades.entidad(1L))
                 .thenReturn(new EntidadApi(1L, true, "Comedor", new EntidadApi.PersonaJuridica("Fundación Demo")));
-        org.mockito.Mockito.when(donaciones.donaciones()).thenReturn(List.of());
+        org.mockito.Mockito.when(donaciones.donacionesDeEntidad(1L)).thenReturn(List.of());
         mvc.perform(get("/beneficiaria").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk());
     }

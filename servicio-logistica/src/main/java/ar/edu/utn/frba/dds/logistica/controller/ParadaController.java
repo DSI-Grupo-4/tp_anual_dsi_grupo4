@@ -3,6 +3,9 @@ package ar.edu.utn.frba.dds.logistica.controller;
 import ar.edu.utn.frba.dds.logistica.domain.eventos.GestorEventos;
 import ar.edu.utn.frba.dds.logistica.domain.eventos.TipoEvento;
 import ar.edu.utn.frba.dds.logistica.domain.rutas.*;
+import ar.edu.utn.frba.dds.logistica.seguridad.UsuarioToken;
+import ar.edu.utn.frba.dds.logistica.service.ControlDeFotos;
+import ar.edu.utn.frba.dds.logistica.service.RecepcionService;
 import org.springframework.web.bind.annotation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,14 +22,28 @@ public class ParadaController {
     private final GestorRutas gestorRutas;
     private final GestorEventos gestorEventos;
 
-    public ParadaController(GestorRutas gestorRutas, GestorEventos gestorEventos) {
+    private final ControlDeFotos controlDeFotos;
+    private final RecepcionService recepcion;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public ParadaController(GestorRutas gestorRutas, GestorEventos gestorEventos, ControlDeFotos controlDeFotos,
+                            RecepcionService recepcion) {
         this.gestorRutas = gestorRutas;
         this.gestorEventos = gestorEventos;
+        this.controlDeFotos = controlDeFotos;
+        this.recepcion = recepcion;
+    }
+
+    /** Sin control de fotos: lo usan los tests de las resoluciones de parada, que no confirman con fotos. */
+    public ParadaController(GestorRutas gestorRutas, GestorEventos gestorEventos) {
+        this(gestorRutas, gestorEventos, null, new RecepcionService(gestorRutas, gestorEventos));
     }
 
     @Operation(
-            summary = "Confirmar recepción de una parada",
-            description = "Confirma la recepción de las entregas asociadas a una parada y genera los eventos correspondientes."
+            summary = "Confirmar recepción de una parada (una foto)",
+            description = "Misma regla que POST .../recepcion, con una sola foto: la ruta tiene que estar INICIADA y solo se confirman "
+                    + "las entregas EN_TRASLADO de la parada (si la cuenta es de una entidad, solo las suyas). No se puede confirmar "
+                    + "antes de iniciar la ruta ni repetir una confirmación. Genera ENTREGA_CONFIRMADA por cada entrega confirmada."
     )
     @ApiResponses({
             @ApiResponse(
@@ -34,8 +51,16 @@ public class ParadaController {
                     description = "Recepción confirmada correctamente"
             ),
             @ApiResponse(
+                    responseCode = "403",
+                    description = "La foto no es de quien confirma o las entregas de la parada son de otra entidad"
+            ),
+            @ApiResponse(
                     responseCode = "404",
                     description = "No se encontró la ruta o la parada indicada"
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "La ruta no está en curso o la parada no tiene entregas en traslado"
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -44,12 +69,13 @@ public class ParadaController {
     })
     @PostMapping("/confirmar")
     public void confirmarRecepcion(@io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idRuta, @io.swagger.v3.oas.annotations.Parameter(description = "Reemplazar por un ID existente devuelto por el alta o listado.", example = "1") @PathVariable Integer idParada,
-                                   @jakarta.validation.Valid @RequestBody FotoEntrega foto) {
-        Ruta ruta = gestorRutas.buscarPorId(idRuta);
-        Parada parada = buscarParada(ruta, idParada);
-        parada.confirmarRecepcion(foto);
-        liberarCamionSiCorresponde(ruta); // finaliza si corresponde y guarda el agregado
-        parada.getEntregas().forEach(e -> gestorEventos.crearEvento(TipoEvento.ENTREGA_CONFIRMADA, e));
+                                   @jakarta.validation.Valid @RequestBody FotoEntrega foto,
+                                   org.springframework.security.core.Authentication auth) {
+        if (controlDeFotos != null) {
+            controlDeFotos.exigirPropias(auth, java.util.List.of(foto.getUrl()));
+        }
+        // Mismas reglas de estado y de entidad que /recepcion: no hay un segundo camino sin validar.
+        recepcion.confirmar(idRuta, idParada, java.util.List.of(foto), UsuarioToken.entidadesQuePuedeConfirmar(auth));
     }
 
     @Operation(

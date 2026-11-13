@@ -12,6 +12,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +48,11 @@ public class FotoController {
     })
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
-    public FotoSubidaDTO subir(@RequestParam("file") MultipartFile file) {
+    public FotoSubidaDTO subir(@RequestParam("file") MultipartFile file, Authentication auth) {
+        // Se anota quién la sube: solo esa cuenta puede usarla después al confirmar una recepción.
+        if (auth instanceof JwtAuthenticationToken) {
+            return fotos.guardar(file, auth.getName());
+        }
         return fotos.guardar(file);
     }
 

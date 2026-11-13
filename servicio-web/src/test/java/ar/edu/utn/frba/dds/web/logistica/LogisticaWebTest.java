@@ -299,9 +299,9 @@ class LogisticaWebTest {
 
     @Test
     void laEntidadVeSoloSuParadaSinDatosDeLasOtrasNiDelChofer() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(ruta(2, "INICIADA",
-                parada(1, 9, "Calle Ajena", entrega(1, "EN_TRASLADO", null)),
-                parada(2, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null)))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 2, 2, 2, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                null, null, null, false, List.of(entrega(2, "EN_TRASLADO", null)))));
 
         mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
@@ -316,7 +316,7 @@ class LogisticaWebTest {
 
     @Test
     void sinEnviosLaEntidadVeUnMensaje() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of());
+        when(rutas.enviosPropios(1L)).thenReturn(List.of());
 
         mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(content().string(containsString("No hay entregas programadas hacia tu organización.")));
@@ -424,11 +424,10 @@ class LogisticaWebTest {
 
     @Test
     void laEntidadVeElMapaSoloConElCamionQueLeLlevaAlgoYSinElChofer() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(
-                rutaConCamionUbicado(2, "INICIADA", false,
-                        parada(1, 9, "Calle Ajena", entrega(1, "EN_TRASLADO", null)),
-                        parada(2, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null))),
-                rutaConCamionUbicado(3, "INICIADA", false, parada(1, 9, "Calle Ajena", entrega(3, "EN_TRASLADO", null)))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 2, 2, 2, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                -34.61, -58.39, LocalDateTime.of(2026, 11, 12, 17, 30), false,
+                List.of(entrega(2, "EN_TRASLADO", null)))));
 
         mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
@@ -444,8 +443,9 @@ class LogisticaWebTest {
 
     @Test
     void sinCamionesUbicadosElMapaDeLaEntidadQuedaVacioEnVezDeInventarPosiciones() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(
-                ruta(2, "INICIADA", parada(1, 1, "Calle Propia", entrega(2, "EN_TRASLADO", null)))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 1, 1, 1, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                null, null, null, false, List.of(entrega(2, "EN_TRASLADO", null)))));
 
         mvc.perform(get("/beneficiaria/seguimiento/ubicaciones.json").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())

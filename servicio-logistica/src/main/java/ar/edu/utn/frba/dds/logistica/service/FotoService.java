@@ -4,6 +4,7 @@ import ar.edu.utn.frba.dds.logistica.dto.FotoRecuperada;
 import ar.edu.utn.frba.dds.logistica.dto.FotoSubidaDTO;
 import ar.edu.utn.frba.dds.logistica.exception.ArchivoDemasiadoGrandeException;
 import com.mongodb.client.gridfs.model.GridFSFile;
+import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -17,6 +18,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Locale;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -28,6 +30,7 @@ import java.util.Set;
 public class FotoService {
 
     private static final Set<String> TIPOS_ACEPTADOS = Set.of("image/jpeg", "image/png", "image/webp");
+    private static final String RUTA_FOTOS = "/api/fotos/";
     private static final int LARGO_CABECERA = 12;
     private static final int LARGO_MAXIMO_NOMBRE = 80;
 
@@ -44,6 +47,11 @@ public class FotoService {
     }
 
     public FotoSubidaDTO guardar(MultipartFile archivo) {
+        return guardar(archivo, null);
+    }
+
+    /** subidaPor: el sujeto (sub) del token de quien sube la foto; queda en los metadatos para validar la confirmación. */
+    public FotoSubidaDTO guardar(MultipartFile archivo, String subidaPor) {
         if (archivo == null || archivo.isEmpty()) {
             throw new IllegalArgumentException("El archivo está vacío");
         }
@@ -60,8 +68,11 @@ public class FotoService {
             if (!declarado.equals(real)) {
                 throw new IllegalArgumentException("El contenido del archivo no es una imagen JPEG, PNG o WebP válida");
             }
-            ObjectId id = gridFs.store(archivo.getInputStream(), nombreSeguro(archivo.getOriginalFilename()), real);
-            return new FotoSubidaDTO(id.toHexString(), urlBase + "/api/fotos/" + id.toHexString());
+            String nombre = nombreSeguro(archivo.getOriginalFilename());
+            ObjectId id = subidaPor == null
+                    ? gridFs.store(archivo.getInputStream(), nombre, real)
+                    : gridFs.store(archivo.getInputStream(), nombre, real, new Document("subidaPor", subidaPor));
+            return new FotoSubidaDTO(id.toHexString(), urlDe(id.toHexString()));
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo leer el archivo subido", e);
         }
@@ -81,6 +92,37 @@ public class FotoService {
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo leer la foto " + id, e);
         }
+    }
+
+    /** La URL con la que se confirma una recepción para esa foto. */
+    public String urlDe(String id) {
+        return urlBase + RUTA_FOTOS + id;
+    }
+
+    /** El id de la foto si la URL es exactamente la que devolvió esta API; vacío para cualquier otra URL. */
+    public Optional<String> idDeUrl(String url) {
+        if (url == null) {
+            return Optional.empty();
+        }
+        String limpia = url.trim();
+        String prefijo = urlBase + RUTA_FOTOS;
+        if (!limpia.startsWith(prefijo)) {
+            return Optional.empty();
+        }
+        String id = limpia.substring(prefijo.length());
+        return ObjectId.isValid(id) ? Optional.of(id) : Optional.empty();
+    }
+
+    /** Quién subió la foto (sub del token). Vacío si no existe o si se subió sin identificar a nadie. */
+    public Optional<String> subidaPor(String id) {
+        if (id == null || !ObjectId.isValid(id)) {
+            return Optional.empty();
+        }
+        GridFSFile archivo = gridFs.findOne(new Query(Criteria.where("_id").is(new ObjectId(id))));
+        if (archivo == null || archivo.getMetadata() == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(archivo.getMetadata().getString("subidaPor"));
     }
 
     // ---- auxiliares ----

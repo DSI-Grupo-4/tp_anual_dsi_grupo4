@@ -129,6 +129,12 @@ public final class PortalDonanteApi {
         }
     }
 
+    /** Camión que lleva donaciones de este donante. Sin las otras entregas de la ruta. */
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record CamionEnCurso(String patente, Double latitud, Double longitud, LocalDateTime ubicacionActualizadaEn,
+                                Boolean ubicacionSimulada, Integer donacionesEnTraslado) {
+    }
+
     /** PaginaDTO. */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Pagina<T>(List<T> content, long totalElements, int totalPages, int number) {

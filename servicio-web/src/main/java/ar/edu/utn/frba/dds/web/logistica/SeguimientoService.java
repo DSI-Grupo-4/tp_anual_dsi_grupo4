@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.web.logistica;
 import ar.edu.utn.frba.dds.web.client.logistica.CamionApi;
 import ar.edu.utn.frba.dds.web.client.logistica.EntregaAdminApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi;
-import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ParadaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -62,27 +61,7 @@ public class SeguimientoService {
      * Solo se devuelve lo de la entidad pedida: nada de las otras paradas de la ruta.
      */
     public List<EnvioEntidad> enviosDe(Long entidadId) {
-        List<EnvioEntidad> envios = new ArrayList<>();
-        for (RutaApi ruta : rutas.rutas()) {
-            if ("CANCELADA".equals(ruta.estadoRuta())) {
-                continue;
-            }
-            for (ParadaApi parada : ruta.paradas()) {
-                Integer entidadDeLaParada = parada.idEntidadBeneficiariaAsociada();
-                if (entidadDeLaParada != null && entidadId.equals(entidadDeLaParada.longValue())) {
-                    CamionApi camion = ruta.camionAsociado();
-                    boolean conUbicacion = camion != null && camion.tieneUbicacion();
-                    envios.add(new EnvioEntidad(ruta.idRuta(), parada.idParada(), parada.numeroParada(),
-                            ruta.paradas().size(), ruta.fecha(), ruta.estadoRuta(),
-                            camion == null ? null : camion.patente(),
-                            conUbicacion ? camion.latitud() : null,
-                            conUbicacion ? camion.longitud() : null,
-                            conUbicacion ? camion.ubicacionActualizadaEn() : null,
-                            conUbicacion && camion.simulada(),
-                            parada.entregas()));
-                }
-            }
-        }
+        List<EnvioEntidad> envios = new ArrayList<>(rutas.enviosPropios(entidadId));
         envios.sort(Comparator
                 .comparing((EnvioEntidad e) -> PRIORIDAD.getOrDefault(e.estadoRuta(), 3))
                 .thenComparing(EnvioEntidad::idRuta, Comparator.nullsLast(Comparator.reverseOrder())));

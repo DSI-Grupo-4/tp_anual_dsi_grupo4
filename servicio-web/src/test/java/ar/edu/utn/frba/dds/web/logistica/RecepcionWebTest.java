@@ -86,9 +86,9 @@ class RecepcionWebTest {
     @BeforeEach
     void datosBase() {
         // Ruta 2: una parada de otra entidad y la parada 2, que es de la entidad 1 y tiene una entrega en traslado.
-        when(rutas.rutas()).thenReturn(List.of(
-                ruta(2, "INICIADA", parada(1, 9, entrega(1, "EN_TRASLADO")), parada(2, 1, entrega(2, "EN_TRASLADO"))),
-                ruta(3, "INICIADA", parada(1, 9, entrega(3, "EN_TRASLADO")))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 2, 2, 2, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                null, null, null, false, List.of(entrega(2, "EN_TRASLADO")))));
     }
 
     @Test
@@ -114,7 +114,9 @@ class RecepcionWebTest {
 
     @Test
     void siYaNoHayEntregasEnTrasladoNoSeOfreceElFormulario() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(ruta(2, "INICIADA", parada(1, 1, entrega(2, "ENTREGADA")))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 1, 1, 1, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                null, null, null, false, List.of(entrega(2, "ENTREGADA")))));
 
         mvc.perform(get("/beneficiaria/seguimiento/2").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())
@@ -230,7 +232,9 @@ class RecepcionWebTest {
 
     @Test
     void siLaRutaYaNoTieneEntregasParaConfirmarVuelveAlSeguimientoConUnAviso() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(ruta(2, "FINALIZADA", parada(1, 1, entrega(2, "ENTREGADA")))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(new EnvioEntidad(
+                2, 1, 1, 1, LocalDate.of(2026, 11, 12), "FINALIZADA", "AA123BB",
+                null, null, null, false, List.of(entrega(2, "ENTREGADA")))));
 
         mvc.perform(multipart("/beneficiaria/seguimiento/2/recepcion")
                         .file(foto("a.jpg", "image/jpeg"))
@@ -244,9 +248,11 @@ class RecepcionWebTest {
 
     @Test
     void elSeguimientoOfreceConfirmarSoloEnLasRutasConEntregasEnTraslado() throws Exception {
-        when(rutas.rutas()).thenReturn(List.of(
-                ruta(2, "INICIADA", parada(1, 1, entrega(2, "EN_TRASLADO"))),
-                ruta(4, "FINALIZADA", parada(1, 1, entrega(4, "ENTREGADA")))));
+        when(rutas.enviosPropios(1L)).thenReturn(List.of(
+                new EnvioEntidad(2, 1, 1, 1, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                        null, null, null, false, List.of(entrega(2, "EN_TRASLADO"))),
+                new EnvioEntidad(4, 1, 1, 1, LocalDate.of(2026, 11, 12), "FINALIZADA", "AA123BB",
+                        null, null, null, false, List.of(entrega(4, "ENTREGADA")))));
 
         mvc.perform(get("/beneficiaria/seguimiento").with(SesionDePrueba.conRol("BENEFICIARIA")))
                 .andExpect(status().isOk())

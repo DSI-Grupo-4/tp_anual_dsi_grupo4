@@ -74,9 +74,15 @@ public class SeguridadApiConfig {
                 .requestMatchers(HttpMethod.POST, "/api/donantes/{id}/interacciones").access(AuthorizationManagers.anyOf(ES_ADMIN, donantePropio))
                 .requestMatchers(HttpMethod.GET, "/api/donantes/{id}/donaciones", "/api/donantes/{id}/donaciones/**")
                         .access(AuthorizationManagers.anyOf(ES_ADMIN, donantePropio))
+                .requestMatchers(HttpMethod.GET, "/api/donantes/{id}/camiones")
+                        .access(AuthorizationManagers.anyOf(ES_ADMIN, donantePropio))
                 .requestMatchers("/api/donantes/**").hasRole(ADMIN)
 
+                .requestMatchers(HttpMethod.GET, "/api/catalogo/entidades", "/api/catalogo/entidades/{id}",
+                        "/api/catalogo/entidades/{id}/necesidades").hasAnyRole(ADMIN, DONANTE)
                 .requestMatchers(HttpMethod.GET, "/api/entidades").hasAnyRole(ADMIN, SERVICIO)
+                .requestMatchers(HttpMethod.GET, "/api/entidades/{id}/donaciones")
+                        .access(AuthorizationManagers.anyOf(ES_ADMIN, entidadPropia))
                 .requestMatchers(HttpMethod.GET, "/api/entidades/{id}", "/api/entidades/{id}/necesidades")
                         .access(AuthorizationManagers.anyOf(ES_ADMIN, ES_SERVICIO, entidadPropia))
                 .requestMatchers(HttpMethod.PUT, "/api/entidades/{id}").access(AuthorizationManagers.anyOf(ES_ADMIN, entidadPropia))

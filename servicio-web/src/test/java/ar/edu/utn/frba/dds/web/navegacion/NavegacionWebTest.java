@@ -47,7 +47,7 @@ class NavegacionWebTest {
         when(necesidades.entidad(1L)).thenReturn(
                 new EntidadApi(1L, true, "Comedor", new EntidadApi.PersonaJuridica("Fundación Demo")));
         when(necesidades.necesidades(1L)).thenReturn(List.of());
-        when(donaciones.donaciones()).thenReturn(List.of());
+        when(donaciones.donacionesDeEntidad(1L)).thenReturn(List.of());
         when(portalDonante.perfil(1L)).thenReturn(new ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil(
                 1L, true, "HUMANA", "Ana", "Pérez", null));
     }

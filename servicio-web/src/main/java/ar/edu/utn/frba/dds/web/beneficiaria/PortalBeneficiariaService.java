@@ -26,10 +26,10 @@ public class PortalBeneficiariaService {
 
     /**
      * Las donaciones asignadas a la entidad, de la más nueva a la más vieja.
-     * Donaciones no filtra por entidad todavía, así que se filtra acá (pendiente: filtro en la API).
+     * La API ya devuelve solo las de esa entidad; se vuelve a filtrar por si alguna viniera de otra.
      */
     public List<DonacionApi> donacionesDe(Long entidadId) {
-        return donaciones.donaciones().stream()
+        return donaciones.donacionesDeEntidad(entidadId).stream()
                 .filter(d -> entidadId.equals(d.entidadBeneficiariaId()))
                 .sorted(Comparator.comparing(DonacionApi::id, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();

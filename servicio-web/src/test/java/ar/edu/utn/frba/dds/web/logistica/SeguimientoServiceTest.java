@@ -13,6 +13,7 @@ import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.EntregaDeRutaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutaApi.ParadaApi;
 import ar.edu.utn.frba.dds.web.client.logistica.RutasClient;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -55,29 +56,17 @@ class SeguimientoServiceTest {
         assertThat(resumen).isEqualTo(new ResumenSeguimiento(1, 1, 1, 2));
     }
 
-    @Test
-    void unaEntidadSoloRecibeSusParadasYNoLasDeLasOtras() {
-        when(rutasClient.rutas()).thenReturn(List.of(
-                ruta(1, "INICIADA", parada(1, 9, entrega(1, "EN_TRASLADO")), parada(2, 5, entrega(2, "EN_TRASLADO"))),
-                ruta(2, "CANCELADA", parada(1, 5, entrega(3, "ASIGNADA_A_RUTA")))));
-
-        List<EnvioEntidad> envios = seguimiento.enviosDe(5L);
-
-        assertThat(envios).hasSize(1);
-        EnvioEntidad envio = envios.get(0);
-        assertThat(envio.idRuta()).isEqualTo(1);
-        assertThat(envio.numeroParada()).isEqualTo(2);
-        assertThat(envio.totalParadas()).isEqualTo(2);
-        assertThat(envio.patente()).isEqualTo("AA123BB");
-        assertThat(envio.entregas()).extracting(EntregaDeRutaApi::idEntrega).containsExactly(2);
+    private static EnvioEntidad envio(int ruta, int parada, int total, String estado, EntregaDeRutaApi entrega) {
+        return new EnvioEntidad(ruta, parada, parada, total, LocalDate.of(2026, 11, 12), estado, "AA123BB",
+                null, null, null, false, List.of(entrega));
     }
 
     @Test
     void losEnviosDeLaEntidadMuestranPrimeroLoQueEstaEnCamino() {
-        when(rutasClient.rutas()).thenReturn(List.of(
-                ruta(1, "FINALIZADA", parada(1, 5, entrega(1, "ENTREGADA"))),
-                ruta(2, "PLANIFICADA", parada(1, 5, entrega(2, "ASIGNADA_A_RUTA"))),
-                ruta(3, "INICIADA", parada(1, 5, entrega(3, "EN_TRASLADO")))));
+        when(rutasClient.enviosPropios(5L)).thenReturn(List.of(
+                envio(1, 1, 1, "FINALIZADA", entrega(1, "ENTREGADA")),
+                envio(2, 1, 1, "PLANIFICADA", entrega(2, "ASIGNADA_A_RUTA")),
+                envio(3, 1, 1, "INICIADA", entrega(3, "EN_TRASLADO"))));
 
         assertThat(seguimiento.enviosDe(5L)).extracting(EnvioEntidad::idRuta).containsExactly(3, 2, 1);
     }
@@ -93,12 +82,10 @@ class SeguimientoServiceTest {
 
     @Test
     void losEnviosDeLaEntidadLlevanLaUbicacionDelCamionSiLaInformo() {
-        CamionApi conUbicacion = new CamionApi(1, "AA123BB", 20, 3, 1500, "EN_RUTA", -34.61, -58.39,
-                java.time.LocalDateTime.of(2026, 11, 12, 17, 30), true);
-        when(rutasClient.rutas()).thenReturn(List.of(
-                new RutaApi(1, LocalDate.of(2026, 11, 12), "INICIADA", conUbicacion, new ChoferApi(1, "Juan"),
-                        List.of(parada(1, 5, entrega(1, "EN_TRASLADO")))),
-                ruta(2, "PLANIFICADA", parada(1, 5, entrega(2, "ASIGNADA_A_RUTA")))));
+        when(rutasClient.enviosPropios(5L)).thenReturn(List.of(
+                new EnvioEntidad(1, 1, 1, 1, LocalDate.of(2026, 11, 12), "INICIADA", "AA123BB",
+                        -34.61, -58.39, LocalDateTime.of(2026, 11, 12, 17, 30), true, List.of(entrega(1, "EN_TRASLADO"))),
+                envio(2, 1, 1, "PLANIFICADA", entrega(2, "ASIGNADA_A_RUTA"))));
 
         List<EnvioEntidad> envios = seguimiento.enviosDe(5L);
 
@@ -111,9 +98,8 @@ class SeguimientoServiceTest {
 
     @Test
     void elEnvioDeUnaRutaSoloSeEncuentraSiLeLlevaAlgoALaEntidad() {
-        when(rutasClient.rutas()).thenReturn(List.of(
-                ruta(2, "INICIADA", parada(1, 5, entrega(1, "EN_TRASLADO"))),
-                ruta(3, "INICIADA", parada(1, 9, entrega(2, "EN_TRASLADO")))));
+        when(rutasClient.enviosPropios(5L)).thenReturn(List.of(
+                envio(2, 1, 1, "INICIADA", entrega(1, "EN_TRASLADO"))));
 
         assertThat(seguimiento.envioDe(5L, 2)).isPresent();
         assertThat(seguimiento.envioDe(5L, 3)).isEmpty();
@@ -122,10 +108,10 @@ class SeguimientoServiceTest {
 
     @Test
     void sePuedeConfirmarSoloConLaRutaEnCursoYEntregasEnTraslado() {
-        when(rutasClient.rutas()).thenReturn(List.of(
-                ruta(1, "INICIADA", parada(1, 5, entrega(1, "EN_TRASLADO"))),
-                ruta(2, "INICIADA", parada(1, 5, entrega(2, "ENTREGADA"))),
-                ruta(3, "PLANIFICADA", parada(1, 5, entrega(3, "ASIGNADA_A_RUTA")))));
+        when(rutasClient.enviosPropios(5L)).thenReturn(List.of(
+                envio(1, 1, 1, "INICIADA", entrega(1, "EN_TRASLADO")),
+                envio(2, 1, 1, "INICIADA", entrega(2, "ENTREGADA")),
+                envio(3, 1, 1, "PLANIFICADA", entrega(3, "ASIGNADA_A_RUTA"))));
 
         assertThat(seguimiento.envioDe(5L, 1).orElseThrow().puedeConfirmarRecepcion()).isTrue();
         assertThat(seguimiento.envioDe(5L, 2).orElseThrow().puedeConfirmarRecepcion()).isFalse();

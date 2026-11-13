@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.web.client.logistica;
 
+import ar.edu.utn.frba.dds.web.logistica.EnvioEntidad;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,6 +19,13 @@ public class RutasClient {
 
     public RutasClient(@Qualifier("logistica") RestClient http) {
         this.http = http;
+    }
+
+    /** GET /api/mis-envios: paradas de esa entidad. La API rechaza una entidad que no es del token. */
+    public List<EnvioEntidad> enviosPropios(long entidadId) {
+        List<EnvioEntidad> envios = http.get().uri("/api/mis-envios?entidadId={id}", entidadId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+        return envios == null ? List.of() : envios;
     }
 
     /** GET /api/rutas */

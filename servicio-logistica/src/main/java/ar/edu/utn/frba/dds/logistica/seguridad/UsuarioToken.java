@@ -55,6 +55,18 @@ public final class UsuarioToken {
                 .anyMatch(a -> ("ROLE_" + rol).equals(a.getAuthority()));
     }
 
+    /**
+     * Entidades cuyas entregas puede confirmar quien llama. Una cuenta con token que no es ADMIN queda limitada a sus
+     * {@code entidad_ids} (sin ninguna, no puede confirmar nada). {@code null} = sin límite: ADMIN, o sin token cuando
+     * la seguridad está deshabilitada.
+     */
+    public static Set<Long> entidadesQuePuedeConfirmar(Authentication auth) {
+        if (!(auth instanceof JwtAuthenticationToken) || tieneRol(auth, ADMIN)) {
+            return null;
+        }
+        return entidadIds(auth);
+    }
+
     public static Set<Long> entidadIds(Authentication auth) {
         Set<Long> ids = new LinkedHashSet<>();
         if (auth instanceof JwtAuthenticationToken token) {

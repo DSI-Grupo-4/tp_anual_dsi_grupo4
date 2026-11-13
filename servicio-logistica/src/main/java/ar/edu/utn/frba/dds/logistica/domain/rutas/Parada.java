@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 // Documento EMBEBIDO dentro de Ruta (sin colección propia): una ruta se lee y se escribe con sus paradas.
 @Getter
@@ -107,9 +108,27 @@ public class Parada {
      * @return las entregas que se confirmaron, para generar sus eventos
      */
     public List<Entrega> confirmarRecepcionConFotos(List<FotoEntrega> fotos) {
-        List<Entrega> confirmadas = entregasEnTraslado();
+        return confirmarRecepcionConFotos(fotos, null);
+    }
+
+    /**
+     * Igual que {@link #confirmarRecepcionConFotos(List)}, pero si se indican entidades solo se confirman las entregas
+     * en traslado cuyo destinatario es una de ellas (una parada puede tener entregas de otra entidad si el plan vino del
+     * componente externo). {@code null} = sin límite de entidad.
+     */
+    public List<Entrega> confirmarRecepcionConFotos(List<FotoEntrega> fotos, Set<Long> entidadesDestinatarias) {
+        List<Entrega> confirmadas = entregasEnTrasladoPara(entidadesDestinatarias);
         confirmadas.forEach(entrega -> entrega.confirmarEntregaConFotos(fotos));
         return confirmadas;
+    }
+
+    /** Las entregas en traslado que le corresponden a alguna de esas entidades ({@code null} = todas las en traslado). */
+    public List<Entrega> entregasEnTrasladoPara(Set<Long> entidadesDestinatarias) {
+        return entregasEnTraslado().stream()
+                .filter(e -> entidadesDestinatarias == null
+                        || (e.getIdEntidadBeneficiariaAsociada() != null
+                            && entidadesDestinatarias.contains(e.getIdEntidadBeneficiariaAsociada().longValue())))
+                .toList();
     }
 
     public void marcarNoRecibida(String justificacion) {

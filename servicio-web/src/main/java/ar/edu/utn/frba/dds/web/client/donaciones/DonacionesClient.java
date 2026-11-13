@@ -21,6 +21,12 @@ public class DonacionesClient {
         return http.get().uri("/api/donaciones").retrieve().body(new ParameterizedTypeReference<>() { });
     }
 
+    /** GET /api/entidades/{id}/donaciones: las de esa entidad. La API rechaza una entidad que no es del token. */
+    public List<DonacionApi> donacionesDeEntidad(Long entidadId) {
+        return http.get().uri("/api/entidades/{id}/donaciones", entidadId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
     /** GET /api/donantes (solo se leen id y activo) */
     public List<DonanteApi> donantes() {
         return http.get().uri("/api/donantes").retrieve().body(new ParameterizedTypeReference<>() { });

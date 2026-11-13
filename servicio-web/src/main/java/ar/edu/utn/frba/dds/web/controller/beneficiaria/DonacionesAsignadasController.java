@@ -62,7 +62,7 @@ public class DonacionesAsignadasController {
         }
         model.addAttribute("donacion", donacion);
         model.addAttribute("historial", donaciones.historial(id));
-        model.addAttribute("fotos", "ENTREGADA".equals(donacion.estadoActual()) ? fotosDeDonacion.de(id) : List.of());
+        model.addAttribute("fotos", "ENTREGADA".equals(donacion.estadoActual()) ? fotosDeDonacion.de(entidadActual.id(), id) : List.of());
         model.addAttribute("migas", List.of(
                 Miga.clave("nav.beneficiaria.panel", "/beneficiaria"),
                 Miga.clave("nav.beneficiaria.donaciones", "/beneficiaria/donaciones"),

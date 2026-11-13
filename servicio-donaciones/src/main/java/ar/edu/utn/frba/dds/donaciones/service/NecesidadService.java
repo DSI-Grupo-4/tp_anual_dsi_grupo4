@@ -109,6 +109,18 @@ public class NecesidadService {
                 .toList();
     }
 
+    /** Solo las necesidades que todavía no se cubrieron, y solo si la entidad sigue activa. */
+    public List<NecesidadDTO> obtenerAbiertas(Long entidadId) {
+        EntidadBeneficiaria entidad = entidadBeneficiariaService.buscarEntidad(entidadId);
+        if (!entidad.isActiva()) {
+            throw new NoSuchElementException("No existe la entidad beneficiaria " + entidadId);
+        }
+        return necesidadRepository.findByEntidadBeneficiaria_Id(entidadId).stream()
+                .filter(necesidad -> !necesidad.satisfecha())
+                .map(this::convertirADTO)
+                .toList();
+    }
+
     @Transactional
     public void eliminar(Long entidadId, Long id) {
         // Valida pertenencia antes de borrar: sin esto, cualquier

@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.donaciones.client;
 
+import ar.edu.utn.frba.dds.donaciones.dto.CamionEnCursoDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.DonacionPendienteDTO;
 import ar.edu.utn.frba.dds.donaciones.dto.EventoLogisticoDTO;
 import org.springframework.core.ParameterizedTypeReference;
@@ -7,6 +8,7 @@ import org.springframework.http.client.ClientHttpRequestInterceptor;
 import org.springframework.web.client.RestClient;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class LogisticaClient {
@@ -47,6 +49,17 @@ public class LogisticaClient {
                 .body(new ParameterizedTypeReference<List<EventoLogisticoDTO>>() {
                 });
         return eventos == null ? List.of() : eventos;
+    }
+
+    /** POST /api/seguimiento/camiones. Solo el proveedor propio entiende este pedido. */
+    public List<CamionEnCursoDTO> camiones(List<Integer> idsDonacion) {
+        List<CamionEnCursoDTO> camiones = restClient.post()
+                .uri("/api/seguimiento/camiones")
+                .body(Map.of("idsDonacion", idsDonacion))
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<CamionEnCursoDTO>>() {
+                });
+        return camiones == null ? List.of() : camiones;
     }
 
     public void marcarPublicado(UUID idEvento) {
