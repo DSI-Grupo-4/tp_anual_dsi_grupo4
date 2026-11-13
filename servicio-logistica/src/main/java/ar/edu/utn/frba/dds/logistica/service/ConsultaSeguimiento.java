@@ -61,7 +61,7 @@ public final class ConsultaSeguimiento {
                 continue;
             }
             int llevadas = 0;
-            for (Entrega entrega : ruta.getParadas() == null ? List.<Parada>of() : ruta.getParadas().stream()
+            for (Entrega entrega : ruta.getParadas() == null ? List.<Entrega>of() : ruta.getParadas().stream()
                     .flatMap(parada -> (parada.getEntregas() == null ? List.<Entrega>of() : parada.getEntregas()).stream())
                     .toList()) {
                 if (entrega.getEstadoEntrega() == EstadoEntrega.EN_TRASLADO
