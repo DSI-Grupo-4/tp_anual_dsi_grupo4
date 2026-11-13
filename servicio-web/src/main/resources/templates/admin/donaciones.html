@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Donaciones', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.38}">
+</p>
+<h1 th:text="#{admin.ui.39}">Donaciones</h1>
+<p class="texto-secundario" th:text="#{admin.ui.40}">
+</p>
+</div>
+<div class="admin-acciones">
+<a class="boton boton--primario" th:href="@{/admin/donaciones/nueva}" th:text="#{admin.ui.37}">Registrar donación</a>
+</div>
+</header>
+<section class="banner banner--exito" th:if="${creadas!=null}" role="status">
+<h2>Donaciones generadas</h2>
+<p>La carga se separó por subcategoría, unidad, condición y vencimiento.</p>
+<div class="admin-acciones">
+<a class="boton boton--secundario" th:each="d:${creadas}" th:href="@{'/admin/donaciones/'+${d.id}}" th:text="|Donación #${d.id} · ${@adminVista.texto(d.subcategoria)}|">
+</a>
+</div>
+</section>
+<p th:if="${asignar}" class="banner banner--info" th:text="#{admin.textos.56}">Estas donaciones están en depósito. Abrí una para ejecutar los algoritmos y elegir entre las entidades propuestas.</p>
+<form class="admin-filtros admin-tarjeta" method="get" th:action="${rutaLista}">
+<div class="campo">
+<label for="q" th:text="#{admin.textos.57}">Descripción del bien</label>
+<input type="search" class="control" id="q" name="q" th:value="${filtros['q']}">
+</div>
+<div class="campo" th:unless="${asignar}">
+<label for="estado" th:text="#{admin.textos.58}">Estado</label>
+<select id="estado" name="estado" class="control">
+<option value="" th:text="#{admin.textos.59}">Todos</option>
+<option th:each="e:${estados}" th:value="${e}" th:selected="${filtros['estado']==e}" th:text="${@adminVista.texto(e)}">
+</option>
+</select>
+</div>
+<div class="campo">
+<label for="categoria" th:text="#{admin.textos.60}">Categoría</label>
+<select id="categoria" name="categoria" class="control">
+<option value="" th:text="#{admin.textos.61}">Todas</option>
+<option th:each="e:${categorias}" th:value="${e}" th:selected="${filtros['categoria']==e}" th:text="${@adminVista.texto(e)}">
+</option>
+</select>
+</div>
+<div class="campo">
+<label for="subcategoria" th:text="#{admin.textos.62}">Subcategoría</label>
+<select id="subcategoria" name="subcategoria" class="control">
+<option value="" th:text="#{admin.textos.63}">Todas</option>
+<option th:each="e:${subcategorias}" th:value="${e}" th:selected="${filtros['subcategoria']==e}" th:text="${@adminVista.texto(e)}">
+</option>
+</select>
+</div>
+<div class="campo">
+<label for="desde" th:text="#{admin.textos.64}">Recibida desde</label>
+<input type="date" class="control" id="desde" name="desde" th:value="${filtros['desde']}">
+</div>
+<div class="campo">
+<label for="hasta" th:text="#{admin.textos.65}">Recibida hasta</label>
+<input type="date" class="control" id="hasta" name="hasta" th:value="${filtros['hasta']}">
+</div>
+<input type="hidden" name="donanteId" th:if="${filtros['donanteId']!=null}" th:value="${filtros['donanteId']}">
+<input type="hidden" name="entidadId" th:if="${filtros['entidadId']!=null}" th:value="${filtros['entidadId']}">
+<button class="boton boton--marca" type="submit" th:text="#{admin.textos.66}">Filtrar</button>
+<a class="boton boton--fantasma" th:href="${rutaLista}" th:text="#{admin.textos.67}">Limpiar</a>
+</form>
+<section class="admin-tarjeta" th:unless="${pagina.content.isEmpty()}">
+<div class="tabla-contenedor" tabindex="0" role="region" aria-label="Listado de donaciones">
+<table class="tabla">
+<thead>
+<tr>
+<th scope="col" th:text="#{admin.textos.68}">Donación</th>
+<th scope="col" th:text="#{admin.textos.69}">Bien</th>
+<th scope="col" th:text="#{admin.textos.70}">Cantidad</th>
+<th scope="col" th:text="#{admin.textos.71}">Recibida</th>
+<th scope="col" th:text="#{admin.textos.72}">Estado</th>
+<th scope="col" th:text="#{admin.textos.73}">Acciones</th>
+</tr>
+</thead>
+<tbody>
+<tr th:each="d:${pagina.content}">
+<th scope="row" th:text="|#${d.id}|">
+</th>
+<td>
+<strong th:text="${@adminVista.texto(d.subcategoria)}">
+</strong>
+<p th:text="${d.descripcionItem}">
+</p>
+</td>
+<td th:text="|${d.cantidadAsignada} ${@adminVista.texto(d.unidadMedida)}|">
+</td>
+<td th:text="${@fechas.fecha(d.fechaCreacion)}">
+</td>
+<td>
+<span class="etiqueta" th:text="${@adminVista.texto(d.estadoActual)}">
+</span>
+</td>
+<td>
+<a class="boton boton--fantasma" th:href="@{'/admin/'+${asignar?'asignaciones':'donaciones'}+'/'+${d.id}}" th:text="${asignar?'Elegir destino':'Ver detalle'}" th:aria-label="|${asignar?'Elegir destino':'Ver detalle'} de donación ${d.id}|">
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<th:block th:replace="~{admin/fragmentos :: vacio}"/>
+<th:block th:replace="~{admin/fragmentos :: paginacion}"/>
+</div>
+</th:block>
+</body>
+</html>

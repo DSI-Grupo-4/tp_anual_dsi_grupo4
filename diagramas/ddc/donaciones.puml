@@ -36,6 +36,7 @@ class PersonaHumana {
 - edad: Integer
 - documento: String
 - genero: Genero
+- direccion: Direccion
 
 --
 
@@ -636,6 +637,7 @@ Importador --> Persona
 MedioContacto --> TipoContacto
 Persona *-- MedioContacto
 PersonaHumana --> Genero
+PersonaHumana *-- Direccion
 PersonaJuridica --> TipoOrganizacion
 PersonaJuridica --> PersonaHumana
 

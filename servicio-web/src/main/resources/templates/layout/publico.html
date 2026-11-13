@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<!--
+  Layout de las páginas públicas (sin sesión). Uso:
+    <html th:replace="~{layout/publico :: layout(#{clave.titulo}, ~{::contenido}, _)}">
+    ...
+    <th:block th:fragment="contenido"> ... </th:block>
+  El tercer parámetro son scripts propios de la vista: ~{::scripts} o _ si no hay.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(titulo, contenido, scripts)">
+<head th:replace="~{fragments/comunes :: cabeza(${titulo})}"></head>
+<body class="pagina-publica">
+  <a class="saltar-contenido" href="#contenido" th:text="#{a11y.saltar-contenido}">Saltar al contenido</a>
+
+  <header class="encabezado-publico sobre-primario">
+    <div class="contenedor encabezado-publico__barra">
+      <a th:replace="~{fragments/comunes :: logo('/')}"></a>
+      <button type="button" class="boton boton--fantasma boton--icono encabezado-publico__alternar"
+              data-alternar-menu aria-controls="nav-publica" aria-expanded="false"
+              th:aria-label="#{a11y.abrir-menu}">
+        <th:block th:replace="~{fragments/comunes :: icono('menu')}"/>
+      </button>
+      <nav id="nav-publica" class="nav-publica" th:aria-label="#{a11y.menu-principal}">
+        <ul>
+          <li><a th:href="@{/galeria}" th:aria-current="${rutaActual == '/galeria'} ? 'page'" th:text="#{nav.galeria}">Galería</a></li>
+          <li><a th:href="@{/mapa}" th:aria-current="${rutaActual == '/mapa'} ? 'page'" th:text="#{nav.mapa}">Mapa</a></li>
+          <li><a th:href="@{/ayuda}" th:aria-current="${rutaActual == '/ayuda'} ? 'page'" th:text="#{nav.ayuda}">Ayuda</a></li>
+          <li><a th:href="@{/ingresar}" th:text="#{nav.ingresar}">Iniciar sesión</a></li>
+          <li><a class="boton boton--secundario" th:href="@{/registro}" th:text="#{nav.registrarse}">Registrarse</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="contenido" tabindex="-1" th:insert="${contenido}"></main>
+
+  <footer th:replace="~{fragments/comunes :: pie}"></footer>
+  <div th:replace="~{fragments/comunes :: toasts}"></div>
+  <th:block th:replace="${scripts}"></th:block>
+</body>
+</html>

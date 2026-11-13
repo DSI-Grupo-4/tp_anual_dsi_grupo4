@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<!-- Fragmentos de Incentivos compartidos por /donante/incentivos y /admin/reportes (Persona 4). -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="recursos">
+  <link rel="stylesheet" th:href="@{/css/incentivos.css}">
+</th:block>
+
+<!--
+  Gráfico de evolución mensual (una sola serie: donaciones por mes) con su tabla.
+  filas: List<GraficoEvolucion.Mes>; titulo: id del encabezado que nombra la sección.
+-->
+<th:block th:fragment="evolucion(filas, titulo)">
+  <ul class="donante-columnas" th:if="${!filas.isEmpty()}" aria-hidden="true">
+    <li th:each="m : ${filas}" th:title="|${@fechas.mes(m.mes())}: ${m.solicitudes()} donaciones|">
+      <span class="donante-columnas__valor" th:text="${m.solicitudes()}">2</span>
+      <span class="donante-columnas__pista">
+        <span class="donante-columnas__barra" th:style="|height: ${m.porcentaje()}%|"></span>
+      </span>
+      <span class="donante-columnas__mes texto-chico texto-secundario" th:text="${@fechas.mes(m.mes())}">nov 2026</span>
+    </li>
+  </ul>
+  <details class="donante-tabla-datos" th:if="${!filas.isEmpty()}">
+    <summary>Ver como tabla</summary>
+    <div class="tabla-contenedor" tabindex="0" role="region" th:attr="aria-labelledby=${titulo}">
+      <table class="tabla">
+        <caption class="solo-lector">Donaciones e impacto por mes</caption>
+        <thead><tr><th scope="col">Mes</th><th scope="col">Donaciones</th><th scope="col">Impacto</th></tr></thead>
+        <tbody>
+          <tr th:each="m : ${filas}">
+            <td th:text="${@fechas.mes(m.mes())}">nov 2026</td>
+            <td th:text="${m.solicitudes()}">2</td>
+            <td th:text="${@donanteVista.numero(m.impacto())}">4,25</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <div class="vacio" th:if="${filas.isEmpty()}">
+    <p>Todavía no hay actividad para mostrar.</p>
+  </div>
+</th:block>
+</body>
+</html>

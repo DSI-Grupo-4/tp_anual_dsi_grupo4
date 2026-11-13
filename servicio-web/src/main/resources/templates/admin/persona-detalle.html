@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Ficha de registro', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.31}">
+</p>
+<h1 th:text="#{admin.ui.32}">Ficha de registro</h1>
+<p class="texto-secundario" th:text="#{admin.ui.33}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<section class="admin-tarjeta">
+<div class="admin-acciones">
+<h2 th:text="${form.tipo=='HUMANA'?form.nombre+' '+form.apellido:form.razonSocial}">
+</h2>
+<span class="etiqueta" th:text="${activa?'Activo':'Inactivo'}">
+</span>
+</div>
+<dl class="admin-datos">
+<div>
+<dt>Tipo</dt>
+<dd th:text="${@adminVista.texto(form.tipo)}">
+</dd>
+</div>
+<div th:if="${form.tipo=='HUMANA'}">
+<dt>Documento</dt>
+<dd th:text="${form.documento}">
+</dd>
+</div>
+<div th:if="${form.tipo=='HUMANA'}">
+<dt>Edad y género</dt>
+<dd th:text="|${form.edad} · ${@adminVista.texto(form.genero)}|">
+</dd>
+</div>
+<div th:if="${form.tipo=='JURIDICA'}">
+<dt>Organización y rubro</dt>
+<dd th:text="|${@adminVista.texto(form.tipoOrganizacion)} · ${form.rubro}|">
+</dd>
+</div>
+<div>
+<dt>Dirección</dt>
+<dd th:text="|${form.calle} ${form.numero}, ${form.ciudad}, ${form.provincia}|">
+</dd>
+</div>
+<div th:if="${entidad}">
+<dt>Descripción</dt>
+<dd th:text="${form.descripcion}">
+</dd>
+</div>
+</dl>
+<h3>Medios de contacto</h3>
+<ul>
+<li th:each="c,s:${form.contactos}">
+<span th:text="|${@adminVista.texto(c.tipo)}: ${c.valor}|">
+</span>
+<strong th:if="${form.preferido==s.index}"> · Preferido</strong>
+</li>
+</ul>
+<section th:unless="${form.representantes.isEmpty()}">
+<h3>Representantes</h3>
+<ul>
+<li th:each="r:${form.representantes}" th:text="|${r.nombre} ${r.apellido} · ${r.documento} · ${r.email}|">
+</li>
+</ul>
+</section>
+<div class="admin-acciones">
+<a th:if="${activa}" class="boton boton--primario" th:href="@{'/admin/'+${seccion}+'/'+${id}(editar=true)}" th:text="#{admin.textos.83}">Editar datos</a>
+<a th:if="${activa and !entidad}" class="boton boton--marca" th:href="@{/admin/donaciones/nueva(donanteId=${id})}" th:text="#{admin.textos.84}">Registrar donación</a>
+<a class="boton boton--secundario" th:href="${entidad ? '/admin/donaciones?entidadId='+id : '/admin/donaciones?donanteId='+id}" th:text="#{admin.textos.85}">Ver donaciones</a>
+<form method="post" th:action="@{'/admin/'+${seccion}+'/'+${id}+'/'+${activa?'baja':'reactivar'}}" th:attr="data-confirmar=${activa ? (entidad ? 'La entidad quedará inactiva. Se quitarán sus necesidades sin actividad; el historial y las entregas en curso se conservan. ¿Continuar?' : 'La persona quedará inactiva y no podrá iniciar nuevas donaciones. Su historial se conserva. ¿Continuar?') : '¿Reactivar este registro?'}">
+<button class="boton" th:classappend="${activa?'boton--peligro':'boton--marca'}" type="submit" th:text="${activa?'Dar de baja':'Reactivar'}">
+</button>
+</form>
+</div>
+</section>
+<section class="admin-tarjeta" th:if="${entidad}">
+<h2>Necesidades declaradas</h2>
+<p th:if="${necesidades.isEmpty()}" th:text="#{admin.textos.86}">Esta entidad todavía no declaró necesidades.</p>
+<div class="admin-grid">
+<article class="admin-renglon" th:each="n:${necesidades}">
+<h3 th:text="${n.descripcion}">
+</h3>
+<p th:text="|${@adminVista.texto(n.tipo)} · ${@adminVista.texto(n.subcategoria)}|">
+</p>
+<p th:text="|Recibido: ${n.cantidadRecibida} / ${n.cantidadRequerida} ${@adminVista.texto(n.unidadMedida)}|">
+</p>
+<span class="etiqueta" th:text="${n.satisfecha?'Satisfecha':'Pendiente'}">
+</span>
+</article>
+</div>
+</section>
+</div>
+</th:block>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Registrar o editar datos', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.15}">
+</p>
+<h1 th:text="#{admin.ui.16}">Datos de la persona</h1>
+<p class="texto-secundario" th:text="#{admin.ui.17}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<div class="admin-acciones" th:if="${id==null and !entidad}">
+<a class="boton boton--secundario" href="/admin/donantes/nuevo?tipo=HUMANA" th:text="#{admin.textos.87}">Persona humana</a>
+<a class="boton boton--secundario" href="/admin/donantes/nuevo?tipo=JURIDICA" th:text="#{admin.textos.88}">Organización</a>
+</div>
+<form method="post" th:action="@{'/admin/'+${seccion}+'/'+${id==null?'nuevo':id}}" th:object="${form}" class="admin-form">
+<section class="banner banner--error" role="alert" tabindex="-1" data-resumen-errores>
+<h2 th:text="#{admin.ui.1}">
+</h2>
+<ul>
+<li th:each="e : ${#fields.errors('*')}" th:text="${e}">
+</li>
+</ul>
+</section>
+<input type="hidden" th:field="*{tipo}">
+<section class="admin-tarjeta">
+<h2 th:text="${form.tipo=='HUMANA'?'Identificación personal':'Datos de la organización'}">
+</h2>
+<div class="admin-grid" th:if="${form.tipo=='HUMANA'}">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'nombre'" th:text="#{admin.ui.18}">Nombre</label>
+<input type="text" class="control" th:field="*{nombre}" th:id="'nombre'" th:attr="aria-invalid=${#fields.hasErrors('nombre')},aria-describedby='nombre-error'" required maxlength="100">
+<span class="campo__error" th:id="'nombre-error'" th:errors="*{nombre}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'apellido'" th:text="#{admin.ui.19}">Apellido</label>
+<input type="text" class="control" th:field="*{apellido}" th:id="'apellido'" th:attr="aria-invalid=${#fields.hasErrors('apellido')},aria-describedby='apellido-error'" required maxlength="100">
+<span class="campo__error" th:id="'apellido-error'" th:errors="*{apellido}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'documento'" th:text="#{admin.ui.20}">Documento</label>
+<input type="text" class="control" th:field="*{documento}" th:id="'documento'" th:attr="aria-invalid=${#fields.hasErrors('documento')},aria-describedby='documento-error'" required maxlength="20">
+<span class="campo__error" th:id="'documento-error'" th:errors="*{documento}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'edad'" th:text="#{admin.ui.21}">Edad</label>
+<input type="number" class="control" th:field="*{edad}" th:id="'edad'" th:attr="aria-invalid=${#fields.hasErrors('edad')},aria-describedby='edad-error'" required min="0" max="130">
+<span class="campo__error" th:id="'edad-error'" th:errors="*{edad}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'genero'" th:text="#{admin.ui.22}">Género</label>
+<select class="control" th:field="*{genero}" th:id="'genero'" th:attr="aria-invalid=${#fields.hasErrors('genero')},aria-describedby='genero-error'" required >
+<option value="" th:text="#{admin.textos.89}">Elegí una opción</option>
+<option value="MASCULINO" th:text="#{admin.textos.90}">Masculino</option>
+<option value="FEMENINO" th:text="#{admin.textos.91}">Femenino</option>
+<option value="X" th:text="#{admin.textos.92}">X</option>
+</select>
+<span class="campo__error" th:id="'genero-error'" th:errors="*{genero}">
+</span>
+</div>
+</div>
+<div class="admin-grid" th:if="${form.tipo=='JURIDICA'}">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'razonSocial'" th:text="#{admin.ui.23}">Razón social</label>
+<input type="text" class="control" th:field="*{razonSocial}" th:id="'razonSocial'" th:attr="aria-invalid=${#fields.hasErrors('razonSocial')},aria-describedby='razonSocial-error'" required maxlength="150">
+<span class="campo__error" th:id="'razonSocial-error'" th:errors="*{razonSocial}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'tipoOrganizacion'" th:text="#{admin.ui.24}">Tipo de organización</label>
+<select class="control" th:field="*{tipoOrganizacion}" th:id="'tipoOrganizacion'" th:attr="aria-invalid=${#fields.hasErrors('tipoOrganizacion')},aria-describedby='tipoOrganizacion-error'" required >
+<option value="" th:text="#{admin.textos.93}">Elegí una opción</option>
+<option value="ONG" th:text="#{admin.textos.94}">Ong</option>
+<option value="EMPRESA" th:text="#{admin.textos.95}">Empresa</option>
+<option value="INSTITUCION" th:text="#{admin.textos.96}">Institucion</option>
+<option value="GUBERNAMENTAL" th:text="#{admin.textos.97}">Gubernamental</option>
+</select>
+<span class="campo__error" th:id="'tipoOrganizacion-error'" th:errors="*{tipoOrganizacion}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'rubro'" th:text="#{admin.ui.25}">Rubro</label>
+<input type="text" class="control" th:field="*{rubro}" th:id="'rubro'" th:attr="aria-invalid=${#fields.hasErrors('rubro')},aria-describedby='rubro-error'" maxlength="100">
+<span class="campo__error" th:id="'rubro-error'" th:errors="*{rubro}">
+</span>
+</div>
+</div>
+<div th:if="${entidad}">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'descripcion'" th:text="#{admin.ui.26}">Descripción de la entidad</label>
+<input type="text" class="control" th:field="*{descripcion}" th:id="'descripcion'" th:attr="aria-invalid=${#fields.hasErrors('descripcion')},aria-describedby='descripcion-error'" maxlength="255">
+<span class="campo__error" th:id="'descripcion-error'" th:errors="*{descripcion}">
+</span>
+</div>
+</div>
+</section>
+<section class="admin-tarjeta" th:if="${entidad or form.tipo=='HUMANA'}">
+<h2>Dirección</h2>
+<div class="admin-grid">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'calle'" th:text="#{admin.ui.27}">Calle</label>
+<input type="text" class="control" th:field="*{calle}" th:id="'calle'" th:attr="aria-invalid=${#fields.hasErrors('calle')},aria-describedby='calle-error'" required >
+<span class="campo__error" th:id="'calle-error'" th:errors="*{calle}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'numero'" th:text="#{admin.ui.28}">Número</label>
+<input type="text" class="control" th:field="*{numero}" th:id="'numero'" th:attr="aria-invalid=${#fields.hasErrors('numero')},aria-describedby='numero-error'" required >
+<span class="campo__error" th:id="'numero-error'" th:errors="*{numero}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'ciudad'" th:text="#{admin.ui.29}">Ciudad</label>
+<input type="text" class="control" th:field="*{ciudad}" th:id="'ciudad'" th:attr="aria-invalid=${#fields.hasErrors('ciudad')},aria-describedby='ciudad-error'" required >
+<span class="campo__error" th:id="'ciudad-error'" th:errors="*{ciudad}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'provincia'" th:text="#{admin.ui.30}">Provincia</label>
+<input type="text" class="control" th:field="*{provincia}" th:id="'provincia'" th:attr="aria-invalid=${#fields.hasErrors('provincia')},aria-describedby='provincia-error'" required >
+<span class="campo__error" th:id="'provincia-error'" th:errors="*{provincia}">
+</span>
+</div>
+</div>
+</section>
+<section class="admin-tarjeta" data-lista="contactos">
+<h2>Medios de contacto</h2>
+<p>Incluí al menos un correo electrónico y elegí un único contacto preferido para recibir notificaciones. Para una entidad beneficiaria, agregá también un teléfono.</p>
+<div data-filas>
+<fieldset class="admin-renglon" data-fila th:each="contacto,s:*{contactos}">
+<legend th:text="|Contacto ${s.index+1}|">
+</legend>
+<div class="admin-grid">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'contactos-__${s.index}__-tipo'" th:text="#{admin.ui.9}">Tipo de contacto</label>
+<select class="control" th:field="*{contactos[__${s.index}__].tipo}" th:id="'contactos-__${s.index}__-tipo'" th:attr="aria-invalid=${#fields.hasErrors('contactos[__${s.index}__].tipo')},aria-describedby='contactos-__${s.index}__-tipo-error'" required >
+<option value="" th:text="#{admin.textos.98}">Elegí una opción</option>
+<option value="EMAIL" th:text="#{admin.textos.99}">Email</option>
+<option value="TELEFONO" th:text="#{admin.textos.100}">Telefono</option>
+<option value="WHATSAPP" th:text="#{admin.textos.101}">Whatsapp</option>
+</select>
+<span class="campo__error" th:id="'contactos-__${s.index}__-tipo-error'" th:errors="*{contactos[__${s.index}__].tipo}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'contactos-__${s.index}__-valor'" th:text="#{admin.ui.10}">Correo o número de contacto</label>
+<input type="text" class="control" th:field="*{contactos[__${s.index}__].valor}" th:id="'contactos-__${s.index}__-valor'" th:attr="aria-invalid=${#fields.hasErrors('contactos[__${s.index}__].valor')},aria-describedby='contactos-__${s.index}__-valor-error'" required >
+<span class="campo__error" th:id="'contactos-__${s.index}__-valor-error'" th:errors="*{contactos[__${s.index}__].valor}">
+</span>
+</div>
+<div class="campo">
+<label class="admin-radio" th:for="|preferido-${s.index}|">
+<input type="radio" name="preferido" th:id="|preferido-${s.index}|" th:value="${s.index}" th:checked="${form.preferido==s.index}">Contacto preferido</label>
+</div>
+</div>
+<button class="boton boton--fantasma" type="button" data-quitar th:text="#{admin.textos.102}">Quitar contacto</button>
+</fieldset>
+</div>
+<button class="boton boton--secundario" type="button" data-agregar th:text="#{admin.textos.103}">Agregar contacto</button>
+</section>
+<section class="admin-tarjeta" data-lista="representantes" th:attr="data-maximo=${entidad?50:1}" th:if="${form.tipo=='JURIDICA'}">
+<h2>Personas representantes</h2>
+<p>Identificá a quienes operan en nombre de la organización. Una organización donante admite un representante; una entidad beneficiaria, varios.</p>
+<div data-filas>
+<fieldset class="admin-renglon" data-fila th:each="representante,s:*{representantes}">
+<legend th:text="|Representante ${s.index+1}|">
+</legend>
+<div class="admin-grid">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'representantes-__${s.index}__-nombre'" th:text="#{admin.ui.11}">Nombre</label>
+<input type="text" class="control" th:field="*{representantes[__${s.index}__].nombre}" th:id="'representantes-__${s.index}__-nombre'" th:attr="aria-invalid=${#fields.hasErrors('representantes[__${s.index}__].nombre')},aria-describedby='representantes-__${s.index}__-nombre-error'" required >
+<span class="campo__error" th:id="'representantes-__${s.index}__-nombre-error'" th:errors="*{representantes[__${s.index}__].nombre}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'representantes-__${s.index}__-apellido'" th:text="#{admin.ui.12}">Apellido</label>
+<input type="text" class="control" th:field="*{representantes[__${s.index}__].apellido}" th:id="'representantes-__${s.index}__-apellido'" th:attr="aria-invalid=${#fields.hasErrors('representantes[__${s.index}__].apellido')},aria-describedby='representantes-__${s.index}__-apellido-error'" required >
+<span class="campo__error" th:id="'representantes-__${s.index}__-apellido-error'" th:errors="*{representantes[__${s.index}__].apellido}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'representantes-__${s.index}__-documento'" th:text="#{admin.ui.13}">Documento</label>
+<input type="text" class="control" th:field="*{representantes[__${s.index}__].documento}" th:id="'representantes-__${s.index}__-documento'" th:attr="aria-invalid=${#fields.hasErrors('representantes[__${s.index}__].documento')},aria-describedby='representantes-__${s.index}__-documento-error'" required >
+<span class="campo__error" th:id="'representantes-__${s.index}__-documento-error'" th:errors="*{representantes[__${s.index}__].documento}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'representantes-__${s.index}__-email'" th:text="#{admin.ui.14}">Correo de la persona representante</label>
+<input type="email" class="control" th:field="*{representantes[__${s.index}__].email}" th:id="'representantes-__${s.index}__-email'" th:attr="aria-invalid=${#fields.hasErrors('representantes[__${s.index}__].email')},aria-describedby='representantes-__${s.index}__-email-error'" required >
+<span class="campo__error" th:id="'representantes-__${s.index}__-email-error'" th:errors="*{representantes[__${s.index}__].email}">
+</span>
+</div>
+</div>
+<button class="boton boton--fantasma" type="button" data-quitar th:text="#{admin.textos.104}">Quitar representante</button>
+</fieldset>
+</div>
+<button class="boton boton--secundario" type="button" data-agregar th:text="#{admin.textos.105}">Agregar representante</button>
+</section>
+<div class="admin-acciones">
+<button class="boton boton--primario" type="submit" th:text="#{admin.textos.106}">Guardar datos</button>
+<a class="boton boton--secundario" th:href="@{'/admin/'+${seccion}+'/'+${id==null?'':id}}" th:text="#{admin.textos.107}">Cancelar</a>
+</div>
+</form>
+</div>
+</th:block>
+</body>
+</html>

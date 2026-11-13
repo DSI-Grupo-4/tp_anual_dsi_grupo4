@@ -8,14 +8,14 @@
 # docker-compose.integration.yml.
 #
 # Uso: ./stop-servicios.sh [servicio ...]
-#   (sin argumentos detiene los 4 servicios + la infra)
+#   (sin argumentos detiene todos los servicios, incluido servicio-web, + la infra)
 
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PID_DIR="$ROOT_DIR/.pids"
 COMPOSE_FILE="$ROOT_DIR/docker-compose.integration.yml"
-SERVICE_ORDER=(servicio-donaciones servicio-logistica servicio-incentivos servicio-notificaciones)
+SERVICE_ORDER=(servicio-web servicio-donaciones servicio-logistica servicio-incentivos servicio-notificaciones)
 
 # Solo baja la infra (RabbitMQ, MySQL, n8n) si se pidieron todos los
 # servicios -- si se pasó un subconjunto puntual (ej. "stop-servicios.sh

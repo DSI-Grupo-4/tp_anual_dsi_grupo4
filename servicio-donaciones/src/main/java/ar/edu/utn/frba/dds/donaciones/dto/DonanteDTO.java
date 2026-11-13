@@ -34,10 +34,14 @@ public class DonanteDTO {
     private Integer edad;
     private Genero genero;
     private String documento;
+    @jakarta.validation.Valid
+    private DireccionDTO direccion;
     // Campos de PersonaJuridica
     private String razonSocial;
     private TipoOrganizacion tipoOrganizacion;
     private String rubro;
+    @jakarta.validation.Valid
+    private java.util.List<@jakarta.validation.constraints.NotNull PersonaHumanaDTO> representantes;
     @jakarta.validation.Valid
     private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;
 }

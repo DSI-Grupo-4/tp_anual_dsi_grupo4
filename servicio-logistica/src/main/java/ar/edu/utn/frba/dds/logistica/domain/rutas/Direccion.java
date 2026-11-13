@@ -14,6 +14,14 @@ public class Direccion {
     private String numero;
     private Ciudad ciudad;
 
+    // Coordenadas de la dirección (opcionales): las manda Donaciones cuando la entidad tiene la sede ubicada en el mapa.
+    private Double latitud;
+    private Double longitud;
+
+    public boolean tieneCoordenadas() {
+        return latitud != null && longitud != null;
+    }
+
     public Direccion(
             String calle,
             String numero,

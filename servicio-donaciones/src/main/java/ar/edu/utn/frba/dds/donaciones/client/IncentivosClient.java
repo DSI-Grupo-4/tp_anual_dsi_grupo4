@@ -37,31 +37,45 @@ public class IncentivosClient {
     /** Sincroniza identidad y contacto sin contabilizar una donación ni completar misiones. */
     public void registrarDonante(Donante donante) {
         encolarPerfil(donante);
-        intentarPerfil(pendientes.resolve(String.format("perfil-%020d.json", donante.getId())));
     }
 
-    public synchronized void encolarPerfil(Donante donante) {
+    public void encolarPerfil(Donante donante) {
         var medio = donante.getPersona().medioPreferido();
         var perfil = new java.util.LinkedHashMap<String,String>();
         perfil.put("nombre", nombreDe(donante.getPersona()));
         perfil.put("medioContactoPreferido", medio.map(m -> mapearMedio(m.getTipo())).orElse(null));
         perfil.put("contactoPreferido", medio.map(MedioContacto::getValor).orElse(null));
-        try {
-            java.nio.file.Files.createDirectories(pendientes);
-            var temporal = java.nio.file.Files.createTempFile(pendientes, "perfil-", ".tmp");
-            mapper.writeValue(temporal.toFile(), java.util.Map.of("donanteId", donante.getId(), "perfil", perfil));
-            java.nio.file.Files.move(temporal, pendientes.resolve(String.format("perfil-%020d.json", donante.getId())),
-                java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo guardar el perfil pendiente de Incentivos", e); }
+        synchronized (this) {
+            try {
+                java.nio.file.Files.createDirectories(pendientes);
+                var temporal = java.nio.file.Files.createTempFile(pendientes, "perfil-", ".tmp");
+                mapper.writeValue(temporal.toFile(), java.util.Map.of("donanteId", donante.getId(), "perfil", perfil));
+                java.nio.file.Files.move(temporal, pendientes.resolve(String.format("perfil-%020d.json", donante.getId())),
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo guardar el perfil pendiente de Incentivos", e); }
+        }
     }
 
-    private synchronized void intentarPerfil(java.nio.file.Path archivo) {
-        if (!java.nio.file.Files.exists(archivo)) return;
+    private void intentarPerfil(java.nio.file.Path archivo) {
+        byte[] versionEnviada;
         try {
-            var datos = mapper.readTree(archivo.toFile());
+            synchronized (this) {
+                if (!java.nio.file.Files.exists(archivo)) return;
+                versionEnviada = java.nio.file.Files.readAllBytes(archivo);
+            }
+
+            var datos = mapper.readTree(versionEnviada);
             restClient.put().uri("/api/donantes/{id}/perfil", datos.get("donanteId").asLong())
                 .body(datos.get("perfil")).retrieve().toBodilessEntity();
-            java.nio.file.Files.delete(archivo);
+
+            synchronized (this) {
+                // Si el perfil cambió mientras se esperaba la respuesta HTTP,
+                // no se elimina la versión nueva: quedará para el siguiente ciclo.
+                if (java.nio.file.Files.exists(archivo)
+                        && java.util.Arrays.equals(versionEnviada, java.nio.file.Files.readAllBytes(archivo))) {
+                    java.nio.file.Files.delete(archivo);
+                }
+            }
         } catch (Exception e) { logger.warn("Perfil pendiente de Incentivos {}: {}", archivo.getFileName(), e.getMessage()); }
     }
 
@@ -84,15 +98,25 @@ public class IncentivosClient {
 
     @org.springframework.beans.factory.annotation.Value("${incentivos.pendientes-dir:.datos/donaciones/incentivos-pendientes}")
     private java.nio.file.Path pendientes = java.nio.file.Path.of(".datos/donaciones/incentivos-pendientes");
+    @org.springframework.beans.factory.annotation.Value("${incentivos.reintento-lote:20}")
+    private int maxPendientesPorEjecucion = 20;
     private final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper().findAndRegisterModules();
 
     @org.springframework.scheduling.annotation.Scheduled(fixedDelayString = "${incentivos.reintento-ms:5000}")
-    public synchronized void enviarPendientes() {
+    public void enviarPendientes() {
         if (!java.nio.file.Files.exists(pendientes)) return;
         try (var archivos = java.nio.file.Files.list(pendientes)) {
             var lista = archivos.filter(p -> p.toString().endsWith(".json")).sorted().toList();
-            for (var archivo : lista) if (archivo.getFileName().toString().startsWith("perfil-")) intentarPerfil(archivo);
+            int procesados = 0;
             for (var archivo : lista) {
+                if (procesados >= maxPendientesPorEjecucion) break;
+                if (archivo.getFileName().toString().startsWith("perfil-")) {
+                    intentarPerfil(archivo);
+                    procesados++;
+                }
+            }
+            for (var archivo : lista) {
+                if (procesados >= maxPendientesPorEjecucion) break;
                 if (archivo.getFileName().toString().startsWith("perfil-")) continue;
                 try {
                     var datos = mapper.readTree(archivo.toFile());
@@ -100,6 +124,7 @@ public class IncentivosClient {
                         .body(datos.get("solicitud")).retrieve().toBodilessEntity();
                     java.nio.file.Files.delete(archivo);
                 } catch (Exception e) { logger.warn("Actividad pendiente de Incentivos {}: {}", archivo.getFileName(), e.getMessage()); break; }
+                procesados++;
             }
         } catch (java.io.IOException e) { throw new IllegalStateException("No se pudo leer la bandeja de Incentivos", e); }
     }

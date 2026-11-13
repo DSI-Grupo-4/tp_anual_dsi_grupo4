@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<!--
+  Componente de mapa de DonaTrack (D-042). Lo usan /mapa (público) y las pantallas de
+  seguimiento de las Personas 4 y 5. Uso en una vista:
+
+    <html th:replace="~{layout/privado :: layout(#{...}, ~{::contenido}, ~{fragments/mapa :: recursos})}">
+    ...
+    <section th:replace="~{fragments/mapa :: mapa('mapa-seguimiento', #{donante.seguimiento.mapa}, ${marcadores}, @{/donante/seguimiento/ubicaciones.json}, 30)}"></section>
+
+  Parámetros:
+    id          id único del componente en la página
+    titulo      nombre accesible del mapa (lo lee el lector de pantalla)
+    marcadores  List<Marcador> para el primer dibujado (se renderiza también como lista accesible)
+    urlDatos    URL que devuelve List<Marcador> en JSON para refrescar, o null si no se refresca
+    intervalo   segundos entre refrescos (0 = no refresca)
+-->
+<head>
+  <th:block th:fragment="recursos">
+    <link rel="stylesheet" th:href="@{/webjars/leaflet/1.9.4/dist/leaflet.css}">
+    <link rel="stylesheet" th:href="@{/css/mapa.css}">
+    <script th:src="@{/webjars/leaflet/1.9.4/dist/leaflet.js}" defer></script>
+    <script th:src="@{/js/mapa.js}" defer></script>
+  </th:block>
+</head>
+<body>
+
+<section th:fragment="mapa(id, titulo, marcadores, urlDatos, intervalo)" class="mapa" th:id="${id}" data-mapa
+         th:attr="data-url=${urlDatos}, data-intervalo=${intervalo},
+                  data-tiles=${@mapa.tilesUrl}, data-atribucion=${@mapa.atribucion},
+                  data-centro-lat=${@mapa.centroLat}, data-centro-lng=${@mapa.centroLng}, data-zoom=${@mapa.zoom},
+                  data-zona=${@fechas.zona().id}, data-iconos=@{/img/iconos.svg},
+                  data-marcadores=${@json.escribir(marcadores)}">
+  <div class="mapa__lienzo" th:id="${id} + '-lienzo'" th:aria-label="${titulo}" role="region"
+       th:aria-describedby="${id} + '-ayuda'">
+    <p class="mapa__sin-js">El mapa interactivo necesita JavaScript. Las ubicaciones están en la lista de abajo.</p>
+  </div>
+  <p class="mapa__ayuda texto-chico texto-secundario" th:id="${id} + '-ayuda'">
+    Con el teclado: flechas para mover el mapa, + y − para acercar o alejar, Tab para recorrer los marcadores y Enter para ver su detalle.
+  </p>
+  <p class="mapa__estado texto-chico" role="status" aria-live="polite"></p>
+
+  <details class="mapa__lista faq">
+    <summary>Ver como lista (<span class="mapa__cantidad" th:text="${#lists.size(marcadores)}">0</span>)</summary>
+    <div>
+      <p class="mapa__vacio texto-secundario" th:hidden="${!#lists.isEmpty(marcadores)}">No hay ubicaciones para mostrar.</p>
+      <ul class="mapa__items">
+        <li th:each="m, i : ${marcadores}" class="mapa__item">
+          <button type="button" class="boton boton--fantasma mapa__ir" th:attr="data-indice=${i.index}">
+            <span class="mapa__pin-lista" th:classappend="'mapa__pin-lista--' + ${m.tipo}" aria-hidden="true"></span>
+            <span class="mapa__item-titulo" th:text="${m.titulo}">Comedor</span>
+          </button>
+          <span class="mapa__item-detalle" th:text="${m.detalle}">Detalle</span>
+          <span class="texto-chico texto-secundario" th:if="${m.actualizadoEn != null}"
+                th:text="'Actualizado: ' + ${@fechas.fechaHoraIso(m.actualizadoEn)}">Actualizado</span>
+        </li>
+      </ul>
+    </div>
+  </details>
+</section>
+
+</body>
+</html>

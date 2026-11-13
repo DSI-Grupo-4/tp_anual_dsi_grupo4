@@ -36,6 +36,26 @@ public class RankingController {
         return convertirADTO(consultor.obtenerRankingDeMes(fecha));
     }
 
+    @io.swagger.v3.oas.annotations.Operation(summary = "Ranking del mes en curso", description = "Todavía sin cerrar: todos los donantes con misiones completadas este mes, de más a menos. Lista vacía si nadie completó misiones.")
+    @GetMapping("/actual")
+    public List<RankingPosicionDTO> obtenerRankingEnCurso() {
+        List<ActividadMensualDonante> actividad = consultor.obtenerRankingEnCurso();
+        String mes = YearMonth.now().toString();
+        return IntStream.range(0, actividad.size())
+                .mapToObj(i -> posicion(actividad.get(i), i + 1, mes))
+                .toList();
+    }
+
+    private static RankingPosicionDTO posicion(ActividadMensualDonante actividad, int puesto, String mes) {
+        RankingPosicionDTO dto = new RankingPosicionDTO();
+        dto.setPuesto(puesto);
+        dto.setDonanteId(actividad.getDonanteAsociado().getId());
+        dto.setDonanteNombre(actividad.getDonanteAsociado().getNombre());
+        dto.setCantidadMisiones(actividad.getCantidad());
+        dto.setMes(mes);
+        return dto;
+    }
+
     @io.swagger.v3.oas.annotations.Operation(summary = "Obtener ultimo", description = "Usar los IDs devueltos por las operaciones de alta. Los datos de prueba se mantienen en memoria.")
     @GetMapping("/ultimo")
     public List<RankingPosicionDTO> obtenerUltimo() {
@@ -44,14 +64,7 @@ public class RankingController {
         List<ActividadMensualDonante> topDonantes = ranking.getTopDonantes();
 
         return IntStream.range(0, topDonantes.size())
-                .mapToObj(i -> {
-                    RankingPosicionDTO dto = new RankingPosicionDTO();
-                    dto.setPuesto(i + 1);
-                    dto.setDonanteId(topDonantes.get(i).getDonanteAsociado().getId());
-                    dto.setCantidadMisiones(topDonantes.get(i).getCantidad());
-                    dto.setMes(mes);
-                    return dto;
-                })
+                .mapToObj(i -> posicion(topDonantes.get(i), i + 1, mes))
                 .toList();
     }
 
@@ -69,6 +82,7 @@ public class RankingController {
     private ActividadMensualDonanteDTO convertirADTO(ActividadMensualDonante actividad, int puesto) {
         ActividadMensualDonanteDTO dto = new ActividadMensualDonanteDTO();
         dto.setDonanteId(actividad.getDonanteAsociado().getId());
+        dto.setDonanteNombre(actividad.getDonanteAsociado().getNombre());
         dto.setCantidad(actividad.getCantidad());
         dto.setPuesto(puesto);
         return dto;

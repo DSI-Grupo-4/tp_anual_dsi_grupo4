@@ -22,10 +22,16 @@ public class ImportadorCSV extends Importador {
             csvReader.readNext();
 
             String[] fila;
+            int numeroFila = 1;
 
             while ((fila = csvReader.readNext()) != null) {
-
-                Persona persona = crearPersona(fila);
+                numeroFila++;
+                Persona persona;
+                try {
+                    persona = crearPersona(fila);
+                } catch (IllegalArgumentException error) {
+                    throw new IllegalArgumentException("Fila " + numeroFila + ": " + error.getMessage(), error);
+                }
 
                 if (persona != null) {
                     personasImportadas.add(persona);
@@ -41,7 +47,7 @@ public class ImportadorCSV extends Importador {
     private Persona crearPersona(String[] datos) {
         if (datos.length < 6) throw new IllegalArgumentException("Cada fila requiere seis columnas");
 
-        String tipo = datos[0];
+        String tipo = datos[0].trim();
         String documento = datos[2];
         String nombreCompleto = datos[3];
         String email = datos[4].trim();
@@ -57,7 +63,7 @@ public class ImportadorCSV extends Importador {
         } else if ("JURIDICA".equals(tipo)) {
             persona = new PersonaJuridica(nombreCompleto, null, null, null);
         } else {
-            return null;
+            throw new IllegalArgumentException("TipoPersona debe ser HUMANA o JURIDICA");
         }
 
         persona.agregarMedio(new MedioContacto(TipoContacto.EMAIL, email, true));

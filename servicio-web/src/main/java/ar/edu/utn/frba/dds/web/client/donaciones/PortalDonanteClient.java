@@ -1,0 +1,86 @@
+package ar.edu.utn.frba.dds.web.client.donaciones;
+
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.CambioEstado;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DetalleDonacion;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.DonacionDelDonante;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Entidad;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Necesidad;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Pagina;
+import ar.edu.utn.frba.dds.web.client.donaciones.PortalDonanteApi.Perfil;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClient;
+
+/**
+ * Lecturas del servicio de Donaciones para el portal del donante (Persona 4).
+ * Separado de DonacionesClient y AdminDonacionesClient para no pisar el trabajo de otras personas.
+ */
+@Component
+public class PortalDonanteClient {
+
+    private final RestClient http;
+
+    public PortalDonanteClient(@Qualifier("donaciones") RestClient http) {
+        this.http = http;
+    }
+
+    /** GET /api/donantes/{id} */
+    public Perfil perfil(long donanteId) {
+        return http.get().uri("/api/donantes/{id}", donanteId).retrieve().body(Perfil.class);
+    }
+
+    /** GET /api/donantes/{id}/donaciones?q=&estado=&categoria=&subcategoria=&entidadId=&page=&size= (filtros vacíos se omiten) */
+    public Pagina<DonacionDelDonante> donaciones(long donanteId, Map<String, String> filtros) {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("donanteId", donanteId);
+        return http.get().uri(b -> {
+            b.path("/api/donantes/{donanteId}/donaciones");
+            filtros.forEach((clave, valor) -> {
+                if (valor != null && !valor.isBlank() && !"donanteId".equals(clave)) {
+                    // Como variable de plantilla: el valor se codifica y no se interpreta como URI.
+                    b.queryParam(clave, "{" + clave + "}");
+                    variables.put(clave, valor);
+                }
+            });
+            return b.build(variables);
+        }).retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/donantes/{id}/donaciones/resumen: cantidad por estado, con todos los estados. */
+    public Map<String, Long> resumenPorEstado(long donanteId) {
+        return http.get().uri("/api/donantes/{id}/donaciones/resumen", donanteId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/donantes/{id}/donaciones/{donacionId}: 404 si la donación es de otro donante. */
+    public DetalleDonacion donacion(long donanteId, long donacionId) {
+        return http.get().uri("/api/donantes/{id}/donaciones/{donacion}", donanteId, donacionId)
+                .retrieve().body(DetalleDonacion.class);
+    }
+
+    /** GET /api/donantes/{id}/donaciones/{donacionId}/historial */
+    public List<CambioEstado> historial(long donanteId, long donacionId) {
+        return http.get().uri("/api/donantes/{id}/donaciones/{donacion}/historial", donanteId, donacionId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/entidades/{id} */
+    public Entidad entidad(long entidadId) {
+        return http.get().uri("/api/entidades/{id}", entidadId).retrieve().body(Entidad.class);
+    }
+
+    /** GET /api/entidades: todas, activas e inactivas. */
+    public List<Entidad> entidades() {
+        return http.get().uri("/api/entidades").retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+
+    /** GET /api/entidades/{id}/necesidades */
+    public List<Necesidad> necesidades(long entidadId) {
+        return http.get().uri("/api/entidades/{id}/necesidades", entidadId)
+                .retrieve().body(new ParameterizedTypeReference<>() { });
+    }
+}

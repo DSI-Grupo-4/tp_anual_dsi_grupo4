@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{${migas[migas.size() - 1].etiqueta}}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <h1 th:text="#{${migas[migas.size() - 1].etiqueta}}">Sección</h1>
+  </div>
+  <div th:replace="~{fragments/comunes :: en-construccion}"></div>
+</th:block>
+</body>
+</html>

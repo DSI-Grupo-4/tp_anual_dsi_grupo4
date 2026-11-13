@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Importar donantes', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.34}">
+</p>
+<h1 th:text="#{admin.ui.35}">Importar donantes desde CSV</h1>
+<p class="texto-secundario" th:text="#{admin.ui.36}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<section class="admin-tarjeta">
+<h2>Antes de comenzar</h2>
+<ol>
+<li>Guardá el archivo como CSV con codificación UTF-8.</li>
+<li>Usá las seis columnas del ejemplo. El correo es obligatorio y permite actualizar a una persona existente.</li>
+<li>Seleccioná el archivo y esperá la confirmación. Una importación grande puede demorar varios minutos.</li>
+</ol>
+<a class="boton boton--secundario" href="/ejemplos/donantes.csv" download th:text="#{admin.textos.75}">Descargar CSV de ejemplo</a>
+<p>Se admiten archivos de hasta 20 MB, incluidos históricos de más de 10.000 filas. Se informa la cantidad procesada; no se distinguen altas y actualizaciones en este resultado.</p>
+<form method="post" th:action="@{/admin/donantes/importar}" enctype="multipart/form-data" data-texto-loader="Importando donantes. Puede tardar varios minutos…">
+<div class="campo">
+<label for="archivo" th:text="#{admin.textos.76}">Archivo CSV</label>
+<input class="control" type="file" id="archivo" name="archivo" accept=".csv,text/csv" required aria-describedby="archivo-ayuda archivo-error" th:attr="aria-invalid=${errorArchivo!=null}">
+<p id="archivo-ayuda" class="campo__ayuda" th:text="#{admin.textos.77}">Columnas: TipoPersona, TipoDoc, Documento, Nombre/Razón Social, Email, Teléfono.</p>
+<p id="archivo-error" class="campo__error" role="alert" th:if="${errorArchivo!=null}" th:text="${errorArchivo}">
+</p>
+</div>
+<div class="admin-acciones">
+<button class="boton boton--primario" type="submit" th:text="#{admin.textos.78}">Importar donantes</button>
+<a class="boton boton--secundario" href="/admin/donantes" th:text="#{admin.textos.79}">Volver a donantes</a>
+</div>
+</form>
+</section>
+</div>
+</th:block>
+</body>
+</html>

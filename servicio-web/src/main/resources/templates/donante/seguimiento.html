@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.donante.seguimiento}, ~{::contenido}, ~{donante/fragmentos :: recursosConMapa})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="#{nav.donante.seguimiento}">Seguimiento</h1>
+    <p class="texto-secundario">Mirá dónde están los camiones que llevan tus donaciones.</p>
+  </div>
+
+  <section class="grilla" aria-label="Resumen de tus envíos">
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>En traslado</span><th:block th:replace="~{fragments/comunes :: icono('camion')}"/></span>
+      <span class="metrica__valor" th:text="${totalEnTraslado}">0</span>
+      <span class="metrica__detalle">Viajando hacia una entidad</span>
+    </div>
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>Por salir</span><th:block th:replace="~{fragments/comunes :: icono('lista')}"/></span>
+      <span class="metrica__valor" th:text="${porSalir}">0</span>
+      <span class="metrica__detalle">Asignadas, esperando el camión</span>
+    </div>
+    <div class="tarjeta metrica">
+      <span class="metrica__cabecera"><span>Entregadas</span><th:block th:replace="~{fragments/comunes :: icono('exito')}"/></span>
+      <span class="metrica__valor" th:text="${entregadas}">0</span>
+      <span class="metrica__detalle">Ya llegaron a destino</span>
+    </div>
+  </section>
+
+  <div class="banner banner--advertencia" role="status" th:if="${logisticaNoDisponible}">
+    <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+    <div class="banner__contenido">Ahora no pudimos consultar la ubicación de los camiones. Probá de nuevo en unos minutos.</div>
+  </div>
+
+  <section class="tarjeta pila" aria-labelledby="t-mapa" th:if="${!enTraslado.isEmpty() and !logisticaNoDisponible}">
+    <div>
+      <h2 id="t-mapa">Dónde están tus donaciones</h2>
+      <p class="texto-chico texto-secundario">
+        El mapa se actualiza solo cada 30 segundos. Si un camión todavía no informó su ubicación, no aparece.
+      </p>
+    </div>
+    <section th:replace="~{fragments/mapa :: mapa('mapa-donante', 'Camiones que llevan tus donaciones', ${marcadores}, @{/donante/seguimiento/ubicaciones.json}, 30)}"></section>
+  </section>
+
+  <section class="tarjeta pila" aria-labelledby="t-en-traslado" th:if="${!enTraslado.isEmpty()}">
+    <h2 id="t-en-traslado">Donaciones en traslado</h2>
+    <ul class="donante-recientes">
+      <li th:each="d : ${enTraslado}">
+        <a class="donante-recientes__item donante-recientes__item--enlace" th:href="@{/donante/donaciones/{id}(id=${d.id()})}">
+          <span class="donante-recientes__datos">
+            <strong th:text="${d.descripcionItem()}">Arroz</strong>
+            <span class="texto-chico texto-secundario"
+                  th:text="|${@donanteVista.numero(d.cantidadAsignada())} ${@donanteVista.bien('unidad', d.unidadMedida())} · ${@donanteVista.bien('categoria', d.categoria())}|">20 kg · Alimentos</span>
+          </span>
+          <span th:replace="~{donante/fragmentos :: estado(${d.estadoActual()})}"></span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <section class="tarjeta vacio" th:if="${enTraslado.isEmpty()}">
+    <th:block th:replace="~{fragments/comunes :: icono('camion')}"/>
+    <h2>Ahora no hay donaciones tuyas en camino</h2>
+    <p class="texto-secundario" th:if="${porSalir > 0}"
+       th:text="${porSalir == 1} ? 'Tenés 1 donación asignada que todavía no salió. Cuando el camión arranque, la vas a ver acá.' : |Tenés ${porSalir} donaciones asignadas que todavía no salieron. Cuando el camión arranque, las vas a ver acá.|">
+      Tenés 1 donación asignada que todavía no salió.</p>
+    <a class="boton boton--secundario" th:href="@{/donante/donaciones}">Ver mis donaciones</a>
+  </section>
+
+</div>
+</th:block>
+</body>
+</html>

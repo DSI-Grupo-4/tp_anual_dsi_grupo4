@@ -1,0 +1,138 @@
+/* Portal del donante (Persona 4). Usa solo tokens de tokens.css y se carga desde donante/fragmentos :: recursos. */
+.donante-contenido { display: grid; gap: var(--espacio-5); min-width: 0; }
+.donante-contenido .cabecera-pagina h1 { margin-bottom: var(--espacio-1); }
+
+/* Tarjetas de métricas: 4 columnas en escritorio, 2 en tablet, 1 en celular. */
+.donante-metricas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--espacio-4); }
+.donante-metrica { color: var(--color-texto); text-decoration: none; min-height: var(--area-tactil); }
+.donante-metrica:hover { background: var(--color-primario-suave); }
+.donante-metrica__texto { font-size: var(--texto-xl); overflow-wrap: anywhere; }
+
+.donante-grilla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espacio-5); align-items: start; }
+.donante-grilla h2 { margin: 0; }
+
+/* Distribución por estado: barras horizontales; el número también está en texto. */
+.donante-barras { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-2); }
+.donante-barras__fila {
+  display: grid; gap: var(--espacio-2); padding: var(--espacio-2) var(--espacio-3);
+  min-height: var(--area-tactil); border-radius: var(--radio-md);
+  color: var(--color-texto); text-decoration: none;
+}
+.donante-barras__fila:hover { background: var(--color-superficie-alt); }
+.donante-barras__etiqueta { display: flex; justify-content: space-between; gap: var(--espacio-3); }
+.donante-barras__pista { display: block; height: var(--espacio-2); border-radius: var(--radio-pildora); background: var(--color-superficie-alt); overflow: hidden; }
+.donante-barras__barra { display: block; height: 100%; min-width: var(--espacio-1); border-radius: inherit; background: var(--color-texto-secundario); }
+.donante-barras__barra.estado-EN_DEPOSITO { background: var(--color-info); }
+.donante-barras__barra.estado-ASIGNACION_REALIZADA,
+.donante-barras__barra.estado-LISTA_PARA_ENTREGAR { background: var(--color-primario); }
+.donante-barras__barra.estado-EN_TRASLADO { background: var(--color-advertencia); }
+.donante-barras__barra.estado-ENTREGADA { background: var(--color-exito); }
+.donante-barras__barra.estado-ENTREGA_FALLIDA { background: var(--color-error); }
+
+/* Donaciones recientes. */
+.donante-recientes { list-style: none; margin: 0; padding: 0; display: grid; }
+.donante-recientes > li + li { border-top: var(--borde); }
+.donante-recientes__item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--espacio-3);
+  padding: var(--espacio-3) 0; min-height: var(--area-tactil);
+}
+.donante-recientes__datos { display: grid; gap: var(--espacio-1); min-width: 0; overflow-wrap: anywhere; }
+.donante-recientes__item .insignia-estado { flex-shrink: 0; }
+
+.donante-recientes__item--enlace { color: var(--color-texto); text-decoration: none; border-radius: var(--radio-md); padding-inline: var(--espacio-2); }
+.donante-recientes__item--enlace:hover { background: var(--color-superficie-alt); }
+.donante-recientes__item--enlace strong { color: var(--color-primario); text-decoration: underline; text-underline-offset: 0.15em; }
+
+/* Mis donaciones: filtros. */
+.donante-filtros { display: grid; grid-template-columns: 2fr repeat(3, minmax(0, 1fr)); gap: var(--espacio-4); align-items: start; }
+.donante-filtros__titulo { grid-column: 1 / -1; margin: 0; font-size: var(--texto-lg); }
+.donante-filtros__acciones { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: var(--espacio-3); }
+.donante-tabla__numero { display: block; }
+
+/* Detalle: datos y bienes. */
+.donante-datos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--espacio-4); margin: 0; }
+.donante-datos dt { font-size: var(--texto-sm); color: var(--color-texto-secundario); }
+.donante-datos dd { margin: var(--espacio-1) 0 0; overflow-wrap: anywhere; }
+.donante-contenido h3 { margin: var(--espacio-4) 0 0; font-size: var(--texto-base); }
+
+/* Historial: línea de tiempo, el estado actual primero y resaltado. */
+.donante-historial { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); }
+.donante-historial li {
+  display: grid; gap: var(--espacio-1); justify-items: start;
+  padding-left: var(--espacio-5); border-left: 2px solid var(--color-borde); position: relative;
+}
+.donante-historial li::before {
+  content: ""; position: absolute; left: calc(-1 * var(--espacio-2) + -1px); top: var(--espacio-2);
+  width: var(--espacio-3); height: var(--espacio-3); border-radius: 50%;
+  background: var(--color-superficie); border: 2px solid var(--color-borde-control);
+}
+.donante-historial li.es-actual::before { background: var(--color-primario); border-color: var(--color-primario); }
+.donante-historial p { margin: 0; overflow-wrap: anywhere; }
+
+/* Incentivos: categoría, progreso y escalera. */
+.donante-categoria { background: var(--color-primario-suave); border-color: var(--color-primario-suave); }
+.donante-categoria p { margin: 0; }
+.donante-categoria__nombre { margin: 0; font-size: var(--texto-2xl); }
+.donante-categoria__ranking { display: inline-flex; align-items: center; gap: var(--espacio-2); font-weight: var(--peso-medio); }
+.donante-progreso { display: block; height: var(--espacio-3); border-radius: var(--radio-pildora); background: var(--color-superficie); border: var(--borde); overflow: hidden; }
+.donante-progreso__barra { display: block; height: 100%; background: var(--color-primario); border-radius: inherit; }
+.donante-escalera { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--espacio-3); }
+.donante-escalera li {
+  display: grid; gap: var(--espacio-1); padding: var(--espacio-3) var(--espacio-4);
+  border: var(--borde); border-radius: var(--radio-md); background: var(--color-superficie);
+}
+.donante-escalera__nombre { font-weight: var(--peso-fuerte); }
+.donante-escalera li.es-alcanzada { border-color: var(--color-primario); }
+.donante-escalera li.es-actual { border: 2px solid var(--color-primario); }
+.donante-escalera li.es-actual .donante-escalera__nombre { color: var(--color-primario); }
+
+/* Selector de período: enlaces tipo píldora; el elegido lleva aria-current. */
+.donante-periodos { display: flex; flex-wrap: wrap; gap: var(--espacio-2); }
+.donante-periodos__opcion {
+  display: inline-flex; align-items: center; min-height: var(--area-tactil); padding: 0 var(--espacio-4);
+  border: var(--borde); border-radius: var(--radio-pildora); color: var(--color-texto); text-decoration: none;
+  font-size: var(--texto-sm); background: var(--color-superficie);
+}
+.donante-periodos__opcion:hover { background: var(--color-superficie-alt); }
+.donante-periodos__opcion[aria-current="page"] { background: var(--color-primario); border-color: var(--color-primario); color: var(--color-sobre-primario); }
+
+/* Misiones e insignias. */
+.donante-misiones { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-3); }
+.donante-misiones li { display: grid; gap: var(--espacio-2); padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
+.donante-misiones li p { margin: 0; }
+.donante-misiones li.es-activa { border-color: var(--color-primario); box-shadow: var(--sombra-sm); }
+.donante-misiones li.es-completada { background: var(--color-superficie-alt); }
+.donante-insignias { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr)); }
+.donante-insignia { display: grid; justify-items: center; text-align: center; gap: var(--espacio-2); padding: var(--espacio-5) var(--espacio-4); border: var(--borde); border-radius: var(--radio-lg); }
+.donante-insignia__icono { display: grid; place-items: center; width: 3.5rem; height: 3.5rem; border-radius: 50%; background: var(--color-primario-suave); color: var(--color-primario); }
+.donante-insignia__icono .icono { width: 1.75rem; height: 1.75rem; }
+.donante-insignia--oculta { border-style: dashed; }
+.donante-insignia--oculta .donante-insignia__icono { background: var(--color-superficie-alt); color: var(--color-texto-secundario); }
+
+/* Entidades: filtros de dos campos, tarjetas y necesidades. */
+.donante-filtros--entidades { grid-template-columns: 2fr minmax(0, 1fr); }
+.donante-entidades { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-4); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.donante-entidades > li { display: grid; }
+.donante-entidad { display: grid; align-content: start; gap: var(--espacio-2); color: var(--color-texto); text-decoration: none; min-width: 0; }
+.donante-entidad:hover { background: var(--color-primario-suave); }
+.donante-entidad__icono { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: var(--radio-md); background: var(--color-primario-suave); color: var(--color-primario); }
+.donante-entidad__nombre { color: var(--color-primario); font-size: var(--texto-lg); overflow-wrap: anywhere; }
+.donante-entidad__ubicacion { display: inline-flex; align-items: center; gap: var(--espacio-1); }
+.donante-entidad__descripcion { color: var(--color-texto-secundario); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.donante-necesidades { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--espacio-3); }
+.donante-necesidad { display: grid; gap: var(--espacio-2); padding: var(--espacio-4); border: var(--borde); border-radius: var(--radio-md); }
+.donante-necesidad strong { overflow-wrap: anywhere; }
+
+@media (max-width: 959px) {
+  .donante-metricas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donante-filtros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .donante-filtros__busqueda { grid-column: 1 / -1; }
+  .donante-grilla { grid-template-columns: 1fr; }
+}
+@media (max-width: 599px) {
+  .donante-metricas { grid-template-columns: 1fr; }
+  .donante-recientes__item { flex-direction: column; align-items: flex-start; }
+  .donante-filtros, .donante-filtros--entidades, .donante-datos { grid-template-columns: 1fr; }
+  .donante-filtros__acciones .boton { width: 100%; }
+  .donante-escalera { grid-template-columns: 1fr; }
+}

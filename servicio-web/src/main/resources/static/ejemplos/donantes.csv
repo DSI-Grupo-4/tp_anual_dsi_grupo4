@@ -1,0 +1,3 @@
+TipoPersona,TipoDoc,Documento,Nombre/Razon Social,Email,Telefono
+HUMANA,DNI,30123456,Ana Perez,ana@example.org,+5493515551234
+JURIDICA,CUIT,30123456789,Ejemplo Solidario SA,contacto@example.org,+543514444444

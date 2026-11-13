@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Panel de administración', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.3}">
+</p>
+<h1 th:text="#{admin.ui.4}">Todo listo para ayudar</h1>
+<p class="texto-secundario" th:text="#{admin.ui.5}">
+</p>
+</div>
+<div class="admin-acciones">
+<a class="boton boton--primario" th:href="@{/admin/donaciones/nueva}" th:text="#{admin.ui.2}">Registrar donación</a>
+</div>
+</header>
+<section class="admin-metricas" aria-label="Resumen del depósito">
+<a class="admin-metrica" th:href="@{/admin/donaciones(estado='EN_DEPOSITO')}">
+<span>En depósito</span>
+<strong th:text="${resumen.enDeposito}">0</strong>
+<span>Disponibles para asignar →</span>
+</a>
+<a class="admin-metrica" th:href="@{/admin/donaciones(estado='ASIGNACION_REALIZADA')}">
+<span>Asignadas</span>
+<strong th:text="${resumen.asignadas}">0</strong>
+<span>Pendientes de planificación →</span>
+</a>
+<a class="admin-metrica" th:href="@{/admin/donantes(activo=true)}">
+<span>Donantes activos</span>
+<strong th:text="${resumen.donantesActivos}">0</strong>
+<span>Ver personas donantes →</span>
+</a>
+<a class="admin-metrica" th:href="@{/admin/entidades(activa=true)}">
+<span>Entidades activas</span>
+<strong th:text="${resumen.entidadesActivas}">0</strong>
+<span>Ver organizaciones →</span>
+</a>
+</section>
+<section class="admin-tarjeta">
+<h2>¿Qué necesitás hacer?</h2>
+<div class="admin-grid">
+<article>
+<h3>Recibir una donación</h3>
+<p>Buscá a la persona donante o registrala. Una sola carga puede contener distintos bienes.</p>
+<a class="boton boton--secundario" href="/admin/donantes" th:text="#{admin.textos.80}">Gestionar donantes</a>
+</article>
+<article>
+<h3>Encontrar un destino</h3>
+<p>Compará las propuestas de los algoritmos y confirmá a qué entidad enviar cada donación.</p>
+<a class="boton boton--marca" href="/admin/asignaciones" th:text="#{admin.textos.81}">Asignar donaciones</a>
+</article>
+<article>
+<h3>Importar el histórico</h3>
+<p>Incorporá donantes desde un CSV. El correo permite reconocer los registros existentes.</p>
+<a class="boton boton--secundario" href="/admin/donantes/importar" th:text="#{admin.textos.82}">Importar CSV</a>
+</article>
+</div>
+</section>
+</div>
+</th:block>
+</body>
+</html>

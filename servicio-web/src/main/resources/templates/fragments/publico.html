@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!--
+  Tarjeta de una donación entregada (DonacionPublica). La usan la landing y la galería.
+  Uso: <article th:replace="~{fragments/publico :: tarjeta-donacion(${d})}"></article>
+-->
+<article th:fragment="tarjeta-donacion(d)" class="tarjeta-donacion"
+         th:with="titulo=${d.descripcion != null ? d.descripcion : (d.subcategoria != null ? #messages.msg('subcategoria.' + d.subcategoria) : #messages.msg('donacion.sin-descripcion'))},
+                  entidad=${d.entidad != null ? d.entidad : #messages.msg('donacion.entidad-sin-nombre')}">
+  <img th:if="${d.tieneFoto()}" class="tarjeta-donacion__foto" th:src="${d.fotoUrl}"
+       th:alt="#{donacion.foto-alt(${titulo}, ${entidad})}" th:attr="data-respaldo=@{/img/foto-no-disponible.svg}"
+       data-foto loading="lazy" decoding="async" width="400" height="300">
+  <div th:unless="${d.tieneFoto()}" class="tarjeta-donacion__foto tarjeta-donacion__foto--vacia">
+    <th:block th:replace="~{fragments/comunes :: icono('imagen')}"/>
+    <span th:text="#{donacion.sin-foto}">Sin foto</span>
+  </div>
+  <div class="tarjeta-donacion__cuerpo">
+    <h3 class="tarjeta-donacion__titulo" th:text="${titulo}">Arroz 1 kg</h3>
+    <p class="fila tarjeta-donacion__datos">
+      <span class="insignia-estado insignia-estado--marca" th:if="${d.categoria != null}"
+            th:text="#{'categoria.' + ${d.categoria}}">Alimentos</span>
+      <span class="texto-chico texto-secundario" th:if="${d.cantidad != null}"
+            th:text="${d.cantidad} + (${d.unidad != null} ? ' ' + #{'unidad.' + ${d.unidad}} : '')">20 kg</span>
+    </p>
+    <p class="tarjeta-donacion__entidad">
+      <span th:text="#{donacion.entregada-a}">Entregada a</span>
+      <strong th:text="${entidad}">Comedor</strong>
+    </p>
+    <p class="texto-chico texto-secundario">
+      <time th:datetime="${@fechas.iso(d.entregadaEn)}" th:text="${@fechas.fecha(d.entregadaEn)}">03/11/2026</time>
+    </p>
+  </div>
+</article>
+<!-- Valor de una cifra: "—" con texto para lector de pantalla si el servicio no respondió. -->
+<span th:fragment="valor(n)" class="metrica__valor"><th:block th:if="${n != null}" th:text="${n}">0</th:block><th:block th:if="${n == null}"><span aria-hidden="true">—</span><span class="solo-lector" th:text="#{landing.cifras.sin-dato}">Sin dato</span></th:block></span>
+</body>
+</html>

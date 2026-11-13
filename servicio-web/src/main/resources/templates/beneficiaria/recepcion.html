@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{logistica.recepcion.titulo}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:text="#{logistica.recepcion.titulo}">Confirmar recepción</h1>
+      <p th:text="#{logistica.recepcion.bajada(${envio.idRuta}, ${@fechas.fecha(envio.fecha)})}">Ruta 1 · 11/11/2026</p>
+    </div>
+    <a class="boton boton--secundario" th:href="@{/beneficiaria/seguimiento}" th:text="#{accion.volver}">Volver</a>
+  </div>
+
+  <div class="pila pila--grande">
+
+    <section class="tarjeta pila" aria-labelledby="que-titulo">
+      <h2 id="que-titulo" class="tarjeta__titulo" th:text="#{logistica.recepcion.que-confirmas}">Lo que estás confirmando</h2>
+      <p class="texto-secundario"
+         th:text="#{logistica.beneficiaria.parada(${envio.numeroParada}, ${envio.totalParadas})}">Parada 2 de 5</p>
+      <ul class="pila pila--chica">
+        <li th:each="x : ${envio.entregas}">
+          <span th:text="#{logistica.seguimiento.donacion-n(${x.idDonacionAsociada})}">Donación 1</span>
+          <span class="insignia-estado" th:classappend="${@vistaLogistica.claseEntrega(x.estadoEntrega)}"
+                th:text="#{'logistica.entrega.estado.' + ${x.estadoEntrega}}">Estado</span>
+        </li>
+      </ul>
+    </section>
+
+    <div class="banner banner--advertencia" role="status" th:unless="${envio.puedeConfirmarRecepcion()}">
+      <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+      <div class="banner__contenido" th:text="#{logistica.recepcion.sin-pendientes}">No hay entregas en traslado para confirmar en esta ruta.</div>
+    </div>
+
+    <form class="tarjeta formulario" method="post" enctype="multipart/form-data" novalidate
+          th:if="${envio.puedeConfirmarRecepcion()}"
+          th:action="@{/beneficiaria/seguimiento/{id}/recepcion(id=${envio.idRuta})}">
+
+      <div class="banner banner--error" role="alert" th:if="${errorFotos != null}">
+        <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+        <div class="banner__contenido">
+          <p class="banner__titulo" th:text="#{logistica.recepcion.no-guardada}">No se pudo confirmar</p>
+          <span th:text="${errorFotos}">Error</span>
+        </div>
+      </div>
+
+      <div class="campo">
+        <label class="campo__etiqueta" for="fotos">
+          <span th:text="#{logistica.recepcion.fotos}">Fotos de lo que recibiste</span>
+          <span class="campo__obligatorio" aria-hidden="true">*</span>
+        </label>
+        <input class="control" id="fotos" name="fotos" type="file" multiple required
+               accept="image/jpeg,image/png,image/webp"
+               th:attr="aria-invalid=${errorFotos != null}, aria-describedby='fotos-ayuda'">
+        <span class="campo__ayuda" id="fotos-ayuda" th:text="#{logistica.recepcion.fotos-ayuda(${maxFotos})}">Subí de 1 a 5 fotos.</span>
+      </div>
+
+      <div class="formulario__acciones">
+        <a class="boton boton--secundario" th:href="@{/beneficiaria/seguimiento}" th:text="#{accion.cancelar}">Cancelar</a>
+        <button type="submit" class="boton boton--primario" th:text="#{logistica.recepcion.confirmar}">Confirmar recepción</button>
+      </div>
+    </form>
+  </div>
+</th:block>
+</body>
+</html>

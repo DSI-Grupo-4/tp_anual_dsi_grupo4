@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 public class DonacionDTO {
     private Long id;
+    private java.time.LocalDateTime fechaCreacion;
     private Long donanteId;
     private String descripcionItem;
     private BigDecimal cantidadAsignada;

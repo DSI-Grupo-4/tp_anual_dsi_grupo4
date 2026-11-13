@@ -103,6 +103,14 @@ public class DonacionController {
                 resultado, donacion.getSubcategoria(), donacion.getUnidadMedida());
     }
 
+    @GetMapping("/{id}/candidatas/ultimo")
+    public ResultadoMatchmakingDTO ultimoResultado(@PathVariable Long id) {
+        Donacion donacion = donacionService.obtenerDominioPorId(id);
+        ResultadoMatchmaking resultado = donacion.getResultadoMatchmaking();
+        if (resultado == null) return null;
+        return entidadBeneficiariaService.convertirResultadoADTO(resultado,donacion.getSubcategoria(),donacion.getUnidadMedida());
+    }
+
     @io.swagger.v3.oas.annotations.Operation(summary = "Asignar", description = "Confirma la entidad final. Requiere haber corrido antes GET /{id}/candidatas: 409 si todavía no se ejecutó el matchmaking, 400 si la entidad no apareció en ninguna de sus 3 listas. Si la entidad tiene una necesidad pendiente de la misma subcategoría y unidad, se vincula y se descuenta la cantidad contra ella automáticamente.")
     @PostMapping("/{id}/asignar")
     public DonacionDTO asignar(

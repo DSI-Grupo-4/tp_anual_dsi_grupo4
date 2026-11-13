@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.admin.camiones}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:if="${camionId == null}" th:text="#{logistica.camiones.form.titulo-nuevo}">Nuevo camión</h1>
+      <h1 th:if="${camionId != null}" th:text="#{logistica.camiones.form.titulo-editar}">Editar camión</h1>
+      <p th:text="#{logistica.camiones.form.bajada}">El planificador usa estas capacidades para armar las rutas.</p>
+    </div>
+  </div>
+
+  <form class="tarjeta formulario" method="post" novalidate th:object="${form}"
+        th:action="${camionId == null} ? @{/admin/camiones} : @{/admin/camiones/{id}(id=${camionId})}">
+
+    <div class="banner banner--error" role="alert" th:if="${#fields.hasGlobalErrors()}">
+      <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+      <div class="banner__contenido">
+        <p class="banner__titulo" th:text="#{logistica.camiones.form.no-guardado}">No se pudo guardar</p>
+        <span th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</span>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label class="campo__etiqueta" for="patente">
+        <span th:text="#{logistica.camiones.col.patente}">Patente</span>
+        <span class="campo__obligatorio" aria-hidden="true">*</span>
+      </label>
+      <input class="control" id="patente" type="text" th:field="*{patente}" maxlength="12" required autocomplete="off"
+             th:attr="aria-invalid=${#fields.hasErrors('patente')},
+                      aria-describedby=${#fields.hasErrors('patente')} ? 'patente-error' : 'patente-ayuda'">
+      <span class="campo__ayuda" id="patente-ayuda" th:unless="${#fields.hasErrors('patente')}"
+            th:text="#{logistica.camiones.form.patente-ayuda}">Ayuda</span>
+      <span class="campo__error" id="patente-error" th:if="${#fields.hasErrors('patente')}" th:errors="*{patente}">Error</span>
+    </div>
+
+    <div class="formulario__fila">
+      <div class="campo">
+        <label class="campo__etiqueta" for="capacidadCargaKg">
+          <span th:text="#{logistica.camiones.form.carga}">Capacidad de carga (kg)</span>
+          <span class="campo__obligatorio" aria-hidden="true">*</span>
+        </label>
+        <input class="control" id="capacidadCargaKg" type="number" min="1" step="1" inputmode="numeric"
+               th:field="*{capacidadCargaKg}" required
+               th:attr="aria-invalid=${#fields.hasErrors('capacidadCargaKg')},
+                        aria-describedby=${#fields.hasErrors('capacidadCargaKg')} ? 'carga-error' : null">
+        <span class="campo__error" id="carga-error" th:if="${#fields.hasErrors('capacidadCargaKg')}" th:errors="*{capacidadCargaKg}">Error</span>
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="capacidadVolumenM3">
+          <span th:text="#{logistica.camiones.form.volumen}">Capacidad de volumen (m³)</span>
+          <span class="campo__obligatorio" aria-hidden="true">*</span>
+        </label>
+        <input class="control" id="capacidadVolumenM3" type="number" min="1" step="1" inputmode="numeric"
+               th:field="*{capacidadVolumenM3}" required
+               th:attr="aria-invalid=${#fields.hasErrors('capacidadVolumenM3')},
+                        aria-describedby=${#fields.hasErrors('capacidadVolumenM3')} ? 'volumen-error' : null">
+        <span class="campo__error" id="volumen-error" th:if="${#fields.hasErrors('capacidadVolumenM3')}" th:errors="*{capacidadVolumenM3}">Error</span>
+      </div>
+      <div class="campo">
+        <label class="campo__etiqueta" for="alturaM">
+          <span th:text="#{logistica.camiones.form.altura}">Altura (m)</span>
+          <span class="campo__obligatorio" aria-hidden="true">*</span>
+        </label>
+        <input class="control" id="alturaM" type="number" min="1" step="1" inputmode="numeric"
+               th:field="*{alturaM}" required
+               th:attr="aria-invalid=${#fields.hasErrors('alturaM')},
+                        aria-describedby=${#fields.hasErrors('alturaM')} ? 'altura-error' : null">
+        <span class="campo__error" id="altura-error" th:if="${#fields.hasErrors('alturaM')}" th:errors="*{alturaM}">Error</span>
+      </div>
+    </div>
+
+    <!-- El estado solo se elige entre disponible y fuera de servicio; ASIGNADO y EN_RUTA los maneja el planificador. -->
+    <div class="campo" th:if="${estadoEditable}">
+      <label class="campo__etiqueta" for="estadoCamion" th:text="#{logistica.camiones.col.estado}">Estado</label>
+      <select class="control" id="estadoCamion" th:field="*{estadoCamion}">
+        <option value="DISPONIBLE" th:text="#{logistica.camion.estado.DISPONIBLE}">Disponible</option>
+        <option value="FUERA_DE_SERVICIO" th:text="#{logistica.camion.estado.FUERA_DE_SERVICIO}">Fuera de servicio</option>
+      </select>
+    </div>
+    <div class="campo" th:unless="${estadoEditable}">
+      <span class="campo__etiqueta" th:text="#{logistica.camiones.col.estado}">Estado</span>
+      <p>
+        <span class="insignia-estado" th:classappend="${@vistaLogistica.claseCamion(estadoActual)}"
+              th:text="#{'logistica.camion.estado.' + ${estadoActual}}">En ruta</span>
+      </p>
+      <span class="campo__ayuda" th:text="#{logistica.camiones.form.estado-automatico}">El estado lo actualiza el planificador mientras el camión está en una ruta.</span>
+    </div>
+
+    <div class="formulario__acciones">
+      <a class="boton boton--secundario" th:href="@{/admin/camiones}" th:text="#{accion.cancelar}">Cancelar</a>
+      <button type="submit" class="boton boton--primario" th:text="#{accion.guardar}">Guardar</button>
+    </div>
+  </form>
+</th:block>
+</body>
+</html>

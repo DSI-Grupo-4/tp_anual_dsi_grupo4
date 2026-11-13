@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!-- Galería pública de fotos de entregas (sin login). -->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{nav.galeria}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="contenedor seccion--angosta pila">
+    <div class="cabecera-pagina">
+      <div>
+        <h1 th:text="#{nav.galeria}">Galería de entregas</h1>
+        <p th:text="#{galeria.bajada}">Bajada</p>
+      </div>
+      <p class="texto-chico texto-secundario" th:if="${fotos.total > 0}" th:text="#{galeria.total(${fotos.total})}">24 fotos</p>
+    </div>
+
+    <div class="tarjeta vacio" th:if="${fotos.total == 0}">
+      <th:block th:replace="~{fragments/comunes :: icono('imagen')}"/>
+      <p th:text="#{galeria.vacio}">Todavía no hay fotos.</p>
+      <a class="boton boton--primario" th:href="@{/}" th:text="#{error.volver-inicio}">Volver al inicio</a>
+    </div>
+
+    <th:block th:if="${fotos.total > 0}">
+      <h2 class="solo-lector" th:text="#{galeria.pagina(${fotos.pagina}, ${fotos.totalPaginas})}">Página 1 de 2</h2>
+      <ul class="grilla grilla-donaciones">
+        <li th:each="d : ${fotos.elementos}">
+          <article th:replace="~{fragments/publico :: tarjeta-donacion(${d})}"></article>
+        </li>
+      </ul>
+      <nav class="paginacion" th:if="${fotos.totalPaginas > 1}" th:aria-label="#{galeria.pagina(${fotos.pagina}, ${fotos.totalPaginas})}">
+        <span class="texto-chico texto-secundario" th:text="#{galeria.pagina(${fotos.pagina}, ${fotos.totalPaginas})}">Página 1 de 2</span>
+        <div class="fila">
+          <a class="boton boton--secundario" th:if="${fotos.tieneAnterior()}" th:href="@{/galeria(pagina=${fotos.pagina - 1})}" th:text="#{accion.anterior}">Anterior</a>
+          <span class="boton boton--secundario" th:unless="${fotos.tieneAnterior()}" aria-disabled="true" th:text="#{accion.anterior}">Anterior</span>
+          <a class="boton boton--secundario" th:if="${fotos.tieneSiguiente()}" th:href="@{/galeria(pagina=${fotos.pagina + 1})}" th:text="#{accion.siguiente}">Siguiente</a>
+          <span class="boton boton--secundario" th:unless="${fotos.tieneSiguiente()}" aria-disabled="true" th:text="#{accion.siguiente}">Siguiente</span>
+        </div>
+      </nav>
+    </th:block>
+  </div>
+</th:block>
+</body>
+</html>

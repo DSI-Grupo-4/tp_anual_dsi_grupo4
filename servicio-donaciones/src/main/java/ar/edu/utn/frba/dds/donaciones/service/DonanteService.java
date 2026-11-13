@@ -46,6 +46,7 @@ public class DonanteService {
             dto.setEdad(humana.getEdad());
             dto.setGenero(humana.getGenero());
             dto.setDocumento(humana.getDocumento());
+            dto.setDireccion(EntidadBeneficiariaService.convertirDireccionADTO(humana.getDireccion()));
         }
 
         if(donante.getPersona() instanceof PersonaJuridica juridica) {
@@ -54,6 +55,7 @@ public class DonanteService {
             dto.setRazonSocial(juridica.getRazonSocial());
             dto.setTipoOrganizacion(juridica.getTipo());
             dto.setRubro(juridica.getRubro());
+            dto.setRepresentantes(DatosPersonaMapper.representantesDTO(juridica.getRepresentantes()));
         }
 
         dto.setMediosContacto(donante.getPersona().getMediosContacto().stream().map(m -> {
@@ -77,6 +79,7 @@ public class DonanteService {
                 dto.getDocumento(),
                 dto.getGenero()
         );
+        persona.setDireccion(EntidadBeneficiariaService.convertirDireccionDominio(dto.getDireccion()));
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
         sincronizarPerfil(donante);
@@ -92,6 +95,7 @@ public class DonanteService {
 
     public DonanteDTO crearDonanteJuridico(
             PersonaJuridicaDTO dto) {
+        validarRepresentantes(dto);
         PersonaJuridica persona =
                 new PersonaJuridica(
                         dto.getRazonSocial(),
@@ -100,6 +104,7 @@ public class DonanteService {
                         null
                 );
 
+        persona.setRepresentantes(DatosPersonaMapper.representantes(dto.getRepresentantes()));
         persona.setMediosContacto(validarContactos(dto.getMediosContacto()));
         Donante donante = gestorDonantes.registrarDonante(persona);
         sincronizarPerfil(donante);
@@ -139,6 +144,7 @@ public class DonanteService {
             humanaDTO.setEdad(dto.getEdad());
             humanaDTO.setGenero(dto.getGenero());
             humanaDTO.setDocumento(dto.getDocumento());
+            humanaDTO.setDireccion(dto.getDireccion());
             return actualizarHumano(id, humanaDTO);
         }
 
@@ -147,6 +153,7 @@ public class DonanteService {
         juridicaDTO.setRazonSocial(dto.getRazonSocial());
         juridicaDTO.setTipo(dto.getTipoOrganizacion());
         juridicaDTO.setRubro(dto.getRubro());
+        juridicaDTO.setRepresentantes(dto.getRepresentantes());
         return actualizarJuridico(id, juridicaDTO);
     }
 
@@ -182,6 +189,7 @@ public class DonanteService {
                 dto.getGenero()
         );
 
+        persona.setDireccion(EntidadBeneficiariaService.convertirDireccionDominio(dto.getDireccion()));
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
@@ -191,6 +199,7 @@ public class DonanteService {
     public DonanteDTO actualizarJuridico(
             Long id,
             PersonaJuridicaDTO dto) {
+        validarRepresentantes(dto);
 
         Donante donante = gestorDonantes.buscarPorId(id);
         exigirActivo(donante);
@@ -212,6 +221,7 @@ public class DonanteService {
                 dto.getRubro()
         );
 
+        if (dto.getRepresentantes() != null) persona.setRepresentantes(DatosPersonaMapper.actualizarRepresentantes(dto.getRepresentantes(), persona.getRepresentantes()));
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
         sincronizarPerfil(donante);
@@ -223,6 +233,11 @@ public class DonanteService {
         exigirActivo(donante);
         donante.registrarActividad();
         gestorDonantes.guardar(donante);
+    }
+
+    private void validarRepresentantes(PersonaJuridicaDTO dto) {
+        if(dto.getRepresentantes()!=null && dto.getRepresentantes().size()>1)
+            throw new IllegalArgumentException("Una persona jurídica donante admite un único representante");
     }
 
     // Un donante inactivo no admite ninguna modificación -- la única

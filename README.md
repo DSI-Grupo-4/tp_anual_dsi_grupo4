@@ -18,6 +18,10 @@
 ├── Dockerfile
 ├── GUIA-LEVANTAR-SERVICIOS.md
 ├── NOTIFICACIONES.md
+├── PERSONA5-parte3.md
+├── PERSONA5-parte4.md
+├── PERSONA5-parte5.md
+├── PERSONA5.md
 ├── README.md
 ├── assets_md
 │   └── Diagrama_de_Despliegue_Inicial.png
@@ -26,9 +30,15 @@
 │   ├── DDS-TP-Anual-2026 (1).pdf
 │   ├── entrega4-requerimientos.md
 │   └── entrega5-requerimientos.md
+├── contrato-ubicacion-para-persona4.md
+├── decisiones-persona5-borrador-parte5.md
+├── decisiones-persona5-borrador.md
 ├── decisiones.md
 ├── diagramas
 │   ├── SERVICIOS.json
+│   ├── arquitectura
+│   │   ├── componentes.puml
+│   │   └── img
 │   ├── ddc
 │   │   ├── donaciones.puml
 │   │   ├── img
@@ -43,6 +53,9 @@
 │       └── pdf
 ├── docker-compose.integration.yml
 ├── endpoints.md
+├── keycloak
+│   └── themes
+│       └── donatrack
 ├── mockups
 │   ├── administrador
 │   │   ├── asignar-donaciones-admin.png
@@ -101,10 +114,18 @@
 │   └── src
 │       ├── main
 │       └── test
+├── servicio-web
+│   ├── README.md
+│   ├── herramientas
+│   │   └── accesibilidad
+│   ├── pom.xml
+│   └── src
+│       ├── main
+│       └── test
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-31 directories, 58 files
+42 directories, 68 files
 ```
 <!-- TREE_END -->
 
@@ -114,6 +135,9 @@
 
 ## Despliegue
 Servicio de Logística: https://tp-anual-dsi-grupo4-1.onrender.com
+
+## Cliente web (Entrega 6)
+El cliente liviano está en [`servicio-web`](servicio-web/README.md) (Spring Boot + Thymeleaf, puerto 8085). Consume las APIs REST de los servicios y se levanta junto con ellos con `run-servicios`. Su README explica cómo sumar pantallas, el sistema de diseño, el componente de mapa, el tema de login de Keycloak ([`keycloak/themes/donatrack`](keycloak/themes/donatrack)) y el trabajo pendiente de cada integrante.
 
 
 

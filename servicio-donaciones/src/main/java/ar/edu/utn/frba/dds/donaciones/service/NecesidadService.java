@@ -10,6 +10,7 @@ import ar.edu.utn.frba.dds.donaciones.dto.NecesidadRecurrenteDTO;
 import ar.edu.utn.frba.dds.donaciones.repository.DonacionRepository;
 import ar.edu.utn.frba.dds.donaciones.repository.NecesidadRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -22,7 +23,7 @@ public class NecesidadService {
     private final DonacionRepository donacionRepository;
 
     public NecesidadService(NecesidadRepository necesidadRepository, EntidadBeneficiariaService entidadBeneficiariaService,
-                             DonacionRepository donacionRepository) {
+                            DonacionRepository donacionRepository) {
         this.necesidadRepository = necesidadRepository;
         this.entidadBeneficiariaService = entidadBeneficiariaService;
         this.donacionRepository = donacionRepository;
@@ -108,11 +109,12 @@ public class NecesidadService {
                 .toList();
     }
 
+    @Transactional
     public void eliminar(Long entidadId, Long id) {
         // Valida pertenencia antes de borrar: sin esto, cualquier
         // entidadId en el path (incluso uno inexistente) podía borrar una
         // necesidad de otra entidad — bug crítico confirmado en vivo.
-        buscarDominioPorId(entidadId, id);
+        Necesidad necesidad = buscarDominioPorId(entidadId, id);
         // Si CUALQUIER donación (en cualquier estado, incluidos los
         // terminales ENTREGADA/ENTREGA_FALLIDA/VENCIDA) ya vinculó esta
         // necesidad (necesidadAsignada, ver DonacionService.confirmarAsignacion),
@@ -123,7 +125,15 @@ public class NecesidadService {
             throw new IllegalStateException(
                     "No se puede eliminar la necesidad " + id + ": una donación la tiene asignada (necesidadAsignada)");
         }
-        necesidadRepository.deleteById(id);
+        // EntidadBeneficiaria.necesidades tiene cascade = ALL y orphanRemoval = true, y la entidad ya
+        // quedó cargada junto con la necesidad. Si la necesidad sigue en esa lista, Hibernate cancela el
+        // borrado al confirmar la transacción: el DELETE respondía 204 pero la fila no se eliminaba.
+        // Por eso se la saca de la lista de la entidad antes de borrarla.
+        EntidadBeneficiaria entidad = necesidad.getEntidadBeneficiaria();
+        if (entidad != null && entidad.getNecesidades() != null) {
+            entidad.getNecesidades().remove(necesidad);
+        }
+        necesidadRepository.delete(necesidad);
     }
 
     public Necesidad buscarDominioPorId(Long id) {

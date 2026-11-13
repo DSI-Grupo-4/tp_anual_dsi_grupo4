@@ -26,8 +26,10 @@ declare -A PORTS=(
   [servicio-logistica]=8083
   [servicio-incentivos]=8081
   [servicio-notificaciones]=8082
+  [servicio-web]=8085
 )
-SERVICE_ORDER=(servicio-donaciones servicio-logistica servicio-incentivos servicio-notificaciones)
+# servicio-web (cliente web, Entrega 6) va último: consume las APIs de los demás.
+SERVICE_ORDER=(servicio-donaciones servicio-logistica servicio-incentivos servicio-notificaciones servicio-web)
 
 # Sólo se compilan/levantan los módulos que ya tienen una clase con `main`;
 # el resto se reporta como "no implementado" y se omite.
@@ -172,6 +174,8 @@ up() {
 
   echo ""
   status
+  echo ""
+  echo "Cliente web: http://localhost:${PORTS[servicio-web]}"
 }
 
 down() {

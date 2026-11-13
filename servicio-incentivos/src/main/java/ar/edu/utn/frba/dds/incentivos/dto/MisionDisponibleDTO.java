@@ -13,4 +13,8 @@ public class MisionDisponibleDTO {
     private java.math.BigDecimal distanciaRestante;
     private boolean completada;
     private boolean activa;
+    /** Cantidad que pide la misión (meses, categorías, bienes o donaciones), en la unidad de progresoActual. */
+    private java.math.BigDecimal meta;
+    /** Qué tiene que hacer el donante, en una frase (p. ej. "Doná 3 meses seguidos"). */
+    private String objetivo;
 }

@@ -311,9 +311,10 @@ public class DonacionService {
         gestorDonaciones.guardar(donacion);
     }
 
-    private DonacionDTO convertirADTO(Donacion donacion) {
+    public DonacionDTO convertirADTO(Donacion donacion) {
         DonacionDTO dto = new DonacionDTO();
         dto.setId(donacion.getId());
+        dto.setFechaCreacion(donacion.getFechaCreacion());
         if (donacion.getDonante() != null) {
             dto.setDonanteId(donacion.getDonante().getId());
         }

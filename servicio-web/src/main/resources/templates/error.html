@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<!--
+  Página de error única. La usan tanto Spring (rutas inexistentes, errores no
+  manejados) como WebExceptionHandler (errores de las APIs). Muestra el texto
+  según el status: 400, 403, 404 y 503 tienen el suyo; el resto usa el de 500.
+-->
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/publico :: layout(#{${@paginasError.titulo(status)}}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="contenedor seccion pila error-pagina">
+    <p class="error-pagina__codigo" th:text="${status}">404</p>
+    <h1 th:text="#{${@paginasError.titulo(status)}}">No encontramos esta página</h1>
+    <p class="lectura texto-secundario" th:text="#{${@paginasError.texto(status)}}">Texto</p>
+    <div class="banner banner--advertencia lectura" th:if="${detalle != null}" role="alert">
+      <div class="banner__contenido" th:text="${detalle}">Detalle del rechazo</div>
+    </div>
+    <p class="texto-chico texto-secundario" th:if="${servicio != null}"
+       th:text="'Servicio afectado: ' + ${servicio}">Servicio afectado</p>
+    <div class="fila">
+      <a class="boton boton--primario" th:href="@{/}" th:text="#{error.volver-inicio}">Volver al inicio</a>
+      <!-- href vacío = recargar la misma dirección -->
+      <a class="boton boton--secundario" th:if="${@paginasError.codigo(status) == 503}" href="" th:text="#{error.reintentar}">Reintentar</a>
+    </div>
+  </div>
+</th:block>
+</body>
+</html>

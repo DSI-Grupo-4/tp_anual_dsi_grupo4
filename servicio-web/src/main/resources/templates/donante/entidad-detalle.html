@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(${entidad.nombre()}, ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="${entidad.nombre()}">Comedor Sonrisas</h1>
+    <p class="texto-secundario">
+      <span th:if="${entidad.tipo() != null}" th:text="${@donanteVista.legible(entidad.tipo())}">ONG</span>
+      <th:block th:if="${entidad.rubro() != null}"> · <span th:text="${entidad.rubro()}">Alimentos</span></th:block>
+      <th:block th:if="${entidad.ubicacion() != null}"> · <span th:text="${entidad.ubicacion()}">Córdoba</span></th:block>
+    </p>
+    <p th:if="${entidad.descripcion() != null}" th:text="${entidad.descripcion()}">Comedor comunitario del barrio.</p>
+  </div>
+
+  <div class="banner banner--advertencia" role="status" th:if="${necesidadesNoDisponibles}">
+    <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+    <div class="banner__contenido">Ahora no pudimos consultar las necesidades de esta entidad.</div>
+  </div>
+
+  <div class="donante-grilla" th:if="${!necesidadesNoDisponibles}">
+    <section class="tarjeta pila" aria-labelledby="t-extraordinarias">
+      <div>
+        <h2 id="t-extraordinarias">Necesidades urgentes</h2>
+        <p class="texto-chico texto-secundario">Por emergencias, como inundaciones u olas polares.</p>
+      </div>
+      <ul class="donante-necesidades" th:if="${!extraordinarias.isEmpty()}">
+        <th:block th:each="n : ${extraordinarias}">
+          <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}"></li>
+        </th:block>
+      </ul>
+      <p class="texto-secundario" th:if="${extraordinarias.isEmpty()}">No tiene necesidades urgentes ahora.</p>
+    </section>
+
+    <section class="tarjeta pila" aria-labelledby="t-recurrentes">
+      <div>
+        <h2 id="t-recurrentes">Necesidades habituales</h2>
+        <p class="texto-chico texto-secundario">Lo que necesita de forma periódica.</p>
+      </div>
+      <ul class="donante-necesidades" th:if="${!recurrentes.isEmpty()}">
+        <th:block th:each="n : ${recurrentes}">
+          <li th:replace="~{donante/entidad-detalle :: necesidad(${n})}"></li>
+        </th:block>
+      </ul>
+      <p class="texto-secundario" th:if="${recurrentes.isEmpty()}">No tiene necesidades habituales abiertas.</p>
+    </section>
+  </div>
+
+  <section class="tarjeta pila" aria-labelledby="t-mias">
+    <div class="fila fila--separada">
+      <div>
+        <h2 id="t-mias">Tus donaciones a esta entidad</h2>
+        <p class="texto-chico texto-secundario"
+           th:text="${totalMisDonaciones == 0} ? 'Todavía no le llegó ninguna donación tuya.' : (${totalMisDonaciones == 1} ? 'Le hiciste 1 donación.' : |Le hiciste ${totalMisDonaciones} donaciones.|)">
+          Le hiciste 2 donaciones.</p>
+      </div>
+    </div>
+    <ul class="donante-recientes" th:if="${!misDonaciones.isEmpty()}">
+      <li th:each="d : ${misDonaciones}">
+        <a class="donante-recientes__item donante-recientes__item--enlace" th:href="@{/donante/donaciones/{id}(id=${d.id()})}">
+          <span class="donante-recientes__datos">
+            <strong th:text="${d.descripcionItem()}">Arroz</strong>
+            <span class="texto-chico texto-secundario">
+              <span th:text="|${@donanteVista.numero(d.cantidadAsignada())} ${@donanteVista.bien('unidad', d.unidadMedida())}|">20 kg</span>
+              <th:block th:if="${d.fechaCreacion() != null}">· <time th:datetime="${@fechas.iso(d.fechaCreacion())}" th:text="${@fechas.fecha(d.fechaCreacion())}">10/11/2026</time></th:block>
+            </span>
+          </span>
+          <span th:replace="~{donante/fragmentos :: estado(${d.estadoActual()})}"></span>
+        </a>
+      </li>
+    </ul>
+  </section>
+
+  <p><a class="boton boton--fantasma" th:href="@{/donante/entidades}">← Volver a entidades</a></p>
+
+</div>
+</th:block>
+
+<!-- Una necesidad, con lo recibido sobre lo requerido. -->
+<li th:fragment="necesidad(n)" class="donante-necesidad">
+  <div class="fila fila--separada">
+    <strong th:text="${n.descripcion() != null} ? ${n.descripcion()} : ${@donanteVista.bien('subcategoria', n.subcategoria())}">Frazadas para el invierno</strong>
+    <span class="insignia-estado insignia-estado--advertencia" th:if="${n.esExtraordinaria() and n.tipoExtraordinario() != null}"
+          th:text="${@donanteVista.legible(n.tipoExtraordinario())}">Ola polar</span>
+    <span class="insignia-estado insignia-estado--info" th:if="${!n.esExtraordinaria() and n.periodicidad() != null}"
+          th:text="${@donanteVista.legible(n.periodicidad())}">Mensual</span>
+  </div>
+  <span class="texto-chico texto-secundario" th:text="${@donanteVista.bien('subcategoria', n.subcategoria())}">Frazadas</span>
+  <th:block th:if="${n.cantidadRequerida() != null}">
+    <div class="donante-progreso" role="progressbar" aria-label="Cuánto se cubrió de esta necesidad"
+         aria-valuemin="0" aria-valuemax="100" th:attr="aria-valuenow=${n.porcentaje()}">
+      <span class="donante-progreso__barra" th:style="|width: ${n.porcentaje()}%|"></span>
+    </div>
+    <span class="texto-chico texto-secundario"
+          th:text="|Recibió ${@donanteVista.numero(n.cantidadRecibida())} de ${@donanteVista.numero(n.cantidadRequerida())} ${@donanteVista.bien('unidad', n.unidadMedida())}|">Recibió 10 de 40 u.</span>
+  </th:block>
+</li>
+</body>
+</html>

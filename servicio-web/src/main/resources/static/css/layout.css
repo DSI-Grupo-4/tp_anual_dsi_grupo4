@@ -1,0 +1,293 @@
+/*
+ * Estructura de página: encabezados público y privado, menú lateral,
+ * contenido y pie. Depende de tokens.css, base.css y componentes.css.
+ */
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+main {
+  flex: 1;
+}
+main:focus {
+  outline: none; /* destino del enlace "saltar al contenido": no es un control */
+}
+
+/* ============ Logo ============ */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--area-tactil);
+  font-size: var(--texto-lg);
+  font-weight: var(--peso-fuerte);
+  color: inherit;
+  text-decoration: none;
+}
+.logo:hover { color: inherit; }
+.logo__icono { width: 1.6em; height: 1.6em; }
+
+/* ============ Encabezado público ============ */
+.encabezado-publico {
+  background: var(--gradiente-marca);
+  color: var(--color-sobre-primario);
+}
+.encabezado-publico__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+  min-height: var(--alto-encabezado);
+}
+.encabezado-publico .boton--fantasma { color: var(--color-sobre-primario); }
+.encabezado-publico .boton--fantasma:hover { background: rgba(255, 255, 255, 0.14); }
+
+.nav-publica ul {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0 0 var(--espacio-3);
+  list-style: none;
+}
+.nav-publica a:not(.boton) {
+  display: flex;
+  align-items: center;
+  min-height: var(--area-tactil);
+  padding: 0 var(--espacio-3);
+  border-radius: var(--radio-md);
+  color: var(--color-sobre-primario);
+  font-weight: var(--peso-medio);
+  text-decoration: none;
+}
+.nav-publica a:not(.boton):hover { background: rgba(255, 255, 255, 0.14); }
+.nav-publica a[aria-current="page"] { text-decoration: underline; text-underline-offset: 0.3em; }
+
+/* En móvil la navegación pública se despliega con el botón de menú. */
+.nav-publica {
+  display: none;
+  flex-basis: 100%;
+}
+.nav-publica.abierto { display: block; }
+
+@media (min-width: 960px) {
+  .encabezado-publico__alternar { display: none; }
+  .nav-publica,
+  .nav-publica.abierto {
+    display: block;
+    flex-basis: auto;
+  }
+  .nav-publica ul {
+    flex-direction: row;
+    align-items: center;
+    padding: 0;
+  }
+}
+
+/* ============ Encabezado privado ============ */
+.encabezado-privado {
+  position: sticky;
+  top: 0;
+  z-index: var(--capa-encabezado);
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-height: var(--alto-encabezado);
+  padding-inline: var(--espacio-2) var(--espacio-4);
+  background: var(--color-superficie);
+  border-bottom: var(--borde);
+}
+.encabezado-privado__usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+  margin-left: auto;
+}
+.encabezado-privado__datos {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.encabezado-privado__nombre { font-weight: var(--peso-medio); }
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--color-primario-suave);
+  color: var(--color-primario);
+  font-weight: var(--peso-fuerte);
+  text-transform: uppercase;
+}
+
+/* ============ Zona privada: menú lateral + contenido ============ */
+.app-privada {
+  flex: 1;
+  display: flex;
+}
+.app-privada__contenido {
+  flex: 1;
+  min-width: 0;
+  padding: var(--espacio-4);
+}
+
+.menu-lateral {
+  position: fixed;
+  top: var(--alto-encabezado);
+  bottom: 0;
+  left: 0;
+  z-index: var(--capa-menu);
+  width: min(85vw, var(--ancho-menu-lateral));
+  padding: var(--espacio-3);
+  overflow-y: auto;
+  background: var(--color-superficie);
+  border-right: var(--borde);
+  box-shadow: var(--sombra-lg);
+  transform: translateX(-100%);
+  visibility: hidden;
+  transition: transform var(--transicion), visibility var(--transicion);
+}
+.menu-lateral.abierto {
+  transform: none;
+  visibility: visible;
+}
+.menu-lateral__lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.menu-lateral__enlace {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  width: 100%;
+  min-height: var(--area-tactil);
+  padding: 0 var(--espacio-3);
+  border: 0;
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-texto-secundario);
+  font-size: var(--texto-base);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.menu-lateral__enlace:hover {
+  background: var(--color-superficie-alt);
+  color: var(--color-texto);
+}
+.menu-lateral__enlace[aria-current="page"] {
+  background: var(--color-oscuro);
+  color: var(--color-sobre-oscuro);
+  font-weight: var(--peso-medio);
+}
+.menu-lateral__salir {
+  margin-top: var(--espacio-4);
+  padding-top: var(--espacio-3);
+  border-top: var(--borde);
+}
+
+@media (min-width: 960px) {
+  .encabezado-privado { padding-inline: var(--espacio-5); }
+  .encabezado-privado__alternar { display: none; }
+  .menu-lateral {
+    position: sticky;
+    align-self: flex-start;
+    height: calc(100vh - var(--alto-encabezado));
+    transform: none;
+    visibility: visible;
+    box-shadow: none;
+  }
+  .app-privada__contenido { padding: var(--espacio-5) var(--espacio-6); }
+}
+
+/* ============ Encabezado de página (título + acciones) ============ */
+.cabecera-pagina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-5);
+}
+.cabecera-pagina h1 { margin-bottom: var(--espacio-1); }
+.cabecera-pagina p { margin: 0; color: var(--color-texto-secundario); }
+
+/* ============ Secciones de páginas públicas ============ */
+.seccion {
+  padding-block: var(--espacio-7);
+}
+.seccion--angosta {
+  padding-block: var(--espacio-6);
+}
+
+/* ============ Pie ============ */
+.pie {
+  margin-top: auto;
+  border-top: var(--borde);
+  background: var(--color-superficie);
+}
+.pie__contenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-3);
+  padding-block: var(--espacio-3);
+}
+.pie__contenido p { margin: 0; }
+.pie__enlaces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pie__enlaces a {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--area-tactil);
+  color: var(--color-texto-secundario);
+}
+
+/* ============ Héroe de la landing ============ */
+.heroe {
+  background: var(--gradiente-marca);
+  color: var(--color-sobre-primario);
+  text-align: center;
+}
+.heroe__contenido {
+  padding-block: var(--espacio-7) var(--espacio-8);
+}
+.heroe h1 {
+  font-size: var(--texto-3xl);
+  margin-bottom: var(--espacio-4);
+}
+.heroe__bajada {
+  max-width: 40rem;
+  margin: 0 auto var(--espacio-5);
+  font-size: var(--texto-lg);
+}
+.heroe__acciones { justify-content: center; }
+.heroe .boton--fantasma {
+  color: var(--color-sobre-primario);
+  border-color: var(--color-sobre-primario);
+}
+.heroe .boton--fantasma:hover { background: rgba(255, 255, 255, 0.14); }
+
+/* ============ Página de error ============ */
+.error-pagina { align-items: flex-start; }
+.error-pagina__codigo {
+  margin: 0;
+  font-size: var(--texto-3xl);
+  font-weight: var(--peso-fuerte);
+  color: var(--color-primario);
+  line-height: 1;
+}

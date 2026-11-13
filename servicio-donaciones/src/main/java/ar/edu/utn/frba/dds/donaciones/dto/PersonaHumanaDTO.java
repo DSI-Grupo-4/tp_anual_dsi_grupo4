@@ -29,6 +29,8 @@ public class PersonaHumanaDTO {
     private Integer edad;
     @NotBlank(message = "documento es obligatorio")
     private String documento;
+    @jakarta.validation.Valid
+    private DireccionDTO direccion;
     private Genero genero;
     @jakarta.validation.Valid
     private java.util.List<@jakarta.validation.constraints.NotNull MedioContactoDTO> mediosContacto;

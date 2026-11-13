@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.beneficiaria.donaciones}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:text="#{beneficiaria.donaciones.titulo}">Donaciones asignadas</h1>
+      <p th:text="#{beneficiaria.donaciones.bajada}">Gestioná las donaciones que recibirá tu organización</p>
+    </div>
+  </div>
+
+  <div class="pila pila--grande">
+    <div class="grilla grilla--ajustada">
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.donaciones.total}">Total asignadas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('caja')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.total()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.donaciones.total.detalle}">Donaciones totales</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.donaciones.pendientes}">Pendientes</span>
+          <th:block th:replace="~{fragments/comunes :: icono('camion')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.enProceso()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.donaciones.pendientes.detalle}">Por recibir</span>
+      </div>
+      <div class="tarjeta metrica">
+        <div class="metrica__cabecera">
+          <span th:text="#{beneficiaria.donaciones.recibidas}">Recibidas</span>
+          <th:block th:replace="~{fragments/comunes :: icono('exito')}"/>
+        </div>
+        <span class="metrica__valor" th:text="${resumen.recibidas()}">0</span>
+        <span class="metrica__detalle" th:text="#{beneficiaria.donaciones.recibidas.detalle}">Confirmadas</span>
+      </div>
+    </div>
+
+    <nav class="fila" th:attr="aria-label=#{beneficiaria.donaciones.filtrar}">
+      <a class="boton boton--secundario" th:href="@{/beneficiaria/donaciones(filtro=todas)}"
+         th:aria-current="${filtro == 'todas'} ? 'true'" th:text="#{beneficiaria.donaciones.filtro.todas}">Todas</a>
+      <a class="boton boton--secundario" th:href="@{/beneficiaria/donaciones(filtro=pendientes)}"
+         th:aria-current="${filtro == 'pendientes'} ? 'true'" th:text="#{beneficiaria.donaciones.filtro.pendientes}">Pendientes</a>
+      <a class="boton boton--secundario" th:href="@{/beneficiaria/donaciones(filtro=recibidas)}"
+         th:aria-current="${filtro == 'recibidas'} ? 'true'" th:text="#{beneficiaria.donaciones.filtro.recibidas}">Recibidas</a>
+    </nav>
+
+    <div class="tarjeta vacio" th:if="${#lists.isEmpty(donaciones)}">
+      <th:block th:replace="~{fragments/comunes :: icono('caja')}"/>
+      <p th:text="#{beneficiaria.donaciones.vacio}">No tenés donaciones asignadas aún.</p>
+    </div>
+
+    <section class="tarjeta pila" aria-labelledby="donaciones-lista" th:unless="${#lists.isEmpty(donaciones)}">
+      <h2 id="donaciones-lista" class="solo-lector" th:text="#{beneficiaria.donaciones.titulo}">Donaciones asignadas</h2>
+      <div class="tabla-contenedor" tabindex="0" role="region" th:attr="aria-label=#{beneficiaria.donaciones.titulo}">
+        <table class="tabla">
+          <caption class="solo-lector" th:text="#{beneficiaria.donaciones.titulo}">Donaciones asignadas</caption>
+          <thead>
+            <tr>
+              <th scope="col" th:text="#{beneficiaria.tabla.donacion}">Donación</th>
+              <th scope="col" th:text="#{beneficiaria.tabla.categoria}">Categoría</th>
+              <th scope="col" th:text="#{beneficiaria.tabla.cantidad}">Cantidad</th>
+              <th scope="col" th:text="#{beneficiaria.tabla.estado}">Estado</th>
+              <th scope="col"><span class="solo-lector" th:text="#{beneficiaria.tabla.acciones}">Acciones</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="d : ${donaciones}">
+              <td th:text="${d.descripcionItem}">Arroz 1 kg</td>
+              <td>
+                <span th:if="${d.categoria != null}" th:text="#{'categoria.' + ${d.categoria}}">Alimentos</span>
+                <span class="texto-chico texto-secundario" th:if="${d.subcategoria != null}"
+                      th:text="'· ' + #{'subcategoria.' + ${d.subcategoria}}">Arroz</span>
+              </td>
+              <td><span th:text="${@vistaBeneficiaria.cantidad(d.cantidadAsignada)}">20</span>
+                  <span th:if="${d.unidadMedida != null}" th:text="#{'unidad.' + ${d.unidadMedida}}">kg</span></td>
+              <td><span class="insignia-estado" th:classappend="${@vistaBeneficiaria.claseEstado(d.estadoActual)}"
+                        th:text="#{'beneficiaria.estado.' + ${d.estadoActual}}">Estado</span></td>
+              <td><a class="boton boton--fantasma" th:href="@{/beneficiaria/donaciones/{id}(id=${d.id})}">
+                    <span th:text="#{accion.ver-detalle}">Ver detalle</span>
+                    <span class="solo-lector" th:text="${d.descripcionItem}"></span></a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</th:block>
+</body>
+</html>

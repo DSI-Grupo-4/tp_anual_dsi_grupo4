@@ -35,6 +35,13 @@ public class PersonaHumana extends Persona {
     @Column(name = "genero")
     private Genero genero;
 
+    @jakarta.persistence.Embedded
+    @jakarta.persistence.AttributeOverrides({
+        @jakarta.persistence.AttributeOverride(name="ciudad.nombre", column=@Column(name="nombre_ciudad")),
+        @jakarta.persistence.AttributeOverride(name="ciudad.provincia.nombre", column=@Column(name="nombre_provincia"))
+    })
+    private ar.edu.utn.frba.dds.donaciones.domain.lugares.Direccion direccion;
+
     public PersonaHumana(
             String nombre,
             String apellido,

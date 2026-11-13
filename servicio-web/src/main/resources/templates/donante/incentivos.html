@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.donante.incentivos}, ~{::contenido}, ~{donante/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="donante-contenido">
+
+  <div class="cabecera-pagina">
+    <h1 th:text="#{nav.donante.incentivos}">Incentivos</h1>
+    <p class="texto-secundario">Completá misiones, ganá insignias y subí de categoría con cada donación.</p>
+  </div>
+
+  <div class="banner banner--advertencia" role="status" th:if="${incentivosNoDisponible}">
+    <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+    <div class="banner__contenido">
+      Ahora no pudimos consultar tus incentivos. Probá de nuevo en unos minutos.
+    </div>
+  </div>
+
+  <th:block th:if="${metricas != null}">
+
+  <!-- Categoría actual y escalera de categorías -->
+  <section class="tarjeta pila donante-categoria" aria-labelledby="t-categoria">
+    <div class="fila fila--separada">
+      <div>
+        <p class="texto-chico texto-secundario">Tu categoría</p>
+        <h2 id="t-categoria" class="donante-categoria__nombre"
+            th:text="${metricas.categoriaActual() != null} ? ${metricas.categoriaActual()} : 'Sin categoría todavía'">Colaborador</h2>
+      </div>
+      <p class="donante-categoria__ranking" th:if="${metricas.posicionRanking() != null}">
+        <th:block th:replace="~{fragments/comunes :: icono('premio')}"/>
+        <span th:text="|Puesto ${metricas.posicionRanking()} en el ranking del mes|">Puesto 1 en el ranking del mes</span>
+      </p>
+    </div>
+
+    <div class="pila pila--chica" th:if="${!misiones.isEmpty()}">
+      <div class="fila fila--separada texto-chico">
+        <span th:text="${siguienteCategoria != null} ? |Progreso hacia ${siguienteCategoria}| : 'Progreso de tu categoría'">Progreso hacia Sostenedor</span>
+        <span th:text="|${misionesCompletadas} de ${misiones.size()} misiones|">1 de 5 misiones</span>
+      </div>
+      <div class="donante-progreso" role="progressbar" aria-label="Misiones completadas de tu categoría"
+           aria-valuemin="0" th:attr="aria-valuemax=${misiones.size()},aria-valuenow=${misionesCompletadas}">
+        <span class="donante-progreso__barra" th:style="|width: ${misionesCompletadas * 100 / misiones.size()}%|"></span>
+      </div>
+      <p class="texto-chico texto-secundario" th:if="${siguienteCategoria != null}"
+         th:text="|Completá todas las misiones de tu categoría para pasar a ${siguienteCategoria}.|">
+        Completá todas las misiones de tu categoría para pasar a Sostenedor.</p>
+      <p class="texto-chico texto-secundario" th:if="${siguienteCategoria == null}">Estás en la categoría más alta.</p>
+    </div>
+
+    <ol class="donante-escalera" aria-label="Categorías de donante">
+      <li th:each="e : ${escalera}" th:classappend="${e.actual()} ? 'es-actual' : (${e.alcanzada()} ? 'es-alcanzada' : '')">
+        <span class="donante-escalera__nombre" th:text="${e.nombre()}">Colaborador</span>
+        <span class="texto-chico texto-secundario"
+              th:text="${e.actual()} ? 'Tu categoría' : (${e.alcanzada()} ? 'Alcanzada' : 'Por alcanzar')">Tu categoría</span>
+      </li>
+    </ol>
+  </section>
+
+  <!-- Métricas por período -->
+  <section class="pila" aria-labelledby="t-metricas">
+    <div class="fila fila--separada">
+      <h2 id="t-metricas" th:text="|Tu actividad · ${periodoElegido}|">Tu actividad · Histórico</h2>
+      <nav class="donante-periodos" aria-label="Período de las métricas">
+        <a th:each="p : ${periodos}" class="donante-periodos__opcion" th:href="${p.enlace()}"
+           th:aria-current="${p.elegida()} ? 'page'" th:text="${p.etiqueta()}">Histórico</a>
+      </nav>
+    </div>
+    <div class="grilla">
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Donaciones</span><th:block th:replace="~{fragments/comunes :: icono('corazon')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.solicitudesDonacionHechas()}">2</span>
+        <span class="metrica__detalle">Registradas en el período</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Entidades ayudadas</span><th:block th:replace="~{fragments/comunes :: icono('edificio')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.beneficiariosAyudados()}">0</span>
+        <span class="metrica__detalle">Recibieron tus donaciones</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Impacto</span><th:block th:replace="~{fragments/comunes :: icono('grafico')}"/></span>
+        <span class="metrica__valor" th:text="${@donanteVista.numero(metricas.impactoAcumulado())}">4,25</span>
+        <span class="metrica__detalle">Bienes donados en el período</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Misiones</span><th:block th:replace="~{fragments/comunes :: icono('exito')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.misionesCompletadas()}">1</span>
+        <span class="metrica__detalle">Completadas</span>
+      </div>
+      <div class="tarjeta metrica">
+        <span class="metrica__cabecera"><span>Insignias</span><th:block th:replace="~{fragments/comunes :: icono('premio')}"/></span>
+        <span class="metrica__valor" th:text="${metricas.insigniasObtenidas()}">1</span>
+        <span class="metrica__detalle">Obtenidas</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Evolución mensual -->
+  <section class="tarjeta pila" aria-labelledby="t-evolucion">
+    <div>
+      <h2 id="t-evolucion">Evolución mensual</h2>
+      <p class="texto-chico texto-secundario">Donaciones registradas por mes.</p>
+    </div>
+    <th:block th:replace="~{incentivos/fragmentos :: evolucion(${evolucion}, 't-evolucion')}"></th:block>
+  </section>
+
+  <!-- Misiones e insignias -->
+  <section class="tarjeta pila" aria-label="Misiones e insignias">
+    <div class="pestanas" role="tablist" aria-label="Misiones e insignias">
+      <button type="button" class="pestanas__item" role="tab" id="tab-misiones" aria-controls="panel-misiones"
+              th:attr="aria-selected=${pestana == 'misiones'},tabindex=(${pestana == 'misiones'} ? 0 : -1)">Misiones</button>
+      <button type="button" class="pestanas__item" role="tab" id="tab-insignias" aria-controls="panel-insignias"
+              th:attr="aria-selected=${pestana == 'insignias'},tabindex=(${pestana == 'insignias'} ? 0 : -1)"
+              th:text="|Insignias (${insignias.size()})|">Insignias (1)</button>
+    </div>
+
+    <div id="panel-misiones" role="tabpanel" aria-labelledby="tab-misiones" th:hidden="${pestana != 'misiones'}">
+      <p class="texto-chico texto-secundario">Las misiones se completan en orden: al terminar una, empieza la siguiente.</p>
+      <ol class="donante-misiones" th:if="${!misiones.isEmpty()}">
+        <li th:each="m : ${misiones}"
+            th:classappend="${m.completada()} ? 'es-completada' : (${m.activa()} ? 'es-activa' : '')">
+          <div class="fila fila--separada">
+            <strong th:text="${m.nombreMision()}">Racha Colaborador</strong>
+            <span class="insignia-estado insignia-estado--exito" th:if="${m.completada()}">Completada</span>
+            <span class="insignia-estado insignia-estado--marca" th:if="${!m.completada() and m.activa()}">En curso</span>
+            <span class="insignia-estado" th:if="${!m.completada() and !m.activa()}">Pendiente</span>
+          </div>
+          <p class="texto-chico" th:if="${m.objetivo() != null}" th:text="${m.objetivo()}">Doná en un mes</p>
+          <p class="texto-chico texto-secundario" th:text="|Insignia: ${m.insigniaNombre()}|">Insignia: Primer Paso</p>
+          <th:block th:if="${m.activa() and !m.completada()}">
+            <div class="donante-progreso" role="progressbar" th:aria-label="|Avance de ${m.nombreMision()}|"
+                 aria-valuemin="0" aria-valuemax="100" th:attr="aria-valuenow=${m.porcentaje()}">
+              <span class="donante-progreso__barra" th:style="|width: ${m.porcentaje()}%|"></span>
+            </div>
+            <span class="texto-chico texto-secundario"
+                  th:text="|${@donanteVista.numero(m.progresoActual())} de ${@donanteVista.numero(m.total())}|">1 de 2</span>
+          </th:block>
+        </li>
+      </ol>
+      <div class="vacio" th:if="${misiones.isEmpty()}">
+        <p>No hay misiones disponibles en este momento.</p>
+      </div>
+    </div>
+
+    <div id="panel-insignias" role="tabpanel" aria-labelledby="tab-insignias" th:hidden="${pestana != 'insignias'}">
+      <p class="texto-chico texto-secundario">Las insignias ocultas no se muestran a otras personas. Podés volver a mostrarlas cuando quieras.</p>
+      <ul class="donante-insignias" th:if="${!insignias.isEmpty()}">
+        <li class="donante-insignia" th:each="i : ${insignias}" th:classappend="${!i.visible()} ? 'donante-insignia--oculta'">
+          <span class="donante-insignia__icono"><th:block th:replace="~{fragments/comunes :: icono('premio')}"/></span>
+          <strong th:text="${i.insigniaNombre()}">Primer Paso</strong>
+          <span class="texto-chico texto-secundario" th:if="${i.fechaObtencion() != null}"
+                th:text="|Obtenida el ${@fechas.fecha(i.fechaObtencion())}|">Obtenida el 12/11/2026</span>
+          <span th:class="${i.visible()} ? 'insignia-estado insignia-estado--exito' : 'insignia-estado'"
+                th:text="${i.visible()} ? 'Visible' : 'Oculta'">Visible</span>
+          <form method="post" th:action="@{/donante/incentivos/insignias/visibilidad}">
+            <input type="hidden" name="insignia" th:value="${i.insigniaNombre()}">
+            <input type="hidden" name="visible" th:value="${!i.visible()}">
+            <button type="submit" class="boton boton--secundario"
+                    th:text="${i.visible()} ? 'Ocultar' : 'Mostrar'"
+                    th:aria-label="${i.visible()} ? |Ocultar la insignia ${i.insigniaNombre()}| : |Mostrar la insignia ${i.insigniaNombre()}|">Ocultar</button>
+          </form>
+        </li>
+      </ul>
+      <div class="vacio" th:if="${insignias.isEmpty()}">
+        <p>Todavía no obtuviste insignias.</p>
+        <p class="texto-chico texto-secundario">Completá tu primera misión para ganar la primera.</p>
+      </div>
+    </div>
+  </section>
+
+  </th:block>
+</div>
+</th:block>
+</body>
+</html>

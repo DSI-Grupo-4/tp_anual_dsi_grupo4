@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout/privado :: layout('Registrar o editar donación', ~{::contenido}, ~{admin/fragmentos :: recursos})}">
+<body>
+<th:block th:fragment="contenido">
+<div class="admin-contenido">
+<header class="admin-cabecera">
+<div>
+<p class="admin-antetitulo" th:text="#{admin.ui.52}">
+</p>
+<h1 th:text="#{admin.ui.53}">Bienes recibidos en el depósito</h1>
+<p class="texto-secundario" th:text="#{admin.ui.54}">
+</p>
+</div>
+<div class="admin-acciones">
+</div>
+</header>
+<section class="admin-tarjeta" th:if="${id==null}">
+<h2>1. Elegí a la persona donante</h2>
+<form method="get" action="/admin/donaciones/nueva" class="admin-filtros">
+<div class="campo">
+<label for="buscar-donante" th:text="#{admin.textos.18}">Buscar por nombre, documento o correo</label>
+<input class="control" type="search" name="q" id="buscar-donante" th:value="${q}">
+</div>
+<button class="boton boton--secundario" type="submit" th:text="#{admin.textos.19}">Buscar donante</button>
+<a class="boton boton--fantasma" href="/admin/donantes/nuevo" th:text="#{admin.textos.20}">Registrar nuevo donante</a>
+</form>
+<p>La búsqueda muestra hasta 20 coincidencias. Buscá antes de completar los bienes.</p>
+</section>
+<form class="admin-form" method="post" th:action="@{'/admin/donaciones/'+${id==null?'nueva':id}}" th:object="${form}">
+<section class="banner banner--error" role="alert" tabindex="-1" data-resumen-errores>
+<h2 th:text="#{admin.ui.1}">
+</h2>
+<ul>
+<li th:each="e : ${#fields.errors('*')}" th:text="${e}">
+</li>
+</ul>
+</section>
+<section class="admin-tarjeta" th:if="${id==null}">
+<div class="campo">
+<label for="donanteId" th:text="#{admin.textos.21}">Persona donante</label>
+<select class="control" id="donanteId" th:field="*{donanteId}" required aria-describedby="donante-error">
+<option value="" th:text="#{admin.textos.22}">Elegí una persona</option>
+<option th:if="${donanteElegido!=null}" th:value="${donanteElegido.id}" th:text="${donanteElegido.etiqueta()}">
+</option>
+<option th:each="d:${donantes.content}" th:unless="${donanteElegido!=null and d.id==donanteElegido.id}" th:value="${d.id}" th:text="|${d.etiqueta()} · #${d.id}|">
+</option>
+</select>
+<span id="donante-error" class="campo__error" th:errors="*{donanteId}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'descripcion'" th:text="#{admin.ui.55}">Descripción general de la carga</label>
+<input type="text" class="control" th:field="*{descripcion}" th:id="'descripcion'" th:attr="aria-invalid=${#fields.hasErrors('descripcion')},aria-describedby='descripcion-error'" required maxlength="255">
+<span class="campo__error" th:id="'descripcion-error'" th:errors="*{descripcion}">
+</span>
+</div>
+</section>
+<section class="admin-tarjeta" data-lista="items">
+<h2>Bienes de la donación</h2>
+<p>Alimentos requieren vencimiento; mobiliario y vestimenta, condición. La categoría y la subcategoría deben corresponderse.</p>
+<p>Para asignar después, completá peso, volumen y altura con enteros positivos. Peso y volumen corresponden al renglón completo, no a cada unidad.</p>
+<p th:if="${id!=null}" class="banner banner--info" th:text="#{admin.textos.23}">Estás editando una donación segmentada. Sus ítems deben compartir subcategoría, unidad, condición y vencimiento.</p>
+<div data-filas>
+<fieldset data-fila class="admin-renglon" th:each="item,s:*{items}">
+<legend th:text="|Bien ${s.index+1}|">
+</legend>
+<div class="admin-grid">
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-descripcion'" th:text="#{admin.ui.41}">Descripción del bien</label>
+<input type="text" class="control" th:field="*{items[__${s.index}__].descripcion}" th:id="'items-__${s.index}__-descripcion'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].descripcion')},aria-describedby='items-__${s.index}__-descripcion-error'" required maxlength="255">
+<span class="campo__error" th:id="'items-__${s.index}__-descripcion-error'" th:errors="*{items[__${s.index}__].descripcion}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-categoria'" th:text="#{admin.ui.42}">Categoría</label>
+<select class="control" th:field="*{items[__${s.index}__].categoria}" th:id="'items-__${s.index}__-categoria'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].categoria')},aria-describedby='items-__${s.index}__-categoria-error'" required data-categoria>
+<option value="" th:text="#{admin.textos.24}">Elegí una opción</option>
+<option value="ALIMENTOS" th:text="#{admin.textos.25}">Alimentos</option>
+<option value="MOBILIARIO" th:text="#{admin.textos.26}">Mobiliario</option>
+<option value="VESTIMENTA" th:text="#{admin.textos.27}">Vestimenta</option>
+</select>
+<span class="campo__error" th:id="'items-__${s.index}__-categoria-error'" th:errors="*{items[__${s.index}__].categoria}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-subcategoria'" th:text="#{admin.ui.43}">Subcategoría</label>
+<select class="control" th:field="*{items[__${s.index}__].subcategoria}" th:id="'items-__${s.index}__-subcategoria'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].subcategoria')},aria-describedby='items-__${s.index}__-subcategoria-error'" required data-subcategoria>
+<option value="" th:text="#{admin.textos.28}">Elegí una opción</option>
+<option value="SILLA" th:text="#{admin.textos.29}">Silla</option>
+<option value="MESA" th:text="#{admin.textos.30}">Mesa</option>
+<option value="BANCO" th:text="#{admin.textos.31}">Banco</option>
+<option value="COLCHON" th:text="#{admin.textos.32}">Colchon</option>
+<option value="FIDEOS_SECOS" th:text="#{admin.textos.33}">Fideos secos</option>
+<option value="ARROZ" th:text="#{admin.textos.34}">Arroz</option>
+<option value="LEGUMBRES_SECAS" th:text="#{admin.textos.35}">Legumbres secas</option>
+<option value="ACEITE_VEGETAL" th:text="#{admin.textos.36}">Aceite vegetal</option>
+<option value="TOMATE" th:text="#{admin.textos.37}">Tomate</option>
+<option value="FRUTA" th:text="#{admin.textos.38}">Fruta</option>
+<option value="CAMPERA" th:text="#{admin.textos.39}">Campera</option>
+<option value="REMERA" th:text="#{admin.textos.40}">Remera</option>
+<option value="PANTALON" th:text="#{admin.textos.41}">Pantalon</option>
+<option value="ROPA_INFANTIL" th:text="#{admin.textos.42}">Ropa infantil</option>
+<option value="FRAZADA" th:text="#{admin.textos.43}">Frazada</option>
+</select>
+<span class="campo__error" th:id="'items-__${s.index}__-subcategoria-error'" th:errors="*{items[__${s.index}__].subcategoria}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-unidadMedida'" th:text="#{admin.ui.44}">Unidad de medida</label>
+<select class="control" th:field="*{items[__${s.index}__].unidadMedida}" th:id="'items-__${s.index}__-unidadMedida'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].unidadMedida')},aria-describedby='items-__${s.index}__-unidadMedida-error'" required data-unidad>
+<option value="" th:text="#{admin.textos.44}">Elegí una opción</option>
+<option value="UNIDAD" th:text="#{admin.textos.45}">Unidad</option>
+<option value="KILOGRAMO" th:text="#{admin.textos.46}">Kilogramo</option>
+<option value="CAJA" th:text="#{admin.textos.47}">Caja</option>
+<option value="PAQUETE" th:text="#{admin.textos.48}">Paquete</option>
+<option value="LITRO" th:text="#{admin.textos.49}">Litro</option>
+</select>
+<span class="campo__error" th:id="'items-__${s.index}__-unidadMedida-error'" th:errors="*{items[__${s.index}__].unidadMedida}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-cantidad'" th:text="#{admin.ui.45}">Cantidad</label>
+<input type="number" class="control" th:field="*{items[__${s.index}__].cantidad}" th:id="'items-__${s.index}__-cantidad'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].cantidad')},aria-describedby='items-__${s.index}__-cantidad-error'" required min="0.001" step="0.001" data-cantidad>
+<span class="campo__error" th:id="'items-__${s.index}__-cantidad-error'" th:errors="*{items[__${s.index}__].cantidad}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-condicion'" th:text="#{admin.ui.46}">Condición</label>
+<select class="control" th:field="*{items[__${s.index}__].condicion}" th:id="'items-__${s.index}__-condicion'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].condicion')},aria-describedby='items-__${s.index}__-condicion-error'" data-condicion>
+<option value="" th:text="#{admin.textos.50}">Elegí una opción</option>
+<option value="NUEVO" th:text="#{admin.textos.51}">Nuevo</option>
+<option value="USADO" th:text="#{admin.textos.52}">Usado</option>
+</select>
+<span class="campo__error" th:id="'items-__${s.index}__-condicion-error'" th:errors="*{items[__${s.index}__].condicion}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-fechaVencimiento'" th:text="#{admin.ui.47}">Fecha de vencimiento</label>
+<input type="date" class="control" th:field="*{items[__${s.index}__].fechaVencimiento}" th:id="'items-__${s.index}__-fechaVencimiento'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].fechaVencimiento')},aria-describedby='items-__${s.index}__-fechaVencimiento-error'" data-vencimiento>
+<span class="campo__error" th:id="'items-__${s.index}__-fechaVencimiento-error'" th:errors="*{items[__${s.index}__].fechaVencimiento}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-foto'" th:text="#{admin.ui.48}">URL de foto (opcional)</label>
+<input type="url" class="control" th:field="*{items[__${s.index}__].foto}" th:id="'items-__${s.index}__-foto'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].foto')},aria-describedby='items-__${s.index}__-foto-error'" maxlength="500" placeholder="https://…">
+<span class="campo__error" th:id="'items-__${s.index}__-foto-error'" th:errors="*{items[__${s.index}__].foto}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-pesoKg'" th:text="#{admin.ui.49}">Peso total del renglón (kg)</label>
+<input type="number" class="control" th:field="*{items[__${s.index}__].pesoKg}" th:id="'items-__${s.index}__-pesoKg'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].pesoKg')},aria-describedby='items-__${s.index}__-pesoKg-error'" min="1" step="1">
+<span class="campo__error" th:id="'items-__${s.index}__-pesoKg-error'" th:errors="*{items[__${s.index}__].pesoKg}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-volumenM3'" th:text="#{admin.ui.50}">Volumen total del renglón (m³)</label>
+<input type="number" class="control" th:field="*{items[__${s.index}__].volumenM3}" th:id="'items-__${s.index}__-volumenM3'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].volumenM3')},aria-describedby='items-__${s.index}__-volumenM3-error'" min="1" step="1">
+<span class="campo__error" th:id="'items-__${s.index}__-volumenM3-error'" th:errors="*{items[__${s.index}__].volumenM3}">
+</span>
+</div>
+<div class="campo">
+<label class="campo__etiqueta" th:for="'items-__${s.index}__-alturaM'" th:text="#{admin.ui.51}">Altura máxima (m)</label>
+<input type="number" class="control" th:field="*{items[__${s.index}__].alturaM}" th:id="'items-__${s.index}__-alturaM'" th:attr="aria-invalid=${#fields.hasErrors('items[__${s.index}__].alturaM')},aria-describedby='items-__${s.index}__-alturaM-error'" min="1" step="1">
+<span class="campo__error" th:id="'items-__${s.index}__-alturaM-error'" th:errors="*{items[__${s.index}__].alturaM}">
+</span>
+</div>
+</div>
+<button class="boton boton--fantasma" type="button" data-quitar th:text="#{admin.textos.53}">Quitar bien</button>
+</fieldset>
+</div>
+<button class="boton boton--secundario" type="button" data-agregar th:text="#{admin.textos.54}">Agregar otro bien</button>
+</section>
+<div class="admin-acciones">
+<button class="boton boton--primario" type="submit" th:text="${id==null?'Registrar carga':'Guardar cambios'}">
+</button>
+<a class="boton boton--secundario" th:href="@{'/admin/donaciones'+${id==null?'':'/'+id}}" th:text="#{admin.textos.55}">Cancelar</a>
+</div>
+</form>
+</div>
+</th:block>
+</body>
+</html>

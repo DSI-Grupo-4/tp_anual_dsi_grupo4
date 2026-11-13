@@ -21,7 +21,9 @@ $services = @(
     @{ Name = "donaciones"; Module = "servicio-donaciones"; Port = 8080 },
     @{ Name = "incentivos"; Module = "servicio-incentivos"; Port = 8081 },
     @{ Name = "notificaciones"; Module = "servicio-notificaciones"; Port = 8082 },
-    @{ Name = "logistica"; Module = "servicio-logistica"; Port = 8083 }
+    @{ Name = "logistica"; Module = "servicio-logistica"; Port = 8083 },
+    # Cliente web (Entrega 6): va ultimo porque consume las APIs de los demas.
+    @{ Name = "web"; Module = "servicio-web"; Port = 8085 }
 )
 
 New-Item -ItemType Directory -Path $runDirectory -Force | Out-Null
@@ -116,6 +118,8 @@ Write-Host "  Donaciones:     http://localhost:8080/swagger-ui.html"
 Write-Host "  Incentivos:     http://localhost:8081/swagger-ui/index.html"
 Write-Host "  Notificaciones: http://localhost:8082/swagger-ui/index.html"
 Write-Host "  Logística:      http://localhost:8083/swagger-ui/index.html"
+Write-Host ""
+Write-Host "Cliente web:     http://localhost:8085"
 Write-Host ""
 Write-Host ("Logs disponibles en " + $runDirectory)
 Write-Host "n8n: http://localhost:5678  |  RabbitMQ: http://localhost:15672  |  Adminer: http://localhost:8090"
