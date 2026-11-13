@@ -29,6 +29,8 @@ public class NavegacionModelAdvice {
     public void agregarNavegacion(HttpServletRequest request, Model model, Authentication autenticacion) {
         String ruta = request.getRequestURI().substring(request.getContextPath().length());
         model.addAttribute("rutaActual", ruta);
+        model.addAttribute("sesionIniciada", autenticacion != null && autenticacion.isAuthenticated()
+                && !(autenticacion instanceof AnonymousAuthenticationToken));
         if (autenticacion != null && autenticacion.getPrincipal() instanceof OidcUser usuario) {
             String nombre = nombreDe(usuario);
             if (!nombre.isBlank()) {

@@ -148,6 +148,15 @@ asegurar_cliente servicio-incentivos "{\"clientId\":\"servicio-incentivos\",\"na
   "${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}" >/dev/null
 
 # Donaciones crea o completa las cuentas de donantes y representantes.
+# Keycloak 26.8 exige el scope y la audiencia administrativos, además de los roles.
+# Como scope default, también se incluye al renovar los tokens client_credentials.
+DONACIONES_ID=$(id_cliente servicio-donaciones)
+ADMIN_SCOPE_ID=$(kc get client-scopes -r "$REALM" --fields id,name --format csv --noquotes |
+  while IFS=, read -r scope_id scope_name; do
+    if [ "$scope_name" = "kc-admin-api" ]; then printf '%s' "$scope_id"; fi
+  done)
+[ -n "$ADMIN_SCOPE_ID" ] || falla "no existe el client scope kc-admin-api requerido por la API administrativa"
+kc update "clients/$DONACIONES_ID/default-client-scopes/$ADMIN_SCOPE_ID" -r "$REALM" >/dev/null
 kc add-roles -r "$REALM" --uusername service-account-servicio-donaciones --cclientid realm-management \
   --rolename manage-users --rolename view-users --rolename query-users --rolename view-realm
 

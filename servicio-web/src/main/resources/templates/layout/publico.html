@@ -24,8 +24,14 @@
           <li><a th:href="@{/galeria}" th:aria-current="${rutaActual == '/galeria'} ? 'page'" th:text="#{nav.galeria}">Galería</a></li>
           <li><a th:href="@{/mapa}" th:aria-current="${rutaActual == '/mapa'} ? 'page'" th:text="#{nav.mapa}">Mapa</a></li>
           <li><a th:href="@{/ayuda}" th:aria-current="${rutaActual == '/ayuda'} ? 'page'" th:text="#{nav.ayuda}">Ayuda</a></li>
-          <li><a th:href="@{/ingresar}" th:text="#{nav.ingresar}">Iniciar sesión</a></li>
-          <li><a class="boton boton--secundario" th:href="@{/registro}" th:text="#{nav.registrarse}">Registrarse</a></li>
+          <li th:unless="${sesionIniciada}"><a th:href="@{/ingresar}" th:text="#{nav.ingresar}">Iniciar sesión</a></li>
+          <li th:unless="${sesionIniciada}"><a class="boton boton--secundario" th:href="@{/registro}" th:text="#{nav.registrarse}">Registrarse</a></li>
+          <li th:if="${sesionIniciada}"><a th:href="@{/ingresar}">Mi cuenta</a></li>
+          <li th:if="${sesionIniciada}">
+            <form method="post" th:action="@{/logout}" data-sin-loader>
+              <button class="boton boton--secundario" type="submit">Cerrar sesión</button>
+            </form>
+          </li>
         </ul>
       </nav>
     </div>

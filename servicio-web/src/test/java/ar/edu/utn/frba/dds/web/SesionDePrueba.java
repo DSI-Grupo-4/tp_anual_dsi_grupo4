@@ -12,6 +12,8 @@ public final class SesionDePrueba {
     }
 
     public static OidcLoginRequestPostProcessor conRol(String rol) {
-        return oidcLogin().authorities(new SimpleGrantedAuthority("ROLE_" + rol));
+        return oidcLogin().idToken(token -> {
+            if ("DONANTE".equals(rol)) token.claim("donante_id", "1");
+        }).authorities(new SimpleGrantedAuthority("ROLE_" + rol));
     }
 }

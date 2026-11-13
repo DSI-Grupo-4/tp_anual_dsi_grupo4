@@ -215,6 +215,21 @@ public class SeguridadConfig {
             }
             super.onAuthenticationSuccess(request, response, authentication);
         }
+
+        @Override
+        protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response,
+                                            Authentication authentication) {
+            for (String rol : List.of("ADMIN", "DONANTE", "BENEFICIARIA")) {
+                if (authentication.getAuthorities().stream().anyMatch(a -> ("ROLE_" + rol).equals(a.getAuthority()))) {
+                    return switch (rol) {
+                        case "ADMIN" -> "/admin";
+                        case "DONANTE" -> "/donante";
+                        default -> "/beneficiaria";
+                    };
+                }
+            }
+            return "/cuenta";
+        }
     }
 
     private static String sinBarraFinal(String url) {
