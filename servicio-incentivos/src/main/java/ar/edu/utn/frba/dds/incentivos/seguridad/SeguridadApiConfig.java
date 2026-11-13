@@ -62,7 +62,8 @@ public class SeguridadApiConfig {
                 // Sincronización desde Donaciones (IncentivosClient con token client_credentials).
                 .requestMatchers(HttpMethod.PUT, "/api/donantes/{id}/perfil").hasRole(SERVICIO)
                 .requestMatchers(HttpMethod.POST, "/api/donantes/{id}/actividad-donacion").hasRole(SERVICIO)
-                .requestMatchers(HttpMethod.GET, "/api/donantes/{id}/metricas", "/api/donantes/{id}/misiones", "/api/donantes/{id}/insignias")
+                .requestMatchers(HttpMethod.GET, "/api/donantes/{id}/metricas", "/api/donantes/{id}/misiones", "/api/donantes/{id}/insignias",
+                        "/api/donantes/{id}/insignias/obtenidas")
                         .access(AuthorizationManagers.anyOf(esAdmin, donantePropio))
                 .requestMatchers(HttpMethod.PATCH, "/api/donantes/{id}/insignias/**")
                         .access(AuthorizationManagers.anyOf(esAdmin, donantePropio))
