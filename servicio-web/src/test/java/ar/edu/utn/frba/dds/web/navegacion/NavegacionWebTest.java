@@ -62,16 +62,8 @@ class NavegacionWebTest {
                         containsString("href=\"/legal/privacidad\""))));
     }
 
-    @Test
-    void unaSeccionPrivadaSinImplementarMuestraElMenuDelRolYMarcaLaActiva() throws Exception {
-        mvc.perform(get("/admin/donaciones"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(allOf(
-                        containsString("Sección en construcción"),
-                        containsString("href=\"/admin/camiones\""),
-                        containsString("href=\"/admin/donaciones\"\n             aria-current=\"page\""),
-                        not(containsString("href=\"/donante/incentivos\"")))));
-    }
+    // El fallback "en construcción" se prueba aparte, en SeccionesPrivadasControllerTest:
+    // ya no queda ninguna sección del menú sin controller propio para pegarle acá.
 
     @Test
     void elPanelDeCadaRolMuestraSuMenu() throws Exception {
