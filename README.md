@@ -129,7 +129,7 @@
 ├── stop-servicios.ps1
 └── stop-servicios.sh
 
-45 directories, 85 files
+44 directories, 70 files
 ```
 <!-- TREE_END -->
 
