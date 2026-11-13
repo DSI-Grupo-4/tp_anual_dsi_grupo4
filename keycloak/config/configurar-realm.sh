@@ -141,6 +141,16 @@ asegurar_mapper "$WEB_ID" "entidad_ids" '{
   "config":{"user.attribute":"entidad_ids","claim.name":"entidad_ids","jsonType.label":"String","multivalued":"true",
     "id.token.claim":"true","access.token.claim":"true","userinfo.token.claim":"true"}}'
 
+# Swagger local: cliente público, sin secret ni permisos propios. Usa los roles del usuario.
+asegurar_cliente swagger-ui '{
+  "clientId":"swagger-ui","name":"Swagger local DonaTrack","enabled":true,
+  "protocol":"openid-connect","publicClient":true,"standardFlowEnabled":true,
+  "implicitFlowEnabled":false,"directAccessGrantsEnabled":false,"serviceAccountsEnabled":false,
+  "redirectUris":["http://localhost:8080/swagger-ui/oauth2-redirect.html","http://localhost:8081/swagger-ui/oauth2-redirect.html","http://localhost:8082/swagger-ui/oauth2-redirect.html","http://localhost:8083/swagger-ui/oauth2-redirect.html"],
+  "webOrigins":["http://localhost:8080","http://localhost:8081","http://localhost:8082","http://localhost:8083"],
+  "attributes":{"pkce.code.challenge.method":"S256"}
+}' "" >/dev/null
+
 SERVICIO='"protocol":"openid-connect","publicClient":false,"standardFlowEnabled":false,"implicitFlowEnabled":false,"directAccessGrantsEnabled":false,"serviceAccountsEnabled":true'
 asegurar_cliente servicio-donaciones "{\"clientId\":\"servicio-donaciones\",\"name\":\"Servicio de Donaciones\",\"enabled\":true,$SERVICIO}" \
   "${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}" >/dev/null

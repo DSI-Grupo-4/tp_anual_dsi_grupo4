@@ -1,5 +1,29 @@
 # Guía para levantar DonaTrack
 
+## Autenticación en Swagger
+
+Con `keycloak/.env` configurado, `run-servicios.ps1` crea o actualiza el cliente
+público `swagger-ui`. Cada Swagger ofrece **Authorize**, con Authorization Code
+y PKCE. No se pega un client secret ni se habilitan permisos adicionales.
+
+1. Abrir el Swagger usando `localhost` (puertos 8080, 8081, 8082 o 8083).
+2. Pulsar **Authorize**, comprobar `client_id=swagger-ui`, seleccionar `openid`
+   y pulsar **Authorize**. Permitir la ventana emergente si el navegador la bloquea.
+3. Ingresar en Keycloak con una cuenta de DonaTrack que tenga el rol `ADMIN`.
+   También puede ser una cuenta de Google a la que se haya asignado ese rol.
+4. Al volver, cerrar el diálogo y usar **Try it out → Execute**. Swagger envía el
+   access token automáticamente. Autorizar cada Swagger que se quiera usar.
+
+Un alta correcta responde `201`; `401` indica que falta un token vigente y `403`
+que el usuario no tiene permiso para esa operación. Algunas operaciones internas
+son exclusivas de cuentas de servicio: `ADMIN` no las habilita automáticamente.
+Los cambios exitosos aparecen en el frontend al recargar el listado, siempre
+que se consulte la misma instancia del servicio.
+
+**Logout** dentro de Authorize retira el token de Swagger; no cierra la sesión
+SSO de Keycloak. Para cambiar de usuario, cerrar sesión en DonaTrack/Keycloak
+o usar una ventana privada. Los tokens no se conservan deliberadamente al recargar.
+
 ## Requisitos
 
 - Java 17 o superior.
