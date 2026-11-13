@@ -30,8 +30,22 @@ validar_secret KEYCLOAK_WEB_CLIENT_SECRET "${KEYCLOAK_WEB_CLIENT_SECRET:-}"
 validar_secret KEYCLOAK_DONACIONES_CLIENT_SECRET "${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}"
 validar_secret KEYCLOAK_INCENTIVOS_CLIENT_SECRET "${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}"
 
-kc config credentials --server "$SERVIDOR" --realm master \
-  --user "${KEYCLOAK_ADMIN_USERNAME:-admin}" --password "$KEYCLOAK_ADMIN_PASSWORD" >/dev/null
+ADMIN_USERNAME=${KEYCLOAK_ADMIN_USERNAME:-admin}
+if ! kc config credentials --server "$SERVIDOR" --realm master \
+  --user "$ADMIN_USERNAME" --password "$KEYCLOAK_ADMIN_PASSWORD" >/dev/null 2>&1; then
+  # KEYCLOAK_ADMIN_PASSWORD is only a bootstrap setting: an existing Keycloak
+  # database keeps the old password. During a local credential rotation, use
+  # the previous value once, update the persisted admin, and continue with the
+  # new value. The launcher removes KEYCLOAK_ADMIN_PASSWORD_PREVIOUS after this
+  # configuration succeeds.
+  [ -n "${KEYCLOAK_ADMIN_PASSWORD_PREVIOUS:-}" ] || falla "no se pudo autenticar con KEYCLOAK_ADMIN_PASSWORD; para una instancia existente, configurar KEYCLOAK_ADMIN_PASSWORD_PREVIOUS una vez"
+  kc config credentials --server "$SERVIDOR" --realm master \
+    --user "$ADMIN_USERNAME" --password "$KEYCLOAK_ADMIN_PASSWORD_PREVIOUS" >/dev/null
+  kc set-password -r master --username "$ADMIN_USERNAME" \
+    --new-password "$KEYCLOAK_ADMIN_PASSWORD" >/dev/null
+  kc config credentials --server "$SERVIDOR" --realm master \
+    --user "$ADMIN_USERNAME" --password "$KEYCLOAK_ADMIN_PASSWORD" >/dev/null
+fi
 
 # --- Realm: tema, idioma, registro con verificación de email (Mailpit) ---
 kc update "realms/$REALM" \
@@ -45,7 +59,25 @@ kc update "realms/$REALM" \
   -s resetPasswordAllowed=true \
   -s loginWithEmailAllowed=true \
   -s duplicateEmailsAllowed=false \
-  -s 'smtpServer={"host":"mailpit","port":"1025","from":"no-responder@donatrack.local","fromDisplayName":"DonaTrack","auth":"false","ssl":"false","starttls":"false"}'
+  -s actionTokenGeneratedByUserLifespan=1800
+
+# --- SMTP: interruptor explícito, no "¿están las credenciales cargadas?" ---
+# KEYCLOAK_SMTP_REAL=false (default): Mailpit local, no gasta cuota de Gmail.
+# KEYCLOAK_SMTP_REAL=true: Gmail real con KEYCLOAK_SMTP_USERNAME/PASSWORD
+# (misma cuenta que usa Notificaciones, ver servicio-notificaciones/.env).
+# Las credenciales pueden quedar siempre cargadas en keycloak/.env: alcanza
+# con tocar este booleano para pasar de probar a producción y volver.
+if [ "${KEYCLOAK_SMTP_REAL:-false}" = "true" ]; then
+  [ -n "${KEYCLOAK_SMTP_USERNAME:-}" ] && [ -n "${KEYCLOAK_SMTP_PASSWORD:-}" ] \
+    || falla "KEYCLOAK_SMTP_REAL=true pero faltan KEYCLOAK_SMTP_USERNAME/KEYCLOAK_SMTP_PASSWORD en keycloak/.env"
+  kc update "realms/$REALM" \
+    -s "smtpServer={\"host\":\"smtp.gmail.com\",\"port\":\"587\",\"from\":\"$KEYCLOAK_SMTP_USERNAME\",\"fromDisplayName\":\"DonaTrack\",\"auth\":\"true\",\"user\":\"$KEYCLOAK_SMTP_USERNAME\",\"password\":\"$KEYCLOAK_SMTP_PASSWORD\",\"ssl\":\"false\",\"starttls\":\"true\"}"
+  echo "SMTP real configurado ($KEYCLOAK_SMTP_USERNAME): los mails de Keycloak salen por Gmail, no por Mailpit."
+else
+  kc update "realms/$REALM" \
+    -s 'smtpServer={"host":"mailpit","port":"1025","from":"no-responder@donatrack.local","fromDisplayName":"DonaTrack","auth":"false","ssl":"false","starttls":"false"}'
+  echo "SMTP de prueba (Mailpit, http://localhost:8025). KEYCLOAK_SMTP_REAL=true en keycloak/.env para Gmail real."
+fi
 
 # donante_id y entidad_ids los escribe servicio-donaciones por la API de
 # administración; el usuario no los ve ni los puede editar.
@@ -128,7 +160,8 @@ if [ -n "${GOOGLE_CLIENT_ID:-}" ] && [ -n "${GOOGLE_CLIENT_SECRET:-}" ]; then
     \"trustEmail\":true,\"storeToken\":false,\"linkOnly\":false,
     \"firstBrokerLoginFlowAlias\":\"first broker login\",
     \"config\":{\"clientId\":\"$GOOGLE_CLIENT_ID\",\"clientSecret\":\"$GOOGLE_CLIENT_SECRET\",
-      \"defaultScope\":\"openid profile email\",\"syncMode\":\"IMPORT\"}}"
+      \"defaultScope\":\"openid profile email\",\"syncMode\":\"IMPORT\",
+      \"prompt\":\"select_account\"}}"
   if kc get identity-provider/instances/google -r "$REALM" >/dev/null 2>&1; then
     printf '%s' "$GOOGLE" | kc update identity-provider/instances/google -r "$REALM" -f - >/dev/null
   else

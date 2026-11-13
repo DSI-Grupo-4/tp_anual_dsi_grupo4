@@ -20,11 +20,11 @@ services:
     image: mysql:8
     container_name: donatrack-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: BasededatosTP1
+      MYSQL_ROOT_PASSWORD: ${KEYCLOAK_DB_ROOT_PASSWORD:-BasededatosTP1}
     ports:
       - "3306:3306"
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pBasededatosTP1"]
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p\"$$MYSQL_ROOT_PASSWORD\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -123,9 +123,9 @@ services:
         GRANT ALL PRIVILEGES ON keycloak.* TO 'keycloak'@'%';
         SQL
         echo "Base keycloak y usuario keycloak listos."
-  # Identidad local (Entrega 6). Perfil "auth": no arranca con
-  # "docker compose up -d" ni con run-servicios. Persiste en la base
-  # "keycloak" del MySQL existente, con un usuario que solo ve esa base.
+  # Identidad local (Entrega 6). Perfil "auth": no arranca con un
+  # "docker compose up -d" simple; run-servicios lo inicia si existe keycloak/.env.
+  # Persiste en la base "keycloak" del MySQL existente, con un usuario que solo ve esa base.
   # El realm se importa solo si todavía no existe en esa base.
   keycloak:
     profiles: ["auth"]
@@ -177,11 +177,17 @@ services:
     environment:
       KEYCLOAK_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-}
+      KEYCLOAK_ADMIN_PASSWORD_PREVIOUS: ${KEYCLOAK_ADMIN_PASSWORD_PREVIOUS:-}
       KEYCLOAK_WEB_CLIENT_SECRET: ${KEYCLOAK_WEB_CLIENT_SECRET:-}
       KEYCLOAK_DONACIONES_CLIENT_SECRET: ${KEYCLOAK_DONACIONES_CLIENT_SECRET:-}
       KEYCLOAK_INCENTIVOS_CLIENT_SECRET: ${KEYCLOAK_INCENTIVOS_CLIENT_SECRET:-}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # KEYCLOAK_SMTP_REAL=true: los mails de Keycloak salen por Gmail real
+      # (KEYCLOAK_SMTP_USERNAME/PASSWORD). false o vacío: Mailpit, sin gastar cuota.
+      KEYCLOAK_SMTP_REAL: ${KEYCLOAK_SMTP_REAL:-false}
+      KEYCLOAK_SMTP_USERNAME: ${KEYCLOAK_SMTP_USERNAME:-}
+      KEYCLOAK_SMTP_PASSWORD: ${KEYCLOAK_SMTP_PASSWORD:-}
     volumes:
       - ./keycloak/config:/opt/donatrack:ro
     entrypoint: ["bash", "-c"]

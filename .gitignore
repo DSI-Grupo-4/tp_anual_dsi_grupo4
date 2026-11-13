@@ -11,11 +11,13 @@ logs/
 
 servicio-incentivos/credentials.env
 keycloak/.env
+keycloak/.env.*
 servicio-web/.env
 servicio-notificaciones/.env
 servicio-logistica/.env
 servicio-donaciones/.env
 servicio-incentivos/.env
+donatrack-env/
 .cli-venv/
 __pycache__/
 
