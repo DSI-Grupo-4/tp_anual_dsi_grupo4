@@ -36,6 +36,7 @@ public class NavegacionService {
                 ItemMenu.de(Rol.ADMIN, "nav.admin.donantes", "donantes", "usuarios"),
                 ItemMenu.de(Rol.ADMIN, "nav.admin.entidades", "entidades", "edificio"),
                 ItemMenu.de(Rol.ADMIN, "nav.admin.camiones", "camiones", "camion"),
+                ItemMenu.de(Rol.ADMIN, "nav.admin.choferes", "choferes", "usuarios"),
                 ItemMenu.de(Rol.ADMIN, "nav.admin.seguimiento", "seguimiento", "ubicacion"),
                 ItemMenu.de(Rol.ADMIN, "nav.admin.reportes", "reportes", "grafico")));
     }

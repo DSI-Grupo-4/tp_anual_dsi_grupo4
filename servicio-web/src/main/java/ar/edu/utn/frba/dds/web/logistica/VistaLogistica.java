@@ -47,6 +47,10 @@ public class VistaLogistica {
         };
     }
 
+    public String claseChofer(Boolean habilitado) {
+        return Boolean.TRUE.equals(habilitado) ? "insignia-estado--exito" : "insignia-estado--error";
+    }
+
     /**
      * Devuelve la URL solo si es http o https; si no, null. Las fotos las carga cualquiera con una URL libre
      * (por ejemplo javascript:...), así que nunca se enlaza algo que no sea una dirección web.
