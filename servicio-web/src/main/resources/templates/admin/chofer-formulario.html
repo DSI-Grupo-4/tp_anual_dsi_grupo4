@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/privado :: layout(#{nav.admin.choferes}, ~{::contenido}, _)}">
+<body>
+<th:block th:fragment="contenido">
+  <div class="cabecera-pagina">
+    <div>
+      <h1 th:if="${choferId == null}" th:text="#{logistica.choferes.form.titulo-nuevo}">Nuevo chofer</h1>
+      <h1 th:if="${choferId != null}" th:text="#{logistica.choferes.form.titulo-editar}">Editar chofer</h1>
+      <p th:text="#{logistica.choferes.form.bajada}">El planificador solo asigna rutas a choferes habilitados.</p>
+    </div>
+  </div>
+
+  <form class="tarjeta formulario" method="post" novalidate th:object="${form}"
+        th:action="${choferId == null} ? @{/admin/choferes} : @{/admin/choferes/{id}(id=${choferId})}">
+
+    <div class="banner banner--error" role="alert" th:if="${#fields.hasGlobalErrors()}">
+      <th:block th:replace="~{fragments/comunes :: icono('alerta')}"/>
+      <div class="banner__contenido">
+        <p class="banner__titulo" th:text="#{logistica.choferes.form.no-guardado}">No se pudo guardar</p>
+        <span th:each="e : ${#fields.globalErrors()}" th:text="${e}">Error</span>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label class="campo__etiqueta" for="nombre">
+        <span th:text="#{logistica.choferes.col.nombre}">Nombre</span>
+        <span class="campo__obligatorio" aria-hidden="true">*</span>
+      </label>
+      <input class="control" id="nombre" type="text" th:field="*{nombre}" maxlength="120" required autocomplete="off"
+             th:attr="aria-invalid=${#fields.hasErrors('nombre')},
+                      aria-describedby=${#fields.hasErrors('nombre')} ? 'nombre-error' : null">
+      <span class="campo__error" id="nombre-error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}">Error</span>
+    </div>
+
+    <div class="campo">
+      <label class="campo__etiqueta" for="dni">
+        <span th:text="#{logistica.choferes.col.dni}">DNI</span>
+        <span class="campo__obligatorio" aria-hidden="true">*</span>
+      </label>
+      <input class="control" id="dni" type="number" min="1" step="1" inputmode="numeric" th:field="*{dni}" required
+             th:attr="aria-invalid=${#fields.hasErrors('dni')},
+                      aria-describedby=${#fields.hasErrors('dni')} ? 'dni-error' : 'dni-ayuda'">
+      <span class="campo__ayuda" id="dni-ayuda" th:unless="${#fields.hasErrors('dni')}"
+            th:text="#{logistica.choferes.form.dni-ayuda}">Solo números, sin puntos ni espacios.</span>
+      <span class="campo__error" id="dni-error" th:if="${#fields.hasErrors('dni')}" th:errors="*{dni}">Error</span>
+    </div>
+
+    <div class="campo">
+      <label class="casilla">
+        <input type="checkbox" th:field="*{habilitado}">
+        <span th:text="#{logistica.choferes.form.habilitado}">Habilitado para asignar rutas</span>
+      </label>
+    </div>
+
+    <div class="formulario__acciones">
+      <a class="boton boton--secundario" th:href="@{/admin/choferes}" th:text="#{accion.cancelar}">Cancelar</a>
+      <button type="submit" class="boton boton--primario" th:text="#{accion.guardar}">Guardar</button>
+    </div>
+  </form>
+</th:block>
+</body>
+</html>
